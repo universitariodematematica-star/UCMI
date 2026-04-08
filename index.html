@@ -104,7 +104,7 @@
 
     <h2>Ingresa el código único</h2>
 
-    <form class="password-form" id="passwordForm">
+    <form class="password-form" id="passwordForm" onsubmit="return login(event)">
         <input id="password" name="password" type="password" placeholder="Código" required>
         <br>
         <input type="submit" value="Acceder">
@@ -112,6 +112,47 @@
 
     <div id="message" class="message"></div>
 
+<script>
+function login(event) {
+    event.preventDefault(); // 🔥 evita que recargue la página
+
+    const code = document.getElementById("password").value;
+    const msg = document.getElementById("message");
+
+    const result = validateLicense(code);
+
+    if (result.status === "invalid") {
+        msg.className = "message error";
+        msg.innerText = "❌ Código inválido";
+        return false;
+    }
+
+    if (result.status === "expired") {
+        msg.className = "message error";
+        msg.innerText = "⛔ Licencia vencida";
+        return false;
+    }
+
+    // guardar sesión
+    localStorage.setItem("user", result.license.user);
+    localStorage.setItem("code", result.license.code);
+    localStorage.setItem("expiration", result.license.expiration);
+    localStorage.setItem("days", result.days);
+
+    msg.className = "message success";
+    msg.innerText =
+        "✅ Bienvenido " + result.license.user +
+        " | Expira: " + result.license.expiration +
+        " | Días: " + result.days;
+
+    setTimeout(() => {
+        window.location.href = "home.html";
+    }, 5000);
+
+    return false;
+}
+</script>
+    
 </body>
 
 </html>
