@@ -6,7 +6,7 @@ const licenses = [
   {
     user: "Juan Carlos",
     code: "ABC123",
-    expiration: "2026-04-09"
+    expiration: "2026-04-10"
   }
 ];
 
