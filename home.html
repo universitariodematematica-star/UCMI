@@ -11,12 +11,21 @@
 <script>
 function protectPage() {
     const code = localStorage.getItem("code");
-    const expiration = new Date(localStorage.getItem("expiration"));
-    const today = new Date();
+    const expirationRaw = localStorage.getItem("expiration");
 
-    if (!code || !expiration || today > expiration) {
+    if (!code || !expirationRaw) {
         localStorage.clear();
         window.location.href = "index.html";
+        return;
+    }
+
+    const expiration = new Date(expirationRaw);
+    const today = new Date();
+
+    if (today > expiration) {
+        localStorage.clear();
+        window.location.href = "index.html";
+        return;
     }
 }
 
@@ -29,13 +38,19 @@ protectPage();
 
 <script>
 const user = localStorage.getItem("user");
-const expiration = new Date(localStorage.getItem("expiration"));
-const today = new Date();
+const expirationRaw = localStorage.getItem("expiration");
 
-const days = Math.ceil((expiration - today) / (1000 * 60 * 60 * 24));
+if (!user || !expirationRaw) {
+    document.getElementById("userInfo").innerText = "Sin sesión activa";
+} else {
+    const expiration = new Date(expirationRaw);
+    const today = new Date();
 
-document.getElementById("userInfo").innerText =
-    "Usuario: " + user + " | Días restantes: " + days;
+    const days = Math.ceil((expiration - today) / (1000 * 60 * 60 * 24));
+
+    document.getElementById("userInfo").innerText =
+        "Usuario: " + user + " | Días restantes: " + days;
+}
 </script>
 
 </body>
