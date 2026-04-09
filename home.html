@@ -3,57 +3,57 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Sala Segura</title>
+    <title>Sala Educativa</title>
 
     <style>
         body {
             font-family: Arial;
             text-align: center;
             background: #f2f2f2;
+            margin: 0;
+            padding: 0;
         }
 
         .panel {
-            margin-top: 50px;
+            margin-top: 60px;
             background: #000080;
             color: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 12px;
-            display: inline-block;
+            display: none;
+            width: 300px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         button {
             display: block;
             margin: 10px auto;
-            padding: 12px 20px;
+            padding: 12px;
+            width: 200px;
             border-radius: 10px;
             border: none;
             cursor: pointer;
-            width: 200px;
         }
 
         .error {
-            background: #f44336;
+            margin-top: 40px;
             color: white;
-            padding: 10px;
+            background: #f44336;
+            padding: 15px;
             border-radius: 10px;
-            margin-top: 20px;
+            width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+            display: none;
         }
     </style>
 
     <!-- 🔥 FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { 
-            getAuth, 
-            onAuthStateChanged, 
-            signOut 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-        import { 
-            getFirestore, 
-            doc, 
-            getDoc 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
@@ -71,20 +71,23 @@
         const panel = document.getElementById("panel");
         const errorBox = document.getElementById("error");
 
-        // 🔐 PROTECCIÓN TOTAL
+        // 🔐 PROTECCIÓN PRINCIPAL
         onAuthStateChanged(auth, async (user) => {
 
-            if (!user) {
-                window.location.href = "index.html";
-                return;
-            }
-
             try {
+
+                // ❌ no logueado
+                if (!user) {
+                    window.location.href = "index.html";
+                    return;
+                }
+
                 const email = user.email;
 
                 const ref = doc(db, "licenses", email);
                 const snap = await getDoc(ref);
 
+                // ❌ no existe licencia
                 if (!snap.exists()) {
                     showError("❌ No tienes licencia activa");
                     return;
@@ -94,18 +97,20 @@
                 const expiration = new Date(data.expiration);
                 const today = new Date();
 
+                // ⛔ vencido
                 if (today > expiration) {
                     showError("⛔ Licencia vencida");
                     return;
                 }
 
                 // ✔ acceso permitido
-                panel.style.display = "inline-block";
+                panel.style.display = "block";
 
-            } catch (e) {
-                showError("⚠️ Error al validar acceso");
-                console.error(e);
+            } catch (error) {
+                console.error(error);
+                showError("⚠️ Error de validación");
             }
+
         });
 
         function showError(msg) {
@@ -117,15 +122,16 @@
             await signOut(auth);
             window.location.href = "index.html";
         };
+
     </script>
 
 </head>
 
 <body>
 
-    <div id="error" class="error" style="display:none;"></div>
+    <div id="error" class="error"></div>
 
-    <div id="panel" class="panel" style="display:none;">
+    <div id="panel" class="panel">
         <h2>🎓 SALA EDUCATIVA</h2>
 
         <button onclick="location.href='temario.html'">📚 Temario</button>
