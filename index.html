@@ -39,7 +39,6 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            display: block;
         }
 
         .password-form {
@@ -53,7 +52,6 @@
             border: 1px solid #ccc;
             width: 200px;
             margin-bottom: 10px;
-            outline: none;
         }
 
         .password-form input[type="submit"] {
@@ -108,6 +106,28 @@
     <div id="message" class="message"></div>
 
 <script>
+/* 🔐 BLOQUEO AUTOMÁTICO SI YA ESTÁ LOGUEADO Y ES VÁLIDO */
+function autoLoginCheck() {
+    const code = localStorage.getItem("code");
+    const expirationRaw = localStorage.getItem("expiration");
+
+    if (!code || !expirationRaw) return;
+
+    const expiration = new Date(expirationRaw);
+    const today = new Date();
+
+    if (isNaN(expiration.getTime()) || today > expiration) {
+        localStorage.clear();
+        return;
+    }
+
+    window.location.href = "home.html";
+}
+
+autoLoginCheck();
+
+
+/* 🔐 LOGIN PRINCIPAL */
 function login(event) {
     event.preventDefault();
 
@@ -136,7 +156,7 @@ function login(event) {
     localStorage.setItem("expiration", result.license.expiration);
     localStorage.setItem("days", result.days);
 
-    // ✅ mensaje de bienvenida
+    // ✅ mensaje
     msg.className = "message success";
     msg.innerText =
         "✅ Bienvenido " + result.license.user +
@@ -146,7 +166,7 @@ function login(event) {
     // ⏳ redirección
     setTimeout(() => {
         window.location.href = "home.html";
-    }, 5000);
+    }, 2000);
 
     return false;
 }
