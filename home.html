@@ -3,48 +3,57 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Sala Educativa</title>
+    <title>Plataforma Educativa</title>
 
     <style>
         body {
             font-family: Arial;
-            text-align: center;
-            background: #f2f2f2;
+            background: #eef2f7;
             margin: 0;
-            padding: 0;
+            text-align: center;
         }
 
         .panel {
-            margin-top: 60px;
-            background: #000080;
-            color: white;
+            margin: 60px auto;
+            width: 340px;
             padding: 25px;
-            border-radius: 12px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #000080, #1e3a8a);
+            color: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             display: none;
-            width: 300px;
-            margin-left: auto;
-            margin-right: auto;
         }
 
         button {
-            display: block;
+            width: 220px;
             margin: 10px auto;
             padding: 12px;
-            width: 200px;
-            border-radius: 10px;
             border: none;
+            border-radius: 10px;
             cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .status {
+            background: rgba(255,255,255,0.15);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: left;
         }
 
         .error {
-            margin-top: 40px;
-            color: white;
+            margin: 60px auto;
+            width: 340px;
             background: #f44336;
+            color: white;
             padding: 15px;
             border-radius: 10px;
-            width: 300px;
-            margin-left: auto;
-            margin-right: auto;
             display: none;
         }
     </style>
@@ -70,13 +79,12 @@
 
         const panel = document.getElementById("panel");
         const errorBox = document.getElementById("error");
+        const statusBox = document.getElementById("status");
 
-        // 🔐 PROTECCIÓN PRINCIPAL
         onAuthStateChanged(auth, async (user) => {
 
             try {
 
-                // ❌ no logueado
                 if (!user) {
                     window.location.href = "index.html";
                     return;
@@ -87,9 +95,8 @@
                 const ref = doc(db, "licenses", email);
                 const snap = await getDoc(ref);
 
-                // ❌ no existe licencia
                 if (!snap.exists()) {
-                    showError("❌ No tienes licencia activa");
+                    showError("No tienes licencia activa");
                     return;
                 }
 
@@ -97,18 +104,28 @@
                 const expiration = new Date(data.expiration);
                 const today = new Date();
 
-                // ⛔ vencido
-                if (today > expiration) {
-                    showError("⛔ Licencia vencida");
+                const daysLeft = Math.ceil(
+                    (expiration - today) / (1000 * 60 * 60 * 24)
+                );
+
+                if (daysLeft < 0) {
+                    showError("Tu licencia ha expirado");
                     return;
                 }
 
-                // ✔ acceso permitido
+                // ✔ mostrar panel
                 panel.style.display = "block";
 
-            } catch (error) {
-                console.error(error);
-                showError("⚠️ Error de validación");
+                // 📊 estado profesional
+                statusBox.innerHTML = `
+                    👤 Usuario: ${email}<br>
+                    📅 Expira: ${data.expiration}<br>
+                    ⏳ Días restantes: ${daysLeft}
+                `;
+
+            } catch (e) {
+                console.error(e);
+                showError("Error de carga del sistema");
             }
 
         });
@@ -116,6 +133,10 @@
         function showError(msg) {
             errorBox.innerText = msg;
             errorBox.style.display = "block";
+
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 3500);
         }
 
         window.logout = async function () {
@@ -132,11 +153,15 @@
     <div id="error" class="error"></div>
 
     <div id="panel" class="panel">
-        <h2>🎓 SALA EDUCATIVA</h2>
+
+        <h2>🎓 Plataforma Educativa</h2>
+
+        <div id="status" class="status"></div>
 
         <button onclick="location.href='temario.html'">📚 Temario</button>
         <button onclick="location.href='calificaciones.html'">📊 Calificaciones</button>
         <button onclick="logout()">🚪 Cerrar sesión</button>
+
     </div>
 
 </body>
