@@ -8,34 +8,50 @@
 
 <body>
 
+<!-- 🔐 PROTECCIÓN TOTAL (LO PRIMERO QUE SE EJECUTA) -->
 <script>
-function protectPage() {
+(function protectHome() {
     const code = localStorage.getItem("code");
     const expirationRaw = localStorage.getItem("expiration");
 
+    // ❌ no hay sesión
     if (!code || !expirationRaw) {
         localStorage.clear();
-        window.location.href = "index.html";
+        window.location.replace("index.html");
         return;
     }
 
     const expiration = new Date(expirationRaw);
-    const today = new Date();
 
-    if (today > expiration) {
+    // ❌ fecha inválida
+    if (isNaN(expiration.getTime())) {
         localStorage.clear();
-        window.location.href = "index.html";
+        window.location.replace("index.html");
         return;
     }
-}
 
-protectPage();
+    // ❌ vencido
+    if (new Date() > expiration) {
+        localStorage.clear();
+        window.location.replace("index.html");
+        return;
+    }
+})();
+</script>
+
+<!-- 🔒 BLOQUEA BOTÓN ATRÁS -->
+<script>
+history.pushState(null, null, location.href);
+window.onpopstate = function () {
+    history.pushState(null, null, location.href);
+};
 </script>
 
 <h1>Bienvenido al sistema</h1>
 
 <p id="userInfo"></p>
 
+<!-- 👤 INFO DEL USUARIO -->
 <script>
 const user = localStorage.getItem("user");
 const expirationRaw = localStorage.getItem("expiration");
