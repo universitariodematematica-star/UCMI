@@ -3,7 +3,7 @@
 
 <head>
 <meta charset="UTF-8">
-<title>Admin Dashboard</title>
+<title>Admin PRO++</title>
 
 <style>
 body {
@@ -18,6 +18,7 @@ body {
     color: white;
     padding: 15px;
     text-align: center;
+    font-size: 18px;
 }
 
 /* GRID */
@@ -28,7 +29,7 @@ body {
     padding: 20px;
 }
 
-/* CARD */
+/* CARDS */
 .card {
     background: white;
     border-radius: 12px;
@@ -37,29 +38,30 @@ body {
 }
 
 /* INPUTS */
-input {
-    width: 90%;
+input, select {
+    width: 95%;
     padding: 10px;
-    margin: 8px 0;
+    margin: 6px 0;
     border-radius: 8px;
     border: 1px solid #ccc;
 }
 
 button {
-    padding: 10px;
-    border-radius: 8px;
+    padding: 8px;
     border: none;
+    border-radius: 8px;
     cursor: pointer;
+    margin-top: 5px;
+    width: 100%;
     background: #2563eb;
     color: white;
-    width: 100%;
 }
 
 button:hover {
     background: #1d4ed8;
 }
 
-/* USERS */
+/* USER LIST */
 .user {
     padding: 10px;
     border-bottom: 1px solid #eee;
@@ -68,7 +70,7 @@ button:hover {
 
 .badge {
     padding: 3px 8px;
-    border-radius: 5px;
+    border-radius: 6px;
     font-size: 12px;
     color: white;
 }
@@ -76,11 +78,11 @@ button:hover {
 .active { background: green; }
 .expired { background: red; }
 
-.stats {
-    font-size: 18px;
-    font-weight: bold;
+.actions button {
+    width: 48%;
+    font-size: 12px;
+    margin-top: 5px;
 }
-
 </style>
 
 <script type="module">
@@ -89,8 +91,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, signInWithEmailAndPassword } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-import { getFirestore, doc, setDoc, collection, getDocs } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+    getFirestore,
+    doc,
+    setDoc,
+    deleteDoc,
+    collection,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
@@ -107,6 +115,8 @@ const db = getFirestore(app);
 
 const ADMIN_EMAIL = "universitariodematematica@gmail.com";
 
+let cache = [];
+
 // ---------------- LOGIN ----------------
 window.login = async function () {
 
@@ -121,14 +131,14 @@ window.login = async function () {
         return;
     }
 
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("dashboard").style.display = "block";
+    document.getElementById("login").style.display = "none";
+    document.getElementById("panel").style.display = "block";
 
     loadData();
 };
 
-// ---------------- CREAR LICENCIA ----------------
-window.createLicense = async function () {
+// ---------------- CREAR / RENOVAR ----------------
+window.saveLicense = async function () {
 
     const name = document.getElementById("name").value;
     const email = document.getElementById("userEmail").value;
@@ -142,17 +152,42 @@ window.createLicense = async function () {
     loadData();
 };
 
-// ---------------- LOAD DATA ----------------
+// ---------------- ELIMINAR ----------------
+window.deleteUser = async function (email) {
+    await deleteDoc(doc(db, "licenses", email));
+    loadData();
+};
+
+// ---------------- RENOVAR 30 DÍAS ----------------
+window.renew30 = async function (email, name) {
+
+    const today = new Date();
+    today.setDate(today.getDate() + 30);
+
+    const exp = today.toISOString().split("T")[0];
+
+    await setDoc(doc(db, "licenses", email), {
+        user: name,
+        expiration: exp
+    });
+
+    loadData();
+};
+
+// ---------------- LOAD ----------------
 async function loadData() {
 
     const snap = await getDocs(collection(db, "licenses"));
 
-    let total = 0;
-    let active = 0;
-    let expired = 0;
+    const search = document.getElementById("search")?.value?.toLowerCase() || "";
+    const filter = document.getElementById("filter")?.value || "all";
 
-    const list = document.getElementById("list");
+    let list = document.getElementById("list");
     list.innerHTML = "";
+
+    let total = 0, active = 0, expired = 0;
+
+    cache = [];
 
     snap.forEach(d => {
 
@@ -163,19 +198,29 @@ async function loadData() {
 
         const days = Math.ceil((exp - now) / (1000*60*60*24));
 
-        total++;
+        let status = days >= 0 ? "active" : "expired";
 
-        if (days >= 0) active++;
-        else expired++;
+        cache.push({id: d.id, data, days, status});
+
+        if (filter !== "all" && filter !== status) return;
+        if (!d.id.toLowerCase().includes(search) && !data.user.toLowerCase().includes(search)) return;
+
+        total++;
+        if (days >= 0) active++; else expired++;
 
         list.innerHTML += `
             <div class="user">
-                👤 ${data.user} <br>
-                📧 ${d.id} <br>
-                ⏳ ${days} días <br>
-                <span class="badge ${days>=0?'active':'expired'}">
-                    ${days>=0?'ACTIVO':'VENCIDO'}
+                👤 ${data.user}<br>
+                📧 ${d.id}<br>
+                ⏳ ${days} días<br>
+                <span class="badge ${status}">
+                    ${status.toUpperCase()}
                 </span>
+
+                <div class="actions">
+                    <button onclick="renew30('${d.id}','${data.user}')">+30 días</button>
+                    <button onclick="deleteUser('${d.id}')">Eliminar</button>
+                </div>
             </div>
         `;
     });
@@ -185,6 +230,8 @@ async function loadData() {
     `;
 }
 
+window.loadData = loadData;
+
 </script>
 
 </head>
@@ -192,43 +239,52 @@ async function loadData() {
 <body>
 
 <!-- LOGIN -->
-<div id="loginBox" class="card" style="max-width:300px;margin:80px auto;text-align:center;">
-    <h3>🔐 Admin Login</h3>
+<div id="login" class="card" style="max-width:300px;margin:80px auto;text-align:center;">
+    <h3>🔐 Admin PRO++</h3>
     <input id="email" placeholder="Email">
     <input id="pass" type="password" placeholder="Password">
     <button onclick="login()">Entrar</button>
 </div>
 
-<!-- DASHBOARD -->
-<div id="dashboard" style="display:none">
+<!-- PANEL -->
+<div id="panel" style="display:none">
 
-    <div class="header">
-        📊 ADMIN DASHBOARD PRO
-    </div>
+    <div class="header">⚡ ADMIN DASHBOARD PRO++</div>
 
     <div class="grid">
 
         <!-- CREATE -->
         <div class="card">
-            <h3>➕ Crear Licencia</h3>
+            <h3>➕ Crear / Editar</h3>
             <input id="name" placeholder="Nombre">
             <input id="userEmail" placeholder="Email usuario">
             <input id="exp" type="date">
-            <button onclick="createLicense()">Guardar</button>
+            <button onclick="saveLicense()">Guardar</button>
         </div>
 
         <!-- STATS -->
         <div class="card">
-            <h3>📈 Estadísticas</h3>
-            <div id="stats" class="stats"></div>
+            <h3>📊 Estadísticas</h3>
+            <div id="stats"></div>
         </div>
 
-        <!-- USERS -->
+        <!-- CONTROLS -->
         <div class="card">
-            <h3>👥 Usuarios</h3>
-            <div id="list"></div>
+            <h3>🔍 Buscar / Filtrar</h3>
+            <input id="search" placeholder="Buscar..." oninput="loadData()">
+
+            <select id="filter" onchange="loadData()">
+                <option value="all">Todos</option>
+                <option value="active">Activos</option>
+                <option value="expired">Vencidos</option>
+            </select>
         </div>
 
+    </div>
+
+    <div class="card" style="margin:20px">
+        <h3>👥 Usuarios</h3>
+        <div id="list"></div>
     </div>
 
 </div>
