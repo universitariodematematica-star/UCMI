@@ -31,6 +31,140 @@
         window.addEventListener("load", () => {
             protectPage();
         });
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Portal Principal</title>
+
+    <!-- 🔥 FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
+            authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
+            projectId: "portal-autenticacion-a1ngles",
+            storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
+            messagingSenderId: "1039504020190",
+            appId: "1:1039504020190:web:212cf030c3e6feb175a84f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 🔥 hacemos global
+        window.db = db;
+        window.doc = doc;
+        window.getDoc = getDoc;
+
+        // ✅ IMPORTANTE: ejecutar después de cargar Firebase
+        window.addEventListener("load", () => {
+            protectPage();
+        });
+    </script>
+
+    window.addEventListener("load", () => {
+    protectPage();
+});
+
+// 🔁 verificación continua
+setInterval(() => {
+    protectPage();
+}, 30000);
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f4f4;
+            text-align: center;
+        }
+
+        nav {
+            margin: 20px;
+        }
+
+        nav a, button {
+            margin: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        button {
+            background: #f44336;
+            color: white;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<h1>Bienvenido al sistema</h1>
+
+<p id="userInfo"></p>
+
+<nav>
+    <a href="home.html">Inicio</a>
+    <button onclick="logout()">Cerrar sesión</button>
+</nav>
+
+<script>
+async function protectPage() {
+
+    const code = localStorage.getItem("code");
+
+    if (!code) {
+    console.log("❌ NO HAY CODE");
+    return;
+}
+
+    try {
+        const ref = doc(db, "licenses", code);
+        const snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+            logout();
+            return;
+        }
+
+        const data = snap.data();
+        const expiration = new Date(data.expiration);
+        const today = new Date();
+
+        if (today > expiration) {
+            logout();
+            return;
+        }
+
+        const days = Math.ceil((expiration - today) / (1000 * 60 * 60 * 24));
+
+        document.getElementById("userInfo").innerText =
+            "Usuario: " + data.user + " | Días restantes: " + days;
+
+    } catch (error) {
+        console.error("ERROR:", error); // 🔥 para depurar
+        logout();
+    }
+}
+
+function logout() {
+    console.log("🚨 LOGOUT ACTIVADO");
+    localStorage.clear();
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
+
+        
     </script>
 
     <style>
