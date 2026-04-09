@@ -3,49 +3,84 @@
 
 <head>
 <meta charset="UTF-8">
-<title>Admin PRO</title>
+<title>Admin Dashboard</title>
 
 <style>
 body {
+    margin: 0;
     font-family: Arial;
-    background: #eef2f7;
+    background: #f4f6fb;
+}
+
+/* HEADER */
+.header {
+    background: #0f172a;
+    color: white;
+    padding: 15px;
     text-align: center;
 }
 
-.container {
-    margin: 30px auto;
-    width: 420px;
-    background: white;
+/* GRID */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
     padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
 }
 
+/* CARD */
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* INPUTS */
 input {
-    display: block;
-    margin: 8px auto;
-    padding: 10px;
     width: 90%;
+    padding: 10px;
+    margin: 8px 0;
     border-radius: 8px;
+    border: 1px solid #ccc;
 }
 
 button {
     padding: 10px;
-    margin: 5px;
     border-radius: 8px;
+    border: none;
     cursor: pointer;
+    background: #2563eb;
+    color: white;
+    width: 100%;
 }
 
-.card {
-    background: #f4f6f8;
-    margin: 10px;
+button:hover {
+    background: #1d4ed8;
+}
+
+/* USERS */
+.user {
     padding: 10px;
-    border-radius: 10px;
-    text-align: left;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
 }
 
-.ok { color: green; }
-.bad { color: red; }
+.badge {
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    color: white;
+}
+
+.active { background: green; }
+.expired { background: red; }
+
+.stats {
+    font-size: 18px;
+    font-weight: bold;
+}
+
 </style>
 
 <script type="module">
@@ -70,14 +105,13 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 🔐 ADMIN EMAIL
 const ADMIN_EMAIL = "universitariodematematica@gmail.com";
 
-// -------------------- LOGIN --------------------
+// ---------------- LOGIN ----------------
 window.login = async function () {
 
-    const email = document.getElementById("emailLogin").value;
-    const pass = document.getElementById("passLogin").value;
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("pass").value;
 
     const user = await signInWithEmailAndPassword(auth, email, pass);
 
@@ -87,17 +121,17 @@ window.login = async function () {
         return;
     }
 
-    document.getElementById("login").style.display = "none";
-    document.getElementById("panel").style.display = "block";
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
 
-    loadUsers();
+    loadData();
 };
 
-// -------------------- CREAR LICENCIA --------------------
+// ---------------- CREAR LICENCIA ----------------
 window.createLicense = async function () {
 
     const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
+    const email = document.getElementById("userEmail").value;
     const exp = document.getElementById("exp").value;
 
     await setDoc(doc(db, "licenses", email), {
@@ -105,40 +139,50 @@ window.createLicense = async function () {
         expiration: exp
     });
 
-    loadUsers();
+    loadData();
 };
 
-// -------------------- CARGAR USUARIOS --------------------
-async function loadUsers() {
+// ---------------- LOAD DATA ----------------
+async function loadData() {
+
+    const snap = await getDocs(collection(db, "licenses"));
+
+    let total = 0;
+    let active = 0;
+    let expired = 0;
 
     const list = document.getElementById("list");
     list.innerHTML = "";
 
-    const snap = await getDocs(collection(db, "licenses"));
+    snap.forEach(d => {
 
-    snap.forEach(docu => {
-
-        const data = docu.data();
+        const data = d.data();
 
         const exp = new Date(data.expiration + "T23:59:59");
-        const today = new Date();
+        const now = new Date();
 
-        const days = Math.ceil((exp - today) / (1000*60*60*24));
+        const days = Math.ceil((exp - now) / (1000*60*60*24));
 
-        const status = days >= 0 ? "ok" : "bad";
+        total++;
+
+        if (days >= 0) active++;
+        else expired++;
 
         list.innerHTML += `
-            <div class="card">
-                👤 ${data.user}<br>
-                📧 ${docu.id}<br>
-                📅 ${data.expiration}<br>
-                ⏳ ${days} días<br>
-                <b class="${status}">
-                    ${days >= 0 ? "ACTIVO" : "VENCIDO"}
-                </b>
+            <div class="user">
+                👤 ${data.user} <br>
+                📧 ${d.id} <br>
+                ⏳ ${days} días <br>
+                <span class="badge ${days>=0?'active':'expired'}">
+                    ${days>=0?'ACTIVO':'VENCIDO'}
+                </span>
             </div>
         `;
     });
+
+    document.getElementById("stats").innerHTML = `
+        Total: ${total} | Activos: ${active} | Vencidos: ${expired}
+    `;
 }
 
 </script>
@@ -148,26 +192,44 @@ async function loadUsers() {
 <body>
 
 <!-- LOGIN -->
-<div id="login" class="container">
-    <h2>🔐 Admin Login</h2>
-    <input id="emailLogin" placeholder="Email">
-    <input id="passLogin" type="password" placeholder="Password">
+<div id="loginBox" class="card" style="max-width:300px;margin:80px auto;text-align:center;">
+    <h3>🔐 Admin Login</h3>
+    <input id="email" placeholder="Email">
+    <input id="pass" type="password" placeholder="Password">
     <button onclick="login()">Entrar</button>
 </div>
 
-<!-- PANEL -->
-<div id="panel" class="container" style="display:none">
+<!-- DASHBOARD -->
+<div id="dashboard" style="display:none">
 
-    <h2>📊 PANEL ADMIN PRO</h2>
+    <div class="header">
+        📊 ADMIN DASHBOARD PRO
+    </div>
 
-    <input id="name" placeholder="Nombre">
-    <input id="email" placeholder="Email">
-    <input id="exp" type="date">
+    <div class="grid">
 
-    <button onclick="createLicense()">Crear / Renovar licencia</button>
+        <!-- CREATE -->
+        <div class="card">
+            <h3>➕ Crear Licencia</h3>
+            <input id="name" placeholder="Nombre">
+            <input id="userEmail" placeholder="Email usuario">
+            <input id="exp" type="date">
+            <button onclick="createLicense()">Guardar</button>
+        </div>
 
-    <h3>Usuarios</h3>
-    <div id="list"></div>
+        <!-- STATS -->
+        <div class="card">
+            <h3>📈 Estadísticas</h3>
+            <div id="stats" class="stats"></div>
+        </div>
+
+        <!-- USERS -->
+        <div class="card">
+            <h3>👥 Usuarios</h3>
+            <div id="list"></div>
+        </div>
+
+    </div>
 
 </div>
 
