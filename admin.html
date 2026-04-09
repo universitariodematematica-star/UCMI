@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<title>Panel Admin</title>
+
+<style>
+body {
+    font-family: Arial;
+    text-align: center;
+    background: #f4f4f4;
+}
+
+input, button {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 8px;
+}
+
+.success { background: #4CAF50; color: white; }
+.error { background: #f44336; color: white; }
+</style>
+
+<!-- 🔥 FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
+    authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
+    projectId: "portal-autenticacion-a1ngles",
+    storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
+    messagingSenderId: "1039504020190",
+    appId: "1:1039504020190:web:212cf030c3e6feb175a84f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.db = db;
+window.doc = doc;
+window.setDoc = setDoc;
+</script>
+
+</head>
+
+<body>
+
+<h1>🔐 Panel Administrador</h1>
+
+<input type="password" id="adminPass" placeholder="Contraseña admin">
+<button onclick="loginAdmin()">Entrar</button>
+
+<div id="panel" style="display:none;">
+
+    <h2>Crear Licencia</h2>
+
+    <input id="code" placeholder="Código (ej: ABC123)">
+    <br>
+
+    <input id="user" placeholder="Usuario">
+    <br>
+
+    <input id="expiration" type="date">
+    <br>
+
+    <button onclick="createLicense()">Crear</button>
+
+    <p id="msg"></p>
+
+</div>
+
+<script>
+const ADMIN_PASSWORD = "123456";
+
+// 🔐 LOGIN ADMIN
+function loginAdmin() {
+    const pass = document.getElementById("adminPass").value;
+
+    if (pass === ADMIN_PASSWORD) {
+        document.getElementById("panel").style.display = "block";
+    } else {
+        alert("Contraseña incorrecta");
+    }
+}
+
+// 🔥 CREAR LICENCIA
+async function createLicense() {
+
+    const code = document.getElementById("code").value.trim();
+    const user = document.getElementById("user").value.trim();
+    const expiration = document.getElementById("expiration").value;
+
+    const msg = document.getElementById("msg");
+
+    if (!code || !user || !expiration) {
+        msg.className = "error";
+        msg.innerText = "⚠️ Completa todos los campos";
+        return;
+    }
+
+    try {
+        await setDoc(doc(db, "licenses", code), {
+            user: user,
+            expiration: expiration
+        });
+
+        msg.className = "success";
+        msg.innerText = "✅ Licencia creada correctamente";
+
+        // limpiar campos
+        document.getElementById("code").value = "";
+        document.getElementById("user").value = "";
+        document.getElementById("expiration").value = "";
+
+    } catch (error) {
+        msg.className = "error";
+        msg.innerText = "❌ Error al crear";
+        console.error(error);
+    }
+}
+</script>
+
+</body>
+</html>
