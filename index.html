@@ -79,7 +79,29 @@
         }
     </style>
 
-    <script src="app.js"></script>
+    <!-- 🔥 FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
+            authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
+            projectId: "portal-autenticacion-a1ngles",
+            storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
+            messagingSenderId: "1039504020190",
+            appId: "1:1039504020190:web:212cf030c3e6feb175a84f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // hacerlo accesible fuera del módulo
+        window.db = db;
+        window.doc = doc;
+        window.getDoc = getDoc;
+    </script>
+
 </head>
 
 <body>
@@ -89,8 +111,7 @@
     </div>
 
     <div class="circle">
-        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjw9cxfrG4DxMXY4q8Z_jexzTMuwfWdJoB7iSmpjcA8ntkHLbdXX_vGKofXvl7fahEPTt6NW1JM9fN3xDdW1Ontxh5OYTM6lsjre9SuWyq0fTakTWEMc2guGHMVVNCsb3li6_aQ-Gm2iO0Ql5pVq_cd08jOF8CjMgi_2SztgwnAUMq_MC4acptQhHzxbGcC/s2560/Imagen%20UCMI.png"
-             alt="Logo">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjw9cxfrG4DxMXY4q8Z_jexzTMuwfWdJoB7iSmpjcA8ntkHLbdXX_vGKofXvl7fahEPTt6NW1JM9fN3xDdW1Ontxh5OYTM6lsjre9SuWyq0fTakTWEMc2guGHMVVNCsb3li6_aQ-Gm2iO0Ql5pVq_cd08jOF8CjMgi_2SztgwnAUMq_MC4acptQhHzxbGcC/s2560/Imagen%20UCMI.png">
     </div>
 
     <h2>Ingresa el código único</h2>
@@ -103,79 +124,58 @@
 
     <div id="message" class="message"></div>
 
-<script>
-/* 🔐 AUTO LOGIN SEGURO */
-function autoLoginCheck() {
-    const code = localStorage.getItem("code");
-    const expirationRaw = localStorage.getItem("expiration");
+    <!-- 🔐 LOGIN REAL -->
+    <script>
+        async function login(event) {
+            event.preventDefault();
 
-    if (!code || !expirationRaw) return;
+            const code = document.getElementById("password").value.trim();
+            const msg = document.getElementById("message");
 
-    const expiration = new Date(expirationRaw);
-    const today = new Date();
+            try {
+                const ref = doc(db, "licenses", code);
+                const snap = await getDoc(ref);
 
-    // ❌ fecha inválida
-    if (isNaN(expiration.getTime())) {
-        localStorage.clear();
-        return;
-    }
+                // ❌ código no existe
+                if (!snap.exists()) {
+                    msg.className = "message error";
+                    msg.innerText = "❌ Código inválido";
+                    return false;
+                }
 
-    // ⛔ vencido
-    if (today > expiration) {
-        localStorage.clear();
-        return;
-    }
+                const data = snap.data();
+                const expiration = new Date(data.expiration);
+                const today = new Date();
 
-    // ✅ válido
-    window.location.href = "home.html";
-}
+                // ⛔ vencido
+                if (today > expiration) {
+                    msg.className = "message error";
+                    msg.innerText = "⛔ Licencia vencida";
+                    return false;
+                }
 
-autoLoginCheck();
+                // ✅ válido
+                localStorage.clear();
+                localStorage.setItem("user", data.user);
+                localStorage.setItem("expiration", data.expiration);
 
+                msg.className = "message success";
+                msg.innerText = "✅ Bienvenido " + data.user;
 
-/* 🔐 LOGIN */
-function login(event) {
-    event.preventDefault();
+                setTimeout(() => {
+                    window.location.href = "home.html";
+                }, 1500);
 
-    const code = document.getElementById("password").value.trim();
-    const msg = document.getElementById("message");
+                return false;
 
-    const result = validateLicense(code);
-
-    // ❌ inválido
-    if (!result || result.status === "invalid") {
-        msg.className = "message error";
-        msg.innerText = "❌ Código inválido";
-        return false;
-    }
-
-    // ⛔ vencido
-    if (result.status === "expired") {
-        msg.className = "message error";
-        msg.innerText = "⛔ Licencia vencida";
-        return false;
-    }
-
-    // 📦 guardar datos LIMPIOS
-    localStorage.clear();
-
-    localStorage.setItem("user", result.license.user);
-    localStorage.setItem("code", result.license.code);
-    localStorage.setItem("expiration", result.license.expiration);
-    localStorage.setItem("days", result.days);
-
-    msg.className = "message success";
-    msg.innerText =
-        "✅ Bienvenido " + result.license.user +
-        " | Días restantes: " + result.days;
-
-    setTimeout(() => {
-        window.location.href = "home.html";
-    }, 1500);
-
-    return false;
-}
-</script>
+            } catch (error) {
+                msg.className = "message error";
+                msg.innerText = "⚠️ Error de conexión";
+                console.error(error);
+                return false;
+            }
+        }
+    </script>
 
 </body>
 </html>
