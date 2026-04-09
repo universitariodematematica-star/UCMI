@@ -4,69 +4,119 @@
 <head>
     <meta charset="UTF-8">
     <title>Portal Principal</title>
+
+    <!-- 🔥 FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
+            authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
+            projectId: "portal-autenticacion-a1ngles",
+            storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
+            messagingSenderId: "1039504020190",
+            appId: "1:1039504020190:web:212cf030c3e6feb175a84f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.doc = doc;
+        window.getDoc = getDoc;
+    </script>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f4f4;
+            text-align: center;
+        }
+
+        nav {
+            margin: 20px;
+        }
+
+        nav a, button {
+            margin: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        button {
+            background: #f44336;
+            color: white;
+        }
+    </style>
+
 </head>
 
 <body>
-
-<!-- 🔐 PROTECCIÓN TOTAL (LO PRIMERO QUE SE EJECUTA) -->
-<script>
-(function protectHome() {
-    const code = localStorage.getItem("code");
-    const expirationRaw = localStorage.getItem("expiration");
-
-    // ❌ no hay sesión
-    if (!code || !expirationRaw) {
-        localStorage.clear();
-        window.location.replace("index.html");
-        return;
-    }
-
-    const expiration = new Date(expirationRaw);
-
-    // ❌ fecha inválida
-    if (isNaN(expiration.getTime())) {
-        localStorage.clear();
-        window.location.replace("index.html");
-        return;
-    }
-
-    // ❌ vencido
-    if (new Date() > expiration) {
-        localStorage.clear();
-        window.location.replace("index.html");
-        return;
-    }
-})();
-</script>
-
-<!-- 🔒 BLOQUEA BOTÓN ATRÁS -->
-<script>
-history.pushState(null, null, location.href);
-window.onpopstate = function () {
-    history.pushState(null, null, location.href);
-};
-</script>
 
 <h1>Bienvenido al sistema</h1>
 
 <p id="userInfo"></p>
 
-<!-- 👤 INFO DEL USUARIO -->
+<nav>
+    <a href="home.html">Inicio</a>
+    <button onclick="logout()">Cerrar sesión</button>
+</nav>
+
 <script>
-const user = localStorage.getItem("user");
-const expirationRaw = localStorage.getItem("expiration");
+async function protectPage() {
 
-if (!user || !expirationRaw) {
-    document.getElementById("userInfo").innerText = "Sin sesión activa";
-} else {
-    const expiration = new Date(expirationRaw);
-    const today = new Date();
+    const code = localStorage.getItem("code");
 
-    const days = Math.ceil((expiration - today) / (1000 * 60 * 60 * 24));
+    // ❌ no hay sesión
+    if (!code) {
+        window.location.href = "index.html";
+        return;
+    }
 
-    document.getElementById("userInfo").innerText =
-        "Usuario: " + user + " | Días restantes: " + days;
+    try {
+        // 🔥 verificar en Firebase
+        const ref = doc(db, "licenses", code);
+        const snap = await getDoc(ref);
+
+        // ❌ no existe
+        if (!snap.exists()) {
+            logout();
+            return;
+        }
+
+        const data = snap.data();
+        const expiration = new Date(data.expiration);
+        const today = new Date();
+
+        // ⛔ vencido
+        if (today > expiration) {
+            logout();
+            return;
+        }
+
+        // ✅ válido
+        const days = Math.ceil((expiration - today) / (1000 * 60 * 60 * 24));
+
+        document.getElementById("userInfo").innerText =
+            "Usuario: " + data.user + " | Días restantes: " + days;
+
+    } catch (error) {
+        logout();
+    }
 }
+
+// 🔐 cerrar sesión
+function logout() {
+    localStorage.clear();
+    window.location.href = "index.html";
+}
+
+// ejecutar protección
+protectPage();
 </script>
 
 </body>
