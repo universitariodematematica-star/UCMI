@@ -45,12 +45,13 @@
             margin-top: 20px;
         }
 
-        .password-form input[type="password"] {
+        .password-form input {
             padding: 10px;
             font-size: 16px;
             border-radius: 10px;
             border: 1px solid #ccc;
-            width: 200px;
+            width: 220px;
+            margin: 5px;
         }
 
         .password-form input[type="submit"] {
@@ -60,6 +61,7 @@
             color: white;
             border-radius: 10px;
             cursor: pointer;
+            width: auto;
         }
 
         .message {
@@ -82,7 +84,10 @@
     <!-- 🔥 FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
@@ -94,12 +99,10 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        // hacerlo accesible fuera del módulo
-        window.db = db;
-        window.doc = doc;
-        window.getDoc = getDoc;
+        window.auth = auth;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
     </script>
 
 </head>
@@ -114,64 +117,60 @@
         <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjw9cxfrG4DxMXY4q8Z_jexzTMuwfWdJoB7iSmpjcA8ntkHLbdXX_vGKofXvl7fahEPTt6NW1JM9fN3xDdW1Ontxh5OYTM6lsjre9SuWyq0fTakTWEMc2guGHMVVNCsb3li6_aQ-Gm2iO0Ql5pVq_cd08jOF8CjMgi_2SztgwnAUMq_MC4acptQhHzxbGcC/s2560/Imagen%20UCMI.png">
     </div>
 
-    <h2>Ingresa el código único</h2>
+    <h2>Iniciar sesión</h2>
 
+    <!-- 🔐 LOGIN -->
     <form class="password-form" onsubmit="return login(event)">
-        <input id="password" type="password" placeholder="Código de licencia" required>
+
+        <input id="email" type="email" placeholder="Correo electrónico" required>
+        <br>
+
+        <input id="password" type="password" placeholder="Contraseña" required>
         <br><br>
+
         <input type="submit" value="Acceder">
     </form>
 
     <div id="message" class="message"></div>
 
-    <!-- 🔐 LOGIN REAL -->
+    <!-- 🔐 LÓGICA LOGIN -->
     <script>
         async function login(event) {
             event.preventDefault();
 
-            const code = document.getElementById("password").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
             const msg = document.getElementById("message");
 
             try {
-                const ref = doc(db, "licenses", code);
-                const snap = await getDoc(ref);
-
-                // ❌ código no existe
-                if (!snap.exists()) {
-                    msg.className = "message error";
-                    msg.innerText = "❌ Código inválido";
-                    return false;
-                }
-
-                const data = snap.data();
-                const expiration = new Date(data.expiration);
-                const today = new Date();
-
-                // ⛔ vencido
-                if (today > expiration) {
-                    msg.className = "message error";
-                    msg.innerText = "⛔ Licencia vencida";
-                    return false;
-                }
-
-                // ✅ válido
-                localStorage.clear();
-                localStorage.setItem("code", code);
-                localStorage.setItem("expiration", data.expiration);
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
 
                 msg.className = "message success";
-                msg.innerText = "✅ Bienvenido " + data.user;
+                msg.innerText = "✅ Bienvenido " + user.email;
 
-                window.location.href = "home.html";
+                localStorage.setItem("uid", user.uid);
+                localStorage.setItem("email", user.email);
 
-                return false;
+                setTimeout(() => {
+                    window.location.href = "home.html";
+                }, 800);
 
             } catch (error) {
+
                 msg.className = "message error";
-                msg.innerText = "⚠️ Error de conexión";
+
+                if (error.code === "auth/user-not-found" ||
+                    error.code === "auth/wrong-password") {
+                    msg.innerText = "❌ Credenciales incorrectas";
+                } else {
+                    msg.innerText = "⚠️ Error de acceso";
+                }
+
                 console.error(error);
-                return false;
             }
+
+            return false;
         }
     </script>
 
