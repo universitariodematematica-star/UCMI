@@ -28,7 +28,7 @@
             height: 110px;
             margin: 20px auto;
             border-radius: 50%;
-            overflow: hidden; /* 🔥 clave para evitar deformación visual */
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -38,7 +38,7 @@
         .circle img {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* 🔥 evita deformación SIEMPRE */
+            object-fit: contain;
             display: block;
         }
 
@@ -61,14 +61,8 @@
             font-size: 18px;
             background-color: #333;
             color: white;
-            border: 1px solid black;
             border-radius: 10px;
             cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .password-form input[type="submit"]:hover {
-            background-color: #555;
         }
 
         .message {
@@ -88,6 +82,7 @@
             color: white;
         }
     </style>
+
     <script src="app.js"></script>
 </head>
 
@@ -104,8 +99,8 @@
 
     <h2>Ingresa el código único</h2>
 
-    <form class="password-form" id="passwordForm" onsubmit="return login(event)">
-        <input id="password" name="password" type="password" placeholder="Código" required>
+    <form class="password-form" onsubmit="return login(event)">
+        <input id="password" type="password" placeholder="Código de licencia" required>
         <br>
         <input type="submit" value="Acceder">
     </form>
@@ -114,37 +109,41 @@
 
 <script>
 function login(event) {
-    event.preventDefault(); // 🔥 evita que recargue la página
+    event.preventDefault();
 
-    const code = document.getElementById("password").value;
+    const code = document.getElementById("password").value.trim();
     const msg = document.getElementById("message");
 
     const result = validateLicense(code);
 
+    // ❌ inválido
     if (result.status === "invalid") {
         msg.className = "message error";
         msg.innerText = "❌ Código inválido";
         return false;
     }
 
+    // ⛔ vencido
     if (result.status === "expired") {
         msg.className = "message error";
         msg.innerText = "⛔ Licencia vencida";
         return false;
     }
 
-    // guardar sesión
+    // 📦 guardar sesión
     localStorage.setItem("user", result.license.user);
     localStorage.setItem("code", result.license.code);
     localStorage.setItem("expiration", result.license.expiration);
     localStorage.setItem("days", result.days);
 
+    // ✅ mensaje de bienvenida
     msg.className = "message success";
     msg.innerText =
         "✅ Bienvenido " + result.license.user +
         " | Expira: " + result.license.expiration +
-        " | Días: " + result.days;
+        " | Días restantes: " + result.days;
 
+    // ⏳ redirección
     setTimeout(() => {
         window.location.href = "home.html";
     }, 5000);
@@ -152,7 +151,6 @@ function login(event) {
     return false;
 }
 </script>
-    
-</body>
 
+</body>
 </html>
