@@ -3,12 +3,37 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Portal Principal</title>
+    <title>Home Seguro</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .box {
+            background: #000080;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
 
     <!-- 🔥 FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } 
+        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
@@ -20,117 +45,36 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        // 🌐 exponer globalmente
-        window.db = db;
-        window.doc = doc;
-        window.getDoc = getDoc;
+        // 🔐 VERIFICAR SESIÓN REAL
+        onAuthStateChanged(auth, (user) => {
+
+            if (user) {
+                document.getElementById("user").innerText = user.email;
+            } else {
+                window.location.href = "index.html";
+            }
+
+        });
+
+        // 🔓 LOGOUT
+        window.logout = async function () {
+            await signOut(auth);
+            window.location.href = "index.html";
+        }
     </script>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-
-        nav {
-            margin: 20px;
-        }
-
-        nav a,
-        button {
-            margin: 10px;
-            padding: 10px 15px;
-            border-radius: 8px;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        button {
-            background: #f44336;
-            color: white;
-        }
-    </style>
 </head>
 
 <body>
 
-    <h1>Bienvenido al sistema</h1>
+    <div class="box">
+        <h1>Bienvenido</h1>
+        <p id="user">Cargando...</p>
 
-    <p id="userInfo">Cargando...</p>
-
-    <nav>
-        <a href="home.html">Inicio</a>
         <button onclick="logout()">Cerrar sesión</button>
-    </nav>
-
-    <!-- 🔐 LÓGICA DE PROTECCIÓN -->
-    <script>
-        async function protectPage() {
-            const code = localStorage.getItem("code");
-
-            // ❌ sin sesión
-            if (!code) {
-                window.location.href = "index.html";
-                return;
-            }
-
-            try {
-                const ref = window.doc(window.db, "licenses", code);
-                const snap = await window.getDoc(ref);
-
-                // ❌ no existe en Firebase
-                if (!snap.exists()) {
-                    logout();
-                    return;
-                }
-
-                const data = snap.data();
-
-                const expiration = new Date(data.expiration);
-                const today = new Date();
-
-                // ⛔ vencido
-                if (today > expiration) {
-                    logout();
-                    return;
-                }
-
-                const days = Math.ceil(
-                    (expiration - today) / (1000 * 60 * 60 * 24)
-                );
-
-                document.getElementById("userInfo").innerText =
-                    "Usuario: " + data.user + " | Días restantes: " + days;
-
-            } catch (error) {
-                console.error("ERROR:", error);
-                logout();
-            }
-        }
-
-        function logout() {
-            localStorage.clear();
-            window.location.href = "index.html";
-        }
-
-        
-    </script>
-
-    <sript>
-        // 🚀 ejecutar una sola vez al cargar
-        window.addEventListener("load", function () {
-            protectPage();
-            setInterval(protectPage, 30000);
-        });
-    </script>
+    </div>
 
 </body>
-
 </html>
