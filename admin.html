@@ -9,23 +9,44 @@
 body {
     font-family: Arial;
     text-align: center;
-    background: #f4f4f4;
+    background: #f2f2f2;
 }
 
-input, button {
+.container {
+    margin-top: 50px;
+    background: white;
+    display: inline-block;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+input {
+    display: block;
+    margin: 10px auto;
     padding: 10px;
-    margin: 5px;
+    width: 250px;
     border-radius: 8px;
 }
 
-.success { background: #4CAF50; color: white; }
-.error { background: #f44336; color: white; }
+button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.ok { color: green; }
+.err { color: red; }
 </style>
 
-<!-- 🔥 FIREBASE -->
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import { getFirestore, doc, setDoc } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
@@ -37,91 +58,57 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 
-window.db = db;
-window.doc = doc;
-window.setDoc = setDoc;
+window.crearUsuario = async function () {
+
+    const nombre = document.getElementById("nombre").value;
+    const email = document.getElementById("email").value;
+    const pass = "123456";
+    const exp = document.getElementById("exp").value;
+    const msg = document.getElementById("msg");
+
+    try {
+
+        // 1. crear usuario
+        await createUserWithEmailAndPassword(auth, email, pass);
+
+        // 2. crear licencia
+        await setDoc(doc(db, "licenses", email), {
+            user: nombre,
+            expiration: exp
+        });
+
+        msg.className = "ok";
+        msg.innerText = "Usuario creado correctamente";
+
+    } catch (e) {
+        console.error(e);
+        msg.className = "err";
+        msg.innerText = "Error: " + e.message;
+    }
+}
+
 </script>
 
 </head>
 
 <body>
 
-<h1>🔐 Panel Administrador</h1>
+<div class="container">
 
-<input type="password" id="adminPass" placeholder="Contraseña admin">
-<button onclick="loginAdmin()">Entrar</button>
+    <h2>🔐 Panel Admin</h2>
 
-<div id="panel" style="display:none;">
+    <input id="nombre" placeholder="Nombre del estudiante">
+    <input id="email" placeholder="Email">
+    <input id="exp" type="date">
 
-    <h2>Crear Licencia</h2>
-
-    <input id="code" placeholder="Código (ej: ABC123)">
-    <br>
-
-    <input id="user" placeholder="Usuario">
-    <br>
-
-    <input id="expiration" type="date">
-    <br>
-
-    <button onclick="createLicense()">Crear</button>
+    <button onclick="crearUsuario()">Crear usuario</button>
 
     <p id="msg"></p>
 
 </div>
-
-<script>
-const ADMIN_PASSWORD = "123456";
-
-// 🔐 LOGIN ADMIN
-function loginAdmin() {
-    const pass = document.getElementById("adminPass").value;
-
-    if (pass === ADMIN_PASSWORD) {
-        document.getElementById("panel").style.display = "block";
-    } else {
-        alert("Contraseña incorrecta");
-    }
-}
-
-// 🔥 CREAR LICENCIA
-async function createLicense() {
-
-    const code = document.getElementById("code").value.trim();
-    const user = document.getElementById("user").value.trim();
-    const expiration = document.getElementById("expiration").value;
-
-    const msg = document.getElementById("msg");
-
-    if (!code || !user || !expiration) {
-        msg.className = "error";
-        msg.innerText = "⚠️ Completa todos los campos";
-        return;
-    }
-
-    try {
-        await setDoc(doc(db, "licenses", code), {
-            user: user,
-            expiration: expiration
-        });
-
-        msg.className = "success";
-        msg.innerText = "✅ Licencia creada correctamente";
-
-        // limpiar campos
-        document.getElementById("code").value = "";
-        document.getElementById("user").value = "";
-        document.getElementById("expiration").value = "";
-
-    } catch (error) {
-        msg.className = "error";
-        msg.innerText = "❌ Error al crear";
-        console.error(error);
-    }
-}
-</script>
 
 </body>
 </html>
