@@ -22,7 +22,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // 🔥 hacer доступ global
+        // 🌐 hacerlo global
         window.db = db;
         window.doc = doc;
         window.getDoc = getDoc;
@@ -30,7 +30,7 @@
 
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             background: #f4f4f4;
             text-align: center;
         }
@@ -54,80 +54,76 @@
             color: white;
         }
     </style>
-
 </head>
 
 <body>
 
-<h1>Bienvenido al sistema</h1>
+    <h1>Bienvenido al sistema</h1>
 
-<p id="userInfo">Cargando...</p>
+    <p id="userInfo">Cargando...</p>
 
-<nav>
-    <a href="home.html">Inicio</a>
-    <button onclick="logout()">Cerrar sesión</button>
-</nav>
+    <nav>
+        <a href="home.html">Inicio</a>
+        <button onclick="logout()">Cerrar sesión</button>
+    </nav>
 
-<script>
-async function protectPage() {
+    <script>
+        async function protectPage() {
+            const code = localStorage.getItem("code");
 
-    const code = localStorage.getItem("code");
+            // ❌ no hay sesión
+            if (!code) {
+                window.location.href = "index.html";
+                return;
+            }
 
-    // ❌ no hay sesión
-    if (!code) {
-        window.location.href = "index.html";
-        return;
-    }
+            try {
+                const ref = window.doc(window.db, "licenses", code);
+                const snap = await window.getDoc(ref);
 
-    try {
-        const ref = window.doc(window.db, "licenses", code);
-        const snap = await window.getDoc(ref);
+                // ❌ no existe
+                if (!snap.exists()) {
+                    logout();
+                    return;
+                }
 
-        // ❌ no existe en Firebase
-        if (!snap.exists()) {
-            logout();
-            return;
+                const data = snap.data();
+
+                const expiration = new Date(data.expiration);
+                const today = new Date();
+
+                // ⛔ vencido
+                if (today > expiration) {
+                    logout();
+                    return;
+                }
+
+                const days = Math.ceil(
+                    (expiration - today) / (1000 * 60 * 60 * 24)
+                );
+
+                document.getElementById("userInfo").innerText =
+                    `Usuario: ${data.user} | Días restantes: ${days}`;
+
+            } catch (error) {
+                console.error("ERROR:", error);
+                logout();
+            }
         }
 
-        const data = snap.data();
-        const expiration = new Date(data.expiration);
-        const today = new Date();
-
-        // ⛔ vencido
-        if (today > expiration) {
-            logout();
-            return;
+        // 🔐 cerrar sesión
+        function logout() {
+            localStorage.clear();
+            window.location.href = "index.html";
         }
 
-        // ✅ válido
-        const days = Math.ceil((expiration - today) / (1000 * 60 * 60 * 24));
+        // 🚀 ejecutar al cargar
+        window.addEventListener("load", protectPage);
 
-        document.getElementById("userInfo").innerText =
-            "Usuario: " + data.user + " | Días restantes: " + days;
-
-    } catch (error) {
-        console.error("ERROR:", error);
-        logout();
-    }
-}
-
-// 🔐 cerrar sesión
-function logout() {
-    localStorage.clear();
-    window.location.href = "index.html";
-}
-
-// 🔐 ejecutar al cargar
-window.addEventListener("load", () => {
-    protectPage();
-});
-
-// 🔁 verificación continua (cada 30 segundos)
-setInterval(() => {
-    protectPage();
-}, 30000);
-
-</script>
+        // 🔁 verificación continua
+        setInterval(protectPage, 30000);
+    </script>
 
 </body>
+
 </html>
