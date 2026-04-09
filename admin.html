@@ -8,15 +8,15 @@
 <style>
 body {
     font-family: Arial;
-    text-align: center;
     background: #f2f2f2;
+    text-align: center;
 }
 
 .container {
     margin-top: 50px;
     background: white;
     display: inline-block;
-    padding: 20px;
+    padding: 25px;
     border-radius: 10px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.2);
 }
@@ -25,7 +25,7 @@ input {
     display: block;
     margin: 10px auto;
     padding: 10px;
-    width: 250px;
+    width: 260px;
     border-radius: 8px;
 }
 
@@ -33,16 +33,19 @@ button {
     padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
+    margin-top: 10px;
 }
 
 .ok { color: green; }
 .err { color: red; }
+
+.hidden { display: none; }
 </style>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } 
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import { getFirestore, doc, setDoc } 
@@ -61,34 +64,84 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-window.crearUsuario = async function () {
+// 🔐 TU EMAIL ADMIN
+const ADMIN_EMAIL = "universitariodematematica@gmail.com";
 
-    const nombre = document.getElementById("nombre").value;
-    const email = document.getElementById("email").value;
-    const pass = "123456";
-    const exp = document.getElementById("exp").value;
-    const msg = document.getElementById("msg");
+// ------------------------------
+// 🔐 LOGIN ADMIN
+// ------------------------------
+window.loginAdmin = async function () {
+
+    const email = document.getElementById("emailLogin").value;
+    const pass = document.getElementById("passLogin").value;
+    const msg = document.getElementById("msgLogin");
 
     try {
 
-        // 1. crear usuario
-        await createUserWithEmailAndPassword(auth, email, pass);
+        const userCred = await signInWithEmailAndPassword(auth, email, pass);
 
-        // 2. crear licencia
+        if (userCred.user.email !== ADMIN_EMAIL) {
+            msg.className = "err";
+            msg.innerText = "Acceso denegado";
+            await auth.signOut();
+            return;
+        }
+
+        document.getElementById("loginBox").classList.add("hidden");
+        document.getElementById("panel").classList.remove("hidden");
+
+    } catch (e) {
+        msg.className = "err";
+        msg.innerText = "Error de login";
+    }
+};
+
+// ------------------------------
+// 🔐 PROTECCIÓN EXTRA
+// ------------------------------
+onAuthStateChanged(auth, (user) => {
+
+    if (!user) return;
+
+    if (user.email !== ADMIN_EMAIL) {
+        auth.signOut();
+        window.location.href = "index.html";
+    }
+
+});
+
+// ------------------------------
+// 🔥 CREAR LICENCIA
+// ------------------------------
+window.crearLicencia = async function () {
+
+    const nombre = document.getElementById("nombre").value;
+    const email = document.getElementById("email").value;
+    const exp = document.getElementById("exp").value;
+    const msg = document.getElementById("msg");
+
+    if (!nombre || !email || !exp) {
+        msg.className = "err";
+        msg.innerText = "Completa todos los campos";
+        return;
+    }
+
+    try {
+
         await setDoc(doc(db, "licenses", email), {
             user: nombre,
             expiration: exp
         });
 
         msg.className = "ok";
-        msg.innerText = "Usuario creado correctamente";
+        msg.innerText = "Licencia creada correctamente";
 
     } catch (e) {
         console.error(e);
         msg.className = "err";
-        msg.innerText = "Error: " + e.message;
+        msg.innerText = "Error al crear licencia";
     }
-}
+};
 
 </script>
 
@@ -96,15 +149,29 @@ window.crearUsuario = async function () {
 
 <body>
 
-<div class="container">
+<!-- 🔐 LOGIN ADMIN -->
+<div id="loginBox" class="container">
 
-    <h2>🔐 Panel Admin</h2>
+    <h2>🔐 Login Admin</h2>
+
+    <input id="emailLogin" placeholder="Email admin">
+    <input id="passLogin" type="password" placeholder="Contraseña">
+
+    <button onclick="loginAdmin()">Entrar</button>
+
+    <p id="msgLogin"></p>
+</div>
+
+<!-- 📦 PANEL ADMIN -->
+<div id="panel" class="container hidden">
+
+    <h2>📊 Panel Admin</h2>
 
     <input id="nombre" placeholder="Nombre del estudiante">
-    <input id="email" placeholder="Email">
+    <input id="email" placeholder="Email del estudiante">
     <input id="exp" type="date">
 
-    <button onclick="crearUsuario()">Crear usuario</button>
+    <button onclick="crearLicencia()">Crear Licencia</button>
 
     <p id="msg"></p>
 
