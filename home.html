@@ -2,168 +2,198 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Plataforma Educativa</title>
+<meta charset="UTF-8">
+<title>Plataforma Educativa</title>
 
-    <style>
-        body {
-            font-family: Arial;
-            background: #eef2f7;
-            margin: 0;
-            text-align: center;
-        }
+<style>
+body {
+    font-family: Arial;
+    background: #eef2f7;
+    margin: 0;
+    text-align: center;
+}
 
-        .panel {
-            margin: 60px auto;
-            width: 340px;
-            padding: 25px;
-            border-radius: 15px;
-            background: linear-gradient(135deg, #000080, #1e3a8a);
-            color: white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            display: none;
-        }
+.panel {
+    margin: 60px auto;
+    width: 340px;
+    padding: 25px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #000080, #1e3a8a);
+    color: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    display: none;
+}
 
-        button {
-            width: 220px;
-            margin: 10px auto;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+button {
+    width: 220px;
+    margin: 10px auto;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
 
-        button:hover {
-            transform: scale(1.05);
-        }
+button:hover {
+    transform: scale(1.05);
+}
 
-        .status {
-            background: rgba(255,255,255,0.15);
-            padding: 10px;
-            border-radius: 10px;
-            margin-top: 15px;
-            font-size: 14px;
-            text-align: left;
-        }
+.status {
+    background: rgba(255,255,255,0.15);
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 15px;
+    font-size: 14px;
+    text-align: left;
+}
 
-        .error {
-            margin: 60px auto;
-            width: 340px;
-            background: #f44336;
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            display: none;
-        }
-    </style>
+.badge {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 5px;
+}
 
-    <!-- 🔥 FIREBASE -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+.active { background: #4CAF50; }
+.warning { background: #ff9800; }
+.expired { background: #f44336; }
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
-            authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
-            projectId: "portal-autenticacion-a1ngles",
-            storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
-            messagingSenderId: "1039504020190",
-            appId: "1:1039504020190:web:212cf030c3e6feb175a84f"
-        };
+.error {
+    margin: 60px auto;
+    width: 340px;
+    background: #f44336;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    display: none;
+}
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+</style>
 
-        const panel = document.getElementById("panel");
-        const errorBox = document.getElementById("error");
-        const statusBox = document.getElementById("status");
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        onAuthStateChanged(auth, async (user) => {
+const firebaseConfig = {
+    apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
+    authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
+    projectId: "portal-autenticacion-a1ngles",
+    storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
+    messagingSenderId: "1039504020190",
+    appId: "1:1039504020190:web:212cf030c3e6feb175a84f"
+};
 
-            try {
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-                if (!user) {
-                    window.location.href = "index.html";
-                    return;
-                }
+onAuthStateChanged(auth, async (user) => {
 
-                const email = user.email;
+    const panel = document.getElementById("panel");
+    const errorBox = document.getElementById("error");
+    const statusBox = document.getElementById("status");
 
-                const ref = doc(db, "licenses", email);
-                const snap = await getDoc(ref);
+    try {
 
-                if (!snap.exists()) {
-                    showError("No tienes licencia activa");
-                    return;
-                }
-
-                const data = snap.data();
-
-                // 🔥 FECHA CORREGIDA
-                const expiration = new Date(data.expiration + "T23:59:59");
-                const today = new Date();
-
-                const diffTime = expiration.getTime() - today.getTime();
-                const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (daysLeft < 0) {
-                    showError("Tu licencia ha expirado");
-                    return;
-                }
-
-                // ✔ mostrar panel
-                panel.style.display = "block";
-
-                // 📊 estado profesional
-                statusBox.innerHTML = `
-                    👤 Usuario: ${email}<br>
-                    📅 Expira: ${data.expiration}<br>
-                    ⏳ Días restantes: ${daysLeft}
-                `;
-
-            } catch (e) {
-                console.error(e);
-                showError("Error de carga del sistema");
-            }
-
-        });
-
-        function showError(msg) {
-            errorBox.innerText = msg;
-            errorBox.style.display = "block";
-
-            setTimeout(() => {
-                window.location.href = "index.html";
-            }, 3500);
-        }
-
-        window.logout = async function () {
-            await signOut(auth);
+        if (!user) {
             window.location.href = "index.html";
-        };
+            return;
+        }
 
-    </script>
+        const email = user.email;
+
+        const ref = doc(db, "licenses", email);
+        const snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+            showError("No tienes licencia activa");
+            return;
+        }
+
+        const data = snap.data();
+
+        const expiration = new Date(data.expiration + "T23:59:59");
+        const today = new Date();
+
+        const diff = expiration.getTime() - today.getTime();
+        const daysLeft = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+        if (daysLeft < 0) {
+            showError("Tu licencia ha expirado");
+            return;
+        }
+
+        // 🎯 ESTADO VISUAL
+        let statusClass = "active";
+        let statusText = "ACTIVO";
+
+        if (daysLeft <= 3) {
+            statusClass = "warning";
+            statusText = "POR VENCER";
+        }
+
+        // 👤 nombre o fallback
+        const userName = data.user || email;
+
+        panel.style.display = "block";
+
+        statusBox.innerHTML = `
+            👤 Usuario: ${userName}<br>
+            📧 Email: ${email}<br>
+            📅 Expira: ${data.expiration}<br>
+            ⏳ Días restantes: ${daysLeft}<br>
+            <span class="badge ${statusClass}">
+                ${statusText}
+            </span>
+        `;
+
+    } catch (e) {
+        console.error(e);
+        showError("Error de carga del sistema");
+    }
+});
+
+// ❌ ERROR PRO
+function showError(msg) {
+    const errorBox = document.getElementById("error");
+
+    errorBox.innerHTML = `
+        <h3>⚠️ Acceso restringido</h3>
+        <p>${msg}</p>
+        <br>
+        <button onclick="window.location.href='index.html'">Volver</button>
+    `;
+
+    errorBox.style.display = "block";
+}
+
+// 🔐 LOGOUT
+window.logout = async function () {
+    await signOut(auth);
+    window.location.href = "index.html";
+};
+</script>
 
 </head>
 
 <body>
 
-    <div id="error" class="error"></div>
+<div id="error" class="error"></div>
 
-    <div id="panel" class="panel">
+<div id="panel" class="panel">
 
-        <h2>🎓 Plataforma Educativa</h2>
+    <h2>🎓 Plataforma Educativa</h2>
 
-        <div id="status" class="status"></div>
+    <div id="status" class="status"></div>
 
-        <button onclick="location.href='temario.html'">📚 Temario</button>
-        <button onclick="location.href='calificaciones.html'">📊 Calificaciones</button>
-        <button onclick="logout()">🚪 Cerrar sesión</button>
+    <button onclick="location.href='temario.html'">📚 Temario</button>
+    <button onclick="location.href='calificaciones.html'">📊 Calificaciones</button>
+    <button onclick="logout()">🚪 Cerrar sesión</button>
 
-    </div>
+</div>
 
 </body>
 </html>
