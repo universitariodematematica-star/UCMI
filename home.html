@@ -13,6 +13,14 @@ body {
     text-align: center;
 }
 
+/* 🔄 LOADER */
+#loading {
+    margin-top: 120px;
+    font-size: 18px;
+    color: #333;
+}
+
+/* PANEL */
 .panel {
     margin: 60px auto;
     width: 340px;
@@ -31,13 +39,13 @@ button {
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    transition: 0.2s;
 }
 
 button:hover {
     transform: scale(1.05);
 }
 
+/* STATUS */
 .status {
     background: rgba(255,255,255,0.15);
     padding: 12px;
@@ -52,14 +60,12 @@ button:hover {
     border-radius: 8px;
     font-size: 12px;
     font-weight: bold;
-    display: inline-block;
-    margin-top: 5px;
 }
 
 .active { background: #4CAF50; }
 .warning { background: #ff9800; }
-.expired { background: #f44336; }
 
+/* ERROR */
 .error {
     margin: 60px auto;
     width: 340px;
@@ -69,10 +75,10 @@ button:hover {
     border-radius: 10px;
     display: none;
 }
-
 </style>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -92,6 +98,7 @@ const db = getFirestore(app);
 
 onAuthStateChanged(auth, async (user) => {
 
+    const loading = document.getElementById("loading");
     const panel = document.getElementById("panel");
     const errorBox = document.getElementById("error");
     const statusBox = document.getElementById("status");
@@ -126,7 +133,7 @@ onAuthStateChanged(auth, async (user) => {
             return;
         }
 
-        // 🎯 ESTADO VISUAL
+        // 🎯 estado visual
         let statusClass = "active";
         let statusText = "ACTIVO";
 
@@ -135,16 +142,16 @@ onAuthStateChanged(auth, async (user) => {
             statusText = "POR VENCER";
         }
 
-        // 👤 nombre o fallback
         const userName = data.user || email;
 
+        // ✅ MOSTRAR TODO CORRECTAMENTE
+        loading.style.display = "none";
         panel.style.display = "block";
 
         statusBox.innerHTML = `
-            👤 Usuario: ${userName}<br>
-            📧 Email: ${email}<br>
+            👤 ${userName}<br>
             📅 Expira: ${data.expiration}<br>
-            ⏳ Días restantes: ${daysLeft}<br>
+            ⏳ Días restantes: ${daysLeft}<br><br>
             <span class="badge ${statusClass}">
                 ${statusText}
             </span>
@@ -154,11 +161,16 @@ onAuthStateChanged(auth, async (user) => {
         console.error(e);
         showError("Error de carga del sistema");
     }
+
 });
 
-// ❌ ERROR PRO
+// ❌ ERROR CONTROLADO
 function showError(msg) {
+
+    const loading = document.getElementById("loading");
     const errorBox = document.getElementById("error");
+
+    loading.style.display = "none";
 
     errorBox.innerHTML = `
         <h3>⚠️ Acceso restringido</h3>
@@ -175,14 +187,20 @@ window.logout = async function () {
     await signOut(auth);
     window.location.href = "index.html";
 };
+
 </script>
 
 </head>
 
 <body>
 
+<!-- 🔄 LOADER -->
+<div id="loading">🔄 Verificando acceso...</div>
+
+<!-- ❌ ERROR -->
 <div id="error" class="error"></div>
 
+<!-- ✅ PANEL -->
 <div id="panel" class="panel">
 
     <h2>🎓 Plataforma Educativa</h2>
