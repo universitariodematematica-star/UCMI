@@ -1,6 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+    getFirestore,
+    doc,
+    getDocFromServer,
+    onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
@@ -12,10 +17,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 🔥 CONTROL PARA EVITAR MÚLTIPLES INTERVALOS
-let intervalActivo = null;
+let unsubscribe = null;
 
-// 🔐 PROTECCIÓN GLOBAL
+// 🔐 CONTROL GLOBAL
 onAuthStateChanged(auth, async (user) => {
 
     try {
@@ -26,62 +30,27 @@ onAuthStateChanged(auth, async (user) => {
         }
 
         const email = user.email;
-
         const ref = doc(db, "licenses", email);
-        const snap = await getDoc(ref);
 
-        if (!snap.exists()) {
-            block("No tienes licencia activa");
-            return;
-        }
+        // 🔥 ESCUCHA EN TIEMPO REAL (CLAVE)
+        unsubscribe = onSnapshot(ref, (snap) => {
 
-        const data = snap.data();
+            if (!snap.exists()) {
+                block("No tienes licencia activa");
+                return;
+            }
 
-        const expiration = new Date(data.expiration + "T23:59:59");
+            const data = snap.data();
+            const expiration = new Date(data.expiration + "T23:59:59");
 
-        if (new Date() > expiration) {
-            block("Tu licencia ha expirado");
-            return;
-        }
+            if (new Date() > expiration) {
+                block("Tu licencia ha expirado");
+                return;
+            }
 
-        // ✅ PERMITIR ACCESO
-        document.body.style.display = "block";
-
-        // 🔄 VERIFICACIÓN CADA 30 SEGUNDOS (GLOBAL)
-        if (!intervalActivo) {
-            intervalActivo = setInterval(async () => {
-
-                try {
-
-                    const currentUser = auth.currentUser;
-
-                    if (!currentUser) {
-                        location.reload();
-                        return;
-                    }
-
-                    const ref = doc(db, "licenses", currentUser.email);
-                    const snap = await getDoc(ref);
-
-                    if (!snap.exists()) {
-                        block("No tienes licencia activa");
-                        return;
-                    }
-
-                    const data = snap.data();
-                    const expiration = new Date(data.expiration + "T23:59:59");
-
-                    if (new Date() > expiration) {
-                        block("Tu licencia ha expirado");
-                        return;
-                    }
-
-                } catch (e) {
-                    console.error("Error en verificación continua", e);
-                }
-
-            }, 30000);
-        }
+            // ✅ ACCESO PERMITIDO
+            document.body.style.display = "block";
+        });
 
     } catch (e) {
         console.error(e);
@@ -90,7 +59,7 @@ onAuthStateChanged(auth, async (user) => {
 
 });
 
-// 🔒 BLOQUEO VISUAL
+// 🔒 BLOQUEO FINAL
 function block(msg) {
 
     document.body.style.display = "block";
@@ -110,9 +79,9 @@ function block(msg) {
         </div>
     `;
 
-    // 🔥 DETENER LOOP SI EXISTE
-    if (intervalActivo) {
-        clearInterval(intervalActivo);
-        intervalActivo = null;
+    // 🔥 DETENER LISTENER
+    if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
     }
 }
