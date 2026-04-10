@@ -15,16 +15,20 @@ const db = getFirestore(app);
 // 🔐 PROTECCIÓN GLOBAL
 onAuthStateChanged(auth, async (user) => {
 
-    if (!user) {
-        window.location.href = "index.html";
-        return;
-    }
-
     try {
 
-        const ref = doc(db, "licenses", user.email);
+        // ❌ no logueado
+        if (!user) {
+            window.location.href = "index.html";
+            return;
+        }
+
+        const email = user.email;
+
+        const ref = doc(db, "licenses", email);
         const snap = await getDoc(ref);
 
+        // ❌ sin licencia
         if (!snap.exists()) {
             block("No tienes licencia activa");
             return;
@@ -33,14 +37,17 @@ onAuthStateChanged(auth, async (user) => {
         const data = snap.data();
         const expiration = new Date(data.expiration + "T23:59:59");
 
+        // ❌ vencida
         if (new Date() > expiration) {
             block("Tu licencia ha expirado");
             return;
         }
 
-        // ✅ acceso permitido
+        // ✅ TODO OK → MOSTRAR CONTENIDO
+        document.body.style.display = "block";
 
     } catch (e) {
+        console.error(e);
         block("Error de verificación");
     }
 
@@ -48,6 +55,8 @@ onAuthStateChanged(auth, async (user) => {
 
 // 🔒 BLOQUEO VISUAL
 function block(msg) {
+
+    document.body.style.display = "block";
 
     document.body.innerHTML = `
         <div style="
