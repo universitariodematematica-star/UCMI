@@ -12,12 +12,14 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// 🔥 CONTROL PARA EVITAR MÚLTIPLES INTERVALOS
+let intervalActivo = null;
+
 // 🔐 PROTECCIÓN GLOBAL
 onAuthStateChanged(auth, async (user) => {
 
     try {
 
-        // ❌ no logueado
         if (!user) {
             window.location.href = "index.html";
             return;
@@ -28,23 +30,58 @@ onAuthStateChanged(auth, async (user) => {
         const ref = doc(db, "licenses", email);
         const snap = await getDoc(ref);
 
-        // ❌ sin licencia
         if (!snap.exists()) {
             block("No tienes licencia activa");
             return;
         }
 
         const data = snap.data();
+
         const expiration = new Date(data.expiration + "T23:59:59");
 
-        // ❌ vencida
         if (new Date() > expiration) {
             block("Tu licencia ha expirado");
             return;
         }
 
-        // ✅ TODO OK → MOSTRAR CONTENIDO
+        // ✅ PERMITIR ACCESO
         document.body.style.display = "block";
+
+        // 🔄 VERIFICACIÓN CADA 30 SEGUNDOS (GLOBAL)
+        if (!intervalActivo) {
+            intervalActivo = setInterval(async () => {
+
+                try {
+
+                    const currentUser = auth.currentUser;
+
+                    if (!currentUser) {
+                        location.reload();
+                        return;
+                    }
+
+                    const ref = doc(db, "licenses", currentUser.email);
+                    const snap = await getDoc(ref);
+
+                    if (!snap.exists()) {
+                        block("No tienes licencia activa");
+                        return;
+                    }
+
+                    const data = snap.data();
+                    const expiration = new Date(data.expiration + "T23:59:59");
+
+                    if (new Date() > expiration) {
+                        block("Tu licencia ha expirado");
+                        return;
+                    }
+
+                } catch (e) {
+                    console.error("Error en verificación continua", e);
+                }
+
+            }, 30000);
+        }
 
     } catch (e) {
         console.error(e);
@@ -72,9 +109,10 @@ function block(msg) {
             </button>
         </div>
     `;
-}
 
-// 🔄 VERIFICACIÓN CONTINUA EN TODAS LAS PÁGINAS
-setInterval(() => {
-    protectPage();
-}, 30000);
+    // 🔥 DETENER LOOP SI EXISTE
+    if (intervalActivo) {
+        clearInterval(intervalActivo);
+        intervalActivo = null;
+    }
+}
