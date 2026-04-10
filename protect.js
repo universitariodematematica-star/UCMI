@@ -73,3 +73,8 @@ function block(msg) {
         </div>
     `;
 }
+
+// 🔄 VERIFICACIÓN CONTINUA EN TODAS LAS PÁGINAS
+setInterval(() => {
+    protectPage();
+}, 30000);
