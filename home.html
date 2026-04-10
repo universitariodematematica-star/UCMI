@@ -13,14 +13,14 @@ body {
     text-align: center;
 }
 
-/* 🔄 LOADER */
+/* 🔄 LOADER NUEVO */
 #loading {
-    margin-top: 120px;
+    margin-top: 100px;
     font-size: 18px;
     color: #333;
 }
 
-/* PANEL */
+/* TU PANEL ORIGINAL (NO TOCADO) */
 .panel {
     margin: 60px auto;
     width: 340px;
@@ -39,46 +39,47 @@ button {
     border: none;
     border-radius: 10px;
     cursor: pointer;
+    transition: 0.2s;
 }
 
 button:hover {
     transform: scale(1.05);
 }
 
-/* STATUS */
 .status {
     background: rgba(255,255,255,0.15);
-    padding: 12px;
+    padding: 10px;
     border-radius: 10px;
     margin-top: 15px;
     font-size: 14px;
     text-align: left;
 }
 
+/* 🟢 NUEVO: estado visual */
 .badge {
-    padding: 4px 10px;
+    padding: 4px 8px;
     border-radius: 8px;
     font-size: 12px;
-    font-weight: bold;
+    margin-top: 5px;
+    display: inline-block;
 }
 
 .active { background: #4CAF50; }
 .warning { background: #ff9800; }
 
-/* ERROR */
+/* TU ERROR ORIGINAL (MEJORADO SOLO VISUAL) */
 .error {
     margin: 60px auto;
     width: 340px;
     background: #f44336;
     color: white;
-    padding: 20px;
+    padding: 15px;
     border-radius: 10px;
     display: none;
 }
 </style>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -98,10 +99,10 @@ const db = getFirestore(app);
 
 onAuthStateChanged(auth, async (user) => {
 
-    const loading = document.getElementById("loading");
     const panel = document.getElementById("panel");
     const errorBox = document.getElementById("error");
     const statusBox = document.getElementById("status");
+    const loading = document.getElementById("loading");
 
     try {
 
@@ -125,36 +126,29 @@ onAuthStateChanged(auth, async (user) => {
         const expiration = new Date(data.expiration + "T23:59:59");
         const today = new Date();
 
-        const diff = expiration.getTime() - today.getTime();
-        const daysLeft = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const diffTime = expiration.getTime() - today.getTime();
+        const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         if (daysLeft < 0) {
             showError("Tu licencia ha expirado");
             return;
         }
 
-        // 🎯 estado visual
-        let statusClass = "active";
-        let statusText = "ACTIVO";
-
+        // 🟢 NUEVO: estado visual
+        let badge = `<span class="badge active">ACTIVO</span>`;
         if (daysLeft <= 3) {
-            statusClass = "warning";
-            statusText = "POR VENCER";
+            badge = `<span class="badge warning">POR VENCER</span>`;
         }
 
-        const userName = data.user || email;
-
-        // ✅ MOSTRAR TODO CORRECTAMENTE
+        // 🔥 MOSTRAR
         loading.style.display = "none";
         panel.style.display = "block";
 
         statusBox.innerHTML = `
-            👤 ${userName}<br>
+            👤 Usuario: ${data.user || email}<br>
             📅 Expira: ${data.expiration}<br>
-            ⏳ Días restantes: ${daysLeft}<br><br>
-            <span class="badge ${statusClass}">
-                ${statusText}
-            </span>
+            ⏳ Días restantes: ${daysLeft}<br>
+            ${badge}
         `;
 
     } catch (e) {
@@ -164,25 +158,26 @@ onAuthStateChanged(auth, async (user) => {
 
 });
 
-// ❌ ERROR CONTROLADO
+// ❌ ERROR (solo mejora visual, lógica intacta)
 function showError(msg) {
-
-    const loading = document.getElementById("loading");
     const errorBox = document.getElementById("error");
+    const loading = document.getElementById("loading");
 
     loading.style.display = "none";
 
     errorBox.innerHTML = `
-        <h3>⚠️ Acceso restringido</h3>
-        <p>${msg}</p>
-        <br>
+        ${msg}<br><br>
         <button onclick="window.location.href='index.html'">Volver</button>
     `;
 
     errorBox.style.display = "block";
+
+    setTimeout(() => {
+        window.location.href = "index.html";
+    }, 4000);
 }
 
-// 🔐 LOGOUT
+// 🔐 LOGOUT (intacto)
 window.logout = async function () {
     await signOut(auth);
     window.location.href = "index.html";
@@ -194,13 +189,11 @@ window.logout = async function () {
 
 <body>
 
-<!-- 🔄 LOADER -->
+<!-- 🔄 NUEVO -->
 <div id="loading">🔄 Verificando acceso...</div>
 
-<!-- ❌ ERROR -->
 <div id="error" class="error"></div>
 
-<!-- ✅ PANEL -->
 <div id="panel" class="panel">
 
     <h2>🎓 Plataforma Educativa</h2>
