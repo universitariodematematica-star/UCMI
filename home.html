@@ -93,7 +93,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let intervalActivo = null; // 🔥 evita múltiples intervalos
+let intervalActivo = null;
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -137,6 +137,7 @@ onAuthStateChanged(auth, async (user) => {
             badge = `<span class="badge warning">POR VENCER</span>`;
         }
 
+        // ✅ Mostrar contenido
         loading.style.display = "none";
         panel.style.display = "block";
 
@@ -147,10 +148,9 @@ onAuthStateChanged(auth, async (user) => {
             ${badge}
         `;
 
-        // 🔥 VERIFICACIÓN CADA 30 SEGUNDOS
+        // 🔄 Verificación cada 30s (solo una vez)
         if (!intervalActivo) {
             intervalActivo = setInterval(async () => {
-
                 try {
 
                     const userNow = auth.currentUser;
@@ -178,22 +178,27 @@ onAuthStateChanged(auth, async (user) => {
                 } catch (e) {
                     console.error("Error en verificación continua", e);
                 }
-
             }, 30000);
         }
 
     } catch (e) {
         console.error(e);
         showError("Error de carga del sistema");
+    } finally {
+        // 🔥 evita pantalla bloqueada SIEMPRE
+        loading.style.display = "none";
     }
 
 });
 
+// ❌ ERROR CONTROLADO
 function showError(msg) {
     const errorBox = document.getElementById("error");
     const loading = document.getElementById("loading");
+    const panel = document.getElementById("panel");
 
     loading.style.display = "none";
+    panel.style.display = "none";
 
     errorBox.innerHTML = `
         ${msg}<br><br>
@@ -207,11 +212,11 @@ function showError(msg) {
     }, 4000);
 }
 
+// 🔐 LOGOUT
 window.logout = async function () {
     await signOut(auth);
     window.location.href = "index.html";
 };
-
 </script>
 
 </head>
