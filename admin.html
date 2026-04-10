@@ -17,7 +17,6 @@ body {
     color: white;
     padding: 15px;
     text-align: center;
-    font-size: 18px;
 }
 
 .grid {
@@ -44,8 +43,8 @@ input, select {
 
 button {
     padding: 8px;
-    border: none;
     border-radius: 8px;
+    border: none;
     cursor: pointer;
     margin-top: 5px;
     width: 100%;
@@ -53,14 +52,9 @@ button {
     color: white;
 }
 
-button:hover {
-    background: #1d4ed8;
-}
-
 .user {
     padding: 10px;
     border-bottom: 1px solid #eee;
-    font-size: 14px;
 }
 
 .badge {
@@ -73,9 +67,9 @@ button:hover {
 .active { background: green; }
 .expired { background: red; }
 
-.actions button {
-    width: 48%;
-    font-size: 12px;
+.msg {
+    margin-top: 10px;
+    font-weight: bold;
 }
 </style>
 
@@ -160,8 +154,10 @@ window.saveLicense = async function () {
     const email = document.getElementById("userEmail").value;
     const exp = document.getElementById("exp").value;
 
+    const msg = document.getElementById("msg");
+
     if (!name || !email || !exp) {
-        alert("Completa todos los campos");
+        msg.innerText = "Completa todos los campos";
         return;
     }
 
@@ -170,6 +166,7 @@ window.saveLicense = async function () {
         expiration: exp
     });
 
+    msg.innerText = "Licencia guardada";
     loadData();
 };
 
@@ -182,11 +179,12 @@ window.deleteUser = async function (email) {
     loadData();
 };
 
-// ---------------- RENOVAR PRO ----------------
+// ---------------- RENOVAR PRO (CORREGIDO) ----------------
 window.renew30 = async function (email, name, currentExp) {
 
     let baseDate = new Date();
     const today = new Date();
+
     const expDate = new Date(currentExp + "T23:59:59");
 
     if (expDate > today) {
@@ -202,7 +200,11 @@ window.renew30 = async function (email, name, currentExp) {
         expiration: newExp
     });
 
-    loadData();
+    document.getElementById("msg").innerText = "+30 días aplicados";
+
+    setTimeout(() => {
+        loadData();
+    }, 300);
 };
 
 // ---------------- LOAD DATA ----------------
@@ -221,10 +223,13 @@ async function loadData() {
     snap.forEach(d => {
 
         const data = d.data();
+
         const exp = new Date(data.expiration + "T23:59:59");
         const now = new Date();
 
-        const days = Math.ceil((exp - now) / (1000*60*60*24));
+        const diff = exp.getTime() - now.getTime();
+        const days = Math.floor(diff / (1000*60*60*24));
+
         const status = days >= 0 ? "active" : "expired";
 
         if (filter !== "all" && filter !== status) return;
@@ -237,21 +242,19 @@ async function loadData() {
             <div class="user">
                 👤 ${data.user}<br>
                 📧 ${d.id}<br>
-                ⏳ ${days} días<br>
+                ⏳ ${days >= 0 ? days : 0} días<br>
 
                 <span class="badge ${status}">
                     ${status.toUpperCase()}
                 </span>
 
-                <div class="actions">
-                    <button onclick="renew30('${d.id}','${data.user}','${data.expiration}')">+30 días</button>
-                    <button onclick="deleteUser('${d.id}')">Eliminar</button>
-                </div>
+                <button onclick="renew30('${d.id}','${data.user}','${data.expiration}')">+30 días</button>
+                <button onclick="deleteUser('${d.id}')">Eliminar</button>
             </div>
         `;
     });
 
-    document.getElementById("stats").innerHTML =
+    document.getElementById("stats").innerText =
         `Total: ${total} | Activos: ${active} | Vencidos: ${expired}`;
 }
 
@@ -265,7 +268,7 @@ window.loadData = loadData;
 
 <!-- LOGIN -->
 <div id="login" class="card" style="max-width:300px;margin:80px auto;text-align:center;">
-    <h3>🔐 Admin PRO++</h3>
+    <h3>🔐 Admin</h3>
     <input id="email" placeholder="Email">
     <input id="pass" type="password" placeholder="Password">
     <button onclick="login()">Entrar</button>
@@ -274,7 +277,7 @@ window.loadData = loadData;
 <!-- PANEL -->
 <div id="panel" style="display:none">
 
-    <div class="header">⚡ ADMIN DASHBOARD PRO++</div>
+    <div class="header">⚡ ADMIN DASHBOARD</div>
 
     <div class="grid">
 
@@ -284,6 +287,7 @@ window.loadData = loadData;
             <input id="userEmail" placeholder="Email usuario">
             <input id="exp" type="date">
             <button onclick="saveLicense()">Guardar</button>
+            <div id="msg" class="msg"></div>
         </div>
 
         <div class="card">
