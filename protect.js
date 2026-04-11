@@ -28,7 +28,7 @@ function resetInactividad() {
     timeoutInactividad = setTimeout(() => {
         alert("Sesión cerrada por inactividad");
         window.location.href = "index.html";
-    }, 5 * 60 * 1000); // 5 minutos
+    }, 1 * 60 * 1000); // 5 minutos
 }
 
 // 🔐 CONTROL GLOBAL
