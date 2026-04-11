@@ -65,29 +65,17 @@
         }
 
         .message {
-            margin-top: 20px;
+            margin: 20px auto;
             padding: 15px;
             border-radius: 10px;
             min-height: 20px;
             line-height: 1.5;
-            max-width: 300px;
-            margin-left: auto;
-            margin-right: auto;
+            max-width: 320px;
+            display: none;
         }
 
         .success { background-color: #4CAF50; color: white; }
         .error { background-color: #f44336; color: white; }
-
-        .btn-volver {
-            margin-top: 10px;
-            padding: 8px 15px;
-            background: white;
-            color: #f44336;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
     </style>
 
     <script type="module">
@@ -108,7 +96,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 🔑 EXPORTACIÓN GLOBAL PARA ACCESO DESDE LA FUNCIÓN LOGIN
         window.auth = auth;
         window.db = db;
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;
@@ -130,18 +117,14 @@
     <h2>Iniciar sesión</h2>
 
     <form class="password-form" onsubmit="return login(event)">
-        <label style="display:block; margin-top:10px; font-weight:bold;">Correo electrónico</label>
-        <input id="email" type="email" placeholder="ejemplo@correo.com" required>
+        <input id="email" type="email" placeholder="Correo electrónico" required>
         <br>
-
-        <label style="display:block; margin-top:10px; font-weight:bold;">Contraseña</label>
-        <input id="password" type="password" placeholder="••••••••" required>
+        <input id="password" type="password" placeholder="Contraseña" required>
         <br><br>
-
         <input type="submit" value="Acceder">
     </form>
 
-    <div id="message" class="message" style="display: none;"></div>
+    <div id="message" class="message"></div>
 
     <script>
         async function login(event) {
@@ -151,63 +134,51 @@
             const password = document.getElementById("password").value.trim();
             const msg = document.getElementById("message");
 
-            // Reset de mensaje
             msg.style.display = "block";
             msg.className = "message";
-            msg.innerText = "Verificando...";
+            msg.innerText = "⏳ Verificando...";
 
             try {
-                // 1. Validar credenciales con Firebase Auth
                 const userCredential = await window.signInWithEmailAndPassword(window.auth, email, password);
                 const user = userCredential.user;
 
-                // 2. Obtener datos de licencia y nombre desde Firestore
                 const docRef = window.doc(window.db, "licenses", user.email);
                 const docSnap = await window.getDoc(docRef);
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    const nombreAMostrar = data.user || user.email;
                     
-                    // 3. Verificación de Vencimiento
+                    // Verificación de Fecha
                     const fechaExp = new Date((data.expiration || "") + "T23:59:59");
                     const hoy = new Date();
 
                     if (isNaN(fechaExp.getTime()) || hoy > fechaExp) {
                         msg.className = "message error";
-                        msg.innerHTML = `
-                            ❌ Licencia vencida. <br>
-                            Póngase en contacto con el administrador: <br>
-                            <b>+593 99 175 23 85</b> <br>
-                            <button class="btn-volver" onclick="location.reload()">Volver</button>
-                        `;
+                        msg.innerHTML = `❌ Licencia vencida.<br>Contacte al administrador:<br><b>+593 99 175 23 85</b>`;
                         return;
                     }
 
-                    // 4. Éxito: Guardar sesión y entrar
+                    // Éxito
                     msg.className = "message success";
-                    msg.innerText = "✅ Bienvenido " + nombreAMostrar;
+                    msg.innerText = "✅ Bienvenido " + (data.user || user.email);
 
-                    sessionStorage.setItem("uid", user.uid);
                     sessionStorage.setItem("email", user.email);
                     sessionStorage.setItem("auth_ok", "1");
 
                     setTimeout(() => {
                         window.location.href = "home.html";
-                    }, 1200);
+                    }, 1000);
 
                 } else {
                     msg.className = "message error";
-                    msg.innerText = "❌ No se encontró una licencia asociada a este correo.";
+                    msg.innerText = "❌ El usuario no tiene licencia registrada.";
                 }
 
             } catch (error) {
                 msg.className = "message error";
-                if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password") {
-                    msg.innerText = "❌ Credenciales incorrectas";
-                } else {
-                    msg.innerText = "⚠️ Error: " + error.message;
-                }
+                msg.innerText = (error.code === "auth/invalid-credential") 
+                    ? "❌ Credenciales incorrectas" 
+                    : "⚠️ Error: " + error.message;
             }
             return false;
         }
