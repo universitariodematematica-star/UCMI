@@ -114,5 +114,5 @@ function mostrar() {
 // no hace nada durante 1 minuto (según el código actual), llama a la función cerrar().
 function resetTimer() {
     clearTimeout(timer);
-    timer = setTimeout(() => cerrar("Sesión cerrada por inactividad"), 1 * 60 * 1000);
+    timer = setTimeout(() => cerrar("Sesión cerrada por inactividad"), 60 * 60 * 1000);
 }
