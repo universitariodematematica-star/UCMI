@@ -3,7 +3,6 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import {
     getFirestore,
     doc,
-    getDocFromServer,
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -18,9 +17,10 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let unsubscribe = null;
+let accesoConcedido = false;
 
 // 🔐 CONTROL GLOBAL
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, (user) => {
 
     try {
 
@@ -29,10 +29,9 @@ onAuthStateChanged(auth, async (user) => {
             return;
         }
 
-        const email = user.email;
-        const ref = doc(db, "licenses", email);
+        const ref = doc(db, "licenses", user.email);
 
-        // 🔥 ESCUCHA EN TIEMPO REAL (CLAVE)
+        // 🔥 ESCUCHA EN TIEMPO REAL
         unsubscribe = onSnapshot(ref, (snap) => {
 
             if (!snap.exists()) {
@@ -49,7 +48,12 @@ onAuthStateChanged(auth, async (user) => {
             }
 
             // ✅ ACCESO PERMITIDO
-            document.body.style.display = "block";
+            if (!accesoConcedido) {
+                accesoConcedido = true;
+                document.body.style.display = "block";
+                activarProteccionBasica();
+            }
+
         });
 
     } catch (e) {
@@ -79,9 +83,36 @@ function block(msg) {
         </div>
     `;
 
-    // 🔥 DETENER LISTENER
     if (unsubscribe) {
         unsubscribe();
         unsubscribe = null;
     }
+}
+
+// 🛡️ PROTECCIÓN BÁSICA (ANTI-INSPECCIÓN)
+function activarProteccionBasica() {
+
+    // 🚫 CLIC DERECHO
+    document.addEventListener("contextmenu", e => e.preventDefault());
+
+    // 🚫 TECLAS DEVTOOLS
+    document.addEventListener("keydown", e => {
+        if (
+            e.key === "F12" ||
+            (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key)) ||
+            (e.ctrlKey && e.key === "U")
+        ) {
+            e.preventDefault();
+        }
+    });
+
+    // 🔍 DETECCIÓN DE INSPECCIÓN
+    setInterval(() => {
+        if (window.outerWidth - window.innerWidth > 160) {
+            document.body.innerHTML = "<h2 style='text-align:center;margin-top:100px;'>⛔ Acceso bloqueado</h2>";
+        }
+    }, 1000);
+
+    // 🔇 DESACTIVAR LOGS
+    console.log = function () {};
 }
