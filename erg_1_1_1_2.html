@@ -94,7 +94,8 @@ const sentences = [
 ["Where","are","you","from?"]
 ];
 
-let index = 0;
+// 🔥 CARGAR PROGRESO
+let index = parseInt(localStorage.getItem("orden_index")) || 0;
 
 function shuffle(arr) {
     return arr.sort(() => Math.random() - 0.5);
@@ -119,9 +120,12 @@ function render() {
     });
 }
 
-document.querySelector(".sentenceBlank").ondragover = e => e.preventDefault();
+// Drag & Drop
+const blankArea = document.querySelector(".sentenceBlank");
 
-document.querySelector(".sentenceBlank").ondrop = e => {
+blankArea.ondragover = e => e.preventDefault();
+
+blankArea.ondrop = e => {
     e.preventDefault();
     const word = e.dataTransfer.getData("text");
 
@@ -129,7 +133,7 @@ document.querySelector(".sentenceBlank").ondrop = e => {
     btn.textContent = word;
     btn.className = "wordButton";
 
-    document.querySelector(".sentenceBlank").appendChild(btn);
+    blankArea.appendChild(btn);
 };
 
 function checkAnswer() {
@@ -144,6 +148,9 @@ function checkAnswer() {
 
         document.querySelector(".redirectButton").disabled = false;
 
+        // 🔥 GUARDAR PROGRESO (CLAVE)
+        localStorage.setItem("orden_index", index);
+
         if (index === sentences.length - 1) {
             document.querySelector(".obtainCertificateButton").style.display = "inline-block";
         }
@@ -156,6 +163,10 @@ function checkAnswer() {
 
 function nextSentence() {
     index++;
+
+    // 🔥 GUARDAR PROGRESO AL AVANZAR
+    localStorage.setItem("orden_index", index);
+
     if (index < sentences.length) {
         render();
         document.querySelector(".result").textContent = "";
@@ -164,10 +175,17 @@ function nextSentence() {
 }
 
 function getCertificate() {
+    // 🔥 LIMPIAR PROGRESO (OPCIONAL)
+    localStorage.removeItem("orden_index");
+
     window.location.href = "logrado_erg_1_1_1.html";
 }
 
+// 🔥 INICIO CON PROGRESO
 render();
+
+// 🔥 MOSTRAR (por protect.js)
+document.body.style.display = "block";
 
 </script>
 
