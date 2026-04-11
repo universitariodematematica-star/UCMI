@@ -1,52 +1,82 @@
+// 🔒 OCULTAR HASTA VALIDACIÓN
 document.documentElement.style.visibility = "hidden";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const app = initializeApp({
-    apiKey: "AIza...",
+/* ================= FIREBASE ================= */
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
     authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
     projectId: "portal-autenticacion-a1ngles"
-});
+};
 
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let unsubscribe = null;
-let ok = false;
+/* ================= ESTADO ================= */
 
-// 🔐 1. GUARDIA SIMPLE (evita acceso directo sin login)
+let unsubscribe = null;
+let accesoActivo = false;
+
+/* ================= SESIÓN ================= */
+
 if (sessionStorage.getItem("auth_ok") !== "1") {
     window.location.replace("index.html");
 }
 
-// ⏱️ 2. INACTIVIDAD
-let timer;
+/* ================= INACTIVIDAD ================= */
 
-function reset() {
-    clearTimeout(timer);
+let timerInactividad;
 
-    timer = setTimeout(() => {
-        cerrar("Inactividad");
-    }, 10 * 60 * 1000);
+const TIEMPO_INACTIVIDAD = 10 * 60 * 1000; // 10 min
+
+function resetInactividad() {
+    clearTimeout(timerInactividad);
+
+    timerInactividad = setTimeout(() => {
+        cerrarSesion("Sesión cerrada por inactividad");
+    }, TIEMPO_INACTIVIDAD);
 }
 
-function cerrar(msg) {
+function activarInactividad() {
+
+    const eventos = ["click", "mousemove", "keydown", "scroll", "touchstart"];
+
+    eventos.forEach(evt => {
+        document.addEventListener(evt, resetInactividad, { passive: true });
+    });
+
+    resetInactividad();
+}
+
+/* ================= CIERRE DE SESIÓN ================= */
+
+function cerrarSesion(mensaje) {
+
     sessionStorage.removeItem("auth_ok");
 
-    alert(msg);
+    if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+    }
+
+    alert(mensaje);
 
     signOut(auth).finally(() => {
-        window.location.replace("index.html");
+        window.location.href = "index.html";
     });
 }
 
-// 🔁 3. VALIDACIÓN FIREBASE
+/* ================= VALIDACIÓN PRINCIPAL ================= */
+
 onAuthStateChanged(auth, (user) => {
 
     if (!user) {
-        cerrar("Sin sesión");
+        cerrarSesion("Sesión inválida");
         return;
     }
 
@@ -55,31 +85,36 @@ onAuthStateChanged(auth, (user) => {
     unsubscribe = onSnapshot(ref, (snap) => {
 
         if (!snap.exists()) {
-            cerrar("Sin licencia");
+            cerrarSesion("Licencia no encontrada");
             return;
         }
 
         const data = snap.data();
-        const exp = new Date((data.expiration || "") + "T23:59:59");
 
-        if (isNaN(exp) || new Date() > exp) {
-            cerrar("Licencia inválida");
+        const fecha = (data.expiration || "").trim();
+        const expiration = new Date(`${fecha}T23:59:59`);
+
+        if (isNaN(expiration.getTime())) {
+            cerrarSesion("Licencia inválida");
             return;
         }
 
-        // ✔️ TODO OK
-        mostrar();
+        if (new Date() > expiration) {
+            cerrarSesion("Licencia expirada");
+            return;
+        }
+
+        // ================= ACCESO OK =================
+
+        sessionStorage.setItem("auth_ok", "1");
+
+        if (!accesoActivo) {
+            accesoActivo = true;
+
+            document.documentElement.style.visibility = "visible";
+
+            activarInactividad();
+        }
     });
+
 });
-
-function mostrar() {
-    if (ok) return;
-    ok = true;
-
-    document.documentElement.style.visibility = "visible";
-
-    ["click","mousemove","keydown","scroll","touchstart"]
-        .forEach(e => document.addEventListener(e, reset));
-
-    reset();
-}
