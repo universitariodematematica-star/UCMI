@@ -32,7 +32,7 @@ if (sessionStorage.getItem("auth_ok") !== "1") {
 
 let timerInactividad;
 
-const TIEMPO_INACTIVIDAD = 10 * 60 * 1000; // 10 min
+const TIEMPO_INACTIVIDAD = 1 * 60 * 1000; // 10 min
 
 function resetInactividad() {
     clearTimeout(timerInactividad);
