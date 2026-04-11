@@ -66,26 +66,33 @@
 
         .message {
             margin-top: 20px;
-            padding: 10px;
+            padding: 15px;
             border-radius: 10px;
             min-height: 20px;
+            line-height: 1.5;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .success {
-            background-color: #4CAF50;
-            color: white;
-        }
+        .success { background-color: #4CAF50; color: white; }
+        .error { background-color: #f44336; color: white; }
 
-        .error {
-            background-color: #f44336;
-            color: white;
+        .btn-volver {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: white;
+            color: #f44336;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
         }
     </style>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        // ➕ Importamos Firestore para obtener el nombre del usuario
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -101,14 +108,12 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 🔑 EXPORTACIÓN GLOBAL
+        // 🔑 EXPORTACIÓN GLOBAL PARA ACCESO DESDE LA FUNCIÓN LOGIN
         window.auth = auth;
-        window.db = db; // Exportamos la base de datos
+        window.db = db;
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-        window.getDoc = getDoc; // Exportamos la función de lectura
-        window.doc = doc; // Exportamos la función de referencia
-
-        console.log("Firebase y Firestore vinculados correctamente.");
+        window.getDoc = getDoc;
+        window.doc = doc;
     </script>
 </head>
 
@@ -136,7 +141,7 @@
         <input type="submit" value="Acceder">
     </form>
 
-    <div id="message" class="message"></div>
+    <div id="message" class="message" style="display: none;"></div>
 
     <script>
         async function login(event) {
@@ -146,46 +151,64 @@
             const password = document.getElementById("password").value.trim();
             const msg = document.getElementById("message");
 
+            // Reset de mensaje
+            msg.style.display = "block";
+            msg.className = "message";
+            msg.innerText = "Verificando...";
+
             try {
-                // 1. Autenticación básica
+                // 1. Validar credenciales con Firebase Auth
                 const userCredential = await window.signInWithEmailAndPassword(window.auth, email, password);
                 const user = userCredential.user;
 
-                // 2. Consulta a Firestore para obtener el nombre real
+                // 2. Obtener datos de licencia y nombre desde Firestore
                 const docRef = window.doc(window.db, "licenses", user.email);
                 const docSnap = await window.getDoc(docRef);
 
-                let nombreAMostrar = user.email; // Respaldo por si no hay nombre
-
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    nombreAMostrar = data.user || user.email;
+                    const nombreAMostrar = data.user || user.email;
+                    
+                    // 3. Verificación de Vencimiento
+                    const fechaExp = new Date((data.expiration || "") + "T23:59:59");
+                    const hoy = new Date();
+
+                    if (isNaN(fechaExp.getTime()) || hoy > fechaExp) {
+                        msg.className = "message error";
+                        msg.innerHTML = `
+                            ❌ Licencia vencida. <br>
+                            Póngase en contacto con el administrador: <br>
+                            <b>+593 99 175 23 85</b> <br>
+                            <button class="btn-volver" onclick="location.reload()">Volver</button>
+                        `;
+                        return;
+                    }
+
+                    // 4. Éxito: Guardar sesión y entrar
+                    msg.className = "message success";
+                    msg.innerText = "✅ Bienvenido " + nombreAMostrar;
+
+                    sessionStorage.setItem("uid", user.uid);
+                    sessionStorage.setItem("email", user.email);
+                    sessionStorage.setItem("auth_ok", "1");
+
+                    setTimeout(() => {
+                        window.location.href = "home.html";
+                    }, 1200);
+
+                } else {
+                    msg.className = "message error";
+                    msg.innerText = "❌ No se encontró una licencia asociada a este correo.";
                 }
-
-                // 3. Mostrar mensaje personalizado
-                msg.className = "message success";
-                msg.innerText = "✅ Bienvenido " + nombreAMostrar;
-
-                // GUARDAR SESIÓN PARA PROTECT.JS
-                sessionStorage.setItem("uid", user.uid);
-                sessionStorage.setItem("email", user.email);
-                sessionStorage.setItem("auth_ok", "1");
-
-                setTimeout(() => {
-                    window.location.href = "home.html";
-                }, 1200); // Un poco más de tiempo para que se vea el nombre
 
             } catch (error) {
                 msg.className = "message error";
-                console.error("Error capturado:", error);
-
-                if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
+                if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password") {
                     msg.innerText = "❌ Credenciales incorrectas";
                 } else {
                     msg.innerText = "⚠️ Error: " + error.message;
                 }
             }
-
             return false;
         }
     </script>
