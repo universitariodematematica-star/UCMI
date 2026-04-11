@@ -12,111 +12,86 @@ const firebaseConfig = {
     projectId: "portal-autenticacion-a1ngles"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+initializeApp(firebaseConfig);
+
+const auth = getAuth();
+const db = getFirestore();
 
 let unsubscribe = null;
-let accesoConcedido = false;
+let accesoOK = false;
 
-// ⏱️ CONTROL DE INACTIVIDAD (1 hora)
-let timeoutInactividad;
+/* 🔒 OVERLAY (bloquea visualmente sin romper la página) */
+const overlay = document.createElement("div");
+overlay.id = "authOverlay";
+overlay.style.cssText = `
+position:fixed;
+inset:0;
+background:#fff;
+display:flex;
+align-items:center;
+justify-content:center;
+font-family:Arial;
+z-index:999999;
+`;
+overlay.innerHTML = "🔄 Verificando acceso...";
+document.documentElement.appendChild(overlay);
 
-function resetInactividad() {
-    clearTimeout(timeoutInactividad);
-
-    timeoutInactividad = setTimeout(() => {
-        alert("Sesión cerrada por inactividad");
-        window.location.href = "index.html";
-    }, 60 * 60 * 1000);
-}
-
-// 🔐 BLOQUEO INICIAL (NO rompe render)
-document.body.style.visibility = "hidden";
-
-// 🧠 TIMEOUT DE SEGURIDAD (evita pantalla en blanco)
-const fallback = setTimeout(() => {
-    document.body.style.visibility = "visible";
+/* 🧠 fallback anti-bloqueo */
+setTimeout(() => {
+    if (overlay) overlay.remove();
 }, 6000);
 
-// 🔐 CONTROL GLOBAL
+/* 🔐 AUTH */
 onAuthStateChanged(auth, (user) => {
 
-    try {
+    if (!user) {
+        window.location.href = "index.html";
+        return;
+    }
 
-        if (!user) {
-            clearTimeout(fallback);
-            window.location.href = "index.html";
-            return;
+    const ref = doc(db, "licenses", user.email);
+
+    unsubscribe = onSnapshot(ref, (snap) => {
+
+        if (!snap.exists()) {
+            return block("No tienes licencia activa");
         }
 
-        const ref = doc(db, "licenses", user.email);
+        const data = snap.data();
 
-        unsubscribe = onSnapshot(ref, (snap) => {
+        const fecha = (data.expiration || "").trim();
+        const expiration = new Date(`${fecha}T23:59:59`);
 
-            try {
+        if (isNaN(expiration.getTime())) {
+            return block("Error interno en fecha de licencia");
+        }
 
-                if (!snap.exists()) {
-                    return block("No tienes licencia activa");
-                }
+        if (new Date() > expiration) {
+            return block("Tu licencia ha expirado");
+        }
 
-                const data = snap.data();
+        /* ✅ ACCESO PERMITIDO */
+        accesoOK = true;
 
-                // 🛠️ VALIDACIÓN DE FECHA
-                const fecha = (data.expiration || "").trim();
-                const expiration = new Date(`${fecha}T23:59:59`);
+        if (overlay) overlay.remove();
 
-                if (isNaN(expiration.getTime())) {
-                    console.error("Fecha inválida:", fecha);
-                    return block("Error interno en fecha de licencia");
-                }
+        activarProteccionBasica();
+        activarControlInactividad();
 
-                if (new Date() > expiration) {
-                    return block("Tu licencia ha expirado");
-                }
-
-                // ✅ ACCESO PERMITIDO
-                clearTimeout(fallback);
-                document.body.style.visibility = "visible";
-
-                if (!accesoConcedido) {
-                    accesoConcedido = true;
-                    activarProteccionBasica();
-                    activarControlInactividad();
-                }
-
-            } catch (err) {
-                console.error(err);
-                block("Error de verificación");
-            }
-
-        });
-
-    } catch (e) {
-        console.error(e);
-        block("Error de sistema");
-    }
+    });
 
 });
 
-// 🔒 BLOQUEO FINAL
+/* 🔒 BLOQUEO FINAL */
 function block(msg) {
 
-    clearTimeout(fallback);
-    document.body.style.visibility = "visible";
+    if (overlay) overlay.remove();
 
     document.body.innerHTML = `
-        <div style="
-            margin-top:100px;
-            text-align:center;
-            font-family:Arial;
-        ">
+        <div style="margin-top:100px;text-align:center;font-family:Arial">
             <h2>⛔ Acceso restringido</h2>
             <p>${msg}</p>
-            <br>
-            <button onclick="window.location.href='index.html'">
-                Volver
-            </button>
+            <button onclick="location.href='index.html'">Volver</button>
         </div>
     `;
 
@@ -126,7 +101,7 @@ function block(msg) {
     }
 }
 
-// 🛡️ PROTECCIÓN BÁSICA
+/* 🛡️ PROTECCIÓN BÁSICA */
 function activarProteccionBasica() {
 
     document.addEventListener("contextmenu", e => e.preventDefault());
@@ -144,12 +119,21 @@ function activarProteccionBasica() {
     console.log = function () {};
 }
 
-// ⏱️ INACTIVIDAD
+/* ⏱️ INACTIVIDAD */
 function activarControlInactividad() {
 
-    ["click", "mousemove", "keydown", "scroll", "touchstart"].forEach(evt => {
-        document.addEventListener(evt, resetInactividad);
-    });
+    let t;
 
-    resetInactividad();
+    const reset = () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+            alert("Sesión cerrada por inactividad");
+            location.href = "index.html";
+        }, 60 * 60 * 1000);
+    };
+
+    ["click","mousemove","keydown","scroll","touchstart"]
+        .forEach(e => document.addEventListener(e, reset));
+
+    reset();
 }
