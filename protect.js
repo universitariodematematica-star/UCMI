@@ -1,5 +1,6 @@
 // 🔒 BLOQUEO INMEDIATO
-document.body.style.display = "none";
+document.documentElement.style.display = "none";
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
@@ -39,7 +40,7 @@ onAuthStateChanged(auth, (user) => {
     try {
 
         if (!user) {
-            window.location.href = "index.html";
+            block("Debes iniciar sesión");
             return;
         }
 
@@ -52,17 +53,17 @@ onAuthStateChanged(auth, (user) => {
                 return;
             }
 
-const data = snap.data();
+            const data = snap.data();
 
-// 🛠️ FIX ROBUSTO DE FECHA
-const fecha = (data.expiration || "").trim();
-const expiration = new Date(`${fecha}T23:59:59`);
+            // 🛠️ FIX ROBUSTO DE FECHA
+            const fecha = (data.expiration || "").trim();
+            const expiration = new Date(`${fecha}T23:59:59`);
 
-if (isNaN(expiration.getTime())) {
-    console.error("Fecha inválida:", fecha);
-    block("Error interno en fecha de licencia");
-    return;
-}
+            if (isNaN(expiration.getTime())) {
+                console.error("Fecha inválida:", fecha);
+                block("Error interno en fecha de licencia");
+                return;
+            }
 
             if (new Date() > expiration) {
                 block("Tu licencia ha expirado");
@@ -70,14 +71,14 @@ if (isNaN(expiration.getTime())) {
             }
 
             // ✅ ACCESO PERMITIDO
-document.body.style.display = "block";
+            document.documentElement.style.display = "block";
 
-if (!accesoConcedido) {
-    accesoConcedido = true;
+            if (!accesoConcedido) {
+                accesoConcedido = true;
 
-    activarProteccionBasica();
-    activarControlInactividad();
-}
+                activarProteccionBasica();
+                activarControlInactividad();
+            }
 
         });
 
@@ -91,7 +92,7 @@ if (!accesoConcedido) {
 // 🔒 BLOQUEO FINAL
 function block(msg) {
 
-    document.body.style.display = "block";
+    document.documentElement.style.display = "block";
 
     document.body.innerHTML = `
         <div style="
