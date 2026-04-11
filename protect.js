@@ -1,82 +1,52 @@
-// 🔒 OCULTAR HASTA VALIDACIÓN
 document.documentElement.style.visibility = "hidden";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* ================= FIREBASE ================= */
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
+const app = initializeApp({
+    apiKey: "AIza...",
     authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
     projectId: "portal-autenticacion-a1ngles"
-};
+});
 
-const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* ================= ESTADO ================= */
-
 let unsubscribe = null;
-let accesoActivo = false;
+let ok = false;
 
-/* ================= SESIÓN ================= */
-
+// 🔐 1. GUARDIA SIMPLE (evita acceso directo sin login)
 if (sessionStorage.getItem("auth_ok") !== "1") {
     window.location.replace("index.html");
 }
 
-/* ================= INACTIVIDAD ================= */
+// ⏱️ 2. INACTIVIDAD
+let timer;
 
-let timerInactividad;
+function reset() {
+    clearTimeout(timer);
 
-const TIEMPO_INACTIVIDAD = 1 * 60 * 1000; // 10 min
-
-function resetInactividad() {
-    clearTimeout(timerInactividad);
-
-    timerInactividad = setTimeout(() => {
-        cerrarSesion("Sesión cerrada por inactividad");
-    }, TIEMPO_INACTIVIDAD);
+    timer = setTimeout(() => {
+        cerrar("Inactividad");
+    }, 10 * 60 * 1000);
 }
 
-function activarInactividad() {
-
-    const eventos = ["click", "mousemove", "keydown", "scroll", "touchstart"];
-
-    eventos.forEach(evt => {
-        document.addEventListener(evt, resetInactividad, { passive: true });
-    });
-
-    resetInactividad();
-}
-
-/* ================= CIERRE DE SESIÓN ================= */
-
-function cerrarSesion(mensaje) {
-
+function cerrar(msg) {
     sessionStorage.removeItem("auth_ok");
 
-    if (unsubscribe) {
-        unsubscribe();
-        unsubscribe = null;
-    }
-
-    alert(mensaje);
+    alert(msg);
 
     signOut(auth).finally(() => {
-        window.location.href = "index.html";
+        window.location.replace("index.html");
     });
 }
 
-/* ================= VALIDACIÓN PRINCIPAL ================= */
-
+// 🔁 3. VALIDACIÓN FIREBASE
 onAuthStateChanged(auth, (user) => {
 
     if (!user) {
-        cerrarSesion("Sesión inválida");
+        cerrar("Sin sesión");
         return;
     }
 
@@ -85,36 +55,31 @@ onAuthStateChanged(auth, (user) => {
     unsubscribe = onSnapshot(ref, (snap) => {
 
         if (!snap.exists()) {
-            cerrarSesion("Licencia no encontrada");
+            cerrar("Sin licencia");
             return;
         }
 
         const data = snap.data();
+        const exp = new Date((data.expiration || "") + "T23:59:59");
 
-        const fecha = (data.expiration || "").trim();
-        const expiration = new Date(`${fecha}T23:59:59`);
-
-        if (isNaN(expiration.getTime())) {
-            cerrarSesion("Licencia inválida");
+        if (isNaN(exp) || new Date() > exp) {
+            cerrar("Licencia inválida");
             return;
         }
 
-        if (new Date() > expiration) {
-            cerrarSesion("Licencia expirada");
-            return;
-        }
-
-        // ================= ACCESO OK =================
-
-        sessionStorage.setItem("auth_ok", "1");
-
-        if (!accesoActivo) {
-            accesoActivo = true;
-
-            document.documentElement.style.visibility = "visible";
-
-            activarInactividad();
-        }
+        // ✔️ TODO OK
+        mostrar();
     });
-
 });
+
+function mostrar() {
+    if (ok) return;
+    ok = true;
+
+    document.documentElement.style.visibility = "visible";
+
+    ["click","mousemove","keydown","scroll","touchstart"]
+        .forEach(e => document.addEventListener(e, reset));
+
+    reset();
+}
