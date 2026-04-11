@@ -1,6 +1,3 @@
-// 🔒 BLOQUEO INMEDIATO
-document.documentElement.style.display = "none";
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
@@ -22,7 +19,7 @@ const db = getFirestore(app);
 let unsubscribe = null;
 let accesoConcedido = false;
 
-// ⏱️ CONTROL DE INACTIVIDAD (5 minutos)
+// ⏱️ CONTROL DE INACTIVIDAD (1 hora)
 let timeoutInactividad;
 
 function resetInactividad() {
@@ -31,8 +28,16 @@ function resetInactividad() {
     timeoutInactividad = setTimeout(() => {
         alert("Sesión cerrada por inactividad");
         window.location.href = "index.html";
-    }, 60 * 60 * 1000); // 1 hora
+    }, 60 * 60 * 1000);
 }
+
+// 🔐 BLOQUEO INICIAL (NO rompe render)
+document.body.style.visibility = "hidden";
+
+// 🧠 TIMEOUT DE SEGURIDAD (evita pantalla en blanco)
+const fallback = setTimeout(() => {
+    document.body.style.visibility = "visible";
+}, 6000);
 
 // 🔐 CONTROL GLOBAL
 onAuthStateChanged(auth, (user) => {
@@ -40,7 +45,8 @@ onAuthStateChanged(auth, (user) => {
     try {
 
         if (!user) {
-            block("Debes iniciar sesión");
+            clearTimeout(fallback);
+            window.location.href = "index.html";
             return;
         }
 
@@ -48,43 +54,47 @@ onAuthStateChanged(auth, (user) => {
 
         unsubscribe = onSnapshot(ref, (snap) => {
 
-            if (!snap.exists()) {
-                block("No tienes licencia activa");
-                return;
-            }
+            try {
 
-            const data = snap.data();
+                if (!snap.exists()) {
+                    return block("No tienes licencia activa");
+                }
 
-            // 🛠️ FIX ROBUSTO DE FECHA
-            const fecha = (data.expiration || "").trim();
-            const expiration = new Date(`${fecha}T23:59:59`);
+                const data = snap.data();
 
-            if (isNaN(expiration.getTime())) {
-                console.error("Fecha inválida:", fecha);
-                block("Error interno en fecha de licencia");
-                return;
-            }
+                // 🛠️ VALIDACIÓN DE FECHA
+                const fecha = (data.expiration || "").trim();
+                const expiration = new Date(`${fecha}T23:59:59`);
 
-            if (new Date() > expiration) {
-                block("Tu licencia ha expirado");
-                return;
-            }
+                if (isNaN(expiration.getTime())) {
+                    console.error("Fecha inválida:", fecha);
+                    return block("Error interno en fecha de licencia");
+                }
 
-            // ✅ ACCESO PERMITIDO
-            document.documentElement.style.display = "block";
+                if (new Date() > expiration) {
+                    return block("Tu licencia ha expirado");
+                }
 
-            if (!accesoConcedido) {
-                accesoConcedido = true;
+                // ✅ ACCESO PERMITIDO
+                clearTimeout(fallback);
+                document.body.style.visibility = "visible";
 
-                activarProteccionBasica();
-                activarControlInactividad();
+                if (!accesoConcedido) {
+                    accesoConcedido = true;
+                    activarProteccionBasica();
+                    activarControlInactividad();
+                }
+
+            } catch (err) {
+                console.error(err);
+                block("Error de verificación");
             }
 
         });
 
     } catch (e) {
         console.error(e);
-        block("Error de verificación");
+        block("Error de sistema");
     }
 
 });
@@ -92,7 +102,8 @@ onAuthStateChanged(auth, (user) => {
 // 🔒 BLOQUEO FINAL
 function block(msg) {
 
-    document.documentElement.style.display = "block";
+    clearTimeout(fallback);
+    document.body.style.visibility = "visible";
 
     document.body.innerHTML = `
         <div style="
@@ -115,13 +126,11 @@ function block(msg) {
     }
 }
 
-// 🛡️ PROTECCIÓN BÁSICA (SUAVE, SIN ROMPER)
+// 🛡️ PROTECCIÓN BÁSICA
 function activarProteccionBasica() {
 
-    // 🚫 CLIC DERECHO
     document.addEventListener("contextmenu", e => e.preventDefault());
 
-    // 🚫 TECLAS DEVTOOLS (sin romper navegación)
     document.addEventListener("keydown", e => {
         if (
             e.key === "F12" ||
@@ -132,11 +141,10 @@ function activarProteccionBasica() {
         }
     });
 
-    // 🔇 DESACTIVAR LOGS
     console.log = function () {};
 }
 
-// ⏱️ ACTIVAR DETECCIÓN DE INACTIVIDAD
+// ⏱️ INACTIVIDAD
 function activarControlInactividad() {
 
     ["click", "mousemove", "keydown", "scroll", "touchstart"].forEach(evt => {
