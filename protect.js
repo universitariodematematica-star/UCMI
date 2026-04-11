@@ -59,13 +59,14 @@ onAuthStateChanged(auth, (user) => {
             }
 
             // ✅ ACCESO PERMITIDO
-            if (!accesoConcedido) {
-                accesoConcedido = true;
-                document.body.style.display = "block";
+document.body.style.display = "block";
 
-                activarProteccionBasica();
-                activarControlInactividad();
-            }
+if (!accesoConcedido) {
+    accesoConcedido = true;
+
+    activarProteccionBasica();
+    activarControlInactividad();
+}
 
         });
 
