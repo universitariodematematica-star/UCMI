@@ -2,242 +2,154 @@
 <html lang="es">
 
 <head>
-<meta charset="UTF-8">
-<title>Plataforma Educativa</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma Educativa - Panel de Control</title>
 
-<style>
-body {
-    font-family: Arial;
-    background: #eef2f7;
-    margin: 0;
-    text-align: center;
-}
-
-/* 🔄 LOADER */
-#loading {
-    margin-top: 100px;
-    font-size: 18px;
-    color: #333;
-}
-
-.panel {
-    margin: 60px auto;
-    width: 340px;
-    padding: 25px;
-    border-radius: 15px;
-    background: linear-gradient(135deg, #000080, #1e3a8a);
-    color: white;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    display: none;
-}
-
-button {
-    width: 220px;
-    margin: 10px auto;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-button:hover {
-    transform: scale(1.05);
-}
-
-.status {
-    background: rgba(255,255,255,0.15);
-    padding: 10px;
-    border-radius: 10px;
-    margin-top: 15px;
-    font-size: 14px;
-    text-align: left;
-}
-
-.badge {
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 12px;
-    margin-top: 5px;
-    display: inline-block;
-}
-
-.active { background: #4CAF50; }
-.warning { background: #ff9800; }
-
-.error {
-    margin: 60px auto;
-    width: 340px;
-    background: #f44336;
-    color: white;
-    padding: 15px;
-    border-radius: 10px;
-    display: none;
-}
-</style>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
-    authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
-    projectId: "portal-autenticacion-a1ngles",
-    storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
-    messagingSenderId: "1039504020190",
-    appId: "1:1039504020190:web:212cf030c3e6feb175a84f"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-let intervalActivo = null;
-
-onAuthStateChanged(auth, async (user) => {
-
-    const panel = document.getElementById("panel");
-    const errorBox = document.getElementById("error");
-    const statusBox = document.getElementById("status");
-    const loading = document.getElementById("loading");
-
-    try {
-
-        if (!user) {
-            window.location.href = "index.html";
-            return;
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef2f7;
+            margin: 0;
+            text-align: center;
         }
 
-        const email = user.email;
-
-        const ref = doc(db, "licenses", email);
-        const snap = await getDoc(ref);
-
-        if (!snap.exists()) {
-            showError("No tienes licencia activa");
-            return;
+        /* 🔄 LOADER INICIAL */
+        #loading {
+            margin-top: 100px;
+            font-size: 18px;
+            color: #333;
         }
 
-        const data = snap.data();
-
-const expiration = new Date(data.expiration + "T23:59:59");
-        const today = new Date();
-
-        const diffTime = expiration.getTime() - today.getTime();
-        const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (daysLeft < 0) {
-            showError("Tu licencia ha expirado");
-            return;
+        .panel {
+            margin: 60px auto;
+            width: 340px;
+            padding: 25px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #000080, #1e3a8a);
+            color: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            /* El panel se mostrará cuando protect.js ejecute mostrar() */
         }
 
-        let badge = `<span class="badge active">ACTIVO</span>`;
-        if (daysLeft <= 3) {
-            badge = `<span class="badge warning">POR VENCER</span>`;
+        button {
+            width: 220px;
+            margin: 10px auto;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: transform 0.2s, background-color 0.2s;
         }
 
-        // ✅ Mostrar contenido
-        loading.style.display = "none";
-        panel.style.display = "block";
+        button:hover {
+            transform: scale(1.05);
+            background-color: #f0f0f0;
+        }
 
-        statusBox.innerHTML = `
-            👤 Usuario: ${data.user || email}<br>
-            📅 Expira: ${data.expiration}<br>
-            ⏳ Días restantes: ${daysLeft}<br>
-            ${badge}
-        `;
+        .status {
+            background: rgba(255,255,255,0.15);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: left;
+            line-height: 1.6;
+        }
 
-        // 🔄 Verificación cada 30s (solo una vez)
-        if (!intervalActivo) {
-            intervalActivo = setInterval(async () => {
+        .logout-btn {
+            background-color: #f44336;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .logout-btn:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+
+    <script type="module" src="protect.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
+            authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
+            projectId: "portal-autenticacion-a1ngles"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Lógica para mostrar datos del usuario en el panel
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const statusBox = document.getElementById("status-info");
+                const loading = document.getElementById("loading");
+                
                 try {
-
-                    const userNow = auth.currentUser;
-
-                    if (!userNow) {
-                        location.reload();
-                        return;
-                    }
-
-                    const ref = doc(db, "licenses", userNow.email);
+                    const ref = doc(db, "licenses", user.email);
                     const snap = await getDoc(ref);
 
-                    if (!snap.exists()) {
-                        location.reload();
-                        return;
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        statusBox.innerHTML = `
+                            👤 <b>Usuario:</b> ${user.email}<br>
+                            📅 <b>Expira:</b> ${data.expiration || 'No definida'}<br>
+                            ✅ <b>Estado:</b> Suscripción Activa
+                        `;
                     }
-
-                    const data = snap.data();
-                    const expiration = new Date(data.expiration + "T23:59:59");
-
-                    if (new Date() > expiration) {
-                        location.reload();
-                    }
-
                 } catch (e) {
-                    console.error("Error en verificación continua", e);
+                    console.error("Error cargando datos adicionales:", e);
                 }
-            }, 30000);
-        }
+                
+                // Ocultamos el loader (aunque protect.js ya controla la visibilidad de la página)
+                loading.style.display = "none";
+            }
+        });
 
-    } catch (e) {
-        console.error(e);
-        showError("Error de carga del sistema");
-    } finally {
-        // 🔥 evita pantalla bloqueada SIEMPRE
-        loading.style.display = "none";
-    }
-
-});
-
-// ❌ ERROR CONTROLADO
-function showError(msg) {
-    const errorBox = document.getElementById("error");
-    const loading = document.getElementById("loading");
-    const panel = document.getElementById("panel");
-
-    loading.style.display = "none";
-    panel.style.display = "none";
-
-    errorBox.innerHTML = `
-        ${msg}<br><br>
-        <button onclick="window.location.href='index.html'">Volver</button>
-    `;
-
-    errorBox.style.display = "block";
-
-    setTimeout(() => {
-        window.location.href = "index.html";
-    }, 4000);
-}
-
-// 🔐 LOGOUT
-window.logout = async function () {
-    await signOut(auth);
-    window.location.href = "index.html";
-};
-</script>
-
+        // Función global de Logout
+        window.logout = async function () {
+            if (confirm("¿Seguro que deseas cerrar sesión?")) {
+                sessionStorage.clear(); // Limpia la llave auth_ok
+                await signOut(auth);
+                window.location.href = "index.html";
+            }
+        };
+    </script>
 </head>
 
 <body>
 
-<div id="loading">🔄 Verificando acceso...</div>
+    <div id="loading">🔄 Cargando plataforma...</div>
 
-<div id="error" class="error"></div>
+    <div id="panel" class="panel">
+        <h2>🎓 Panel de Estudiante</h2>
 
-<div id="panel" class="panel">
+        <div id="status-info" class="status">
+            Verificando credenciales...
+        </div>
 
-    <h2>🎓 Plataforma Educativa</h2>
+        <div style="margin-top: 20px;">
+            <button onclick="location.href='temario.html'" style="background-color: #ffffff; color: #000080;">
+                📚 Ver Temario
+            </button>
+            
+            <button onclick="location.href='calificaciones.html'" style="background-color: #ffffff; color: #000080;">
+                📊 Calificaciones
+            </button>
 
-    <div id="status" class="status"></div>
-
-    <button onclick="location.href='temario.html'">📚 Temario</button>
-    <button onclick="location.href='calificaciones.html'">📊 Calificaciones</button>
-    <button onclick="logout()">🚪 Cerrar sesión</button>
-
-</div>
+            <button onclick="logout()" class="logout-btn">
+                🚪 Cerrar sesión
+            </button>
+        </div>
+    </div>
 
 </body>
 </html>
