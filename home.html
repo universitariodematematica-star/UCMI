@@ -121,7 +121,17 @@ onAuthStateChanged(auth, async (user) => {
 
         const data = snap.data();
 
-        const expiration = new Date(data.expiration + "T23:59:59");
+       if (!data.expiration) {
+    showError("Licencia sin fecha válida");
+    return;
+}
+
+const expiration = new Date(data.expiration);
+
+if (isNaN(expiration.getTime())) {
+    showError("Formato de fecha inválido");
+    return;
+}
         const today = new Date();
 
         const diffTime = expiration.getTime() - today.getTime();
