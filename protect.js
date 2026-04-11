@@ -89,7 +89,7 @@ function block(msg) {
     }
 }
 
-// 🛡️ PROTECCIÓN BÁSICA (ANTI-INSPECCIÓN)
+// 🛡️ PROTECCIÓN BÁSICA (ANTI-INSPECCIÓN + INACTIVIDAD)
 function activarProteccionBasica() {
 
     // 🚫 CLIC DERECHO
@@ -115,4 +115,23 @@ function activarProteccionBasica() {
 
     // 🔇 DESACTIVAR LOGS
     console.log = function () {};
+
+    // ⏳ CONTROL DE INACTIVIDAD (NUEVO)
+    let tiempoInactividad;
+    const LIMITE = 1 * 60 * 1000; // 5 minutos
+
+    function reiniciarTimer() {
+        clearTimeout(tiempoInactividad);
+        tiempoInactividad = setTimeout(() => {
+            block("Sesión cerrada por inactividad");
+        }, LIMITE);
+    }
+
+    // 📡 EVENTOS DE ACTIVIDAD
+    ["mousemove", "keydown", "click", "scroll", "touchstart"].forEach(evento => {
+        document.addEventListener(evento, reiniciarTimer);
+    });
+
+    // 🚀 INICIAR
+    reiniciarTimer();
 }
