@@ -29,7 +29,7 @@ let accesoConcedido = false;
 
 // ⏱️ CONTROL DE INACTIVIDAD
 let timeoutInactividad;
-const TIEMPO_INACTIVIDAD = 60 * 60 * 1000; // 1 hora
+const TIEMPO_INACTIVIDAD = 1 * 60 * 1000; // 1 hora
 
 function cerrarSesionPorInactividad() {
     alert("Sesión cerrada por inactividad");
