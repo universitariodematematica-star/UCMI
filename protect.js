@@ -2,34 +2,34 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
+const app = initializeApp({
     apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
     authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
     projectId: "portal-autenticacion-a1ngles"
-};
+});
 
-const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const AUTH_KEY = "auth_ok";
+const KEY = "auth_ok";
 
-/* 🔒 BLOQUEO VISUAL INMEDIATO (evita flash de contenido) */
+/* 🔒 BLOQUEO INMEDIATO VISUAL */
 document.documentElement.style.visibility = "hidden";
 
-/* 🧠 GATE TIPO COOKIES (INSTANTÁNEO) */
-const isInternalPage = location.pathname.includes(".html") &&
-                       !location.pathname.endsWith("index.html");
+/* 🚨 ROUTE GUARD REAL (ESTO ES LO IMPORTANTE) */
+const isInternalPage =
+    location.pathname.endsWith(".html") &&
+    !location.pathname.endsWith("index.html");
 
-if (isInternalPage && !sessionStorage.getItem(AUTH_KEY)) {
+if (isInternalPage && !sessionStorage.getItem(KEY)) {
     location.replace("index.html");
 }
 
-/* 🔐 FIREBASE AUTH */
+/* 🔐 FIREBASE */
 onAuthStateChanged(auth, (user) => {
 
     if (!user) {
-        sessionStorage.removeItem(AUTH_KEY);
+        sessionStorage.removeItem(KEY);
         location.replace("index.html");
         return;
     }
@@ -38,44 +38,22 @@ onAuthStateChanged(auth, (user) => {
 
     onSnapshot(ref, (snap) => {
 
-        if (!snap.exists()) {
-            return deny("No tienes licencia activa");
-        }
+        if (!snap.exists()) return kick();
 
         const data = snap.data();
-        const fecha = (data.expiration || "").trim();
-        const expiration = new Date(fecha + "T23:59:59");
+        const exp = new Date((data.expiration || "").trim() + "T23:59:59");
 
-        if (isNaN(expiration.getTime())) {
-            return deny("Error en fecha de licencia");
-        }
+        if (isNaN(exp.getTime()) || new Date() > exp) return kick();
 
-        if (new Date() > expiration) {
-            return deny("Licencia expirada");
-        }
-
-        /* ✅ ACCESO PERMITIDO */
-        sessionStorage.setItem(AUTH_KEY, "1");
+        /* ✅ OK */
+        sessionStorage.setItem(KEY, "1");
         document.documentElement.style.visibility = "visible";
     });
 
 });
 
-/* ⛔ BLOQUEO CENTRAL */
-function deny(msg) {
-    sessionStorage.removeItem(AUTH_KEY);
-
-    document.documentElement.innerHTML = `
-        <div style="
-            margin-top:100px;
-            text-align:center;
-            font-family:Arial;
-        ">
-            <h2>⛔ Acceso restringido</h2>
-            <p>${msg}</p>
-            <button onclick="location.href='index.html'">Volver</button>
-        </div>
-    `;
-
-    document.documentElement.style.visibility = "visible";
+/* ⛔ BLOQUEO */
+function kick() {
+    sessionStorage.removeItem(KEY);
+    location.replace("index.html");
 }
