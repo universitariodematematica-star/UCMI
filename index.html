@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de Autenticación</title>
+    <title>Portal de Autenticación - UCMI</title>
 
     <style>
         body {
@@ -68,6 +68,7 @@
             margin-top: 20px;
             padding: 10px;
             border-radius: 10px;
+            min-height: 20px;
         }
 
         .success {
@@ -81,13 +82,9 @@
         }
     </style>
 
-    <!-- 🔥 FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
@@ -101,10 +98,12 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
+        // 🔑 EXPORTACIÓN GLOBAL: Esto corrige el error "not defined"
         window.auth = auth;
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-    </script>
 
+        console.log("Firebase vinculado correctamente al objeto global.");
+    </script>
 </head>
 
 <body>
@@ -114,23 +113,17 @@
     </div>
 
     <div class="circle">
-        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjw9cxfrG4DxMXY4q8Z_jexzTMuwfWdJoB7iSmpjcA8ntkHLbdXX_vGKofXvl7fahEPTt6NW1JM9fN3xDdW1Ontxh5OYTM6lsjre9SuWyq0fTakTWEMc2guGHMVVNCsb3li6_aQ-Gm2iO0Ql5pVq_cd08jOF8CjMgi_2SztgwnAUMq_MC4acptQhHzxbGcC/s2560/Imagen%20UCMI.png">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjw9cxfrG4DxMXY4q8Z_jexzTMuwfWdJoB7iSmpjcA8ntkHLbdXX_vGKofXvl7fahEPTt6NW1JM9fN3xDdW1Ontxh5OYTM6lsjre9SuWyq0fTakTWEMc2guGHMVVNCsb3li6_aQ-Gm2iO0Ql5pVq_cd08jOF8CjMgi_2SztgwnAUMq_MC4acptQhHzxbGcC/s2560/Imagen%20UCMI.png" alt="Logo">
     </div>
 
     <h2>Iniciar sesión</h2>
 
-    <!-- 🔐 LOGIN -->
     <form class="password-form" onsubmit="return login(event)">
-
-        <label style="display:block; margin-top:10px; font-weight:bold;">
-            Correo electrónico
-        </label>
+        <label style="display:block; margin-top:10px; font-weight:bold;">Correo electrónico</label>
         <input id="email" type="email" placeholder="ejemplo@correo.com" required>
         <br>
 
-        <label style="display:block; margin-top:10px; font-weight:bold;">
-            Contraseña
-        </label>
+        <label style="display:block; margin-top:10px; font-weight:bold;">Contraseña</label>
         <input id="password" type="password" placeholder="••••••••" required>
         <br><br>
 
@@ -139,7 +132,6 @@
 
     <div id="message" class="message"></div>
 
-    <!-- 🔐 LÓGICA LOGIN -->
     <script>
         async function login(event) {
             event.preventDefault();
@@ -149,37 +141,35 @@
             const msg = document.getElementById("message");
 
             try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                // Usamos window. para acceder a las funciones de Firebase fuera del módulo
+                const userCredential = await window.signInWithEmailAndPassword(window.auth, email, password);
                 const user = userCredential.user;
 
                 msg.className = "message success";
                 msg.innerText = "✅ Bienvenido " + user.email;
 
-                localStorage.setItem("uid", user.uid);
-                localStorage.setItem("email", user.email);
+                // GUARDAR SESIÓN PARA PROTECT.JS
+                sessionStorage.setItem("uid", user.uid);
+                sessionStorage.setItem("email", user.email);
+                sessionStorage.setItem("auth_ok", "1"); // La llave que abre protect.js
 
                 setTimeout(() => {
                     window.location.href = "home.html";
                 }, 800);
 
             } catch (error) {
-
                 msg.className = "message error";
+                console.error("Error capturado:", error);
 
-                if (error.code === "auth/user-not-found" ||
-                    error.code === "auth/wrong-password") {
+                if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
                     msg.innerText = "❌ Credenciales incorrectas";
                 } else {
-                    msg.innerText = "⚠️ Error de acceso";
+                    msg.innerText = "⚠️ Error: " + error.message;
                 }
-
-                console.error(error);
             }
 
             return false;
         }
     </script>
-
 </body>
 </html>
-
