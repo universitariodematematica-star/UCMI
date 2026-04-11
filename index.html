@@ -85,6 +85,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        // ➕ Importamos Firestore para obtener el nombre del usuario
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
@@ -97,12 +99,16 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        // 🔑 EXPORTACIÓN GLOBAL: Esto corrige el error "not defined"
+        // 🔑 EXPORTACIÓN GLOBAL
         window.auth = auth;
+        window.db = db; // Exportamos la base de datos
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.getDoc = getDoc; // Exportamos la función de lectura
+        window.doc = doc; // Exportamos la función de referencia
 
-        console.log("Firebase vinculado correctamente al objeto global.");
+        console.log("Firebase y Firestore vinculados correctamente.");
     </script>
 </head>
 
@@ -141,21 +147,33 @@
             const msg = document.getElementById("message");
 
             try {
-                // Usamos window. para acceder a las funciones de Firebase fuera del módulo
+                // 1. Autenticación básica
                 const userCredential = await window.signInWithEmailAndPassword(window.auth, email, password);
                 const user = userCredential.user;
 
+                // 2. Consulta a Firestore para obtener el nombre real
+                const docRef = window.doc(window.db, "licenses", user.email);
+                const docSnap = await window.getDoc(docRef);
+
+                let nombreAMostrar = user.email; // Respaldo por si no hay nombre
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    nombreAMostrar = data.user || user.email;
+                }
+
+                // 3. Mostrar mensaje personalizado
                 msg.className = "message success";
-                msg.innerText = "✅ Bienvenido " + user.email;
+                msg.innerText = "✅ Bienvenido " + nombreAMostrar;
 
                 // GUARDAR SESIÓN PARA PROTECT.JS
                 sessionStorage.setItem("uid", user.uid);
                 sessionStorage.setItem("email", user.email);
-                sessionStorage.setItem("auth_ok", "1"); // La llave que abre protect.js
+                sessionStorage.setItem("auth_ok", "1");
 
                 setTimeout(() => {
                     window.location.href = "home.html";
-                }, 800);
+                }, 1200); // Un poco más de tiempo para que se vea el nombre
 
             } catch (error) {
                 msg.className = "message error";
