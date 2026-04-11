@@ -1,7 +1,3 @@
-if (window.location.pathname.includes("home.html")) {
-    document.body.style.display = "block";
-    return;
-}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
@@ -32,7 +28,7 @@ function resetInactividad() {
     timeoutInactividad = setTimeout(() => {
         alert("Sesión cerrada por inactividad");
         window.location.href = "index.html";
-    }, 1 * 60 * 1000); // 5 minutos
+    }, 5 * 60 * 1000); // 5 minutos
 }
 
 // 🔐 CONTROL GLOBAL
@@ -54,8 +50,17 @@ onAuthStateChanged(auth, (user) => {
                 return;
             }
 
-            const data = snap.data();
-            const expiration = new Date(data.expiration + "T23:59:59");
+const data = snap.data();
+
+// 🛠️ FIX ROBUSTO DE FECHA
+const fecha = (data.expiration || "").trim();
+const expiration = new Date(`${fecha}T23:59:59`);
+
+if (isNaN(expiration.getTime())) {
+    console.error("Fecha inválida:", fecha);
+    block("Error interno en fecha de licencia");
+    return;
+}
 
             if (new Date() > expiration) {
                 block("Tu licencia ha expirado");
