@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
     getFirestore,
     doc,
@@ -19,21 +19,16 @@ const db = getFirestore(app);
 let unsubscribe = null;
 let accesoConcedido = false;
 
-// ⏱️ CONTROL DE INACTIVIDAD (10 minutos)
-let inactivityTime = 10 * 60 * 1000;
-let timer = null;
+// ⏱️ CONTROL DE INACTIVIDAD (5 minutos)
+let timeoutInactividad;
 
-function resetTimer() {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-        cerrarSesionPorInactividad();
-    }, inactivityTime);
-}
+function resetInactividad() {
+    clearTimeout(timeoutInactividad);
 
-function cerrarSesionPorInactividad() {
-    signOut(auth).then(() => {
+    timeoutInactividad = setTimeout(() => {
+        alert("Sesión cerrada por inactividad");
         window.location.href = "index.html";
-    });
+    }, 5 * 60 * 1000); // 5 minutos
 }
 
 // 🔐 CONTROL GLOBAL
@@ -48,7 +43,6 @@ onAuthStateChanged(auth, (user) => {
 
         const ref = doc(db, "licenses", user.email);
 
-        // 🔥 ESCUCHA EN TIEMPO REAL
         unsubscribe = onSnapshot(ref, (snap) => {
 
             if (!snap.exists()) {
@@ -68,8 +62,9 @@ onAuthStateChanged(auth, (user) => {
             if (!accesoConcedido) {
                 accesoConcedido = true;
                 document.body.style.display = "block";
+
                 activarProteccionBasica();
-                iniciarControlInactividad();
+                activarControlInactividad();
             }
 
         });
@@ -107,13 +102,13 @@ function block(msg) {
     }
 }
 
-// 🛡️ PROTECCIÓN BÁSICA (ANTI-INSPECCIÓN)
+// 🛡️ PROTECCIÓN BÁSICA (SUAVE, SIN ROMPER)
 function activarProteccionBasica() {
 
     // 🚫 CLIC DERECHO
     document.addEventListener("contextmenu", e => e.preventDefault());
 
-    // 🚫 TECLAS DEVTOOLS
+    // 🚫 TECLAS DEVTOOLS (sin romper navegación)
     document.addEventListener("keydown", e => {
         if (
             e.key === "F12" ||
@@ -128,12 +123,12 @@ function activarProteccionBasica() {
     console.log = function () {};
 }
 
-// ⏱️ ACTIVAR CONTROL DE INACTIVIDAD
-function iniciarControlInactividad() {
+// ⏱️ ACTIVAR DETECCIÓN DE INACTIVIDAD
+function activarControlInactividad() {
 
-    ["click", "mousemove", "keydown", "scroll", "touchstart"].forEach(evento => {
-        document.addEventListener(evento, resetTimer);
+    ["click", "mousemove", "keydown", "scroll", "touchstart"].forEach(evt => {
+        document.addEventListener(evt, resetInactividad);
     });
 
-    resetTimer();
+    resetInactividad();
 }
