@@ -12,18 +12,25 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const isIndex = location.pathname.endsWith("index.html") || location.pathname === "/";
+const AUTH_KEY = "auth_ok";
 
-/* 🔒 SI NO ES INDEX, BLOQUEAR VISUALMENTE INMEDIATO */
-if (!isIndex) {
-    document.documentElement.style.display = "none";
+/* 🔒 BLOQUEO VISUAL INMEDIATO (evita flash de contenido) */
+document.documentElement.style.visibility = "hidden";
+
+/* 🧠 GATE TIPO COOKIES (INSTANTÁNEO) */
+const isInternalPage = location.pathname.includes(".html") &&
+                       !location.pathname.endsWith("index.html");
+
+if (isInternalPage && !sessionStorage.getItem(AUTH_KEY)) {
+    location.replace("index.html");
 }
 
-/* 🔐 CONTROL */
+/* 🔐 FIREBASE AUTH */
 onAuthStateChanged(auth, (user) => {
 
     if (!user) {
-        forceRedirect();
+        sessionStorage.removeItem(AUTH_KEY);
+        location.replace("index.html");
         return;
     }
 
@@ -32,25 +39,43 @@ onAuthStateChanged(auth, (user) => {
     onSnapshot(ref, (snap) => {
 
         if (!snap.exists()) {
-            forceRedirect();
-            return;
+            return deny("No tienes licencia activa");
         }
 
         const data = snap.data();
-        const exp = new Date((data.expiration || "").trim() + "T23:59:59");
+        const fecha = (data.expiration || "").trim();
+        const expiration = new Date(fecha + "T23:59:59");
 
-        if (isNaN(exp.getTime()) || new Date() > exp) {
-            forceRedirect();
-            return;
+        if (isNaN(expiration.getTime())) {
+            return deny("Error en fecha de licencia");
         }
 
-        /* ✅ PERMITIDO */
-        document.documentElement.style.display = "block";
+        if (new Date() > expiration) {
+            return deny("Licencia expirada");
+        }
+
+        /* ✅ ACCESO PERMITIDO */
+        sessionStorage.setItem(AUTH_KEY, "1");
+        document.documentElement.style.visibility = "visible";
     });
+
 });
 
-/* ⛔ REDIRECCIÓN FORZADA */
-function forceRedirect() {
-    sessionStorage.clear();
-    location.replace("index.html");
+/* ⛔ BLOQUEO CENTRAL */
+function deny(msg) {
+    sessionStorage.removeItem(AUTH_KEY);
+
+    document.documentElement.innerHTML = `
+        <div style="
+            margin-top:100px;
+            text-align:center;
+            font-family:Arial;
+        ">
+            <h2>⛔ Acceso restringido</h2>
+            <p>${msg}</p>
+            <button onclick="location.href='index.html'">Volver</button>
+        </div>
+    `;
+
+    document.documentElement.style.visibility = "visible";
 }
