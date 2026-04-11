@@ -2,35 +2,28 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const app = initializeApp({
+const firebaseConfig = {
     apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
     authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
     projectId: "portal-autenticacion-a1ngles"
-});
+};
 
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* 🔒 OVERLAY FIJO */
-const overlay = document.createElement("div");
-overlay.style.cssText = `
-position:fixed;
-inset:0;
-background:white;
-display:flex;
-align-items:center;
-justify-content:center;
-font-family:Arial;
-z-index:999999;
-`;
-overlay.innerText = "Verificando acceso...";
-document.body.appendChild(overlay);
+const isIndex = location.pathname.endsWith("index.html") || location.pathname === "/";
 
-/* 🔐 AUTH */
+/* 🔒 SI NO ES INDEX, BLOQUEAR VISUALMENTE INMEDIATO */
+if (!isIndex) {
+    document.documentElement.style.display = "none";
+}
+
+/* 🔐 CONTROL */
 onAuthStateChanged(auth, (user) => {
 
     if (!user) {
-        location.href = "index.html";
+        forceRedirect();
         return;
     }
 
@@ -39,28 +32,25 @@ onAuthStateChanged(auth, (user) => {
     onSnapshot(ref, (snap) => {
 
         if (!snap.exists()) {
-            return block("Sin licencia");
+            forceRedirect();
+            return;
         }
 
         const data = snap.data();
-        const fecha = (data.expiration || "").trim();
-        const exp = new Date(fecha + "T23:59:59");
+        const exp = new Date((data.expiration || "").trim() + "T23:59:59");
 
-        if (isNaN(exp)) return block("Fecha inválida");
-        if (new Date() > exp) return block("Licencia expirada");
+        if (isNaN(exp.getTime()) || new Date() > exp) {
+            forceRedirect();
+            return;
+        }
 
-        overlay.remove(); // ✅ desbloquea
-
+        /* ✅ PERMITIDO */
+        document.documentElement.style.display = "block";
     });
 });
 
-/* ⛔ BLOQUEO */
-function block(msg) {
-    document.body.innerHTML = `
-        <div style="text-align:center;font-family:Arial;margin-top:100px">
-            <h2>Acceso restringido</h2>
-            <p>${msg}</p>
-            <button onclick="location.href='index.html'">Volver</button>
-        </div>
-    `;
+/* ⛔ REDIRECCIÓN FORZADA */
+function forceRedirect() {
+    sessionStorage.clear();
+    location.replace("index.html");
 }
