@@ -29,7 +29,6 @@
             background: linear-gradient(135deg, #000080, #1e3a8a);
             color: white;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            /* El panel se mostrará cuando protect.js ejecute mostrar() */
         }
 
         button {
@@ -99,8 +98,12 @@
 
                     if (snap.exists()) {
                         const data = snap.data();
+                        
+                        // 👤 CAMBIO AQUÍ: Priorizamos el campo 'user' (nombre) sobre el correo
+                        const nombreAMostrar = data.user || user.email;
+
                         statusBox.innerHTML = `
-                            👤 <b>Usuario:</b> ${user.email}<br>
+                            👤 <b>Usuario:</b> ${nombreAMostrar}<br>
                             📅 <b>Expira:</b> ${data.expiration || 'No definida'}<br>
                             ✅ <b>Estado:</b> Suscripción Activa
                         `;
@@ -109,7 +112,6 @@
                     console.error("Error cargando datos adicionales:", e);
                 }
                 
-                // Ocultamos el loader (aunque protect.js ya controla la visibilidad de la página)
                 loading.style.display = "none";
             }
         });
@@ -117,7 +119,7 @@
         // Función global de Logout
         window.logout = async function () {
             if (confirm("¿Seguro que deseas cerrar sesión?")) {
-                sessionStorage.clear(); // Limpia la llave auth_ok
+                sessionStorage.clear(); 
                 await signOut(auth);
                 window.location.href = "index.html";
             }
