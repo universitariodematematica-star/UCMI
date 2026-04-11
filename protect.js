@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
     getFirestore,
     doc,
@@ -18,6 +18,23 @@ const db = getFirestore(app);
 
 let unsubscribe = null;
 let accesoConcedido = false;
+
+// ⏱️ CONTROL DE INACTIVIDAD (10 minutos)
+let inactivityTime = 10 * 60 * 1000;
+let timer = null;
+
+function resetTimer() {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+        cerrarSesionPorInactividad();
+    }, inactivityTime);
+}
+
+function cerrarSesionPorInactividad() {
+    signOut(auth).then(() => {
+        window.location.href = "index.html";
+    });
+}
 
 // 🔐 CONTROL GLOBAL
 onAuthStateChanged(auth, (user) => {
@@ -52,6 +69,7 @@ onAuthStateChanged(auth, (user) => {
                 accesoConcedido = true;
                 document.body.style.display = "block";
                 activarProteccionBasica();
+                iniciarControlInactividad();
             }
 
         });
@@ -106,13 +124,16 @@ function activarProteccionBasica() {
         }
     });
 
-    // 🔍 DETECCIÓN DE INSPECCIÓN
-    setInterval(() => {
-        if (window.outerWidth - window.innerWidth > 160) {
-            document.body.innerHTML = "<h2 style='text-align:center;margin-top:100px;'>⛔ Acceso bloqueado</h2>";
-        }
-    }, 1000);
-
     // 🔇 DESACTIVAR LOGS
     console.log = function () {};
+}
+
+// ⏱️ ACTIVAR CONTROL DE INACTIVIDAD
+function iniciarControlInactividad() {
+
+    ["click", "mousemove", "keydown", "scroll", "touchstart"].forEach(evento => {
+        document.addEventListener(evento, resetTimer);
+    });
+
+    resetTimer();
 }
