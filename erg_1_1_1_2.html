@@ -6,15 +6,9 @@
 <title>Ordena las palabras</title>
 
 <style>
-body {
-    font-family: Arial, sans-serif;
-}
+body { font-family: Arial, sans-serif; }
 
-.sentenceContainer {
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-}
+.sentenceContainer { display: flex; flex-wrap: wrap; margin-bottom: 20px; }
 
 .wordButton {
     padding: 8px 15px;
@@ -51,24 +45,15 @@ body {
     cursor: pointer;
 }
 
-.result {
-    margin-top: 10px;
-    font-weight: bold;
-}
+.result { margin-top: 10px; font-weight: bold; }
 
-.correct {
-    background-color: #7FFF7F !important;
-}
+.correct { background-color: #7FFF7F !important; }
+.incorrect { background-color: #FF7F7F !important; }
 
-.incorrect {
-    background-color: #FF7F7F !important;
-}
-
-.obtainCertificateButton {
-    display: none;
-}
+.obtainCertificateButton { display: none; }
 </style>
 
+<!-- 🔒 Seguridad -->
 <script type="module" src="protect.js"></script>
 </head>
 
@@ -85,7 +70,10 @@ body {
 <button class="redirectButton" onclick="nextSentence()" disabled>Siguiente</button>
 <button class="obtainCertificateButton" onclick="getCertificate()">Certificado</button>
 
-<script>
+<!-- 🔥 SCRIPT PRINCIPAL -->
+<script type="module">
+
+import { procesarResultado } from "./progress.js";
 
 const sentences = [
 ["Nice","to","meet","you!"],
@@ -135,7 +123,7 @@ blankArea.ondrop = e => {
     blankArea.appendChild(btn);
 };
 
-function checkAnswer() {
+async function checkAnswer() {
     const user = [...document.querySelector(".sentenceBlank").children].map(b => b.textContent);
     const correct = sentences[index];
 
@@ -147,11 +135,14 @@ function checkAnswer() {
 
         document.querySelector(".redirectButton").disabled = false;
 
-        // 🔥 GUARDAR PROGRESO (CLAVE)
         localStorage.setItem("orden_index", index);
 
+        // 🔥 ÚLTIMO EJERCICIO → GUARDAR EN FIRESTORE
         if (index === sentences.length - 1) {
+
             document.querySelector(".obtainCertificateButton").style.display = "inline-block";
+
+            await procesarResultado("unidad1", "tema1", "grammar", 10);
         }
 
     } else {
@@ -163,7 +154,6 @@ function checkAnswer() {
 function nextSentence() {
     index++;
 
-    // 🔥 GUARDAR PROGRESO AL AVANZAR
     localStorage.setItem("orden_index", index);
 
     if (index < sentences.length) {
@@ -174,16 +164,14 @@ function nextSentence() {
 }
 
 function getCertificate() {
-    // 🔥 LIMPIAR PROGRESO (OPCIONAL)
     localStorage.removeItem("orden_index");
-
     window.location.href = "logrado_erg_1_1_1.html";
 }
 
-// 🔥 INICIO CON PROGRESO
+// 🔥 INICIO
 render();
 
-// 🔥 MOSTRAR (por protect.js)
+// 🔒 MOSTRAR (protect.js)
 document.body.style.display = "block";
 
 </script>
