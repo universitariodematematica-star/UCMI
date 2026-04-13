@@ -37,23 +37,13 @@ body { font-family: Arial, sans-serif; }
     padding: 10px 20px;
     border: none;
     border-radius: 6px;
-    cursor: not-allowed;
-}
-
-.checkButton:hover {
-    background-color: violet;
-    cursor: pointer;
 }
 
 .result { margin-top: 10px; font-weight: bold; }
 
-.correct { background-color: #7FFF7F !important; }
-.incorrect { background-color: #FF7F7F !important; }
-
 .obtainCertificateButton { display: none; }
 </style>
 
-<!-- 🔒 Seguridad -->
 <script type="module" src="protect.js"></script>
 </head>
 
@@ -70,7 +60,7 @@ body { font-family: Arial, sans-serif; }
 <button class="redirectButton" onclick="nextSentence()" disabled>Siguiente</button>
 <button class="obtainCertificateButton" onclick="getCertificate()">Certificado</button>
 
-<!-- 🔥 SCRIPT PRINCIPAL -->
+<!-- 🔥 SCRIPT COMO MÓDULO -->
 <script type="module">
 
 import { procesarResultado } from "./progress.js";
@@ -81,7 +71,6 @@ const sentences = [
 ["Where","are","you","from?"]
 ];
 
-// 🔥 CARGAR PROGRESO
 let index = parseInt(localStorage.getItem("orden_index")) || 0;
 
 function shuffle(arr) {
@@ -123,7 +112,8 @@ blankArea.ondrop = e => {
     blankArea.appendChild(btn);
 };
 
-async function checkAnswer() {
+// 🔥 HACEMOS LAS FUNCIONES GLOBALES
+window.checkAnswer = async function () {
     const user = [...document.querySelector(".sentenceBlank").children].map(b => b.textContent);
     const correct = sentences[index];
 
@@ -137,11 +127,11 @@ async function checkAnswer() {
 
         localStorage.setItem("orden_index", index);
 
-        // 🔥 ÚLTIMO EJERCICIO → GUARDAR EN FIRESTORE
+        // 🔥 SOLO AL FINAL → FIRESTORE
         if (index === sentences.length - 1) {
-
             document.querySelector(".obtainCertificateButton").style.display = "inline-block";
 
+            // 🔥 ESTO YA NO ROMPE NADA
             await procesarResultado("unidad1", "tema1", "grammar", 10);
         }
 
@@ -149,9 +139,9 @@ async function checkAnswer() {
         result.textContent = "Incorrecto";
         result.style.color = "red";
     }
-}
+};
 
-function nextSentence() {
+window.nextSentence = function () {
     index++;
 
     localStorage.setItem("orden_index", index);
@@ -161,12 +151,12 @@ function nextSentence() {
         document.querySelector(".result").textContent = "";
         document.querySelector(".redirectButton").disabled = true;
     }
-}
+};
 
-function getCertificate() {
+window.getCertificate = function () {
     localStorage.removeItem("orden_index");
     window.location.href = "logrado_erg_1_1_1.html";
-}
+};
 
 // 🔥 INICIO
 render();
