@@ -78,30 +78,35 @@
         .error { background-color: #f44336; color: white; }
     </style>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+   <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
-            authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
-            projectId: "portal-autenticacion-a1ngles",
-            storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
-            messagingSenderId: "1039504020190",
-            appId: "1:1039504020190:web:212cf030c3e6feb175a84f"
-        };
+const firebaseConfig = {
+    apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
+    authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
+    projectId: "portal-autenticacion-a1ngles",
+    storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
+    messagingSenderId: "1039504020190",
+    appId: "1:1039504020190:web:212cf030c3e6feb175a84f"
+};
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+// 🔥 ORDEN CORRECTO
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-        window.auth = auth;
-        window.db = db;
-        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-        window.getDoc = getDoc;
-        window.doc = doc;
-    </script>
+// 🔥 CLAVE: persistencia REAL
+await setPersistence(auth, browserLocalPersistence);
+
+// 🔹 Exponer global
+window.auth = auth;
+window.db = db;
+window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+window.getDoc = getDoc;
+window.doc = doc;
+</script>
 </head>
 
 <body>
