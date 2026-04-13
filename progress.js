@@ -5,7 +5,7 @@
 // 🔹 IMPORTS FIREBASE
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // 🔹 CONFIGURACIÓN (misma que protect.js)
 const firebaseConfig = {
@@ -22,109 +22,143 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // ==========================================
-// 🔥 GUARDAR PROGRESO
+// 🔥 GUARDAR PROGRESO (CORREGIDO)
 // ==========================================
 export async function guardarProgreso(unit, topic, skill, score = 10) {
-  try {
-    const user = auth.currentUser;
 
-    if (!user) {
-      console.warn("⚠ Usuario no autenticado");
-      return;
-    }
+  return new Promise((resolve) => {
 
-    const id = `${unit}_${topic}_${skill}`;
+    onAuthStateChanged(auth, async (user) => {
 
-    await setDoc(doc(db, "users", user.uid, "progress", id), {
-      score,
-      completed: true,
-      unit,
-      topic,
-      skill,
-      timestamp: new Date()
+      if (!user) {
+        console.warn("⚠ Usuario no autenticado");
+        resolve(false);
+        return;
+      }
+
+      try {
+        const id = `${unit}_${topic}_${skill}`;
+
+        await setDoc(doc(db, "users", user.uid, "progress", id), {
+          score,
+          completed: true,
+          unit,
+          topic,
+          skill,
+          timestamp: new Date()
+        });
+
+        console.log(`✅ Progreso guardado: ${id}`);
+        resolve(true);
+
+      } catch (error) {
+        console.error("❌ Error al guardar progreso:", error);
+        resolve(false);
+      }
+
     });
 
-    console.log(`✅ Progreso guardado: ${id}`);
+  });
 
-  } catch (error) {
-    console.error("❌ Error al guardar progreso:", error);
-  }
 }
 
 // ==========================================
 // 🔍 VERIFICAR CERTIFICADO
 // ==========================================
 export async function verificarCertificado(unit, topic) {
-  try {
-    const user = auth.currentUser;
 
-    if (!user) {
-      console.warn("⚠ Usuario no autenticado");
-      return false;
-    }
+  return new Promise((resolve) => {
 
-    const skills = ["grammar", "listening", "reading", "writing"];
-    let completadas = 0;
+    onAuthStateChanged(auth, async (user) => {
 
-    for (let skill of skills) {
-      const ref = doc(db, "users", user.uid, "progress", `${unit}_${topic}_${skill}`);
-      const snap = await getDoc(ref);
-
-      if (snap.exists() && snap.data().completed) {
-        completadas++;
+      if (!user) {
+        console.warn("⚠ Usuario no autenticado");
+        resolve(false);
+        return;
       }
-    }
 
-    return completadas === skills.length;
+      try {
+        const skills = ["grammar", "listening", "reading", "writing"];
+        let completadas = 0;
 
-  } catch (error) {
-    console.error("❌ Error verificando certificado:", error);
-    return false;
-  }
+        for (let skill of skills) {
+          const ref = doc(db, "users", user.uid, "progress", `${unit}_${topic}_${skill}`);
+          const snap = await getDoc(ref);
+
+          if (snap.exists() && snap.data().completed) {
+            completadas++;
+          }
+        }
+
+        resolve(completadas === skills.length);
+
+      } catch (error) {
+        console.error("❌ Error verificando certificado:", error);
+        resolve(false);
+      }
+
+    });
+
+  });
+
 }
 
 // ==========================================
-// 🏆 GUARDAR CERTIFICADO (OPCIONAL)
+// 🏆 GUARDAR CERTIFICADO
 // ==========================================
 export async function guardarCertificado(unit, topic) {
-  try {
-    const user = auth.currentUser;
 
-    if (!user) {
-      console.warn("⚠ Usuario no autenticado");
-      return;
-    }
+  return new Promise((resolve) => {
 
-    const id = `${unit}_${topic}`;
+    onAuthStateChanged(auth, async (user) => {
 
-    await setDoc(doc(db, "users", user.uid, "certificates", id), {
-      obtained: true,
-      unit,
-      topic,
-      date: new Date()
+      if (!user) {
+        console.warn("⚠ Usuario no autenticado");
+        resolve(false);
+        return;
+      }
+
+      try {
+        const id = `${unit}_${topic}`;
+
+        await setDoc(doc(db, "users", user.uid, "certificates", id), {
+          obtained: true,
+          unit,
+          topic,
+          date: new Date()
+        });
+
+        console.log(`🏆 Certificado guardado: ${id}`);
+        resolve(true);
+
+      } catch (error) {
+        console.error("❌ Error guardando certificado:", error);
+        resolve(false);
+      }
+
     });
 
-    console.log(`🏆 Certificado guardado: ${id}`);
+  });
 
-  } catch (error) {
-    console.error("❌ Error guardando certificado:", error);
-  }
 }
 
 // ==========================================
 // 🚀 FUNCIÓN COMPLETA (TODO EN UNO)
 // ==========================================
 export async function procesarResultado(unit, topic, skill, score = 10) {
+
   // 1. Guardar progreso
-  await guardarProgreso(unit, topic, skill, score);
+  const guardado = await guardarProgreso(unit, topic, skill, score);
+
+  if (!guardado) return false;
 
   // 2. Verificar certificado
   const aprobado = await verificarCertificado(unit, topic);
 
-  // 3. Si aprobó todo → guardar certificado
+  // 3. Si completó todo → guardar certificado
   if (aprobado) {
     await guardarCertificado(unit, topic);
   }
 
-  return aprobado;
+  return true;
 }
