@@ -85,8 +85,10 @@ body {
 <button class="redirectButton" onclick="nextSentence()" disabled>Siguiente</button>
 <button class="obtainCertificateButton" onclick="getCertificate()">Certificado</button>
 
-<script>
+<script type="module">
 
+import { procesarResultado } from "./progress.js"; 
+    
 const sentences = [
 ["Nice","to","meet","you!"],
 ["My","name","is","John"],
@@ -135,7 +137,7 @@ blankArea.ondrop = e => {
     blankArea.appendChild(btn);
 };
 
-function checkAnswer() {
+window.checkAnswer = function () {
     const user = [...document.querySelector(".sentenceBlank").children].map(b => b.textContent);
     const correct = sentences[index];
 
@@ -151,8 +153,10 @@ function checkAnswer() {
         localStorage.setItem("orden_index", index);
 
         if (index === sentences.length - 1) {
-            document.querySelector(".obtainCertificateButton").style.display = "inline-block";
-        }
+    document.querySelector(".obtainCertificateButton").style.display = "inline-block";
+
+    procesarResultado("unidad1", "tema1", "grammar", 10);
+}
 
     } else {
         result.textContent = "Incorrecto";
@@ -160,7 +164,7 @@ function checkAnswer() {
     }
 }
 
-function nextSentence() {
+window.nextSentence = function () {
     index++;
 
     // 🔥 GUARDAR PROGRESO AL AVANZAR
@@ -173,7 +177,7 @@ function nextSentence() {
     }
 }
 
-function getCertificate() {
+window.getCertificate = function () {
     // 🔥 LIMPIAR PROGRESO (OPCIONAL)
     localStorage.removeItem("orden_index");
 
