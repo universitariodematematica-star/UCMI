@@ -12,7 +12,7 @@ document.documentElement.style.visibility = "hidden";
 // Carga las herramientas necesarias de Firebase (Auth y Firestore).
 // Funciona conectando el script con los servidores de Google mediante tu apiKey 
 // y configurando las constantes 'auth' para usuarios y 'db' para la base de datos.
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -22,7 +22,13 @@ const firebaseConfig = {
     projectId: "portal-autenticacion-a1ngles"
 };
 
-const app = initializeApp(firebaseConfig);
+let app;
+
+try {
+    app = getApp();
+} catch (e) {
+    app = initializeApp(firebaseConfig);
+}
 const auth = getAuth(app);
 const db = getFirestore(app);
 
@@ -35,13 +41,12 @@ let timer;
 // Verifica la existencia de la "llave" local en el navegador.
 // Funciona revisando el sessionStorage tras 500ms. Si no encuentra 'auth_ok' con valor '1',
 // asume que el usuario entró saltándose el login y lo expulsa inmediatamente al Index.
-setTimeout(() => {
-    const llave = sessionStorage.getItem("auth_ok");
-    if (llave !== "1") {
-        console.log("Acceso denegado: No se encontró la llave de sesión.");
-        window.location.replace("index.html");
-    }
-}, 500);
+// Validación inmediata sin timeout
+const llave = sessionStorage.getItem("auth_ok");
+if (llave !== "1") {
+    console.log("Acceso denegado: No hay sesión válida.");
+    window.location.replace("index.html");
+}
 
 // ==========================================
 // BLOQUE 4: VALIDACIÓN DE IDENTIDAD Y LICENCIA
