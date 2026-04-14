@@ -97,17 +97,31 @@
                     const snap = await getDoc(ref);
 
                     if (snap.exists()) {
-                        const data = snap.data();
-                        
-                        // 👤 CAMBIO AQUÍ: Priorizamos el campo 'user' (nombre) sobre el correo
-                        const nombreAMostrar = data.user || user.email;
+    const data = snap.data();
+    
+    // 👤 CAMBIO AQUÍ: Priorizamos el campo 'user' (nombre) sobre el correo
+    const nombreAMostrar = data.user || user.email;
 
-                        statusBox.innerHTML = `
-                            👤 <b>Usuario:</b> ${nombreAMostrar}<br>
-                            📅 <b>Expira:</b> ${data.expiration || 'No definida'}<br>
-                            ✅ <b>Estado:</b> Suscripción Activa
-                        `;
-                    }
+    // 🔥 Calcular días restantes
+    let diasRestantes = "No disponible";
+
+    if (data.expiration) {
+        const fechaExp = new Date(data.expiration + "T23:59:59");
+        const hoy = new Date();
+
+        const diferencia = fechaExp - hoy;
+        diasRestantes = Math.ceil(diferencia / (1000 * 60 * 60 * 24));
+
+        if (diasRestantes < 0) diasRestantes = 0;
+    }
+
+    statusBox.innerHTML = `
+        👤 <b>Usuario:</b> ${nombreAMostrar}<br>
+        📅 <b>Expira:</b> ${data.expiration || 'No definida'}<br>
+        ⏳ <b>Días restantes:</b> ${diasRestantes}<br>
+        ✅ <b>Estado:</b> ${diasRestantes > 0 ? "Activa" : "Vencida"}
+    `;
+}
                 } catch (e) {
                     console.error("Error cargando datos adicionales:", e);
                 }
