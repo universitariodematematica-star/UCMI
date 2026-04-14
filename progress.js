@@ -25,12 +25,14 @@ const auth = getAuth(app);
 // 🔥 OBTENER USUARIO (SOLUCIÓN CLAVE)
 // ==========================================
 async function getUser() {
-  return new Promise((resolve) => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      unsubscribe();
-      resolve(user);
-    });
-  });
+  let user = auth.currentUser;
+
+  if (user) return user;
+
+  // Espera corta por si Firebase aún está cargando
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  return auth.currentUser;
 }
 
 // ==========================================
