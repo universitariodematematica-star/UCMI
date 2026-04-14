@@ -151,17 +151,38 @@ window.doc = doc;
                 const docSnap = await window.getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    
-                    // Verificación de Fecha
-                    const fechaExp = new Date((data.expiration || "") + "T23:59:59");
-                    const hoy = new Date();
+    // Verificación de Fecha
+    const fechaExp = new Date((data.expiration || "") + "T23:59:59");
+    const hoy = new Date();
 
-                    if (isNaN(fechaExp.getTime()) || hoy > fechaExp) {
-                        msg.className = "message error";
-                        msg.innerHTML = `❌ Licencia vencida.<br>Contacte al administrador:<br><b>+593 99 175 23 85</b>`;
-                        return;
-                    }
+    if (isNaN(fechaExp.getTime()) || hoy > fechaExp) {
+        msg.className = "message error";
+        msg.innerHTML = `❌ Licencia vencida.<br>Contacte al administrador:<br><b>+593 99 175 23 85</b>`;
+        return;
+    }
+
+    // Éxito
+    msg.className = "message success";
+    msg.innerText = "✅ Bienvenido " + (data.user || user.email);
+
+    sessionStorage.setItem("email", user.email);
+    sessionStorage.setItem("auth_ok", "1");
+
+    setTimeout(() => {
+        window.location.href = "home.html";
+    }, 1000);
+
+} else {
+    msg.className = "message error";
+    msg.innerText = "❌ El usuario no tiene licencia registrada.";
+}
+
+} catch (error) {
+    msg.className = "message error";
+    msg.innerText = (error.code === "auth/invalid-credential") 
+        ? "❌ El correo o la contraseña no coinciden, intenta de nuevo" 
+        : "⚠️ Error: Ocurrió un problema, por favor inténtalo más tarde.";
+}
 
                     // Éxito
                     msg.className = "message success";
