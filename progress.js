@@ -24,15 +24,13 @@ const auth = getAuth(app);
 // ==========================================
 // 🔥 OBTENER USUARIO (SOLUCIÓN CLAVE)
 // ==========================================
-async function getUser() {
-  let user = auth.currentUser;
-
-  if (user) return user;
-
-  // Espera corta por si Firebase aún está cargando
-  await new Promise(resolve => setTimeout(resolve, 300));
-
-  return auth.currentUser;
+function getUser() {
+  return new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      resolve(user);
+    });
+  });
 }
 
 // ==========================================
@@ -50,6 +48,11 @@ export async function guardarProgreso(unit, topic, skill, score = 10) {
   try {
     const id = `${unit}_${topic}_${skill}`;
 
+    // 🔹 Guardar info básica del usuario
+await setDoc(doc(db, "users", user.uid), {
+  email: user.email,
+  nombre: user.displayName || "Sin nombre"
+}, { merge: true });
     await setDoc(doc(db, "users", user.uid, "progress", id), {
       score,
       completed: true,
