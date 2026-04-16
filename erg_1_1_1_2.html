@@ -1,205 +1,222 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ordena las palabras</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordena las palabras</title>
 
-<style>
-body {
-    font-family: Arial, sans-serif;
-}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
 
-.sentenceContainer {
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-}
+        .sentenceContainer {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
 
-.wordButton {
-    padding: 8px 15px;
-    background-color: #007BFF;
-    margin: 5px;
-    cursor: pointer;
-    border: none;
-    color: black;
-    border-radius: 6px;
-}
+        .wordButton {
+            padding: 8px 15px;
+            background-color: #007BFF;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            color: black;
+            border-radius: 6px;
+        }
 
-.wordButton:hover {
-    background-color: violet;
-    border: 1px solid black;
-}
+        .wordButton:hover {
+            background-color: violet;
+            border: 1px solid black;
+        }
 
-.sentenceBlank {
-    width: 100%;
-    min-height: 60px;
-    background-color: #f0f0f0;
-    border: 2px dashed #ccc;
-    margin-bottom: 20px;
-}
+        .sentenceBlank {
+            width: 100%;
+            min-height: 60px;
+            background-color: #f0f0f0;
+            border: 2px dashed #ccc;
+            margin-bottom: 20px;
+        }
 
-.checkButton, .redirectButton, .obtainCertificateButton {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: not-allowed;
-}
+        .checkButton,
+        .redirectButton,
+        .obtainCertificateButton {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: not-allowed;
+        }
 
-.checkButton:hover {
-    background-color: violet;
-    cursor: pointer;
-}
+        .checkButton:hover {
+            background-color: violet;
+            cursor: pointer;
+        }
 
-.result {
-    margin-top: 10px;
-    font-weight: bold;
-}
+        .result {
+            margin-top: 10px;
+            font-weight: bold;
+        }
 
-.correct {
-    background-color: #7FFF7F !important;
-}
+        .correct {
+            background-color: #7FFF7F !important;
+        }
 
-.incorrect {
-    background-color: #FF7F7F !important;
-}
+        .incorrect {
+            background-color: #FF7F7F !important;
+        }
 
-.obtainCertificateButton {
-    display: none;
-}
-</style>
+        .obtainCertificateButton {
+            display: none;
+        }
+    </style>
 
-<script type="module" src="protect.js"></script>
+    <script type="module" src="protect.js"></script>
 </head>
 
 <body>
 
-<h2>Ordena las palabras en la oración</h2>
+    <h2>Ordena las palabras en la oración</h2>
 
-<div class="sentenceContainer"></div>
-<div class="sentenceBlank"></div>
+    <div class="sentenceContainer"></div>
+    <div class="sentenceBlank"></div>
 
-<button class="checkButton" onclick="checkAnswer()">Evaluar</button>
-<p class="result"></p>
+    <button class="checkButton" onclick="checkAnswer()">Evaluar</button>
+    <p class="result"></p>
 
-<button class="redirectButton" onclick="nextSentence()" disabled>Siguiente</button>
-<button class="obtainCertificateButton" onclick="getCertificate()">Certificado</button>
+    <button class="redirectButton" onclick="nextSentence()" disabled>Siguiente</button>
+    <button class="obtainCertificateButton" onclick="getCertificate()">Certificado</button>
 
-<script type="module">
+    <script type="module">
+        import { db, auth } from "./firebase.js";
+        import { procesarResultado } from "./progress.js";
+        import { addDoc, collection, serverTimestamp } 
+        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import { db, auth } from "./firebase.js";
-import { procesarResultado } from "./progress.js"; 
-    
-const sentences = [
-["Nice","to","meet","you!"],
-["My","name","is","John"],
-["Where","are","you","from?"]
-];
+        const sentences = [
+            ["Nice", "to", "meet", "you!"],
+            ["My", "name", "is", "John"],
+            ["Where", "are", "you", "from?"]
+        ];
 
-// 🔥 CARGAR PROGRESO
-let index = parseInt(localStorage.getItem("orden_index")) || 0;
+        // 🔥 CARGAR PROGRESO
+        let index = parseInt(localStorage.getItem("orden_index")) || 0;
 
-function shuffle(arr) {
-    return arr.sort(() => Math.random() - 0.5);
-}
+        function shuffle(arr) {
+            return arr.sort(() => Math.random() - 0.5);
+        }
 
-function render() {
-    const container = document.querySelector(".sentenceContainer");
-    const blank = document.querySelector(".sentenceBlank");
+        function render() {
+            const container = document.querySelector(".sentenceContainer");
+            const blank = document.querySelector(".sentenceBlank");
 
-    container.innerHTML = "";
-    blank.innerHTML = "";
+            container.innerHTML = "";
+            blank.innerHTML = "";
 
-    shuffle([...sentences[index]]).forEach(word => {
-        const btn = document.createElement("button");
-        btn.textContent = word;
-        btn.className = "wordButton";
-        btn.draggable = true;
+            shuffle([...sentences[index]]).forEach(word => {
+                const btn = document.createElement("button");
+                btn.textContent = word;
+                btn.className = "wordButton";
+                btn.draggable = true;
 
-        btn.ondragstart = e => e.dataTransfer.setData("text", word);
+                btn.ondragstart = e => e.dataTransfer.setData("text", word);
 
-        container.appendChild(btn);
-    });
-}
+                container.appendChild(btn);
+            });
+        }
 
-// Drag & Drop
-const blankArea = document.querySelector(".sentenceBlank");
+        // Drag & Drop
+        const blankArea = document.querySelector(".sentenceBlank");
 
-blankArea.ondragover = e => e.preventDefault();
+        blankArea.ondragover = e => e.preventDefault();
 
-blankArea.ondrop = e => {
-    e.preventDefault();
-    const word = e.dataTransfer.getData("text");
+        blankArea.ondrop = e => {
+            e.preventDefault();
 
-    const btn = document.createElement("button");
-    btn.textContent = word;
-    btn.className = "wordButton";
+            const word = e.dataTransfer.getData("text");
 
-    blankArea.appendChild(btn);
-};
+            const btn = document.createElement("button");
+            btn.textContent = word;
+            btn.className = "wordButton";
 
-window.checkAnswer = function () {
-    const user = [...document.querySelector(".sentenceBlank").children].map(b => b.textContent);
-    const correct = sentences[index];
+            blankArea.appendChild(btn);
+        };
 
-    const result = document.querySelector(".result");
+        window.checkAnswer = function () {
+            const user = [...document.querySelector(".sentenceBlank").children]
+                .map(b => b.textContent);
 
-    if (JSON.stringify(user) === JSON.stringify(correct)) {
-        result.textContent = "Correcto";
-        result.style.color = "green";
+            const correct = sentences[index];
+            const result = document.querySelector(".result");
 
-        document.querySelector(".redirectButton").disabled = false;
+            if (JSON.stringify(user) === JSON.stringify(correct)) {
+                result.textContent = "Correcto";
+                result.style.color = "green";
 
-        // 🔥 GUARDAR PROGRESO (CLAVE)
-        localStorage.setItem("orden_index", index);
+                document.querySelector(".redirectButton").disabled = false;
 
-        if (index === sentences.length - 1) {
-    document.querySelector(".obtainCertificateButton").style.display = "inline-block";
+                // 🔥 GUARDAR PROGRESO
+                localStorage.setItem("orden_index", index);
 
+                if (index === sentences.length - 1) {
+                    document.querySelector(".obtainCertificateButton").style.display = "inline-block";
+                }
 
-}
+            } else {
+                result.textContent = "Incorrecto";
+                result.style.color = "red";
+            }
+        };
 
-    } else {
-        result.textContent = "Incorrecto";
-        result.style.color = "red";
-    }
-}
+        window.nextSentence = function () {
+            index++;
 
-window.nextSentence = function () {
-    index++;
+            // 🔥 GUARDAR PROGRESO
+            localStorage.setItem("orden_index", index);
 
-    // 🔥 GUARDAR PROGRESO AL AVANZAR
-    localStorage.setItem("orden_index", index);
+            if (index < sentences.length) {
+                render();
+                document.querySelector(".result").textContent = "";
+                document.querySelector(".redirectButton").disabled = true;
+            }
+        };
 
-    if (index < sentences.length) {
+        window.getCertificate = async function () {
+
+            console.log("Usuario actual:", auth.currentUser);
+
+            const aprobado = await procesarResultado("unidad1", "tema1", "grammar", 10);
+
+            if (aprobado === false) {
+                alert("Error guardando progreso");
+                return;
+            }
+
+            // 🔥 GUARDAR EN FIRESTORE
+            await addDoc(collection(db, "grades"), {
+                studentUID: auth.currentUser.uid,
+                studentName: auth.currentUser.email,
+                exerciseName: "Ordena las palabras",
+                type: "grammar",
+                score: 10,
+                maxScore: 10,
+                isPerfect: true,
+                createdAt: serverTimestamp()
+            });
+
+            // 🔥 LIMPIAR PROGRESO LOCAL
+            localStorage.removeItem("orden_index");
+
+            // 🔥 REDIRECCIÓN FINAL
+            window.location.href = "logrado_erg_1_1_1.html";
+        };
+
+        // 🔥 INICIO
         render();
-        document.querySelector(".result").textContent = "";
-        document.querySelector(".redirectButton").disabled = true;
-    }
-}
-window.getCertificate = async function () {
 
-    const aprobado = await procesarResultado("unidad1", "tema1", "grammar", 10);
-
-    if (aprobado === false) {
-        alert("Error guardando progreso");
-        return;
-    }
-
-    // 🔥 LIMPIAR PROGRESO LOCAL
-    localStorage.removeItem("orden_index");
-
-    // 🔥 REDIRECCIÓN FINAL (SOLO UNA VEZ)
-    window.location.href = "logrado_erg_1_1_1.html";
-}
-
-// 🔥 INICIO CON PROGRESO
-render();
-
-// 🔥 MOSTRAR (por protect.js)
-document.body.style.display = "block";
-
-</script>
+        // 🔥 MOSTRAR
+        document.body.style.display = "block";
+    </script>
 
 </body>
 </html>
