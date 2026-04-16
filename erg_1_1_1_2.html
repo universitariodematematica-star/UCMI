@@ -87,7 +87,10 @@ body {
 
 <script type="module">
 
-import { procesarResultado } from "./progress.js"; 
+import { procesarResultado } from "./progress.js";
+import { db, auth } from "./firebase.js";
+import { addDoc, collection, serverTimestamp } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";    
     
 const sentences = [
 ["Nice","to","meet","you!"],
@@ -179,16 +182,42 @@ window.nextSentence = function () {
 
 window.getCertificate = async function () {
 
-    const aprobado = await procesarResultado("unidad1", "tema1", "grammar", 10);
+    console.log("🔥 CLICK CERTIFICADO");
 
-    if (aprobado === false) {
-        alert("Error guardando progreso");
+    const user = auth.currentUser;
+
+    console.log("USER:", user);
+
+    if (!user) {
+        alert("Usuario NO listo todavía");
         return;
     }
 
-    localStorage.removeItem("orden_index");
+    try {
+        const aprobado = await procesarResultado("unidad1", "tema1", "grammar", 10);
 
-    window.location.href = "logrado_erg_1_1_1.html";
+        console.log("APROBADO:", aprobado);
+
+        await addDoc(collection(db, "grades"), {
+            studentUID: user.uid,
+            studentName: user.email,
+            exerciseName: "Ordena las palabras",
+            type: "grammar",
+            score: 10,
+            maxScore: 10,
+            isPerfect: true,
+            createdAt: serverTimestamp()
+        });
+
+        console.log("✅ GUARDADO EN FIRESTORE");
+
+        localStorage.removeItem("orden_index");
+
+        window.location.href = "logrado_erg_1_1_1.html";
+
+    } catch (e) {
+        console.error("❌ ERROR:", e);
+    }
 };
 
 // 🔥 INICIO
