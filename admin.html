@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
 <meta charset="UTF-8">
 <title>Admin PRO++</title>
@@ -19,22 +18,16 @@ body {
     text-align: center;
 }
 
-.grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 15px;
-    padding: 20px;
-}
-
 .card {
     background: white;
     border-radius: 12px;
     padding: 15px;
+    margin: 20px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
-input, select {
-    width: 95%;
+input, button {
+    width: 100%;
     padding: 10px;
     margin: 6px 0;
     border-radius: 8px;
@@ -42,34 +35,9 @@ input, select {
 }
 
 button {
-    padding: 8px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    margin-top: 5px;
-    width: 100%;
     background: #2563eb;
     color: white;
-}
-
-.user {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-}
-
-.badge {
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    color: white;
-}
-
-.active { background: green; }
-.expired { background: red; }
-
-.msg {
-    margin-top: 10px;
-    font-weight: bold;
+    cursor: pointer;
 }
 </style>
 
@@ -87,19 +55,15 @@ import {
     getFirestore,
     doc,
     setDoc,
-    deleteDoc,
-    collection,
-    getDocs
+    getDocs,
+    collection
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔥 CONFIG
+// 🔥 FIREBASE CONFIG
 const firebaseConfig = {
     apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
     authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
-    projectId: "portal-autenticacion-a1ngles",
-    storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
-    messagingSenderId: "1039504020190",
-    appId: "1:1039504020190:web:212cf030c3e6feb175a84f"
+    projectId: "portal-autenticacion-a1ngles"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -115,175 +79,97 @@ window.login = async function () {
     const pass = document.getElementById("pass").value;
 
     try {
-        const user = await signInWithEmailAndPassword(auth, email, pass);
+        const res = await signInWithEmailAndPassword(auth, email, pass);
 
-        if (user.user.email !== ADMIN_EMAIL) {
+        if (res.user.email !== ADMIN_EMAIL) {
             alert("No autorizado");
             await signOut(auth);
             return;
         }
 
-        showPanel();
+        document.getElementById("login").style.display = "none";
+        document.getElementById("panel").style.display = "block";
+
         loadData();
 
     } catch (e) {
-        alert("Error de login");
+        alert("Error login");
     }
 };
 
-// ---------------- PROTECCIÓN ----------------
-onAuthStateChanged(auth, (user) => {
-
-    if (!user) return;
-
-    if (user.email !== ADMIN_EMAIL) {
-        signOut(auth);
-        window.location.href = "index.html";
-    }
-});
-
-function showPanel() {
-    document.getElementById("login").style.display = "none";
-    document.getElementById("panel").style.display = "block";
-}
-
-// ---------------- CREAR / EDITAR ----------------
+// ---------------- GUARDAR USUARIO ----------------
 window.saveLicense = async function () {
 
-const nameInput = document.getElementById("name").value.trim();
-const email = document.getElementById("userEmail").value.trim();
-const exp = document.getElementById("exp").value;
-
-if (!nameInput || nameInput.length < 3) {
-    document.getElementById("msg").innerText = "Nombre inválido";
-    return;
-}
-
-if (!email.includes("@")) {
-    document.getElementById("msg").innerText = "Email inválido";
-    return;
-}
+    const nameInput = document.getElementById("name").value.trim();
+    const email = document.getElementById("userEmail").value.trim();
+    const exp = document.getElementById("exp").value;
 
     const msg = document.getElementById("msg");
 
-    if (!name || !email || !exp) {
-        msg.innerText = "Completa todos los campos";
+    if (!nameInput || nameInput.length < 3) {
+        msg.innerText = "Nombre inválido";
         return;
     }
 
-    await setDoc(doc(db, "licenses", email), {
-    user: nameInput,
-    expiration: exp
-});
-
-await setDoc(doc(db, "users", email), {
-    name: nameInput,
-    email: email
-}, { merge: true });
-
-    msg.innerText = "Licencia guardada";
-    loadData();
-};
-
-// ---------------- ELIMINAR ----------------
-window.deleteUser = async function (email) {
-
-    if (!confirm("¿Eliminar usuario?")) return;
-
-    await deleteDoc(doc(db, "licenses", email));
-    loadData();
-};
-
-// ---------------- RENOVAR PRO (CORREGIDO) ----------------
-window.renew30 = async function (email, name, currentExp) {
-
-    let baseDate = new Date();
-    const today = new Date();
-
-    const expDate = new Date(currentExp + "T23:59:59");
-
-    if (expDate > today) {
-        baseDate = expDate;
+    if (!email.includes("@")) {
+        msg.innerText = "Email inválido";
+        return;
     }
 
-    baseDate.setDate(baseDate.getDate() + 30);
+    if (!exp) {
+        msg.innerText = "Falta fecha";
+        return;
+    }
 
-    const newExp = baseDate.toISOString().split("T")[0];
-
+    // LICENSE
     await setDoc(doc(db, "licenses", email), {
-        user: name,
-        expiration: newExp
+        user: nameInput,
+        expiration: exp
     });
 
-    document.getElementById("msg").innerText = "+30 días aplicados";
+    // USER PROFILE
+    await setDoc(doc(db, "users", email), {
+        name: nameInput,
+        email: email
+    }, { merge: true });
 
-    setTimeout(() => {
-        loadData();
-    }, 300);
+    msg.innerText = "Usuario guardado correctamente";
+
+    loadData();
 };
 
-// ---------------- LOAD DATA ----------------
+// ---------------- CARGAR DATOS ----------------
 async function loadData() {
 
     const snap = await getDocs(collection(db, "licenses"));
 
-    const search = document.getElementById("search").value.toLowerCase();
-    const filter = document.getElementById("filter").value;
-
-    let total = 0, active = 0, expired = 0;
-
     const list = document.getElementById("list");
     list.innerHTML = "";
 
-    snap.forEach(d => {
+    snap.forEach(docu => {
 
-        const data = d.data();
-
-        const exp = new Date(data.expiration + "T23:59:59");
-        const now = new Date();
-
-        const diff = exp.getTime() - now.getTime();
-        const days = Math.floor(diff / (1000*60*60*24));
-
-        const status = days >= 0 ? "active" : "expired";
-
-        if (filter !== "all" && filter !== status) return;
-        if (!d.id.toLowerCase().includes(search) && !data.user.toLowerCase().includes(search)) return;
-
-        total++;
-        if (days >= 0) active++; else expired++;
+        const data = docu.data();
 
         list.innerHTML += `
-            <div class="user">
-                👤 ${data.user}<br>
-                📧 ${d.id}<br>
-                ⏳ ${days >= 0 ? days : 0} días<br>
-
-                <span class="badge ${status}">
-                    ${status.toUpperCase()}
-                </span>
-
-                <button onclick="renew30('${d.id}','${data.user}','${data.expiration}')">+30 días</button>
-                <button onclick="deleteUser('${d.id}')">Eliminar</button>
-            </div>
+        <div class="card">
+            👤 ${data.user}<br>
+            📧 ${docu.id}<br>
+            ⏳ ${data.expiration}<br>
+        </div>
         `;
     });
-
-    document.getElementById("stats").innerText =
-        `Total: ${total} | Activos: ${active} | Vencidos: ${expired}`;
 }
 
 window.loadData = loadData;
 
 </script>
-
 </head>
 
 <body>
 
 <!-- LOGIN -->
-<div id="login" class="card" style="max-width:300px;margin:80px auto;text-align:center;">
-    <h3>🔐 Admin</h3>
+<div id="login" class="card">
+    <h3>Admin Login</h3>
     <input id="email" placeholder="Email">
     <input id="pass" type="password" placeholder="Password">
     <button onclick="login()">Entrar</button>
@@ -292,39 +178,19 @@ window.loadData = loadData;
 <!-- PANEL -->
 <div id="panel" style="display:none">
 
-    <div class="header">⚡ ADMIN DASHBOARD</div>
+    <div class="header">ADMIN PANEL</div>
 
-    <div class="grid">
-
-        <div class="card">
-            <h3>➕ Crear / Editar</h3>
-            <input id="name" placeholder="Nombre">
-            <input id="userEmail" placeholder="Email usuario">
-            <input id="exp" type="date">
-            <button onclick="saveLicense()">Guardar</button>
-            <div id="msg" class="msg"></div>
-        </div>
-
-        <div class="card">
-            <h3>📊 Estadísticas</h3>
-            <div id="stats"></div>
-        </div>
-
-        <div class="card">
-            <h3>🔍 Buscar / Filtrar</h3>
-            <input id="search" placeholder="Buscar..." oninput="loadData()">
-
-            <select id="filter" onchange="loadData()">
-                <option value="all">Todos</option>
-                <option value="active">Activos</option>
-                <option value="expired">Vencidos</option>
-            </select>
-        </div>
-
+    <div class="card">
+        <h3>Crear usuario</h3>
+        <input id="name" placeholder="Nombre completo">
+        <input id="userEmail" placeholder="Email">
+        <input id="exp" type="date">
+        <button onclick="saveLicense()">Guardar</button>
+        <div id="msg"></div>
     </div>
 
-    <div class="card" style="margin:20px">
-        <h3>👥 Usuarios</h3>
+    <div class="card">
+        <h3>Usuarios</h3>
         <div id="list"></div>
     </div>
 
