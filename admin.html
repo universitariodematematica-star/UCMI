@@ -88,14 +88,17 @@ import {
     setDoc,
     deleteDoc,
     collection,
-    getDocs
+    onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Firebase
+// Firebase config
 const firebaseConfig = {
     apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
     authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
     projectId: "portal-autenticacion-a1ngles",
+    storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
+    messagingSenderId: "1039504020190",
+    appId: "1:1039504020190:web:212cf030c3e6feb175a84f"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -104,31 +107,8 @@ const db = getFirestore(app);
 
 const ADMIN_EMAIL = "universitariodematematica@gmail.com";
 
-// ---------------- UI INIT ----------------
-document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("login").style.display = "block";
-    document.getElementById("panel").style.display = "none";
-});
-
-// ---------------- AUTH CONTROL ----------------
-onAuthStateChanged(auth, (user) => {
-
-    const login = document.getElementById("login");
-    const panel = document.getElementById("panel");
-
-    if (user && user.email === ADMIN_EMAIL) {
-        login.style.display = "none";
-        panel.style.display = "block";
-        loadData();
-    } else {
-        panel.style.display = "none";
-        login.style.display = "block";
-    }
-});
-
-// ---------------- LOGIN ----------------
+// LOGIN
 window.login = async function () {
-
     const email = document.getElementById("email").value;
     const pass = document.getElementById("pass").value;
 
@@ -136,41 +116,45 @@ window.login = async function () {
         const user = await signInWithEmailAndPassword(auth, email, pass);
 
         if (user.user.email !== ADMIN_EMAIL) {
-            await signOut(auth);
             alert("No autorizado");
+            await signOut(auth);
             return;
         }
 
-    } catch (e) {
+        showPanel();
+        loadData();
+
+    } catch {
         alert("Error de login");
     }
 };
 
-// ---------------- LOGOUT AUTOMÁTICO SI NO ES ADMIN ----------------
-window.logout = async function () {
-    await signOut(auth);
-};
+// PROTECCIÓN
+onAuthStateChanged(auth, (user) => {
+    if (!user) return;
 
-// ---------------- GUARDAR ----------------
+    if (user.email !== ADMIN_EMAIL) {
+        signOut(auth);
+        window.location.href = "index.html";
+    }
+});
+
+function showPanel() {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+}
+
+// GUARDAR LICENCIA + USUARIO
 window.saveLicense = async function () {
 
     const nameInput = document.getElementById("name").value.trim();
     const email = document.getElementById("userEmail").value.trim();
     const exp = document.getElementById("exp").value;
+
     const msg = document.getElementById("msg");
 
-    if (!nameInput || nameInput.length < 3) {
-        msg.innerText = "Nombre inválido";
-        return;
-    }
-
-    if (!email.includes("@")) {
-        msg.innerText = "Email inválido";
-        return;
-    }
-
-    if (!exp) {
-        msg.innerText = "Fecha inválida";
+    if (!nameInput || !email || !exp) {
+        msg.innerText = "Completa todos los campos";
         return;
     }
 
@@ -184,31 +168,28 @@ window.saveLicense = async function () {
         email: email
     }, { merge: true });
 
-    msg.innerText = "Guardado correctamente";
+    msg.innerText = "Licencia guardada";
 
     document.getElementById("name").value = "";
     document.getElementById("userEmail").value = "";
     document.getElementById("exp").value = "";
-
-    loadData();
 };
 
-// ---------------- ELIMINAR ----------------
+// ELIMINAR
 window.deleteUser = async function (email) {
-
     if (!confirm("¿Eliminar usuario?")) return;
-
     await deleteDoc(doc(db, "licenses", email));
-    loadData();
 };
 
-// ---------------- RENOVAR ----------------
+// RENOVAR
 window.renew30 = async function (email, name, currentExp) {
 
     let baseDate = new Date();
+    const today = new Date();
+
     const expDate = new Date(currentExp + "T23:59:59");
 
-    if (expDate > baseDate) baseDate = expDate;
+    if (expDate > today) baseDate = expDate;
 
     baseDate.setDate(baseDate.getDate() + 30);
 
@@ -218,58 +199,67 @@ window.renew30 = async function (email, name, currentExp) {
         user: name,
         expiration: newExp
     });
-
-    loadData();
 };
 
-// ---------------- LOAD DATA ----------------
-async function loadData() {
+// 🔥 TIEMPO REAL (LO IMPORTANTE)
+function loadData() {
 
-    const snap = await getDocs(collection(db, "licenses"));
+    const list = document.getElementById("list");
 
     const search = document.getElementById("search").value.toLowerCase();
     const filter = document.getElementById("filter").value;
 
-    let total = 0, active = 0, expired = 0;
+    onSnapshot(collection(db, "licenses"), async (snap) => {
 
-    const list = document.getElementById("list");
-    list.innerHTML = "";
+        list.innerHTML = "";
 
-    snap.forEach(d => {
+        let total = 0, active = 0, expired = 0;
 
-        const data = d.data();
+        for (const d of snap.docs) {
 
-        const exp = new Date(data.expiration + "T23:59:59");
-        const now = new Date();
+            const lic = d.data();
 
-        const days = Math.floor((exp - now) / (1000*60*60*24));
+            // buscar nombre real en users
+            let name = lic.user;
+            const userDoc = await getDoc(doc(db, "users", d.id));
 
-        const status = days >= 0 ? "active" : "expired";
+            if (userDoc.exists()) {
+                name = userDoc.data().name || lic.user;
+            }
 
-        if (filter !== "all" && filter !== status) return;
-        if (!d.id.toLowerCase().includes(search) && !data.user.toLowerCase().includes(search)) return;
+            const exp = new Date(lic.expiration + "T23:59:59");
+            const now = new Date();
 
-        total++;
-        if (days >= 0) active++; else expired++;
+            const days = Math.floor((exp - now) / (1000 * 60 * 60 * 24));
 
-        list.innerHTML += `
-            <div class="user">
-                👤 ${data.user}<br>
-                📧 ${d.id}<br>
-                ⏳ ${days >= 0 ? days : 0} días<br>
+            const status = days >= 0 ? "active" : "expired";
 
-                <span class="badge ${status}">
-                    ${status.toUpperCase()}
-                </span>
+            if (filter !== "all" && filter !== status) continue;
+            if (!d.id.toLowerCase().includes(search) &&
+                !name.toLowerCase().includes(search)) continue;
 
-                <button onclick="renew30('${d.id}','${data.user}','${data.expiration}')">+30 días</button>
-                <button onclick="deleteUser('${d.id}')">Eliminar</button>
-            </div>
-        `;
+            total++;
+            if (days >= 0) active++; else expired++;
+
+            list.innerHTML += `
+                <div class="user">
+                    👤 ${name}<br>
+                    📧 ${d.id}<br>
+                    ⏳ ${days >= 0 ? days : 0} días<br>
+
+                    <span class="badge ${status}">
+                        ${status.toUpperCase()}
+                    </span>
+
+                    <button onclick="renew30('${d.id}','${lic.user}','${lic.expiration}')">+30 días</button>
+                    <button onclick="deleteUser('${d.id}')">Eliminar</button>
+                </div>
+            `;
+        }
+
+        document.getElementById("stats").innerText =
+            `Total: ${total} | Activos: ${active} | Vencidos: ${expired}`;
     });
-
-    document.getElementById("stats").innerText =
-        `Total: ${total} | Activos: ${active} | Vencidos: ${expired}`;
 }
 
 window.loadData = loadData;
@@ -280,7 +270,6 @@ window.loadData = loadData;
 
 <body>
 
-<!-- LOGIN -->
 <div id="login" class="card" style="max-width:300px;margin:80px auto;text-align:center;">
     <h3>🔐 Admin</h3>
     <input id="email" placeholder="Email">
@@ -288,7 +277,6 @@ window.loadData = loadData;
     <button onclick="login()">Entrar</button>
 </div>
 
-<!-- PANEL -->
 <div id="panel" style="display:none">
 
     <div class="header">⚡ ADMIN DASHBOARD</div>
@@ -310,8 +298,8 @@ window.loadData = loadData;
         </div>
 
         <div class="card">
-            <h3>🔍 Buscar / Filtrar</h3>
-            <input id="search" placeholder="Buscar..." oninput="loadData()">
+            <h3>🔍 Buscar</h3>
+            <input id="search" oninput="loadData()">
             <select id="filter" onchange="loadData()">
                 <option value="all">Todos</option>
                 <option value="active">Activos</option>
