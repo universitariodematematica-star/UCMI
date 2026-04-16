@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Profesor</title>
-
+<title>Dashboard Profesores</title>
 <style>
 body {
     font-family: Arial, sans-serif;
@@ -14,23 +13,12 @@ h2 {
     margin-bottom: 20px;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th, td {
+.card {
     border: 1px solid #ccc;
-    padding: 10px;
-    text-align: left;
-}
-
-th {
-    background-color: #f2f2f2;
-}
-
-.row-ok {
-    background-color: #e8ffe8;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    background: #f9f9f9;
 }
 </style>
 </head>
@@ -39,78 +27,58 @@ th {
 
 <h2>📊 Dashboard de Calificaciones</h2>
 
-<table>
-    <thead>
-        <tr>
-            <th>Estudiante</th>
-            <th>Ejercicio</th>
-            <th>Tipo</th>
-            <th>Score</th>
-        </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-</table>
+<div id="dashboard">Cargando...</div>
 
 <script type="module">
+import { db } from "./firebase.js";
+import {
+    collection,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+async function cargarDashboard() {
 
-// 🔥 TU CONFIG
-const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
-  projectId: "portal-autenticacion-a1ngles",
-  storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
-  messagingSenderId: "1039504020190",
-  appId: "TU_APP_ID"
-};
+    const container = document.getElementById("dashboard");
+    container.innerHTML = "Cargando datos...";
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    try {
 
-async function loadDashboard() {
+        const usersSnap = await getDocs(collection(db, "users"));
 
-    const tbody = document.getElementById("tableBody");
-    tbody.innerHTML = "";
+        let html = "";
 
-    // 🔥 1. obtener usuarios
-    const usersSnap = await getDocs(collection(db, "users"));
+        for (const userDoc of usersSnap.docs) {
 
-    for (const userDoc of usersSnap.docs) {
+            const uid = userDoc.id;
 
-        const userId = userDoc.id;
-        const userData = userDoc.data();
+            const progressSnap = await getDocs(
+                collection(db, "users", uid, "progress")
+            );
 
-        const name = userData.name || userData.email || userId;
+            progressSnap.forEach(doc => {
 
-        // 🔥 2. obtener progress del usuario
-        const progressSnap = await getDocs(collection(db, "users", userId, "progress"));
+                const data = doc.data();
 
-        progressSnap.forEach(doc => {
+                html += `
+                <div class="card">
+                    <b>Usuario:</b> ${uid}<br>
+                    <b>Ejercicio:</b> ${doc.id}<br>
+                    <b>Nota:</b> ${data.score} / ${data.maxScore}<br>
+                    <b>Perfecto:</b> ${data.isPerfect}
+                </div>
+                `;
+            });
+        }
 
-            const data = doc.data();
+        container.innerHTML = html || "No hay datos aún.";
 
-            const row = document.createElement("tr");
-
-            row.innerHTML = `
-                <td>${name}</td>
-                <td>${doc.id}</td>
-                <td>${data.type || "-"}</td>
-                <td>${data.score ?? "-"}</td>
-            `;
-
-            if (data.score === 10) {
-                row.classList.add("row-ok");
-            }
-
-            tbody.appendChild(row);
-        });
+    } catch (error) {
+        console.error(error);
+        container.innerHTML = "Error cargando datos.";
     }
 }
 
-loadDashboard();
-
+cargarDashboard();
 </script>
 
 </body>
