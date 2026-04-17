@@ -79,7 +79,9 @@ import {
     getAuth,
     signInWithEmailAndPassword,
     onAuthStateChanged,
-    signOut
+    signOut,
+    setPersistence,
+    browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
@@ -88,12 +90,12 @@ import {
     setDoc,
     deleteDoc,
     collection,
-    onSnapshot
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// CONFIG
+// 🔥 CONFIG
 const firebaseConfig = {
-    apiKey: "AIzaSy...",
+    apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
     authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
     projectId: "portal-autenticacion-a1ngles",
 };
@@ -103,6 +105,9 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const ADMIN_EMAIL = "universitariodematematica@gmail.com";
+
+// 🔥 PERSISTENCIA DE SESIÓN (CLAVE PARA QUE NO TE SAQUE)
+setPersistence(auth, browserLocalPersistence);
 
 // ================= LOGIN =================
 window.login = async function () {
@@ -116,6 +121,7 @@ window.login = async function () {
         if (user.user.email !== ADMIN_EMAIL) {
             await signOut(auth);
             alert("No autorizado");
+            return;
         }
 
     } catch (e) {
@@ -132,78 +138,22 @@ onAuthStateChanged(auth, (user) => {
     if (user && user.email === ADMIN_EMAIL) {
         loginBox.style.display = "none";
         panel.style.display = "block";
-
-        startRealtimeListener();
-
+        loadData();
     } else {
         panel.style.display = "none";
         loginBox.style.display = "block";
     }
 });
 
-// ================= TIEMPO REAL =================
-function startRealtimeListener() {
-
-    const list = document.getElementById("list");
-
-    onSnapshot(collection(db, "licenses"), (snap) => {
-
-        const search = (document.getElementById("search")?.value || "").toLowerCase();
-        const filter = document.getElementById("filter")?.value || "all";
-
-        let total = 0, active = 0, expired = 0;
-
-        list.innerHTML = "";
-
-        snap.forEach(d => {
-
-            const data = d.data();
-
-            const exp = new Date(data.expiration + "T23:59:59");
-            const now = new Date();
-
-            const days = Math.floor((exp - now) / (1000 * 60 * 60 * 24));
-
-            const status = days >= 0 ? "active" : "expired";
-
-            if (filter !== "all" && filter !== status) return;
-            if (search &&
-                !d.id.toLowerCase().includes(search) &&
-                !data.user.toLowerCase().includes(search)) return;
-
-            total++;
-            if (days >= 0) active++; else expired++;
-
-            list.innerHTML += `
-                <div class="user">
-                    👤 ${data.user || "Sin nombre"}<br>
-                    📧 ${d.id}<br>
-                    ⏳ ${days >= 0 ? days : 0} días<br>
-
-                    <span class="badge ${status}">
-                        ${status.toUpperCase()}
-                    </span>
-
-                    <button onclick="renew30('${d.id}','${data.user}','${data.expiration}')">+30 días</button>
-                    <button onclick="deleteUser('${d.id}')">Eliminar</button>
-                </div>
-            `;
-        });
-
-        document.getElementById("stats").innerText =
-            `Total: ${total} | Activos: ${active} | Vencidos: ${expired}`;
-    });
-}
-
 // ================= GUARDAR =================
 window.saveLicense = async function () {
 
-    const name = document.getElementById("name").value.trim();
+    const nameInput = document.getElementById("name").value.trim();
     const email = document.getElementById("userEmail").value.trim();
     const exp = document.getElementById("exp").value;
     const msg = document.getElementById("msg");
 
-    if (!name || name.length < 3) {
+    if (!nameInput || nameInput.length < 3) {
         msg.innerText = "Nombre inválido";
         return;
     }
@@ -219,23 +169,25 @@ window.saveLicense = async function () {
     }
 
     try {
-
         await setDoc(doc(db, "licenses", email), {
-            user: name,
+            user: nameInput,
             expiration: exp
         });
 
         await setDoc(doc(db, "users", email), {
-            name: name,
+            name: nameInput,
             email: email
         }, { merge: true });
 
-        // limpiar
+        msg.innerText = "Guardado correctamente";
+
+        // limpiar inputs
         document.getElementById("name").value = "";
         document.getElementById("userEmail").value = "";
         document.getElementById("exp").value = "";
 
-        msg.innerText = "Guardado ✔";
+        // refresco inmediato real
+        loadData();
 
     } catch (e) {
         console.error(e);
@@ -248,6 +200,7 @@ window.deleteUser = async function (email) {
     if (!confirm("¿Eliminar usuario?")) return;
 
     await deleteDoc(doc(db, "licenses", email));
+    loadData();
 };
 
 // ================= RENOVAR =================
@@ -266,7 +219,61 @@ window.renew30 = async function (email, name, currentExp) {
         user: name,
         expiration: newExp
     });
+
+    loadData();
 };
+
+// ================= LOAD DATA =================
+async function loadData() {
+
+    const snap = await getDocs(collection(db, "licenses"));
+
+    const search = (document.getElementById("search")?.value || "").toLowerCase();
+    const filter = document.getElementById("filter")?.value || "all";
+
+    let total = 0, active = 0, expired = 0;
+
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    snap.forEach(d => {
+
+        const data = d.data();
+
+        const exp = new Date(data.expiration + "T23:59:59");
+        const now = new Date();
+
+        const days = Math.floor((exp - now) / (1000 * 60 * 60 * 24));
+
+        const status = days >= 0 ? "active" : "expired";
+
+        if (filter !== "all" && filter !== status) return;
+        if (search && !d.id.toLowerCase().includes(search) && !data.user.toLowerCase().includes(search)) return;
+
+        total++;
+        if (days >= 0) active++; else expired++;
+
+        list.innerHTML += `
+            <div class="user">
+                👤 ${data.user || "Sin nombre"}<br>
+                📧 ${d.id}<br>
+                ⏳ ${days >= 0 ? days : 0} días<br>
+
+                <span class="badge ${status}">
+                    ${status.toUpperCase()}
+                </span>
+
+                <button onclick="renew30('${d.id}','${data.user}','${data.expiration}')">+30 días</button>
+                <button onclick="deleteUser('${d.id}')">Eliminar</button>
+            </div>
+        `;
+    });
+
+    document.getElementById("stats").innerText =
+        `Total: ${total} | Activos: ${active} | Vencidos: ${expired}`;
+}
+
+window.loadData = loadData;
 
 </script>
 </head>
@@ -302,8 +309,8 @@ window.renew30 = async function (email, name, currentExp) {
 
         <div class="card">
             <h3>🔍 Buscar / Filtrar</h3>
-            <input id="search" placeholder="Buscar..." oninput="">
-            <select id="filter">
+            <input id="search" oninput="loadData()" placeholder="Buscar...">
+            <select id="filter" onchange="loadData()">
                 <option value="all">Todos</option>
                 <option value="active">Activos</option>
                 <option value="expired">Vencidos</option>
