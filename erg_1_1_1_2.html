@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ordena las palabras</title>
 
 <style>
@@ -31,6 +32,7 @@ body {
 }
 
 .sentenceBlank {
+    display: block;
     width: 100%;
     min-height: 60px;
     background-color: #f0f0f0;
@@ -68,22 +70,29 @@ body {
 }
 </style>
 
-</head>
+<script type="module">
 
-<body>
+// 🔥 FIREBASE
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { 
+    getFirestore, 
+    addDoc, 
+    collection, 
+    serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-<h2>Ordena las palabras en la oración</h2>
+const firebaseConfig = {
+    apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
+    authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
+    projectId: "portal-autenticacion-a1ngles",
+};
 
-<div class="sentenceContainer"></div>
-<div class="sentenceBlank"></div>
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-<button class="checkButton" onclick="checkAnswer()">Evaluar</button>
-<p class="result"></p>
-
-<button class="redirectButton" onclick="nextSentence()" disabled>Siguiente</button>
-<button class="obtainCertificateButton" onclick="getCertificate()">Certificado</button>
-
-<script>
+// ================= EJERCICIO =================
 
 const sentences = [
 ["Nice","to","meet","you!"],
@@ -91,22 +100,9 @@ const sentences = [
 ["Where","are","you","from?"]
 ];
 
-// 🔥 PROGRESO
 let index = parseInt(localStorage.getItem("orden_index")) || 0;
 
-// 🔥 CREAR BOTÓN
-function createButton(word) {
-    const btn = document.createElement("button");
-    btn.textContent = word;
-    btn.className = "wordButton";
-    btn.draggable = true;
-
-    btn.addEventListener("dragstart", dragStart);
-
-    return btn;
-}
-
-// 🔥 SHUFFLE REAL
+// -------- SHUFFLE --------
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -114,8 +110,23 @@ function shuffleArray(array) {
     }
 }
 
-// 🔥 RENDER
+// -------- CREAR BOTONES --------
+function createButton(word) {
+    const button = document.createElement("button");
+    button.textContent = word;
+    button.classList.add("wordButton");
+    button.draggable = true;
+
+    button.addEventListener("dragstart", (e) => {
+        e.dataTransfer.setData("text/plain", word);
+    });
+
+    return button;
+}
+
+// -------- RENDER --------
 function render() {
+
     const container = document.querySelector(".sentenceContainer");
     const blank = document.querySelector(".sentenceBlank");
 
@@ -128,38 +139,27 @@ function render() {
     shuffled.forEach(word => {
         container.appendChild(createButton(word));
     });
-
-    document.querySelector(".result").textContent = "";
-    document.querySelector(".redirectButton").disabled = true;
 }
 
-// 🔥 DRAG
-function dragStart(e) {
-    e.dataTransfer.setData("text/plain", e.target.textContent);
-}
+// -------- DRAG & DROP --------
+const blankArea = document.querySelector(".sentenceBlank");
 
-function dragOver(e) {
-    e.preventDefault();
-}
+blankArea.addEventListener("dragover", e => e.preventDefault());
 
-function drop(e) {
+blankArea.addEventListener("drop", e => {
     e.preventDefault();
 
     const word = e.dataTransfer.getData("text/plain");
-    const btn = createButton(word);
 
-    e.target.appendChild(btn);
-}
+    blankArea.appendChild(createButton(word));
+});
 
-// 🔥 ACTIVAR DROP
-const blankArea = document.querySelector(".sentenceBlank");
-blankArea.addEventListener("dragover", dragOver);
-blankArea.addEventListener("drop", drop);
-
-// 🔥 EVALUAR
+// -------- EVALUAR --------
 window.checkAnswer = function () {
 
-    const user = [...document.querySelector(".sentenceBlank").children].map(b => b.textContent);
+    const user = [...document.querySelector(".sentenceBlank").children]
+        .map(b => b.textContent);
+
     const correct = sentences[index];
 
     const result = document.querySelector(".result");
@@ -183,30 +183,70 @@ window.checkAnswer = function () {
     }
 };
 
-// 🔥 SIGUIENTE
+// -------- SIGUIENTE --------
 window.nextSentence = function () {
 
     index++;
-
     localStorage.setItem("orden_index", index);
 
     if (index < sentences.length) {
         render();
+        document.querySelector(".result").textContent = "";
+        document.querySelector(".redirectButton").disabled = true;
     }
 };
 
-// 🔥 CERTIFICADO (placeholder)
-window.getCertificate = function () {
-    alert("Aquí luego conectamos Firebase 🔥");
-    localStorage.removeItem("orden_index");
+// -------- CERTIFICADO (🔥 FIREBASE) --------
+window.getCertificate = async function () {
+
+    const user = auth.currentUser;
+
+    if (!user) {
+        alert("Usuario no autenticado");
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, "grades"), {
+            studentUID: user.uid,
+            studentEmail: user.email,
+            exercise: "Ordena las palabras",
+            score: 10,
+            maxScore: 10,
+            type: "grammar",
+            createdAt: serverTimestamp()
+        });
+
+        alert("✅ Progreso guardado");
+
+        localStorage.removeItem("orden_index");
+
+    } catch (e) {
+        console.error(e);
+        alert("Error guardando");
+    }
 };
 
-// 🔥 INICIO
+// -------- INIT --------
 window.onload = function () {
     render();
 };
 
 </script>
+</head>
+
+<body>
+
+<h2>Ordena las palabras en la oración</h2>
+
+<div class="sentenceContainer"></div>
+<div class="sentenceBlank"></div>
+
+<button class="checkButton" onclick="checkAnswer()">Evaluar</button>
+<p class="result"></p>
+
+<button class="redirectButton" onclick="nextSentence()" disabled>Siguiente</button>
+<button class="obtainCertificateButton" onclick="getCertificate()">Certificado</button>
 
 </body>
 </html>
