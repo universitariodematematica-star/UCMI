@@ -79,9 +79,7 @@ import {
     getAuth,
     signInWithEmailAndPassword,
     onAuthStateChanged,
-    signOut,
-    setPersistence,
-    browserLocalPersistence
+    signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
@@ -90,10 +88,11 @@ import {
     setDoc,
     deleteDoc,
     collection,
-    getDocs
+    getDocs,
+    onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔥 CONFIG
+// CONFIG
 const firebaseConfig = {
     apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
     authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
@@ -106,10 +105,26 @@ const db = getFirestore(app);
 
 const ADMIN_EMAIL = "universitariodematematica@gmail.com";
 
-// 🔥 PERSISTENCIA DE SESIÓN (CLAVE PARA QUE NO TE SAQUE)
-setPersistence(auth, browserLocalPersistence);
+// ---------------- AUTH ----------------
+onAuthStateChanged(auth, (user) => {
 
-// ================= LOGIN =================
+    const login = document.getElementById("login");
+    const panel = document.getElementById("panel");
+
+    if (user && user.email === ADMIN_EMAIL) {
+        login.style.display = "none";
+        panel.style.display = "block";
+
+        loadData();
+        startGradesListener();
+
+    } else {
+        panel.style.display = "none";
+        login.style.display = "block";
+    }
+});
+
+// ---------------- LOGIN ----------------
 window.login = async function () {
 
     const email = document.getElementById("email").value;
@@ -121,72 +136,45 @@ window.login = async function () {
         if (user.user.email !== ADMIN_EMAIL) {
             await signOut(auth);
             alert("No autorizado");
-            return;
         }
 
-    } catch (e) {
+    } catch {
         alert("Error de login");
     }
 };
 
-// ================= AUTH =================
-onAuthStateChanged(auth, (user) => {
-
-    const loginBox = document.getElementById("login");
-    const panel = document.getElementById("panel");
-
-    if (user && user.email === ADMIN_EMAIL) {
-        loginBox.style.display = "none";
-        panel.style.display = "block";
-        loadData();
-    } else {
-        panel.style.display = "none";
-        loginBox.style.display = "block";
-    }
-});
-
-// ================= GUARDAR =================
+// ---------------- GUARDAR ----------------
 window.saveLicense = async function () {
 
-    const nameInput = document.getElementById("name").value.trim();
+    const name = document.getElementById("name").value.trim();
     const email = document.getElementById("userEmail").value.trim();
     const exp = document.getElementById("exp").value;
     const msg = document.getElementById("msg");
 
-    if (!nameInput || nameInput.length < 3) {
-        msg.innerText = "Nombre inválido";
-        return;
-    }
-
-    if (!email.includes("@")) {
-        msg.innerText = "Email inválido";
-        return;
-    }
-
-    if (!exp) {
-        msg.innerText = "Fecha inválida";
-        return;
-    }
+    if (!name || name.length < 3) return msg.innerText = "Nombre inválido";
+    if (!email.includes("@")) return msg.innerText = "Email inválido";
+    if (!exp) return msg.innerText = "Fecha inválida";
 
     try {
+
         await setDoc(doc(db, "licenses", email), {
-            user: nameInput,
+            user: name,
             expiration: exp
         });
 
         await setDoc(doc(db, "users", email), {
-            name: nameInput,
+            name: name,
             email: email
         }, { merge: true });
-
-        msg.innerText = "Guardado correctamente";
 
         // limpiar inputs
         document.getElementById("name").value = "";
         document.getElementById("userEmail").value = "";
         document.getElementById("exp").value = "";
 
-        // refresco inmediato real
+        msg.innerText = "Guardado ✔";
+
+        // 🔥 ACTUALIZACIÓN INMEDIATA
         loadData();
 
     } catch (e) {
@@ -195,7 +183,7 @@ window.saveLicense = async function () {
     }
 };
 
-// ================= ELIMINAR =================
+// ---------------- ELIMINAR ----------------
 window.deleteUser = async function (email) {
     if (!confirm("¿Eliminar usuario?")) return;
 
@@ -203,77 +191,79 @@ window.deleteUser = async function (email) {
     loadData();
 };
 
-// ================= RENOVAR =================
-window.renew30 = async function (email, name, currentExp) {
-
-    let baseDate = new Date();
-    const expDate = new Date(currentExp + "T23:59:59");
-
-    if (expDate > baseDate) baseDate = expDate;
-
-    baseDate.setDate(baseDate.getDate() + 30);
-
-    const newExp = baseDate.toISOString().split("T")[0];
-
-    await setDoc(doc(db, "licenses", email), {
-        user: name,
-        expiration: newExp
-    });
-
-    loadData();
-};
-
-// ================= LOAD DATA =================
+// ---------------- LOAD USERS ----------------
 async function loadData() {
 
     const snap = await getDocs(collection(db, "licenses"));
-
-    const search = (document.getElementById("search")?.value || "").toLowerCase();
-    const filter = document.getElementById("filter")?.value || "all";
-
-    let total = 0, active = 0, expired = 0;
-
     const list = document.getElementById("list");
+
     list.innerHTML = "";
 
     snap.forEach(d => {
 
         const data = d.data();
 
-        const exp = new Date(data.expiration + "T23:59:59");
-        const now = new Date();
-
-        const days = Math.floor((exp - now) / (1000 * 60 * 60 * 24));
-
-        const status = days >= 0 ? "active" : "expired";
-
-        if (filter !== "all" && filter !== status) return;
-        if (search && !d.id.toLowerCase().includes(search) && !data.user.toLowerCase().includes(search)) return;
-
-        total++;
-        if (days >= 0) active++; else expired++;
-
         list.innerHTML += `
             <div class="user">
-                👤 ${data.user || "Sin nombre"}<br>
+                👤 ${data.user}<br>
                 📧 ${d.id}<br>
-                ⏳ ${days >= 0 ? days : 0} días<br>
-
-                <span class="badge ${status}">
-                    ${status.toUpperCase()}
-                </span>
-
-                <button onclick="renew30('${d.id}','${data.user}','${data.expiration}')">+30 días</button>
+                ⏳ ${data.expiration}<br>
                 <button onclick="deleteUser('${d.id}')">Eliminar</button>
             </div>
         `;
     });
-
-    document.getElementById("stats").innerText =
-        `Total: ${total} | Activos: ${active} | Vencidos: ${expired}`;
 }
 
-window.loadData = loadData;
+// ---------------- GRADES (TIEMPO REAL) ----------------
+function startGradesListener() {
+
+    const container = document.getElementById("gradesList");
+
+    onSnapshot(collection(db, "grades"), (snap) => {
+
+        const users = {};
+
+        snap.forEach(doc => {
+            const g = doc.data();
+
+            if (!users[g.email]) {
+                users[g.email] = {
+                    total: 0,
+                    max: 0,
+                    exercises: {}
+                };
+            }
+
+            users[g.email].total += g.score;
+            users[g.email].max += g.total;
+            users[g.email].exercises[g.exercise] = g;
+        });
+
+        container.innerHTML = "";
+
+        for (let email in users) {
+
+            const u = users[email];
+            const avg = u.max ? ((u.total / u.max) * 10).toFixed(2) : 0;
+
+            let html = `
+                <div class="user">
+                    👤 ${email.split("@")[0]}<br>
+                    📧 ${email}<br>
+                    ⭐ Promedio: ${avg}<br><br>
+            `;
+
+            for (let ex in u.exercises) {
+                const e = u.exercises[ex];
+                html += `📘 ${ex}: ${e.score}/${e.total}<br>`;
+            }
+
+            html += "</div>";
+
+            container.innerHTML += html;
+        }
+    });
+}
 
 </script>
 </head>
@@ -294,34 +284,24 @@ window.loadData = loadData;
     <div class="grid">
 
         <div class="card">
-            <h3>➕ Crear / Editar</h3>
+            <h3>➕ Crear Usuario</h3>
             <input id="name" placeholder="Nombre">
-            <input id="userEmail" placeholder="Email usuario">
+            <input id="userEmail" placeholder="Email">
             <input id="exp" type="date">
             <button onclick="saveLicense()">Guardar</button>
             <div id="msg" class="msg"></div>
         </div>
 
         <div class="card">
-            <h3>📊 Estadísticas</h3>
-            <div id="stats"></div>
+            <h3>👥 Usuarios</h3>
+            <div id="list"></div>
         </div>
 
         <div class="card">
-            <h3>🔍 Buscar / Filtrar</h3>
-            <input id="search" oninput="loadData()" placeholder="Buscar...">
-            <select id="filter" onchange="loadData()">
-                <option value="all">Todos</option>
-                <option value="active">Activos</option>
-                <option value="expired">Vencidos</option>
-            </select>
+            <h3>📊 Calificaciones</h3>
+            <div id="gradesList"></div>
         </div>
 
-    </div>
-
-    <div class="card" style="margin:20px">
-        <h3>👥 Usuarios</h3>
-        <div id="list"></div>
     </div>
 
 </div>
