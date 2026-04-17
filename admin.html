@@ -79,7 +79,9 @@ import {
     getAuth,
     signInWithEmailAndPassword,
     onAuthStateChanged,
-    signOut
+    signOut,
+    setPersistence,
+    browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
@@ -103,6 +105,9 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const ADMIN_EMAIL = "universitariodematematica@gmail.com";
+
+// 🔥 PERSISTENCIA DE SESIÓN (CLAVE PARA QUE NO TE SAQUE)
+setPersistence(auth, browserLocalPersistence);
 
 // ================= LOGIN =================
 window.login = async function () {
@@ -133,8 +138,7 @@ onAuthStateChanged(auth, (user) => {
     if (user && user.email === ADMIN_EMAIL) {
         loginBox.style.display = "none";
         panel.style.display = "block";
-
-        setTimeout(loadData, 200); // evita render vacío
+        loadData();
     } else {
         panel.style.display = "none";
         loginBox.style.display = "block";
@@ -182,9 +186,11 @@ window.saveLicense = async function () {
         document.getElementById("userEmail").value = "";
         document.getElementById("exp").value = "";
 
-        loadData(); // actualización inmediata
+        // refresco inmediato real
+        loadData();
 
     } catch (e) {
+        console.error(e);
         msg.innerText = "Error al guardar";
     }
 };
@@ -274,7 +280,6 @@ window.loadData = loadData;
 
 <body>
 
-<!-- LOGIN -->
 <div id="login" class="card" style="max-width:300px;margin:80px auto;text-align:center;">
     <h3>🔐 Admin</h3>
     <input id="email" placeholder="Email">
@@ -282,7 +287,6 @@ window.loadData = loadData;
     <button onclick="login()">Entrar</button>
 </div>
 
-<!-- PANEL -->
 <div id="panel" style="display:none">
 
     <div class="header">⚡ ADMIN DASHBOARD</div>
@@ -305,7 +309,7 @@ window.loadData = loadData;
 
         <div class="card">
             <h3>🔍 Buscar / Filtrar</h3>
-            <input id="search" placeholder="Buscar..." oninput="loadData()">
+            <input id="search" oninput="loadData()" placeholder="Buscar...">
             <select id="filter" onchange="loadData()">
                 <option value="all">Todos</option>
                 <option value="active">Activos</option>
