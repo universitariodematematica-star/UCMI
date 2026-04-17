@@ -2,7 +2,6 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ordena las palabras</title>
 
 <style>
@@ -69,7 +68,6 @@ body {
 }
 </style>
 
-<script type="module" src="protect.js"></script>
 </head>
 
 <body>
@@ -85,26 +83,38 @@ body {
 <button class="redirectButton" onclick="nextSentence()" disabled>Siguiente</button>
 <button class="obtainCertificateButton" onclick="getCertificate()">Certificado</button>
 
-<script type="module">
+<script>
 
-import { procesarResultado } from "./progress.js";
-import { db, auth } from "./firebase.js";
-import { addDoc, collection, serverTimestamp } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";    
-    
 const sentences = [
 ["Nice","to","meet","you!"],
 ["My","name","is","John"],
 ["Where","are","you","from?"]
 ];
 
-// 🔥 CARGAR PROGRESO
+// 🔥 PROGRESO
 let index = parseInt(localStorage.getItem("orden_index")) || 0;
 
-function shuffle(arr) {
-    return arr.sort(() => Math.random() - 0.5);
+// 🔥 CREAR BOTÓN
+function createButton(word) {
+    const btn = document.createElement("button");
+    btn.textContent = word;
+    btn.className = "wordButton";
+    btn.draggable = true;
+
+    btn.addEventListener("dragstart", dragStart);
+
+    return btn;
 }
 
+// 🔥 SHUFFLE REAL
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+// 🔥 RENDER
 function render() {
     const container = document.querySelector(".sentenceContainer");
     const blank = document.querySelector(".sentenceBlank");
@@ -112,49 +122,55 @@ function render() {
     container.innerHTML = "";
     blank.innerHTML = "";
 
-    shuffle([...sentences[index]]).forEach(word => {
-        const btn = document.createElement("button");
-        btn.textContent = word;
-        btn.className = "wordButton";
-        btn.draggable = true;
+    const shuffled = [...sentences[index]];
+    shuffleArray(shuffled);
 
-        btn.addEventListener("dragstart", e => {
-    e.dataTransfer.setData("text/plain", word);
-});
-
-        container.appendChild(btn);
+    shuffled.forEach(word => {
+        container.appendChild(createButton(word));
     });
+
+    document.querySelector(".result").textContent = "";
+    document.querySelector(".redirectButton").disabled = true;
 }
 
-// Drag & Drop
-const blankArea = document.querySelector(".sentenceBlank");
+// 🔥 DRAG
+function dragStart(e) {
+    e.dataTransfer.setData("text/plain", e.target.textContent);
+}
 
-blankArea.ondragover = e => e.preventDefault();
-
-blankArea.addEventListener("drop", e => {
+function dragOver(e) {
     e.preventDefault();
+}
+
+function drop(e) {
+    e.preventDefault();
+
     const word = e.dataTransfer.getData("text/plain");
+    const btn = createButton(word);
 
-    const btn = document.createElement("button");
-    btn.textContent = word;
-    btn.className = "wordButton";
+    e.target.appendChild(btn);
+}
 
-    blankArea.appendChild(btn);
-});
+// 🔥 ACTIVAR DROP
+const blankArea = document.querySelector(".sentenceBlank");
+blankArea.addEventListener("dragover", dragOver);
+blankArea.addEventListener("drop", drop);
 
+// 🔥 EVALUAR
 window.checkAnswer = function () {
+
     const user = [...document.querySelector(".sentenceBlank").children].map(b => b.textContent);
     const correct = sentences[index];
 
     const result = document.querySelector(".result");
 
     if (JSON.stringify(user) === JSON.stringify(correct)) {
+
         result.textContent = "Correcto";
         result.style.color = "green";
 
         document.querySelector(".redirectButton").disabled = false;
 
-        // 🔥 GUARDAR PROGRESO
         localStorage.setItem("orden_index", index);
 
         if (index === sentences.length - 1) {
@@ -167,40 +183,28 @@ window.checkAnswer = function () {
     }
 };
 
+// 🔥 SIGUIENTE
 window.nextSentence = function () {
+
     index++;
 
-    // 🔥 GUARDAR PROGRESO
     localStorage.setItem("orden_index", index);
 
     if (index < sentences.length) {
         render();
-        document.querySelector(".result").textContent = "";
-        document.querySelector(".redirectButton").disabled = true;
     }
 };
 
-window.getCertificate = async function () {
-
-    console.log("Usuario actual:", auth.currentUser); // 👈 AQUÍ
-
-    const aprobado = await procesarResultado("unidad1", "tema1", "grammar", 10);
-
-    if (aprobado === false) {
-        alert("Error guardando progreso");
-        return;
-    }
-
+// 🔥 CERTIFICADO (placeholder)
+window.getCertificate = function () {
+    alert("Aquí luego conectamos Firebase 🔥");
     localStorage.removeItem("orden_index");
-
-    window.location.href = "logrado_erg_1_1_1.html";
 };
 
 // 🔥 INICIO
-render();
-
-// 🔥 MOSTRAR
-document.body.style.display = "block";
+window.onload = function () {
+    render();
+};
 
 </script>
 
