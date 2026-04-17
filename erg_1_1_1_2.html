@@ -20,15 +20,10 @@ body {
     padding: 8px 15px;
     background-color: #007BFF;
     margin: 5px;
-    cursor: pointer;
+    cursor: grab;
     border: none;
-    color: black;
+    color: white;
     border-radius: 6px;
-}
-
-.wordButton:hover {
-    background-color: violet;
-    border: 1px solid black;
 }
 
 .sentenceBlank {
@@ -37,31 +32,17 @@ body {
     background-color: #f0f0f0;
     border: 2px dashed #ccc;
     margin-bottom: 20px;
+    padding: 10px;
 }
 
 .checkButton, .redirectButton, .obtainCertificateButton {
     padding: 10px 20px;
-    border: none;
     border-radius: 6px;
-    cursor: not-allowed;
-}
-
-.checkButton:hover {
-    background-color: violet;
     cursor: pointer;
 }
 
-.result {
-    margin-top: 10px;
-    font-weight: bold;
-}
-
-.correct {
-    background-color: #7FFF7F !important;
-}
-
-.incorrect {
-    background-color: #FF7F7F !important;
+.redirectButton {
+    background: gray;
 }
 
 .obtainCertificateButton {
@@ -87,52 +68,58 @@ body {
 
 <script type="module">
 
-import { procesarResultado } from "./progress.js";
 import { db, auth } from "./firebase.js";
-import { addDoc, collection, serverTimestamp } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";    
-    
+import { doc, setDoc, getDoc, serverTimestamp } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ---------------- DATA ----------------
 const sentences = [
 ["Nice","to","meet","you!"],
 ["My","name","is","John"],
 ["Where","are","you","from?"]
 ];
 
-// 🔥 CARGAR PROGRESO
 let index = parseInt(localStorage.getItem("orden_index")) || 0;
 
+// ---------------- SHUFFLE ----------------
 function shuffle(arr) {
-    return arr.sort(() => Math.random() - 0.5);
+    return [...arr].sort(() => Math.random() - 0.5);
 }
 
+// ---------------- RENDER ----------------
 function render() {
+
     const container = document.querySelector(".sentenceContainer");
     const blank = document.querySelector(".sentenceBlank");
 
     container.innerHTML = "";
     blank.innerHTML = "";
 
-    shuffle([...sentences[index]]).forEach(word => {
+    const shuffled = shuffle(sentences[index]);
+
+    shuffled.forEach(word => {
+
         const btn = document.createElement("button");
         btn.textContent = word;
         btn.className = "wordButton";
         btn.draggable = true;
 
         btn.addEventListener("dragstart", e => {
-    e.dataTransfer.setData("text/plain", word);
-});
+            e.dataTransfer.setData("text/plain", word);
+        });
 
         container.appendChild(btn);
     });
 }
 
-// Drag & Drop
+// ---------------- DROP ----------------
 const blankArea = document.querySelector(".sentenceBlank");
 
-blankArea.ondragover = e => e.preventDefault();
+blankArea.addEventListener("dragover", e => e.preventDefault());
 
 blankArea.addEventListener("drop", e => {
     e.preventDefault();
+
     const word = e.dataTransfer.getData("text/plain");
 
     const btn = document.createElement("button");
@@ -142,20 +129,29 @@ blankArea.addEventListener("drop", e => {
     blankArea.appendChild(btn);
 });
 
-window.checkAnswer = function () {
-    const user = [...document.querySelector(".sentenceBlank").children].map(b => b.textContent);
+// ---------------- CHECK ----------------
+window.checkAnswer = async function () {
+
+    const user = auth.currentUser;
+    if (!user) {
+        alert("Usuario no autenticado");
+        return;
+    }
+
+    const userAnswer = [...document.querySelector(".sentenceBlank").children]
+        .map(b => b.textContent);
+
     const correct = sentences[index];
 
     const result = document.querySelector(".result");
 
-    if (JSON.stringify(user) === JSON.stringify(correct)) {
+    const isCorrect = JSON.stringify(userAnswer) === JSON.stringify(correct);
+
+    if (isCorrect) {
         result.textContent = "Correcto";
         result.style.color = "green";
 
         document.querySelector(".redirectButton").disabled = false;
-
-        // 🔥 GUARDAR PROGRESO
-        localStorage.setItem("orden_index", index);
 
         if (index === sentences.length - 1) {
             document.querySelector(".obtainCertificateButton").style.display = "inline-block";
@@ -165,12 +161,35 @@ window.checkAnswer = function () {
         result.textContent = "Incorrecto";
         result.style.color = "red";
     }
+
+    // ---------------- GUARDAR MEJOR INTENTO ----------------
+    const docId = user.email + "_ordenar_" + index;
+    const ref = doc(db, "grades", docId);
+
+    const newScore = isCorrect ? 1 : 0;
+
+    const existing = await getDoc(ref);
+
+    if (existing.exists()) {
+        const oldScore = existing.data().score;
+        if (newScore <= oldScore) return;
+    }
+
+    await setDoc(ref, {
+        email: user.email,
+        exercise: "ordenar_" + index,
+        score: newScore,
+        total: 1,
+        timestamp: serverTimestamp()
+    });
+
+    console.log("✅ guardado");
 };
 
+// ---------------- NEXT ----------------
 window.nextSentence = function () {
-    index++;
 
-    // 🔥 GUARDAR PROGRESO
+    index++;
     localStorage.setItem("orden_index", index);
 
     if (index < sentences.length) {
@@ -180,27 +199,16 @@ window.nextSentence = function () {
     }
 };
 
-window.getCertificate = async function () {
-
-    console.log("Usuario actual:", auth.currentUser); // 👈 AQUÍ
-
-    const aprobado = await procesarResultado("unidad1", "tema1", "grammar", 10);
-
-    if (aprobado === false) {
-        alert("Error guardando progreso");
-        return;
-    }
-
+// ---------------- CERTIFICADO ----------------
+window.getCertificate = function () {
     localStorage.removeItem("orden_index");
-
     window.location.href = "logrado_erg_1_1_1.html";
 };
 
-// 🔥 INICIO
-render();
-
-// 🔥 MOSTRAR
-document.body.style.display = "block";
+// ---------------- INIT ----------------
+document.addEventListener("DOMContentLoaded", () => {
+    render();
+});
 
 </script>
 
