@@ -89,7 +89,7 @@ body {
 
 import { procesarResultado } from "./progress.js";
 import { db, auth } from "./firebase.js";
-import { addDoc, collection, serverTimestamp } 
+import { doc, setDoc, getDoc, collection, serverTimestamp } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";    
     
 const sentences = [
@@ -198,16 +198,30 @@ window.getCertificate = async function () {
 
         console.log("APROBADO:", aprobado);
 
-        await addDoc(collection(db, "grades"), {
-            studentUID: user.uid,
-            studentName: user.email,
-            exerciseName: "Ordena las palabras",
-            type: "grammar",
-            score: 10,
-            maxScore: 10,
-            isPerfect: true,
-            createdAt: serverTimestamp()
-        });
+        const docId = user.email + "_ordenar_" + index;
+const ref = doc(db, "grades", docId);
+
+const newScore = isCorrect ? 1 : 0;
+
+const existing = await getDoc(ref);
+
+if (existing.exists()) {
+    const oldScore = existing.data().score;
+
+    // 🔥 solo guarda si mejora
+    if (newScore <= oldScore) {
+        console.log("⏩ intento peor, no se guarda");
+        return;
+    }
+}
+
+await setDoc(ref, {
+    email: user.email,
+    exercise: "ordenar_" + index,
+    score: newScore,
+    total: 1,
+    timestamp: serverTimestamp()
+});
 
         console.log("✅ GUARDADO EN FIRESTORE");
 
