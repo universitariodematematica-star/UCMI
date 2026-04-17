@@ -89,7 +89,7 @@ body {
 
 import { procesarResultado } from "./progress.js";
 import { db, auth } from "./firebase.js";
-import { doc, setDoc, getDoc, collection, serverTimestamp } 
+import { addDoc, collection, serverTimestamp } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";    
     
 const sentences = [
@@ -182,56 +182,18 @@ window.nextSentence = function () {
 
 window.getCertificate = async function () {
 
-    console.log("🔥 CLICK CERTIFICADO");
+    console.log("Usuario actual:", auth.currentUser); // 👈 AQUÍ
 
-    const user = auth.currentUser;
+    const aprobado = await procesarResultado("unidad1", "tema1", "grammar", 10);
 
-    console.log("USER:", user);
-
-    if (!user) {
-        alert("Usuario NO listo todavía");
+    if (aprobado === false) {
+        alert("Error guardando progreso");
         return;
     }
 
-    try {
-        const aprobado = await procesarResultado("unidad1", "tema1", "grammar", 10);
+    localStorage.removeItem("orden_index");
 
-        console.log("APROBADO:", aprobado);
-
-        const docId = user.email + "_ordenar_" + index;
-const ref = doc(db, "grades", docId);
-
-const newScore = isCorrect ? 1 : 0;
-
-const existing = await getDoc(ref);
-
-if (existing.exists()) {
-    const oldScore = existing.data().score;
-
-    // 🔥 solo guarda si mejora
-    if (newScore <= oldScore) {
-        console.log("⏩ intento peor, no se guarda");
-        return;
-    }
-}
-
-await setDoc(ref, {
-    email: user.email,
-    exercise: "ordenar_" + index,
-    score: newScore,
-    total: 1,
-    timestamp: serverTimestamp()
-});
-
-        console.log("✅ GUARDADO EN FIRESTORE");
-
-        localStorage.removeItem("orden_index");
-
-        window.location.href = "logrado_erg_1_1_1.html";
-
-    } catch (e) {
-        console.error("❌ ERROR:", e);
-    }
+    window.location.href = "logrado_erg_1_1_1.html";
 };
 
 // 🔥 INICIO
