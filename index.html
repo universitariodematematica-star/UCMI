@@ -4,109 +4,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de Autenticación - UCMI</title>
+    <title>UCMI - Iniciar Sesión</title>
 
     <style>
+        :root {
+            --primary-blue: #000080; /* El azul de tu cabecera */
+            --bg-color: #f7f7f7;
+            --input-border: #d1d5db;
+            --button-dark: #333333;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background-color: #f7f7f7;
+            background-color: var(--bg-color);
             margin: 0;
             padding: 0;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
+        /* Cabecera idéntica a la imagen */
         .table-of-content {
-            background-color: #000080;
+            background-color: var(--primary-blue);
             color: white;
-            padding: 10px;
-            border-radius: 10px;
-            margin: 10px;
+            padding: 15px 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
+        .table-of-content h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            padding: 0 10px;
+        }
+
+        /* Contenedor del logo circular */
         .circle {
-            width: 110px;
-            height: 110px;
-            margin: 20px auto;
+            width: 140px;
+            height: 140px;
+            margin: 40px auto 20px auto;
             border-radius: 50%;
             overflow: hidden;
+            background: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         .circle img {
-            width: 100%;
-            height: 100%;
+            width: 85%;
+            height: 85%;
             object-fit: contain;
         }
 
-        .password-form {
-            margin-top: 20px;
+        h1.title {
+            font-size: 1.6rem;
+            color: #111827;
+            margin-bottom: 25px;
+            font-weight: bold;
         }
 
-        .password-form input {
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 10px;
-            border: 1px solid #ccc;
-            width: 220px;
-            margin: 5px;
+        /* Formulario estilizado */
+        .password-form {
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+        }
+
+        .password-form input[type="email"],
+        .password-form input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 1px solid var(--input-border);
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        .password-form input:focus {
+            border-color: var(--primary-blue);
         }
 
         .password-form input[type="submit"] {
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: #333;
+            padding: 12px 35px;
+            font-size: 15px;
+            background-color: var(--button-dark);
             color: white;
-            border-radius: 10px;
+            border-radius: 8px;
+            border: none;
             cursor: pointer;
             width: auto;
+            margin-top: 15px;
+            font-weight: bold;
+            transition: background 0.3s;
         }
 
+        .password-form input[type="submit"]:hover {
+            background-color: #000;
+        }
+
+        /* Mensajes de error/éxito */
         .message {
             margin: 20px auto;
             padding: 15px;
             border-radius: 10px;
-            min-height: 20px;
-            line-height: 1.5;
-            max-width: 320px;
+            font-size: 14px;
+            line-height: 1.4;
+            max-width: 300px;
             display: none;
+            text-align: center;
         }
 
         .success { background-color: #4CAF50; color: white; }
         .error { background-color: #f44336; color: white; }
     </style>
 
-   <script type="module">
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
-    authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
-    projectId: "portal-autenticacion-a1ngles",
-    storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
-    messagingSenderId: "1039504020190",
-    appId: "1:1039504020190:web:212cf030c3e6feb175a84f"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
+            authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
+            projectId: "portal-autenticacion-a1ngles",
+            storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
+            messagingSenderId: "1039504020190",
+            appId: "1:1039504020190:web:212cf030c3e6feb175a84f"
+        };
 
-// 🔥 ORDEN CORRECTO
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+        const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-// 🔥 CLAVE: persistencia REAL
-await setPersistence(auth, browserLocalPersistence);
+        // Persistencia para que no tenga que loguearse a cada rato
+        await setPersistence(auth, browserLocalPersistence);
 
-// 🔹 Exponer global
-window.auth = auth;
-window.db = db;
-window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-window.getDoc = getDoc;
-window.doc = doc;
-</script>
+        window.auth = auth;
+        window.db = db;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.getDoc = getDoc;
+        window.doc = doc;
+    </script>
 </head>
 
 <body>
@@ -116,16 +163,15 @@ window.doc = doc;
     </div>
 
     <div class="circle">
-        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjw9cxfrG4DxMXY4q8Z_jexzTMuwfWdJoB7iSmpjcA8ntkHLbdXX_vGKofXvl7fahEPTt6NW1JM9fN3xDdW1Ontxh5OYTM6lsjre9SuWyq0fTakTWEMc2guGHMVVNCsb3li6_aQ-Gm2iO0Ql5pVq_cd08jOF8CjMgi_2SztgwnAUMq_MC4acptQhHzxbGcC/s2560/Imagen%20UCMI.png" alt="Logo">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjw9cxfrG4DxMXY4q8Z_jexzTMuwfWdJoB7iSmpjcA8ntkHLbdXX_vGKofXvl7fahEPTt6NW1JM9fN3xDdW1Ontxh5OYTM6lsjre9SuWyq0fTakTWEMc2guGHMVVNCsb3li6_aQ-Gm2iO0Ql5pVq_cd08jOF8CjMgi_2SztgwnAUMq_MC4acptQhHzxbGcC/s2560/Imagen%20UCMI.png" alt="Logo UCMI">
     </div>
 
-    <h2>Iniciar sesión</h2>
+    <h1 class="title">Iniciar sesión</h1>
 
     <form class="password-form" onsubmit="return login(event)">
-        <input id="email" type="email" placeholder="Correo electrónico" required>
+        <input id="email" type="email" placeholder="daniel@demo.com" required autocomplete="email">
+        <input id="password" type="password" placeholder="•••••••••" required autocomplete="current-password">
         <br>
-        <input id="password" type="password" placeholder="Contraseña" required>
-        <br><br>
         <input type="submit" value="Acceder">
     </form>
 
@@ -147,42 +193,44 @@ window.doc = doc;
                 const userCredential = await window.signInWithEmailAndPassword(window.auth, email, password);
                 const user = userCredential.user;
 
-                const docRef = window.doc(window.db, "licenses", user.email);
+                // ⚠️ IMPORTANTE: Estamos consultando la colección 'users' que es la que definimos en el Admin
+                const docRef = window.doc(window.db, "users", user.email);
                 const docSnap = await window.getDoc(docRef);
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     
-                    // Verificación de Fecha
+                    // Verificación de Fecha de Expiración
                     const fechaExp = new Date((data.expiration || "") + "T23:59:59");
                     const hoy = new Date();
 
                     if (isNaN(fechaExp.getTime()) || hoy > fechaExp) {
                         msg.className = "message error";
-                        msg.innerHTML = `❌ Tu licencia ha expirado. Por favor, contacta al administrador para más información:<br><b>+593 99 175 23 85</b>`;
+                        msg.innerHTML = `❌ Tu licencia ha expirado.<br>Contacta al administrador:<br><b>+593 99 175 23 85</b>`;
                         return;
                     }
 
                     // Éxito
                     msg.className = "message success";
-                    msg.innerText = "✅ Bienvenido " + (data.user || user.email);
+                    msg.innerText = "✅ Bienvenido " + (data.name || user.email);
 
+                    // Guardar en sesión para el resto de la página
                     sessionStorage.setItem("email", user.email);
                     sessionStorage.setItem("auth_ok", "1");
 
                     setTimeout(() => {
-                        window.location.href = "home.html";
+                        window.location.href = "home.html"; // O la página que desees
                     }, 1000);
 
                 } else {
                     msg.className = "message error";
-                    msg.innerText = "❌ El usuario no tiene licencia registrada.";
+                    msg.innerText = "❌ No tienes una licencia activa registrada.";
                 }
 
             } catch (error) {
                 msg.className = "message error";
                 msg.innerText = (error.code === "auth/invalid-credential") 
-                    ? "❌ El correo o la contraseña no coinciden. Por favor, verifica e intenta de nuevo" 
+                    ? "❌ Correo o contraseña incorrectos." 
                     : "⚠️ Error: " + error.message;
             }
             return false;
