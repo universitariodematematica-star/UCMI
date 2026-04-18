@@ -126,8 +126,8 @@ estilosMenu.innerHTML = `
         top: 0;
         width: 200px;
         height: 100vh;
-        background: #000080; /* Azul UCMI */
-        color: white;
+        background: #7FFFD4; /* Azul UCMI */
+        color: #000080;
         transition: 0.3s ease;
         z-index: 9999;
         display: flex;
