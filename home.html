@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plataforma Educativa - Panel de Control</title>
+    <title>UCMI - Panel de Control</title>
 
     <style>
         body {
@@ -12,11 +12,23 @@
             background: #eef2f7;
             margin: 0;
             text-align: center;
+            opacity: 0; /* Empieza invisible para evitar parpadeos */
+            transition: opacity 0.5s;
         }
 
         /* 🔄 LOADER INICIAL */
         #loading {
-            margin-top: 100px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
             font-size: 18px;
             color: #333;
         }
@@ -86,54 +98,63 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Lógica para mostrar datos del usuario en el panel
+        // --- VALIDACIÓN Y CARGA DE DATOS ---
         onAuthStateChanged(auth, async (user) => {
+            const statusBox = document.getElementById("status-info");
+            const loading = document.getElementById("loading");
+
             if (user) {
-                const statusBox = document.getElementById("status-info");
-                const loading = document.getElementById("loading");
-                
                 try {
-                    const ref = doc(db, "licenses", user.email);
+                    // ✅ CORRECCIÓN: Apuntamos a la colección 'users' del nuevo Admin
+                    const ref = doc(db, "users", user.email);
                     const snap = await getDoc(ref);
 
                     if (snap.exists()) {
-    const data = snap.data();
-    
-    // 👤 CAMBIO AQUÍ: Priorizamos el campo 'user' (nombre) sobre el correo
-    const nombreAMostrar = data.user || user.email;
+                        const data = snap.data();
+                        
+                        // ✅ CORRECCIÓN: Usamos 'name' (campo definido en el Admin)
+                        const nombreAMostrar = data.name || user.email;
 
-    // 🔥 Calcular días restantes
-    let diasRestantes = "No disponible";
+                        // 🔥 Cálculo de tiempo real
+                        let diasRestantes = 0;
+                        if (data.expiration) {
+                            const fechaExp = new Date(data.expiration + "T23:59:59");
+                            const hoy = new Date();
+                            const diferencia = fechaExp - hoy;
+                            diasRestantes = Math.ceil(diferencia / (1000 * 60 * 60 * 24));
+                        }
 
-    if (data.expiration) {
-        const fechaExp = new Date(data.expiration + "T23:59:59");
-        const hoy = new Date();
+                        // Verificación de seguridad inmediata
+                        if (diasRestantes < 0) {
+                            statusBox.innerHTML = "❌ Tu licencia ha expirado.";
+                            setTimeout(() => { window.location.href = "index.html"; }, 2000);
+                            return;
+                        }
 
-        const diferencia = fechaExp - hoy;
-        diasRestantes = Math.ceil(diferencia / (1000 * 60 * 60 * 24));
+                        // Mostrar información
+                        statusBox.innerHTML = `
+                            👤 <b>Usuario:</b> ${nombreAMostrar}<br>
+                            📅 <b>Expira:</b> ${data.expiration || 'No definida'}<br>
+                            ⏳ <b>Días restantes:</b> ${diasRestantes}<br>
+                            ✅ <b>Estado:</b> Activa
+                        `;
 
-        if (diasRestantes < 0) diasRestantes = 0;
-    }
+                        // Mostrar el panel suavemente
+                        document.body.style.opacity = "1";
+                        loading.style.display = "none";
 
-    statusBox.innerHTML = `
-        👤 <b>Usuario:</b> ${nombreAMostrar}<br>
-        📅 <b>Expira:</b> ${data.expiration || 'No definida'}<br>
-        ⏳ <b>Días restantes:</b> ${diasRestantes}<br>
-        ✅ <b>Estado:</b> ${diasRestantes > 0 ? "Activa" : "Vencida"}
-    `;
-} else {
-    statusBox.innerHTML = "❌ No se encontró información de licencia.";
-}
+                    } else {
+                        // Si el login fue exitoso en Auth pero NO existe en Firestore
+                        statusBox.innerHTML = "❌ Usuario no autorizado en base de datos.";
+                        setTimeout(() => { window.location.href = "index.html"; }, 2500);
+                    }
                 } catch (e) {
-                    console.error("Error cargando datos adicionales:", e);
+                    console.error("Error cargando datos:", e);
+                    statusBox.innerHTML = "⚠️ Error de conexión.";
                 }
-
-document.body.style.opacity = "1";
-document.body.style.pointerEvents = "auto";
-document.body.style.filter = "none";
-document.body.style.display = "block";
-                
-                loading.style.display = "none";
+            } else {
+                // Si no hay usuario en Auth, redirigir al login
+                window.location.href = "index.html";
             }
         });
 
@@ -150,7 +171,10 @@ document.body.style.display = "block";
 
 <body>
 
-    <div id="loading">🔄 Cargando plataforma...</div>
+    <div id="loading">
+        <div style="font-size: 40px; margin-bottom: 10px;">🔄</div>
+        Cargando plataforma...
+    </div>
 
     <div id="panel" class="panel">
         <h2>🎓 Panel de Estudiante</h2>
