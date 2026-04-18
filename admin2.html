@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Admin Maestro</title>
+    <title>UCMI - Admin Maestro Seguro</title>
     <style>
         :root { --primary: #0f172a; --accent: #2563eb; --bg: #f4f6fb; }
         body { font-family: 'Segoe UI', Arial; background: var(--bg); margin: 0; }
@@ -24,19 +24,25 @@
 
 <div id="loginSection" class="card" style="max-width:350px; margin:100px auto; text-align:center;">
     <h3>🔐 Acceso Admin</h3>
-    <input id="adminEmail" type="email" placeholder="Correo Admin">
-    <input id="adminPass" type="password" placeholder="Contraseña">
-    <button class="btn-blue" onclick="adminLogin()">Entrar</button>
+    <p style="font-size: 11px; color: #666;">Los campos se limpian automáticamente al salir</p>
+    
+    <input id="adminEmail" type="email" placeholder="Correo Admin" autocomplete="off" value="">
+    <input id="adminPass" type="password" placeholder="Contraseña" autocomplete="new-password" value="">
+    
+    <button class="btn-blue" onclick="adminLogin()">Entrar al Panel</button>
 </div>
 
 <div id="adminPanel" style="display:none;">
-    <div class="header">UCMI - GESTIÓN DE LICENCIAS <button onclick="logout()" style="width:auto; float:right; background:#334155; font-size:12px;">Cerrar</button></div>
+    <div class="header">
+        UCMI - GESTIÓN DE LICENCIAS 
+        <button onclick="logout()" style="width:auto; float:right; background:#334155; font-size:12px; color: white;">Cerrar Sesión Segura</button>
+    </div>
     
     <div class="grid">
         <div class="card">
             <h3>➕ Registrar Nuevo Alumno</h3>
-            <input id="stuName" placeholder="Nombre del Alumno">
-            <input id="stuEmail" type="email" placeholder="Correo electrónico">
+            <input id="stuName" placeholder="Nombre del Alumno" autocomplete="off">
+            <input id="stuEmail" type="email" placeholder="Correo electrónico" autocomplete="off">
             <input id="stuPass" type="text" value="UCMI2026" placeholder="Contraseña Genérica">
             <label style="font-size:12px; font-weight:bold;">Vencimiento:</label>
             <input id="stuExp" type="date">
@@ -71,11 +77,19 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // --- SESIÓN ADMIN ---
+    // --- LIMPIEZA TOTAL AL CARGAR ---
+    window.onload = () => {
+        document.getElementById("adminEmail").value = "";
+        document.getElementById("adminPass").value = "";
+    };
+
     onAuthStateChanged(auth, (user) => {
         if (user && user.email === "universitariodematematica@gmail.com") {
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("adminPanel").style.display = "block";
+            // Limpiar campos por si acaso al entrar
+            document.getElementById("adminEmail").value = "";
+            document.getElementById("adminPass").value = "";
             syncData();
         } else {
             document.getElementById("loginSection").style.display = "block";
@@ -86,12 +100,21 @@
     window.adminLogin = async () => {
         const e = document.getElementById("adminEmail").value;
         const p = document.getElementById("adminPass").value;
-        try { await signInWithEmailAndPassword(auth, e, p); } catch { alert("Error"); }
+        try { 
+            await signInWithEmailAndPassword(auth, e, p); 
+        } catch { 
+            alert("Acceso denegado"); 
+            // Limpiar contraseña tras error
+            document.getElementById("adminPass").value = "";
+        }
     };
 
-    window.logout = () => { signOut(auth); window.location.reload(); };
+    window.logout = async () => { 
+        await signOut(auth); 
+        // Forzar limpieza y recarga de página para borrar memoria de sesión
+        window.location.reload(); 
+    };
 
-    // --- REGISTRO DUAL (FIREBASE AUTH + FIRESTORE) ---
     window.registerStudent = async () => {
         const name = document.getElementById("stuName").value.trim();
         const email = document.getElementById("stuEmail").value.trim().toLowerCase();
@@ -102,28 +125,18 @@
         if(!name || !email || !pass || !exp) return msg.innerText = "⚠️ Faltan datos";
 
         try {
-            msg.innerText = "⏳ Creando acceso...";
-
-            // 1. Guardar en Firestore (Colección 'users')
+            msg.innerText = "⏳ Procesando...";
             await setDoc(doc(db, "users", email), {
-                name: name,
-                email: email,
-                expiration: exp,
-                role: "student"
+                name: name, email: email, expiration: exp, role: "student"
             });
 
-            // 2. CREAR EN AUTHENTICATION
-            // Para no cerrar tu sesión de admin, usamos una técnica de "app secundaria" temporal
             const secondaryApp = initializeApp(firebaseConfig, "Secondary");
             const secondaryAuth = getAuth(secondaryApp);
-            
             await createUserWithEmailAndPassword(secondaryAuth, email, pass);
-            await signOut(secondaryAuth); // Limpiar app secundaria
+            await signOut(secondaryAuth);
 
             msg.style.color = "green";
-            msg.innerText = "✅ Alumno creado en Auth y Database";
-            
-            // Limpiar inputs
+            msg.innerText = "✅ Alumno creado correctamente";
             document.getElementById("stuName").value = "";
             document.getElementById("stuEmail").value = "";
             document.getElementById("stuExp").value = "";
