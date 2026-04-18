@@ -104,3 +104,107 @@ function resetTimer() {
     // Configurado para 1 hora (60 min * 60 seg * 1000 ms)
     timer = setTimeout(() => cerrar("Sesión cerrada por inactividad"), 60 * 60 * 1000);
 }
+
+// ==========================================
+// ESTILOS DEL MENÚ LATERAL DESPLEGABLE
+// ==========================================
+const estilosMenu = document.createElement("style");
+estilosMenu.innerHTML = `
+    .sidebar-trigger {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 15px; /* Zona sensible al tacto del ratón */
+        height: 100vh;
+        background: transparent;
+        z-index: 9998;
+    }
+
+    .side-menu {
+        position: fixed;
+        left: -250px; /* Escondido por defecto */
+        top: 0;
+        width: 200px;
+        height: 100vh;
+        background: #000080; /* Azul UCMI */
+        color: white;
+        transition: 0.3s ease;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 50px;
+        box-shadow: 4px 0 10px rgba(0,0,0,0.3);
+    }
+
+    .sidebar-trigger:hover + .side-menu, .side-menu:hover {
+        left: 0; /* Se desliza hacia afuera */
+    }
+
+    .logout-side-btn {
+        background: #f44336;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 20px;
+        width: 80%;
+    }
+
+    .logout-side-btn:hover {
+        background: #d32f2f;
+    }
+
+    .menu-title {
+        font-size: 14px;
+        margin-bottom: 20px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+`;
+document.head.appendChild(estilosMenu);
+
+// ==========================================
+// INYECCIÓN DEL MENÚ LATERAL
+// ==========================================
+function inyectarMenuLateral() {
+    // Evitar duplicados
+    if (document.getElementById("side-menu-ucmi")) return;
+
+    // Crear zona de activación
+    const trigger = document.createElement("div");
+    trigger.className = "sidebar-trigger";
+    
+    // Crear el menú
+    const menu = document.createElement("div");
+    menu.id = "side-menu-ucmi";
+    menu.className = "side-menu";
+    menu.innerHTML = `
+        <div class="menu-title">UCMI - SESIÓN</div>
+        <button class="logout-side-btn" id="btn-logout-lateral">
+            🚪 Cerrar Sesión
+        </button>
+    `;
+
+    document.body.appendChild(trigger);
+    document.body.appendChild(menu);
+
+    // Asignar evento al botón
+    document.getElementById("btn-logout-lateral").addEventListener("click", () => {
+        if (typeof logout === "function") {
+            logout(); // Llama a la función logout que ya tienes en tus páginas
+        } else {
+            // Si la página no tiene la función logout definida, usamos la de cerrar del protector
+            cerrar("Cerrando sesión...");
+        }
+    });
+}
+
+// Modificamos la función mostrar() que ya tienes en protect.js para que inyecte el menú
+const mostrarOriginal = mostrar;
+mostrar = function() {
+    mostrarOriginal();
+    inyectarMenuLateral();
+};
