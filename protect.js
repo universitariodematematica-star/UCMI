@@ -142,7 +142,7 @@ estilosMenu.innerHTML = `
     }
 
     .logout-side-btn {
-        background: #f44336;
+        background: #0000FF;
         color: white;
         border: none;
         padding: 12px 20px;
@@ -154,7 +154,7 @@ estilosMenu.innerHTML = `
     }
 
     .logout-side-btn:hover {
-        background: #d32f2f;
+        background: #000080;
     }
 
     .menu-title {
