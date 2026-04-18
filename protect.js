@@ -34,35 +34,42 @@ if (llave !== "1") {
 // ==========================================
 // BLOQUE 4: VALIDACIÓN DE IDENTIDAD Y LICENCIA (CORREGIDO)
 // ==========================================
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (!user) {
-        // Pequeño margen para recargas de página
+        // Margen de 2 segundos por si es un refresco de página
         setTimeout(() => {
             if (!auth.currentUser) cerrar();
         }, 2000);
         return;
     }
 
-    // ✅ CORRECCIÓN CLAVE: Cambiado de "licenses" a "users"
-    const ref = doc(db, "users", user.email);
-    
-    onSnapshot(ref, (snap) => {
+    try {
+        // Importamos getDoc para asegurar una lectura única y limpia
+        const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+        const ref = doc(db, "users", user.email);
+        const snap = await getDoc(ref);
+
         if (!snap.exists()) {
             cerrar("No se encontró tu registro de usuario.");
             return;
         }
 
         const data = snap.data();
-        // Ajustamos la hora para que expire al final del día indicado
         const exp = new Date((data.expiration || "") + "T23:59:59");
 
+        // Validación de fecha: si expiró o la fecha es inválida
         if (isNaN(exp.getTime()) || new Date() > exp) {
             cerrar("Tu licencia ha expirado. Contacta al administrador.");
             return;
         }
 
-        mostrar(); // Todo correcto, revelamos la página
-    });
+        // ✅ Si llegamos aquí, todo está perfecto: revelamos la página
+        mostrar(); 
+
+    } catch (error) {
+        console.error("Error en la guardia de seguridad:", error);
+        // Nota: No ejecutamos cerrar() aquí para evitar expulsiones por errores temporales de internet
+    }
 });
 
 // ==========================================
