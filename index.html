@@ -213,25 +213,28 @@
                 const docSnap = await window.getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    const fechaExp = new Date((data.expiration || "") + "T23:59:59");
-                    const hoy = new Date();
+    const data = docSnap.data();
+    const fechaExp = new Date((data.expiration || "") + "T23:59:59");
+    const hoy = new Date();
 
-                    if (isNaN(fechaExp.getTime()) || hoy > fechaExp) {
-                        msg.className = "message error";
-                        msg.innerHTML = `❌ Tu licencia ha expirado.<br>Contacta al administrador:<br><b>+593 99 175 23 85</b>`;
-                        return;
-                    }
+    if (isNaN(fechaExp.getTime()) || hoy > fechaExp) {
+        msg.className = "message error";
+        msg.innerHTML = `❌ Tu licencia ha expirado.<br>Contacta al administrador:<br><b>+593 99 175 23 85</b>`;
+        return;
+    }
 
-                    msg.className = "message success";
-                    msg.innerText = "✅ Bienvenido " + (data.name || user.email);
-                    
-                    setTimeout(() => { window.location.href = "home.html"; }, 1000);
+    msg.className = "message success";
+    msg.innerText = "✅ Bienvenido " + (data.name || user.email);
+    
+    // 🔥 LINEA VITAL: Crea la llave de acceso para protect.js
+    sessionStorage.setItem("auth_ok", "1"); 
 
-                } else {
-                    msg.className = "message error";
-                    msg.innerText = "❌ No tienes una licencia activa.";
-                }
+    setTimeout(() => { window.location.href = "home.html"; }, 1000);
+
+} else {
+    msg.className = "message error";
+    msg.innerText = "❌ No tienes una licencia activa.";
+}
 
             } catch (error) {
                 msg.className = "message error";
