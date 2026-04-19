@@ -168,5 +168,5 @@ function mostrar() {
 // ==========================================
 function resetTimer() {
     clearTimeout(timer);
-    timer = setTimeout(() => cerrar("Sesión cerrada por inactividad"), 10 * 1000);
+    timer = setTimeout(() => cerrar("Sesión cerrada por inactividad"), 30 * 60 * 1000);
 }
