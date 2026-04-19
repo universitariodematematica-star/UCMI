@@ -179,39 +179,44 @@
     }
 
     // --- FINALIZACIÓN Y ENVÍO A FIREBASE ---
-    // --- FINALIZACIÓN Y ENVÍO A FIREBASE ---
-    async function finishQuiz() {
-        document.getElementById("section-drag").classList.remove("active");
-        const finalScreen = document.getElementById("finalScreen");
-        finalScreen.style.display = "block";
+   async function finishQuiz() {
+    document.getElementById("section-drag").classList.remove("active");
+    const finalScreen = document.getElementById("finalScreen");
+    finalScreen.style.display = "block";
 
-        // CORRECCIÓN DE LA FÓRMULA
-        // Calculamos la nota real: (Aciertos / Total) * 10
-        const calculoNota = (totalCorrect / totalQuestions) * 10;
-        const finalScore = calculoNota.toFixed(1); // Esto lo deja con un decimal (ej: 6.7)
+    // 1. Calculamos la nota
+    const calculoNota = (totalCorrect / totalQuestions) * 10;
+    const finalScore = calculoNota.toFixed(1);
 
-        document.getElementById("finalScoreDisplay").textContent = finalScore;
+    // 2. Generamos el CÓDIGO ALFANUMÉRICO ÚNICO
+    const codigoUnico = generarCodigoVerificacion(10);
 
-        const user = auth.currentUser;
-        if (user) {
-            try {
-                await addDoc(collection(db, "grades"), {
-                    studentEmail: user.email,
-                    exercise_id: "ERG.1.1.1",
-                    score: parseFloat(finalScore), // IMPORTANTE: Enviamos el número real, no "10" fijo
-                    totalQuestions: totalQuestions,
-                    correctAnswers: totalCorrect,
-                    type: "grammar",
-                    timestamp: serverTimestamp()
-                });
-                document.getElementById("statusMsg").textContent = "✅ Calificación enviada con éxito";
-            } catch (error) {
-                document.getElementById("statusMsg").textContent = "❌ Error al enviar.";
-                console.error(error);
-            }
+    // 3. Mostramos en pantalla
+    document.getElementById("finalScoreDisplay").textContent = finalScore;
+    // Actualizamos el texto del código de verificación en el HTML
+    document.getElementById("statusMsg").insertAdjacentHTML('afterend', 
+        `<p id="verificationCodeDisplay">ID de Certificado: <b>${codigoUnico}</b></p>`);
+
+    const user = auth.currentUser;
+    if (user) {
+        try {
+            await addDoc(collection(db, "grades"), {
+                studentEmail: user.email,
+                exercise_id: "ERG.1.1.1",
+                certificate_code: codigoUnico, // 🔥 GUARDAMOS EL CÓDIGO AQUÍ
+                score: parseFloat(finalScore),
+                totalQuestions: totalQuestions,
+                correctAnswers: totalCorrect,
+                type: "grammar",
+                timestamp: serverTimestamp()
+            });
+            document.getElementById("statusMsg").textContent = "✅ Calificación enviada con éxito";
+        } catch (error) {
+            document.getElementById("statusMsg").textContent = "❌ Error al enviar.";
+            console.error(error);
         }
     }
-
+}
     // Iniciar el primer ejercicio
     window.onload = () => { renderSelect(); };
 
