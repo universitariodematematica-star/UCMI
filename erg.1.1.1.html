@@ -179,13 +179,17 @@
     }
 
     // --- FINALIZACIÓN Y ENVÍO A FIREBASE ---
+    // --- FINALIZACIÓN Y ENVÍO A FIREBASE ---
     async function finishQuiz() {
         document.getElementById("section-drag").classList.remove("active");
         const finalScreen = document.getElementById("finalScreen");
         finalScreen.style.display = "block";
 
-        // FÓRMULA JUAN CARLOS: (Correctas / Total) * 10 con 1 decimal
-        const finalScore = ((totalCorrect / totalQuestions) * 10).toFixed(1);
+        // CORRECCIÓN DE LA FÓRMULA
+        // Calculamos la nota real: (Aciertos / Total) * 10
+        const calculoNota = (totalCorrect / totalQuestions) * 10;
+        const finalScore = calculoNota.toFixed(1); // Esto lo deja con un decimal (ej: 6.7)
+
         document.getElementById("finalScoreDisplay").textContent = finalScore;
 
         const user = auth.currentUser;
@@ -194,7 +198,7 @@
                 await addDoc(collection(db, "grades"), {
                     studentEmail: user.email,
                     exercise_id: "ERG.1.1.1",
-                    score: parseFloat(finalScore),
+                    score: parseFloat(finalScore), // IMPORTANTE: Enviamos el número real, no "10" fijo
                     totalQuestions: totalQuestions,
                     correctAnswers: totalCorrect,
                     type: "grammar",
@@ -202,7 +206,7 @@
                 });
                 document.getElementById("statusMsg").textContent = "✅ Calificación enviada con éxito";
             } catch (error) {
-                document.getElementById("statusMsg").textContent = "❌ Error al enviar. Avisa a tu tutor.";
+                document.getElementById("statusMsg").textContent = "❌ Error al enviar.";
                 console.error(error);
             }
         }
