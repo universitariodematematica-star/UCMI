@@ -7,16 +7,31 @@
     <script type="module" src="protect.js"></script>
     <style>
         :root { --navy: #000080; --aqua: #7FFFD4; --bg: #f0f2f5; }
+        body { font-family: sans-serif; }
         h2 { color: var(--navy); border-bottom: 2px solid var(--aqua); padding-bottom: 10px; }
+        
+        .controls { 
+            background: white; padding: 20px; border-radius: 15px; 
+            margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex; align-items: center; gap: 15px;
+        }
+        
+        select { 
+            padding: 10px; border-radius: 8px; border: 1px solid #ccc; 
+            font-size: 1rem; color: var(--navy); outline: none; width: 300px;
+        }
+
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .stat-card h3 { margin: 0; font-size: 0.9rem; color: #666; }
         .stat-card p { margin: 10px 0 0; font-size: 1.8rem; font-weight: bold; color: var(--navy); }
+        
         .table-container { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; background: white; }
         th { background-color: var(--navy); color: white; text-align: left; padding: 15px; font-size: 0.9rem; }
         td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.9rem; color: #333; }
         tr:hover { background-color: #f9f9f9; }
+        
         .grade-badge { padding: 5px 10px; border-radius: 8px; font-weight: bold; display: inline-block; }
         .pass { background: #dcfce7; color: #166534; }
         .fail { background: #fee2e2; color: #991b1b; }
@@ -27,24 +42,31 @@
 
     <h2>👨‍🏫 Panel de Control Docente</h2>
     
+    <div class="controls">
+        <label for="studentFilter"><strong>Filtrar por Alumno:</strong></label>
+        <select id="studentFilter">
+            <option value="all">Ver todos los alumnos</option>
+        </select>
+    </div>
+
     <div class="stats-grid">
         <div class="stat-card">
-            <h3>Total Calificaciones</h3>
+            <h3>Registros mostrados</h3>
             <p id="totalGrades">0</p>
         </div>
         <div class="stat-card">
-            <h3>Promedio General</h3>
+            <h3>Promedio del Filtro</h3>
             <p id="avgGrade">0.0</p>
         </div>
     </div>
 
     <div class="table-container">
-        <div id="loading">Cargando registros de alumnos...</div>
+        <div id="loading">Cargando registros...</div>
         <table id="gradesTable" style="display: none;">
             <thead>
                 <tr>
                     <th>Fecha</th>
-                    <th>Alumno</th>
+                    <th>Correo del Alumno</th>
                     <th>Actividad</th>
                     <th>Calificación</th>
                 </tr>
@@ -66,11 +88,42 @@
         const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // CONFIGURACIÓN BASADA EN TU IMAGEN
         const colRef = collection(db, "grades"); 
         const q = query(colRef, orderBy("timestamp", "desc")); 
 
+        let allData = []; // Guardamos todo aquí para filtrar sin volver a consultar a Firebase
+
         onSnapshot(q, (snapshot) => {
+            allData = [];
+            const select = document.getElementById("studentFilter");
+            const currentFilter = select.value;
+            
+            // Limpiar lista desplegable (dejando solo la opción 'Todos')
+            select.innerHTML = '<option value="all">Ver todos los alumnos</option>';
+            const uniqueStudents = new Set();
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                allData.push(data);
+                if (data.studentEmail) uniqueStudents.add(data.studentEmail);
+            });
+
+            // Llenar el filtro con los emails únicos
+            uniqueStudents.forEach(email => {
+                const option = document.createElement("option");
+                option.value = email;
+                option.textContent = email;
+                select.appendChild(option);
+            });
+
+            // Mantener el filtro seleccionado si existía
+            select.value = currentFilter;
+            
+            renderTable(currentFilter);
+        });
+
+        // Función para dibujar la tabla basándose en el filtro
+        function renderTable(filter) {
             const body = document.getElementById("gradesBody");
             const loading = document.getElementById("loading");
             const table = document.getElementById("gradesTable");
@@ -79,26 +132,21 @@
             let sum = 0;
             body.innerHTML = "";
 
-            if (snapshot.empty) {
-                loading.innerText = "No hay datos en la colección 'grades'.";
-                return;
-            }
+            const filteredData = filter === "all" 
+                ? allData 
+                : allData.filter(d => d.studentEmail === filter);
 
-            snapshot.forEach((doc) => {
-                const data = doc.data();
+            filteredData.forEach((data) => {
                 total++;
-                
-                // Mapeo exacto de tus campos de Firebase
                 const notaActual = parseFloat(data.score || 0);
                 sum += notaActual;
 
-                // Formateo de fecha
                 let fechaTexto = data.timestamp ? data.timestamp.toString().split(' a las')[0] : "---";
 
                 const row = `
                     <tr>
                         <td>${fechaTexto}</td>
-                        <td><strong>${data.studentEmail || '---'}</strong></td>
+                        <td><strong>${data.studentEmail}</strong></td>
                         <td>${data.exercise_id || 'Ejercicio'}</td>
                         <td>
                             <span class="grade-badge ${notaActual >= 7 ? 'pass' : 'fail'}">
@@ -114,10 +162,13 @@
             document.getElementById("avgGrade").innerText = total > 0 ? (sum / total).toFixed(1) : 0;
 
             loading.style.display = "none";
-            table.style.display = "table";
-        }, (error) => {
-            console.error(error);
-            document.getElementById("loading").innerText = "Error de permisos en Firebase.";
+            table.style.display = filteredData.length > 0 ? "table" : "none";
+            if(filteredData.length === 0) loading.innerText = "No hay registros para este alumno.";
+        }
+
+        // Escuchar cambios en el filtro
+        document.getElementById("studentFilter").addEventListener("change", (e) => {
+            renderTable(e.target.value);
         });
     </script>
 </body>
