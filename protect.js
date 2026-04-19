@@ -214,107 +214,76 @@ mostrar = function() {
 // ==========================================
 const estilosUCMI = document.createElement("style");
 estilosUCMI.innerHTML = `
-    /* 1. Fondo general de la página para que resalte el contenedor */
-    body {
-        background-color: #f0f2f5; 
-        margin: 0;
-        padding: 0;
-    }
+    body { background-color: #f0f2f5 !important; margin: 0; padding: 0; }
 
-    /* 2. El Contenedor Aguamarina Centrado */
     .main-container {
-        max-width: 950px;          /* Ancho ideal para lectura */
-        margin: 40px auto;         /* Centra horizontalmente y separa del borde superior */
-        background: #E0FFFF;       /* Aguamarina claro (LightCyan) */
-        padding: 40px;             /* Espacio interno para el contenido */
-        border-radius: 20px;       /* Bordes redondeados elegantes */
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* Sombra para dar relieve */
+        max-width: 950px;
+        margin: 40px auto;
+        background: #E0FFFF !important; /* Aguamarina claro */
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         min-height: 80vh;
+        visibility: visible !important;
     }
 
-    /* 3. Estilos del Menú Lateral */
     .sidebar-trigger {
-        position: fixed;
-        left: 0; top: 0; width: 15px; height: 100vh;
+        position: fixed; left: 0; top: 0; width: 15px; height: 100vh;
         background: transparent; z-index: 9998;
     }
 
     .side-menu {
-        position: fixed;
-        left: -250px; top: 0; width: 220px; height: 100vh;
-        background: #7FFFD4;       /* Aguamarina intenso */
-        color: #000080; 
-        transition: 0.3s ease;
-        z-index: 9999;
+        position: fixed; left: -250px; top: 0; width: 220px; height: 100vh;
+        background: #7FFFD4 !important; /* Aguamarina intenso */
+        color: #000080; transition: 0.3s ease; z-index: 9999;
         display: flex; flex-direction: column; align-items: center;
-        padding-top: 60px;
-        box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+        padding-top: 60px; box-shadow: 5px 0 15px rgba(0,0,0,0.2);
     }
 
-    .sidebar-trigger:hover + .side-menu, .side-menu:hover {
-        left: 0;
-    }
+    .sidebar-trigger:hover + .side-menu, .side-menu:hover { left: 0; }
 
-    .menu-title {
-        font-weight: bold; margin-bottom: 30px; color: #000080;
-    }
-
-    /* 4. Botón de Cerrar Sesión (Blue) */
     .logout-side-btn {
-        background: #0000FF; 
-        color: white; border: none; padding: 12px 20px;
-        border-radius: 10px; cursor: pointer; font-weight: bold;
-        width: 85%; transition: 0.3s;
-    }
-
-    .logout-side-btn:hover {
-        background: #000080;
+        background: #0000FF !important; color: white; border: none; 
+        padding: 12px 20px; border-radius: 10px; cursor: pointer; 
+        font-weight: bold; width: 85%; margin-top: 20px;
     }
 `;
 document.head.appendChild(estilosUCMI);
 
 // ==========================================
-// LÓGICA DE INYECCIÓN (MENÚ + CONTENEDOR)
+// LÓGICA DE INYECCIÓN
 // ==========================================
 function inyectarInterfaz() {
     if (document.getElementById("side-menu-ucmi")) return;
 
-    // A. ENVOLVER CONTENIDO EN CONTENEDOR AGUAMARINA
-    // Buscamos el contenido actual (sin scripts) y lo envolvemos
+    // Envolvemos el contenido
     const bodyContent = document.body.innerHTML;
-    document.body.innerHTML = `<div class="main-container" id="ucmi-content">${bodyContent}</div>`;
+    document.body.innerHTML = `<div class="main-container">${bodyContent}</div>`;
 
-    // B. CREAR DISPARADOR DEL MENÚ
+    // Creamos el menú
     const trigger = document.createElement("div");
     trigger.className = "sidebar-trigger";
-    
-    // C. CREAR EL MENÚ LATERAL
     const menu = document.createElement("div");
     menu.id = "side-menu-ucmi";
     menu.className = "side-menu";
     menu.innerHTML = `
-        <div class="menu-title">UCMI - NAVEGACIÓN</div>
-        <button class="logout-side-btn" id="btn-logout-lateral">
-            🚪 Cerrar Sesión
-        </button>
+        <div style="font-weight:bold; color:#000080; margin-bottom:20px;">UCMI - MENÚ</div>
+        <button class="logout-side-btn" id="btn-logout-lateral">🚪 Cerrar Sesión</button>
     `;
 
     document.body.appendChild(trigger);
     document.body.appendChild(menu);
 
-    // D. EVENTO DE LOGOUT
     document.getElementById("btn-logout-lateral").onclick = () => {
         if (typeof logout === "function") logout();
-        else cerrar("Cerrando sesión segura...");
+        else cerrar("Cerrando sesión...");
     };
 }
 
-// ==========================================
-// MODIFICACIÓN DE LA FUNCIÓN MOSTRAR
-// ==========================================
-// Sobrescribimos la función mostrar que ya existe en tu protect.js
+// Reemplazo de la función mostrar
 const mostrarOriginal = mostrar;
 mostrar = function() {
-    mostrarOriginal();   // Primero quita el hidden
-    inyectarInterfaz();  // Luego crea el contenedor y el menú
+    mostrarOriginal();
+    // Agregamos un pequeño retraso de 100ms para asegurar que el DOM esté listo
+    setTimeout(inyectarInterfaz, 100);
 };
