@@ -84,96 +84,88 @@ function cerrar(msg) {
 }
 
 // ==========================================
-// BLOQUE 6: FUNCIÓN DE ACCESO CONCEDIDO (REDiseño TOTAL)
+// BLOQUE 6: FUNCIÓN DE ACCESO CONCEDIDO
 // ==========================================
 function mostrar() {
     if (ok) return;
     ok = true;
 
-    // 1. Inyectamos los estilos primero con máxima prioridad
+    // 1. Inyectamos los estilos finales (Contenedor y Menú)
     const style = document.createElement("style");
     style.innerHTML = `
-        body { 
-            background-color: #f0f2f5 !important; 
-            margin: 0 !important; 
-            padding: 0 !important; 
-            display: block !important;
-            font-family: Arial, sans-serif;
-        }
-
-        /* La caja que centrará tu contenido */
+        body { background-color: #f0f2f5 !important; margin: 0 !important; padding: 0 !important; display: block !important; }
         .main-container {
-            max-width: 1000px; 
-            margin: 40px auto !important; 
-            background: #E0FFFF !important; /* Aguamarina claro */
-            padding: 50px !important; 
-            border-radius: 25px !important; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
-            min-height: 80vh;
-            box-sizing: border-box;
+            max-width: 1000px; margin: 40px auto !important; background: #E0FFFF !important;
+            padding: 50px !important; border-radius: 25px !important; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important; min-height: 80vh; box-sizing: border-box;
         }
-
-        /* Estilos del Menú Lateral */
         .sidebar-trigger { position: fixed; left: 0; top: 0; width: 20px; height: 100vh; z-index: 9998; }
         .side-menu {
             position: fixed; left: -260px; top: 0; width: 240px; height: 100vh;
-            background: #7FFFD4 !important; color: #000080; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: #7FFFD4 !important; color: #000080; transition: 0.4s ease;
             z-index: 9999; display: flex; flex-direction: column; align-items: center;
             padding-top: 60px; box-shadow: 5px 0 15px rgba(0,0,0,0.2);
         }
         .sidebar-trigger:hover + .side-menu, .side-menu:hover { left: 0; }
-
         .logout-side-btn {
-            background: #0000FF !important; color: white !important; border: none; 
-            padding: 15px; border-radius: 12px; cursor: pointer; font-weight: bold; 
-            width: 80%; margin-top: 30px; transition: 0.3s;
+            background: #0000FF !important; color: white !important; border: none; padding: 15px;
+            border-radius: 12px; cursor: pointer; font-weight: bold; width: 80%; margin-top: 30px;
         }
-        .logout-side-btn:hover { background: #000080 !important; transform: scale(1.05); }
     `;
     document.head.appendChild(style);
 
-    // 2. CREACIÓN DEL CONTENEDOR Y REUBICACIÓN DE ELEMENTOS
-    // Esto evita que el contenido se vea "horrible" y lo centra
+    // 2. Metemos el contenido en el contenedor aguamarina
     const container = document.createElement("div");
     container.className = "main-container";
-    
-    // Movemos todo el contenido del body al contenedor, EXCEPTO los scripts
     const children = Array.from(document.body.childNodes);
     children.forEach(child => {
-        if (child.tagName !== "SCRIPT" && child.nodeName !== "#text" || child.textContent.trim() !== "") {
-            container.appendChild(child);
-        }
+        if (child.tagName !== "SCRIPT") container.appendChild(child);
     });
     document.body.appendChild(container);
 
-    // 3. INYECCIÓN DEL MENÚ
+    // 3. Creamos el Menú Lateral
     const trigger = document.createElement("div");
     trigger.className = "sidebar-trigger";
     const menu = document.createElement("div");
-    menu.id = "side-menu-ucmi";
     menu.className = "side-menu";
+    menu.id = "side-menu-ucmi";
     menu.innerHTML = `
-        <div style="font-weight:bold; color:#000080; margin-bottom:10px; font-size:18px;">UCMI</div>
-        <div style="color:#000080; margin-bottom:30px; font-size:12px;">MENÚ DE NAVEGACIÓN</div>
+        <div style="font-weight:bold; color:#000080; margin-bottom:20px;">UCMI - MENÚ</div>
         <button class="logout-side-btn" id="btn-logout-lateral">🚪 Cerrar Sesión</button>
     `;
     document.body.appendChild(trigger);
     document.body.appendChild(menu);
 
-    // Botón de cierre
     document.getElementById("btn-logout-lateral").onclick = () => {
         if (typeof logout === "function") logout(); else cerrar("Sesión finalizada");
     };
 
-    // 4. FINALIZACIÓN: HACER VISIBLE
+    // 4. 🔥 REVALIDACIÓN CÍCLICA (Revisa la fecha cada 30 seg)
+    setInterval(async () => {
+        try {
+            const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+            const reSnap = await getDoc(doc(db, "users", auth.currentUser.email));
+            if (reSnap.exists()) {
+                const reData = reSnap.data();
+                const reExp = new Date((reData.expiration || "") + "T23:59:59");
+                if (isNaN(reExp.getTime()) || new Date() > reExp) {
+                    cerrar("Tu licencia ha expirado. Sesión finalizada.");
+                }
+            }
+        } catch (e) { console.log("Error de red en validación"); }
+    }, 30000);
+
+    // Hacer visible y activar temporizador de inactividad
     document.documentElement.style.visibility = "visible";
-    
     resetTimer();
     ["click", "mousemove", "keydown", "scroll", "touchstart"].forEach(e => {
         document.addEventListener(e, resetTimer);
     });
 }
 
+// ==========================================
+// BLOQUE 7: TEMPORIZADOR DE INACTIVIDAD
+// ==========================================
 function resetTimer() {
     clearTimeout(timer);
     timer = setTimeout(() => cerrar("Sesión cerrada por inactividad"), 60 * 60 * 1000);
