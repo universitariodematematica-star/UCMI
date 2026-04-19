@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación Gramatical Unificada</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f2f5; color: black; padding: 20px; }
+        .exercise-section { display: none; margin-bottom: 30px; }
+        .active { display: block; }
+        
+        /* Estilos del Contenedor de Palabras (Drag & Drop) */
+        .sentenceBlank { 
+            width: 90%; min-height: 80px; background-color: #ffffff; 
+            border: 2px dashed #007BFF; margin: 20px auto; 
+            border-radius: 10px; display: flex; flex-wrap: wrap; 
+            justify-content: center; align-items: center; padding: 10px;
+        }
+        .wordButton { 
+            padding: 10px 15px; background-color: #007BFF; color: white;
+            margin: 5px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold;
+        }
+        .wordButton:hover { background-color: violet; color: black; }
+
+        /* Estilos de Selección Múltiple */
+        select { padding: 10px; font-size: 16px; border-radius: 5px; border: 2px solid #007BFF; width: 80%; max-width: 400px; }
+
+        /* Botones de Control */
+        .btn-main { 
+            background-color: blue; color: white; border: 2px solid black; 
+            border-radius: 10px; padding: 12px 25px; cursor: pointer; font-weight: bold; font-size: 16px;
+        }
+        .btn-main:hover { background-color: violet; color: black; }
+
+        /* Pantalla Final */
+        #finalScreen { display: none; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .score-big { font-size: 48px; color: blue; font-weight: bold; margin: 20px 0; }
+        .success-msg { color: green; font-weight: bold; font-size: 20px; }
+    </style>
+
+    <script type="module" src="protect.js"></script>
+</head>
+<body>
+
+    <div id="quiz-container">
+        <h3><b>Ejercicios ERG.1.1.1.</b></h3>
+        <hr>
+
+        <div id="section-select" class="exercise-section active">
+            <h2>Selecciona la traducción correcta:</h2>
+            <div id="selectQuestionContainer"></div>
+            <br>
+            <button class="btn-main" onclick="nextSelect()">Siguiente</button>
+        </div>
+
+        <div id="section-drag" class="exercise-section">
+            <h2>Ordena las palabras en la oración:</h2>
+            <div id="dragWordsContainer"></div>
+            <div class="sentenceBlank" id="sentenceBlank" ondragover="event.preventDefault()" ondrop="drop(event)"></div>
+            <br>
+            <button class="btn-main" id="btnNextDrag" onclick="nextDrag()">Siguiente</button>
+        </div>
+
+        <div id="finalScreen">
+            <h2>Evaluación Finalizada</h2>
+            <p>Tu calificación es:</p>
+            <div class="score-big" id="finalScoreDisplay">0.0</div>
+            <p class="success-msg" id="statusMsg">Enviando calificación...</p>
+            <p>Código de verificación: <b>ERG.1.1.1</b></p>
+            <br>
+            <button class="btn-main" onclick="window.location.href='tema11grammar.html'">Volver al Tema</button>
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
+        authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
+        projectId: "portal-autenticacion-a1ngles",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ================= CONFIGURACIÓN DE EJERCICIOS =================
+    // Puedes aumentar o disminuir estos arrays fácilmente
+    const questionsSelect = [
+        {q: "1. Howdy", opts: ["a) Hola","b) Adiós","c) Buenos días","d) Mucho gusto"], a: "a) Hola"},
+        {q: "2. I am John Carter.", opts: ["a) Soy Juan Pérez.","b) Me llamo John Carter.","c) Soy John Carter.","d) Mi nombre es Juan."], a: "c) Soy John Carter."},
+        {q: "3. What is your name", opts: ["a) Cuál es tu edad","b) Cómo estás","c) De dónde eres","d) Cómo te llamas"], a: "d) Cómo te llamas"}
+        // ... añade más aquí
+    ];
+
+    const questionsDrag = [
+        ["Nice","to","meet","you!"],
+        ["My","name","is","John"],
+        ["Where","are","you","from?"]
+    ];
+
+    let currentSelectIdx = 0;
+    let currentDragIdx = 0;
+    let totalCorrect = 0;
+    const totalQuestions = questionsSelect.length + questionsDrag.length;
+
+    // --- LÓGICA SELECCIÓN MÚLTIPLE ---
+    window.renderSelect = function() {
+        const item = questionsSelect[currentSelectIdx];
+        let html = `<p><b>${item.q}</b></p><select id="userSelect"><option value="">Selecciona una opción</option>`;
+        item.opts.forEach(o => html += `<option value="${o}">${o}</option>`);
+        html += `</select>`;
+        document.getElementById("selectQuestionContainer").innerHTML = html;
+    }
+
+    window.nextSelect = function() {
+        const userAns = document.getElementById("userSelect").value;
+        if (userAns === questionsSelect[currentSelectIdx].a) totalCorrect++;
+        
+        currentSelectIdx++;
+        if (currentSelectIdx < questionsSelect.length) {
+            renderSelect();
+        } else {
+            document.getElementById("section-select").classList.remove("active");
+            document.getElementById("section-drag").classList.add("active");
+            renderDrag();
+        }
+    }
+
+    // --- LÓGICA DRAG & DROP ---
+    function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
+
+    window.renderDrag = function() {
+        const container = document.getElementById("dragWordsContainer");
+        const blank = document.getElementById("sentenceBlank");
+        container.innerHTML = "";
+        blank.innerHTML = "";
+        
+        const shuffled = shuffle([...questionsDrag[currentDragIdx]]);
+        shuffled.forEach(word => {
+            const btn = document.createElement("button");
+            btn.textContent = word;
+            btn.className = "wordButton";
+            btn.draggable = true;
+            btn.onclick = () => { blank.appendChild(btn); }; // Soporte para clic además de drag
+            btn.ondragstart = (e) => e.dataTransfer.setData("text", word);
+            container.appendChild(btn);
+        });
+
+        if (currentDragIdx === questionsDrag.length - 1) {
+            document.getElementById("btnNextDrag").textContent = "Finalizar y Evaluar";
+        }
+    }
+
+    window.drop = function(e) {
+        e.preventDefault();
+        const data = e.dataTransfer.getData("text");
+        const btn = document.createElement("button");
+        btn.textContent = data;
+        btn.className = "wordButton";
+        document.getElementById("sentenceBlank").appendChild(btn);
+    }
+
+    window.nextDrag = function() {
+        const userOrder = [...document.getElementById("sentenceBlank").children].map(b => b.textContent);
+        const correctOrder = questionsDrag[currentDragIdx];
+        
+        if (JSON.stringify(userOrder) === JSON.stringify(correctOrder)) totalCorrect++;
+
+        currentDragIdx++;
+        if (currentDragIdx < questionsDrag.length) {
+            renderDrag();
+        } else {
+            finishQuiz();
+        }
+    }
+
+    // --- FINALIZACIÓN Y ENVÍO A FIREBASE ---
+    async function finishQuiz() {
+        document.getElementById("section-drag").classList.remove("active");
+        const finalScreen = document.getElementById("finalScreen");
+        finalScreen.style.display = "block";
+
+        // FÓRMULA JUAN CARLOS: (Correctas / Total) * 10 con 1 decimal
+        const finalScore = ((totalCorrect / totalQuestions) * 10).toFixed(1);
+        document.getElementById("finalScoreDisplay").textContent = finalScore;
+
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                await addDoc(collection(db, "grades"), {
+                    studentEmail: user.email,
+                    exercise_id: "ERG.1.1.1",
+                    score: parseFloat(finalScore),
+                    totalQuestions: totalQuestions,
+                    correctAnswers: totalCorrect,
+                    type: "grammar",
+                    timestamp: serverTimestamp()
+                });
+                document.getElementById("statusMsg").textContent = "✅ Calificación enviada con éxito";
+            } catch (error) {
+                document.getElementById("statusMsg").textContent = "❌ Error al enviar. Avisa a tu tutor.";
+                console.error(error);
+            }
+        }
+    }
+
+    // Iniciar el primer ejercicio
+    window.onload = () => { renderSelect(); };
+
+</script>
+</body>
+</html>
