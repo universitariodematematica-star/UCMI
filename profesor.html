@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Registro de Calificaciones</title>
+    <style>
+        :root { --navy: #000080; --aqua: #7FFFD4; --light-aqua: #E0FFFF; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .prof-container { 
+            max-width: 1100px; margin: auto; background: white; 
+            padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+        }
+        h1 { color: var(--navy); border-bottom: 3px solid var(--aqua); padding-bottom: 10px; }
+        
+        /* Filtros */
+        .search-box { 
+            display: flex; gap: 15px; margin-bottom: 25px; 
+            background: var(--light-aqua); padding: 20px; border-radius: 12px;
+        }
+        input, select { padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
+        
+        /* Tabla */
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: var(--navy); color: white; padding: 15px; text-align: left; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.95rem; }
+        tr:hover { background-color: #f9f9f9; }
+
+        /* Semáforo de notas */
+        .score-pill { 
+            padding: 6px 12px; border-radius: 20px; font-weight: bold; color: white; text-align: center; display: inline-block; min-width: 40px;
+        }
+        .excelente { background: #2ecc71; } /* 9-10 */
+        .bueno { background: #3498db; }     /* 7-8.9 */
+        .reforzar { background: #e67e22; }  /* 5-6.9 */
+        .insuficiente { background: #e74c3c; } /* 0-4.9 */
+    </style>
+    <script type="module" src="protect.js"></script>
+</head>
+<body>
+
+<div class="prof-container">
+    <h1>👨‍🏫 Panel de Seguimiento Académico</h1>
+
+    <div class="search-box">
+        <input type="text" id="filterEmail" placeholder="🔍 Buscar por Alumno..." onkeyup="aplicarFiltros()" style="flex: 2;">
+        <select id="filterUnidad" onchange="aplicarFiltros()" style="flex: 1;">
+            <option value="">📚 Todas las Unidades</option>
+            <option value="ERG.1">Unidad 1</option>
+            <option value="ERG.2">Unidad 2</option>
+        </select>
+        <button onclick="cargarTodo()" style="cursor:pointer; padding:10px; border-radius:8px; border:1px solid var(--navy);">🔄 Refrescar</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Estudiante</th>
+                <th>Ejercicio</th>
+                <th>Calificación</th>
+                <th>Folio</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-cuerpo">
+            </tbody>
+    </table>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
+        authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
+        projectId: "portal-autenticacion-a1ngles"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function cargarTodo() {
+        const tbody = document.getElementById('tabla-cuerpo');
+        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center'>Cargando base de datos...</td></tr>";
+
+        try {
+            const q = query(collection(db, "grades"), orderBy("timestamp", "desc"));
+            const snap = await getDocs(q);
+            tbody.innerHTML = "";
+
+            snap.forEach((doc) => {
+                const d = doc.data();
+                const f = d.timestamp ? d.timestamp.toDate().toLocaleDateString() + ' ' + d.timestamp.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "---";
+                
+                // Lógica de color según tu escala
+                let claseColor = 'insuficiente';
+                if (d.score >= 9) claseColor = 'excelente';
+                else if (d.score >= 7) claseColor = 'bueno';
+                else if (d.score >= 5) claseColor = 'reforzar';
+
+                const tr = `
+                    <tr>
+                        <td style="color: #666;">${f}</td>
+                        <td style="font-weight:600;">${d.studentEmail}</td>
+                        <td><small>${d.exercise_id}</small></td>
+                        <td><span class="score-pill ${claseColor}">${d.score.toFixed(1)}</span></td>
+                        <td style="font-family: monospace; color: #888;">${d.certificate_code || '---'}</td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', tr);
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    window.aplicarFiltros = function() {
+        const emailBusca = document.getElementById('filterEmail').value.toLowerCase();
+        const unidadBusca = document.getElementById('filterUnidad').value;
+        const filas = document.getElementById('tabla-cuerpo').getElementsByTagName('tr');
+
+        for (let i = 0; i < filas.length; i++) {
+            const emailCelda = filas[i].getElementsByTagName('td')[1].textContent.toLowerCase();
+            const idCelda = filas[i].getElementsByTagName('td')[2].textContent;
+            
+            const coincideEmail = emailCelda.includes(emailBusca);
+            const coincideUnidad = unidadBusca === "" || idCelda.includes(unidadBusca);
+
+            filas[i].style.display = (coincideEmail && coincideUnidad) ? "" : "none";
+        }
+    }
+
+    window.cargarTodo = cargarTodo;
+    cargarTodo();
+</script>
+</body>
+</html>
