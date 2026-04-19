@@ -179,41 +179,51 @@
     }
 
     // --- FINALIZACIÓN Y ENVÍO A FIREBASE ---
-   async function finishQuiz() {
+async function finishQuiz() {
+    // Ocultamos la última sección de ejercicios
     document.getElementById("section-drag").classList.remove("active");
     const finalScreen = document.getElementById("finalScreen");
     finalScreen.style.display = "block";
 
-    // 1. Calculamos la nota
-    const calculoNota = (totalCorrect / totalQuestions) * 10;
-    const finalScore = calculoNota.toFixed(1);
+    // --- GENERADOR DE CÓDIGO ALFANUMÉRICO (10 caracteres) ---
+    const caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let codigoUnico = "";
+    for (let i = 0; i < 10; i++) {
+        codigoUnico += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+    }
 
-    // 2. Generamos el CÓDIGO ALFANUMÉRICO ÚNICO
-    const codigoUnico = generarCodigoVerificacion(10);
+    // --- CÁLCULO DE CALIFICACIÓN (Blindado) ---
+    // Usamos la fórmula: (Correctas / Total) * 10
+    // Forzamos que si totalQuestions es 0 (por error), no explote el código
+    const totalPosible = questionsSelect.length + questionsDrag.length;
+    const calculoNota = (totalCorrect / totalPosible) * 10;
+    const finalScore = calculoNota.toFixed(1); 
 
-    // 3. Mostramos en pantalla
+    // Mostramos los resultados en la pantalla final
     document.getElementById("finalScoreDisplay").textContent = finalScore;
-    // Actualizamos el texto del código de verificación en el HTML
-    document.getElementById("statusMsg").insertAdjacentHTML('afterend', 
-        `<p id="verificationCodeDisplay">ID de Certificado: <b>${codigoUnico}</b></p>`);
+    
+    // Mostramos el ID de Certificado debajo del mensaje de envío
+    const statusMsg = document.getElementById("statusMsg");
+    statusMsg.innerHTML = `Enviando calificación... <br><span style="color:black; font-size:16px;">ID Certificado: <b>${codigoUnico}</b></span>`;
 
     const user = auth.currentUser;
     if (user) {
         try {
+            // Enviamos los datos a la colección 'grades'
             await addDoc(collection(db, "grades"), {
                 studentEmail: user.email,
                 exercise_id: "ERG.1.1.1",
-                certificate_code: codigoUnico, // 🔥 GUARDAMOS EL CÓDIGO AQUÍ
-                score: parseFloat(finalScore),
-                totalQuestions: totalQuestions,
+                certificate_code: codigoUnico, 
+                score: parseFloat(finalScore), 
+                totalQuestions: totalPosible,
                 correctAnswers: totalCorrect,
                 type: "grammar",
                 timestamp: serverTimestamp()
             });
-            document.getElementById("statusMsg").textContent = "✅ Calificación enviada con éxito";
+            statusMsg.innerHTML = `✅ Calificación enviada con éxito <br><span style="color:black; font-size:16px;">ID Certificado: <b>${codigoUnico}</b></span>`;
         } catch (error) {
-            document.getElementById("statusMsg").textContent = "❌ Error al enviar.";
-            console.error(error);
+            statusMsg.textContent = "❌ Error al guardar en Firebase.";
+            console.error("Error Firebase:", error);
         }
     }
 }
