@@ -1,92 +1,297 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Dashboard Profesores</title>
-
-<style>
-body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-}
-
-h2 {
-    margin-bottom: 20px;
-}
-
-.card {
-    border: 1px solid #ccc;
-    padding: 12px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    background: #f9f9f9;
-}
-</style>
-</head>
-
-<body>
-
-<h2>📊 Dashboard de Calificaciones</h2>
-
-<div id="dashboard">Cargando...</div>
-
-<script type="module">
-import { db } from "./firebase.js";
-import {
-    collection,
-    getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-async function cargarDashboard() {
-
-    const container = document.getElementById("dashboard");
-    container.innerHTML = "Cargando datos...";
-
-    try {
-
-        const usersSnap = await getDocs(collection(db, "users"));
-
-        let html = "";
-
-        for (const userDoc of usersSnap.docs) {
-
-            const uid = userDoc.id;
-
-            const progressSnap = await getDocs(
-                collection(db, "users", uid, "progress")
-            );
-
-            progressSnap.forEach(doc => {
-
-                const data = doc.data();
-
-                const nombre =
-                    data.name ||
-                    userDoc.data().name ||
-                    userDoc.data().email ||
-                    uid;
-
-                html += `
-                <div class="card">
-                    <b>Usuario:</b> ${nombre}<br>
-                    <b>Ejercicio:</b> ${doc.id}<br>
-                    <b>Nota:</b> ${data.score} / ${data.maxScore ?? 10}<br>
-                    <b>Perfecto:</b> ${data.isPerfect ? "Sí" : "No"}<br>
-                </div>
-                `;
-            });
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Dashboard y Certificación</title>
+    
+    <style>
+        :root {
+            --primary-blue: #000080;
+            --bg-gray: #f4f6f9;
+            --success-green: #27ae60;
+            --white: #ffffff;
         }
 
-        container.innerHTML = html || "No hay datos aún.";
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg-gray);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    } catch (error) {
-        console.error(error);
-        container.innerHTML = "Error cargando datos.";
-    }
-}
+        .dashboard-card {
+            background: var(--white);
+            width: 100%;
+            max-width: 900px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
 
-cargarDashboard();
+        .header { border-bottom: 2px solid var(--primary-blue); margin-bottom: 25px; padding-bottom: 10px; }
+        .user-name-title { color: var(--primary-blue); font-size: 1.8rem; font-weight: bold; }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr) auto;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .input-box { display: flex; flex-direction: column; gap: 5px; }
+        select { padding: 10px; border: 2px solid #ddd; border-radius: 8px; }
+
+        .btn-consultar {
+            background-color: var(--primary-blue);
+            color: white; border: none; padding: 12px 20px;
+            border-radius: 8px; font-weight: bold; cursor: pointer;
+        }
+
+        .result-section { 
+            margin-top: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 15px;
+        }
+        
+        #score-display {
+            display: none;
+            background: var(--primary-blue);
+            color: white; width: 180px; padding: 15px;
+            border-radius: 12px; text-align: center;
+        }
+
+        .btn-gen-cert {
+            display: none;
+            background-color: var(--success-green);
+            color: white; border: none; padding: 12px 30px;
+            border-radius: 50px; font-weight: bold; cursor: pointer;
+        }
+
+        /* --- CERTIFICADO --- */
+        #certificate-wrapper {
+            display: none;
+            width: 100%;
+            max-width: 850px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #certificate-area {
+            background: white;
+            padding: 60px;
+            border: 15px double var(--primary-blue);
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+            margin-bottom: 50px;
+            color: #333;
+        }
+
+        .cert-text {
+            font-size: 1.6rem;
+            line-height: 2;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .highlight { font-weight: bold; color: var(--primary-blue); }
+
+        .cert-footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px dashed #ccc;
+        }
+
+        .code-label { font-size: 0.9rem; color: #777; letter-spacing: 2px; margin-bottom: 10px; }
+        .code-value { font-family: 'Courier New', monospace; font-size: 1.6rem; font-weight: bold; letter-spacing: 3px; }
+
+        @media print {
+            .dashboard-card, .btn-gen-cert, .sidebar-trigger, .side-menu { display: none !important; }
+            body { background: white; padding: 0; }
+            #certificate-area { border: none; box-shadow: none; }
+        }
+    </style>
+    
+    <script type="module" src="protect.js"></script>
+</head>
+<body>
+
+    <div class="dashboard-card">
+        <div class="header">
+            <span style="color:#777;">Estudiante:</span>
+            <div id="student-name-header" class="user-name-title">Cargando...</div>
+        </div>
+
+        <div class="grid-layout">
+            <div class="input-box">
+                <label>Unidad</label>
+                <select id="unidad">
+                    <option value="">--</option>
+                    <script>for(let i=1; i<=10; i++) document.write(`<option value="${i}">${i}</option>`);</script>
+                </select>
+            </div>
+            <div class="input-box">
+                <label>Tema</label>
+                <select id="tema">
+                    <option value="">--</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
+            </div>
+            <div class="input-box">
+                <label>Skill</label>
+                <select id="skill">
+                    <option value="">--</option>
+                    <option value="Grammar">Grammar</option>
+                    <option value="Listening">Listening</option>
+                    <option value="Reading">Reading</option>
+                    <option value="Writing">Writing</option>
+                    <option value="Speaking">Speaking</option>
+                </select>
+            </div>
+            <button class="btn-consultar" id="btnConsultar">Calificación</button>
+        </div>
+
+        <div class="result-section">
+            <div id="alert-msg"></div>
+            <div id="score-display">
+                <div style="font-size: 0.7rem; text-transform: uppercase;">Calificación</div>
+                <div id="final-score-val" style="font-size: 3rem; font-weight: 900;">0.0</div>
+            </div>
+            <button id="btn-gen-cert" class="btn-gen-cert">Ver Certificado</button>
+        </div>
+    </div>
+
+    <div id="certificate-wrapper">
+        <div id="certificate-area">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <img alt="Logo UCMI" border="0" width="160" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEivYd4lw8N1dKU2AjM2w6EBfYGXsoF8MVfRRzw3gDXyZFSFMasW4PXwEHnDKwMwe3-_nCCrNKtJjYZFojEa5mPB6HlBYkcPwXMtvrbtVZux9CtCT-BDV7CmjPLk-t6EDVx3b2gtEq8Qd98Acg__HnOBIdiVsflSAwGFPqj6KIv_USy3U6CjsGPkUZyR1nJW/s320/Imagen%20UCMI%20-%20copia.png"/>
+            </div>
+            
+            <div class="cert-text">
+                Se certifica que el estudiante <span class="highlight" id="pdf-student-name">...</span> <br>
+                ha completado con éxito el ejercicio de habilidad <span class="highlight" id="pdf-skill"></span> <br>
+                de la <span class="highlight">Unidad <span id="pdf-u"></span>, Tema <span id="pdf-t"></span></span>, <br>
+                obteniendo una calificación de <span class="highlight" id="pdf-score">0.0</span>/10.
+                <br><br>
+                Este logro fue emitido el día <span id="pdf-fecha"></span> a las <span id="pdf-hora"></span> horas.
+            </div>
+
+            <div class="cert-footer">
+                <div class="code-label">CÓDIGO ÚNICO DE VALIDACIÓN</div>
+                <div id="pdf-codigo" class="code-value">---------</div>
+            </div>
+        </div>
+        <button class="btn-consultar" onclick="window.print()">Imprimir / Guardar PDF</button>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
+        authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
+        projectId: "portal-autenticacion-a1ngles"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentGradeData = null; // Para guardar la nota encontrada temporalmente
+
+    // 1. CARGAR NOMBRE DEL ALUMNO AL ENTRAR
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const userSnap = await getDoc(doc(db, "users", user.email));
+            if (userSnap.exists()) {
+                const name = userSnap.data().name || user.email;
+                document.getElementById("student-name-header").innerText = name;
+                document.getElementById("pdf-student-name").innerText = name;
+            }
+        }
+    });
+
+    // 2. FUNCIÓN DE CONSULTA REAL EN FIREBASE
+    window.consultar = async function() {
+        const u = document.getElementById('unidad').value;
+        const t = document.getElementById('tema').value;
+        const s = document.getElementById('skill').value;
+        const alertMsg = document.getElementById('alert-msg');
+        const scoreBox = document.getElementById('score-display');
+        const btnGen = document.getElementById('btn-gen-cert');
+
+        if (!u || !t || !s) {
+            alertMsg.innerHTML = "<span style='color:red'>❌ Falta completar campos.</span>";
+            return;
+        }
+
+        alertMsg.innerHTML = "Buscando registro...";
+        
+        // Construimos el ID que buscamos (Ej: ERG.1.1.1)
+        // Nota: Ajusté esto para que coincida con tus códigos de ejercicio
+        const searchID = `ERG.${u}.${t}.1`; 
+
+        try {
+            const q = query(
+                collection(db, "grades"),
+                where("studentEmail", "==", auth.currentUser.email),
+                where("exercise_id", "==", searchID),
+                orderBy("timestamp", "desc"),
+                limit(1)
+            );
+
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                const gradeDoc = querySnapshot.docs[0].data();
+                currentGradeData = gradeDoc; // Guardamos para el certificado
+
+                document.getElementById('final-score-val').innerText = gradeDoc.score.toFixed(1);
+                scoreBox.style.display = "block";
+                btnGen.style.display = "block";
+                alertMsg.innerHTML = "<span style='color:green'>✅ Registro encontrado.</span>";
+            } else {
+                scoreBox.style.display = "none";
+                btnGen.style.display = "none";
+                alertMsg.innerHTML = "<span style='color:orange'>⚠️ No se encontró calificación para este ejercicio.</span>";
+            }
+        } catch (error) {
+            console.error(error);
+            alertMsg.innerHTML = "<span style='color:red'>❌ Error al conectar con la base de datos.</span>";
+        }
+    };
+
+    // 3. MOSTRAR EL CERTIFICADO CON DATOS REALES
+    window.mostrarCertificado = function() {
+        if (!currentGradeData) return;
+
+        const date = currentGradeData.timestamp.toDate();
+        
+        document.getElementById('pdf-u').innerText = document.getElementById('unidad').value;
+        document.getElementById('pdf-t').innerText = document.getElementById('tema').value;
+        document.getElementById('pdf-skill').innerText = document.getElementById('skill').value;
+        document.getElementById('pdf-score').innerText = currentGradeData.score.toFixed(1);
+        document.getElementById('pdf-fecha').innerText = date.toLocaleDateString();
+        document.getElementById('pdf-hora').innerText = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        document.getElementById('pdf-codigo').innerText = currentGradeData.certificate_code || "N/A";
+
+        document.getElementById('certificate-wrapper').style.display = "block";
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    };
+
+    // Asignar eventos a los botones
+    document.getElementById("btnConsultar").onclick = consultar;
+    document.getElementById("btn-gen-cert").onclick = mostrarCertificado;
+
 </script>
-
 </body>
 </html>
