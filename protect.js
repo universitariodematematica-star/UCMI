@@ -84,13 +84,13 @@ function cerrar(msg) {
 }
 
 // ==========================================
-// BLOQUE 6: FUNCIÓN DE ACCESO CONCEDIDO
+// BLOQUE 6: FUNCIÓN DE ACCESO CONCEDIDO (ACTUALIZADO)
 // ==========================================
 function mostrar() {
     if (ok) return;
     ok = true;
 
-    // 1. Inyectamos los estilos finales (Contenedor y Menú)
+    // 1. Inyectamos los estilos finales (Contenedor, Menú y Enlaces)
     const style = document.createElement("style");
     style.innerHTML = `
         body { background-color: #f0f2f5 !important; margin: 0 !important; padding: 0 !important; display: block !important; }
@@ -107,6 +107,15 @@ function mostrar() {
             padding-top: 60px; box-shadow: 5px 0 15px rgba(0,0,0,0.2);
         }
         .sidebar-trigger:hover + .side-menu, .side-menu:hover { left: 0; }
+        
+        /* Estilos para los enlaces clicables */
+        .menu-link {
+            color: #000080; text-decoration: none; font-weight: 500;
+            margin: 15px 0; font-size: 1.1rem; transition: 0.3s;
+            cursor: pointer;
+        }
+        .menu-link:hover { text-decoration: underline; color: #0000FF; }
+
         .logout-side-btn {
             background: #0000FF !important; color: white !important; border: none; padding: 15px;
             border-radius: 12px; cursor: pointer; font-weight: bold; width: 80%; margin-top: 30px;
@@ -123,14 +132,21 @@ function mostrar() {
     });
     document.body.appendChild(container);
 
-    // 3. Creamos el Menú Lateral
+    // 3. Creamos el Menú Lateral con HOME y TEMARIO
     const trigger = document.createElement("div");
     trigger.className = "sidebar-trigger";
     const menu = document.createElement("div");
     menu.className = "side-menu";
     menu.id = "side-menu-ucmi";
+    
+    // Aquí inyectamos los links como texto y luego el botón
     menu.innerHTML = `
-        <div style="font-weight:bold; color:#000080; margin-bottom:20px;">UCMI - MENÚ</div>
+        <div style="font-weight:bold; color:#000080; margin-bottom:30px; font-size: 1.2rem; border-bottom: 2px solid #000080; width: 80%; text-align: center; padding-bottom: 10px;">UCMI - MENÚ</div>
+        
+        <a href="home.html" class="menu-link">🏠 Home</a>
+        <a href="temario.html" class="menu-link">📋 Temario</a>
+        <a href="dashboard.html" class="menu-link">🎓 Mis Notas</a>
+        
         <button class="logout-side-btn" id="btn-logout-lateral">🚪 Cerrar Sesión</button>
     `;
     document.body.appendChild(trigger);
@@ -140,7 +156,7 @@ function mostrar() {
         if (typeof logout === "function") logout(); else cerrar("Sesión finalizada");
     };
 
-    // 4. 🔥 REVALIDACIÓN CÍCLICA (Revisa la fecha cada 30 seg)
+    // 4. REVALIDACIÓN CÍCLICA (Revisa la fecha cada 30 seg)
     setInterval(async () => {
         try {
             const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
@@ -155,7 +171,7 @@ function mostrar() {
         } catch (e) { console.log("Error de red en validación"); }
     }, 30000);
 
-    // Hacer visible y activar temporizador de inactividad
+    // Revelar página
     document.documentElement.style.visibility = "visible";
     resetTimer();
     ["click", "mousemove", "keydown", "scroll", "touchstart"].forEach(e => {
