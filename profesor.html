@@ -7,63 +7,19 @@
     <script type="module" src="protect.js"></script>
     <style>
         :root { --navy: #000080; --aqua: #7FFFD4; --bg: #f0f2f5; }
-        
         h2 { color: var(--navy); border-bottom: 2px solid var(--aqua); padding-bottom: 10px; }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .stat-card h3 { margin: 0; font-size: 0.9rem; color: #666; }
         .stat-card p { margin: 10px 0 0; font-size: 1.8rem; font-weight: bold; color: var(--navy); }
-
-        .table-container {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-
+        .table-container { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; background: white; }
-        
-        th {
-            background-color: var(--navy);
-            color: white;
-            text-align: left;
-            padding: 15px;
-            font-size: 0.9rem;
-        }
-
-        td {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            font-size: 0.9rem;
-            color: #333;
-        }
-
+        th { background-color: var(--navy); color: white; text-align: left; padding: 15px; font-size: 0.9rem; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.9rem; color: #333; }
         tr:hover { background-color: #f9f9f9; }
-
-        .grade-badge {
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-weight: bold;
-            display: inline-block;
-        }
-
+        .grade-badge { padding: 5px 10px; border-radius: 8px; font-weight: bold; display: inline-block; }
         .pass { background: #dcfce7; color: #166534; }
         .fail { background: #fee2e2; color: #991b1b; }
-
         #loading { text-align: center; padding: 40px; color: var(--navy); font-weight: bold; }
     </style>
 </head>
@@ -89,12 +45,11 @@
                 <tr>
                     <th>Fecha</th>
                     <th>Alumno</th>
-                    <th>Actividad / Skill</th>
+                    <th>Actividad</th>
                     <th>Calificación</th>
                 </tr>
             </thead>
-            <tbody id="gradesBody">
-                </tbody>
+            <tbody id="gradesBody"></tbody>
         </table>
     </div>
 
@@ -111,11 +66,9 @@
         const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Referencia a la colección donde guardas todas las notas
-        // Nota: Asegúrate de que los alumnos guarden sus notas en una colección global llamada "calificaciones"
-        // o ajusta el nombre según tu estructura.
-        const colRef = collection(db, "calificaciones");
-        const q = query(colRef, orderBy("fecha", "desc"));
+        // CONFIGURACIÓN BASADA EN TU IMAGEN
+        const colRef = collection(db, "grades"); 
+        const q = query(colRef, orderBy("timestamp", "desc")); 
 
         onSnapshot(q, (snapshot) => {
             const body = document.getElementById("gradesBody");
@@ -127,23 +80,29 @@
             body.innerHTML = "";
 
             if (snapshot.empty) {
-                loading.innerText = "No hay calificaciones registradas aún.";
+                loading.innerText = "No hay datos en la colección 'grades'.";
                 return;
             }
 
             snapshot.forEach((doc) => {
                 const data = doc.data();
                 total++;
-                sum += parseFloat(data.nota || 0);
+                
+                // Mapeo exacto de tus campos de Firebase
+                const notaActual = parseFloat(data.score || 0);
+                sum += notaActual;
+
+                // Formateo de fecha
+                let fechaTexto = data.timestamp ? data.timestamp.toString().split(' a las')[0] : "---";
 
                 const row = `
                     <tr>
-                        <td>${data.fecha || '---'}</td>
-                        <td><strong>${data.alumnoNombre || data.email}</strong></td>
-                        <td>${data.skillName || 'Ejercicio'}</td>
+                        <td>${fechaTexto}</td>
+                        <td><strong>${data.studentEmail || '---'}</strong></td>
+                        <td>${data.exercise_id || 'Ejercicio'}</td>
                         <td>
-                            <span class="grade-badge ${data.nota >= 70 ? 'pass' : 'fail'}">
-                                ${data.nota}%
+                            <span class="grade-badge ${notaActual >= 7 ? 'pass' : 'fail'}">
+                                ${notaActual} / 10
                             </span>
                         </td>
                     </tr>
@@ -151,14 +110,14 @@
                 body.innerHTML += row;
             });
 
-            // Actualizar estadísticas
             document.getElementById("totalGrades").innerText = total;
-            const avg = total > 0 ? (sum / total).toFixed(1) : 0;
-            document.getElementById("avgGrade").innerText = avg + "%";
+            document.getElementById("avgGrade").innerText = total > 0 ? (sum / total).toFixed(1) : 0;
 
-            // Mostrar tabla
             loading.style.display = "none";
             table.style.display = "table";
+        }, (error) => {
+            console.error(error);
+            document.getElementById("loading").innerText = "Error de permisos en Firebase.";
         });
     </script>
 </body>
