@@ -45,8 +45,15 @@
             <input id="stuEmail" type="email" placeholder="Correo electrónico" autocomplete="off">
             <input id="stuPass" type="text" value="UCMI2026" placeholder="Contraseña Genérica">
             <label style="font-size:12px; font-weight:bold;">Vencimiento:</label>
-            <input id="stuExp" type="date">
-            <div id="msg" style="font-size:12px; margin-top:5px; font-weight:bold;"></div>
+<input id="stuExp" type="date">
+
+<label style="font-size:12px; font-weight:bold;">Tipo de Usuario:</label>
+<select id="stuRole" style="width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc;">
+    <option value="student">Alumno (Student)</option>
+    <option value="teacher">Profesor (Teacher)</option>
+</select>
+
+<div id="msg" style="font-size:12px; margin-top:5px; font-weight:bold;"></div>
             <button class="btn-blue" onclick="registerStudent()">Guardar y Crear Acceso</button>
         </div>
 
@@ -120,6 +127,7 @@
         const email = document.getElementById("stuEmail").value.trim().toLowerCase();
         const pass = document.getElementById("stuPass").value.trim();
         const exp = document.getElementById("stuExp").value;
+        const role = document.getElementById("stuRole").value;
         const msg = document.getElementById("msg");
 
         if(!name || !email || !pass || !exp) return msg.innerText = "⚠️ Faltan datos";
@@ -127,9 +135,8 @@
         try {
             msg.innerText = "⏳ Procesando...";
             await setDoc(doc(db, "users", email), {
-                name: name, email: email, expiration: exp, role: "student"
-            });
-
+    name: name, email: email, expiration: exp, role: role
+});
             const secondaryApp = initializeApp(firebaseConfig, "Secondary");
             const secondaryAuth = getAuth(secondaryApp);
             await createUserWithEmailAndPassword(secondaryAuth, email, pass);
