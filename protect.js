@@ -88,7 +88,7 @@ function cerrar(msg) {
 // ==========================================
 // BLOQUE 6: FUNCIÓN DE ACCESO CONCEDIDO (ACTUALIZADO)
 // ==========================================
-function mostrar() {
+function mostrar(role) {
     if (ok) return;
     ok = true;
 
@@ -134,23 +134,33 @@ function mostrar() {
     });
     document.body.appendChild(container);
 
-    // 3. Creamos el Menú Lateral con HOME y TEMARIO
+    // 3. Creamos el Menú Lateral Dinámico (REEMPLAZO)
     const trigger = document.createElement("div");
     trigger.className = "sidebar-trigger";
     const menu = document.createElement("div");
     menu.className = "side-menu";
     menu.id = "side-menu-ucmi";
     
-    // Aquí inyectamos los links como texto y luego el botón
-    menu.innerHTML = `
+    // Iniciamos la estructura del menú
+    let linksHTML = `
         <div style="font-weight:bold; color:#000080; margin-bottom:30px; font-size: 1.2rem; border-bottom: 2px solid #000080; width: 80%; text-align: center; padding-bottom: 10px;">UCMI - MENÚ</div>
-        
         <a href="home.html" class="menu-link">🏠 Home</a>
         <a href="temario.html" class="menu-link">📋 Temario</a>
-        <a href="dashboard.html" class="menu-link">🎓 Mis Notas</a>
-        
-        <button class="logout-side-btn" id="btn-logout-lateral">🚪 Cerrar Sesión</button>
     `;
+
+    // Lógica de distinción por Rol
+    if (role === "teacher") {
+        // Si es profesor, ve el Récord Global
+        linksHTML += `<a href="profesor.html" class="menu-link" style="color:#d35400 !important; font-weight:bold; border: 1px solid #d35400; padding: 5px 10px; border-radius: 8px; margin-top: 10px; display: inline-block;">👨‍🏫 Récord Alumnos</a>`;
+    } else {
+        // Si es alumno, ve sus propias notas
+        linksHTML += `<a href="dashboard.html" class="menu-link">🎓 Mis Notas</a>`;
+    }
+
+    // Cerramos con el botón de salir
+    linksHTML += `<button class="logout-side-btn" id="btn-logout-lateral" style="margin-top: 20px;">🚪 Cerrar Sesión</button>`;
+    
+    menu.innerHTML = linksHTML;
     document.body.appendChild(trigger);
     document.body.appendChild(menu);
 
