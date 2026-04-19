@@ -32,7 +32,7 @@ if (llave !== "1") {
 }
 
 // ==========================================
-// BLOQUE 4: VALIDACIÓN DE IDENTIDAD Y LICENCIA (CORREGIDO)
+// BLOQUE 4: VALIDACIÓN DE IDENTIDAD Y LICENCIA (UNIFICADO)
 // ==========================================
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -54,7 +54,9 @@ onAuthStateChanged(auth, async (user) => {
             return;
         }
 
+        // --- Lógica de Validación Unificada ---
         const data = snap.data();
+        const role = data.role || "student"; // Capturamos si es 'teacher' o 'student'
         const exp = new Date((data.expiration || "") + "T23:59:59");
 
         // Validación de fecha: si expiró o la fecha es inválida
@@ -63,12 +65,12 @@ onAuthStateChanged(auth, async (user) => {
             return;
         }
 
-        // ✅ Si llegamos aquí, todo está perfecto: revelamos la página
-        mostrar(); 
+        // ✅ TODO CORRECTO: Pasamos el rol a la función mostrar
+        mostrar(role);
 
     } catch (error) {
         console.error("Error en la guardia de seguridad:", error);
-        // Nota: No ejecutamos cerrar() aquí para evitar expulsiones por errores temporales de internet
+        // Mantenemos la página oculta si hay un error crítico de carga
     }
 });
 
