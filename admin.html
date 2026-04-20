@@ -3,74 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Admin Maestro Seguro</title>
+    <title>UCMI - Admin Maestro Pro</title>
     <style>
         :root { --primary: #0f172a; --accent: #2563eb; --bg: #f4f6fb; }
         body { font-family: 'Segoe UI', Arial; background: var(--bg); margin: 0; }
-        .header { background: var(--primary); color: white; padding: 20px; text-align: center; font-weight: bold; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; padding: 20px; }
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .header { background: var(--primary); color: white; padding: 20px; text-align: center; font-weight: bold; position: sticky; top: 0; z-index: 100; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; padding: 20px; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); height: fit-content; }
+        input, select { width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 14px; }
+        button { width: 100%; padding: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
         .btn-blue { background: var(--accent); color: white; }
+        .btn-blue:hover { background: #1d4ed8; }
         .btn-red { background: #fee2e2; color: #ef4444; width: auto; padding: 5px 10px; }
+        
+        /* Estilos de Tooltips */
+        .tooltip-container { position: relative; display: inline-block; cursor: help; color: var(--accent); font-weight: bold; text-decoration: underline; }
+        .tooltip-text { 
+            visibility: hidden; width: 220px; background-color: #334155; color: #fff; text-align: center;
+            border-radius: 6px; padding: 10px; position: absolute; z-index: 1; bottom: 125%; left: 50%;
+            margin-left: -110px; opacity: 0; transition: opacity 0.3s; font-size: 12px; font-weight: normal; line-height: 1.4;
+        }
+        .tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; }
+
         .user-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+        .badge { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; margin-left: 5px; }
         .active { background: #dcfce7; color: #166534; }
         .expired { background: #fee2e2; color: #991b1b; }
+        .info-tag { font-size: 10px; color: #64748b; margin-top: 2px; display: block; }
     </style>
 </head>
 <body>
 
 <div id="loginSection" class="card" style="max-width:350px; margin:100px auto; text-align:center;">
-    <h3>🔐 Acceso Admin</h3>
-    <p style="font-size: 11px; color: #666;">Los campos se limpian automáticamente al salir</p>
-    
-    <input id="adminEmail" type="email" placeholder="Correo Admin" autocomplete="off" value="">
-    <input id="adminPass" type="password" placeholder="Contraseña" autocomplete="new-password" value="">
-    
+    <h3>🔐 Acceso Admin Maestro</h3>
+    <input id="adminEmail" type="email" placeholder="Correo Admin">
+    <input id="adminPass" type="password" placeholder="Contraseña">
     <button class="btn-blue" onclick="adminLogin()">Entrar al Panel</button>
 </div>
 
 <div id="adminPanel" style="display:none;">
     <div class="header">
-        UCMI - GESTIÓN DE LICENCIAS 
-        <button onclick="logout()" style="width:auto; float:right; background:#334155; font-size:12px; color: white;">Cerrar Sesión Segura</button>
+        UCMI - PANEL DE CONTROL ESTRATÉGICO
+        <button onclick="logout()" style="width:auto; float:right; background:#334155; color: white;">Salir</button>
     </div>
     
     <div class="grid">
         <div class="card">
-            <h3>➕ Registrar Nuevo Alumno</h3>
-            <input id="stuName" placeholder="Nombre del Alumno" autocomplete="off">
-            <input id="stuEmail" type="email" placeholder="Correo electrónico" autocomplete="off">
-            <input id="stuPass" type="text" value="UCMI2026" placeholder="Contraseña Genérica">
-            <label style="font-size:12px; font-weight:bold;">Vencimiento:</label>
-<input id="stuExp" type="date">
+            <h3>➕ Registro de Nuevo Usuario</h3>
+            
+            <label style="font-size:12px;">Nombre Completo:</label>
+            <input id="stuName" placeholder="Ej. Juan Pérez">
+            
+            <label style="font-size:12px;">Correo de Acceso:</label>
+            <input id="stuEmail" type="email" placeholder="correo@ejemplo.com">
+            
+            <label style="font-size:12px;">Contraseña:</label>
+            <input id="stuPass" type="text" value="UCMI2026">
 
-<label style="font-size:12px; font-weight:bold;">Tipo de Usuario:</label>
-<select id="stuRole" style="width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc;">
-    <option value="student">Alumno (Student)</option>
-    <option value="teacher">Profesor (Teacher)</option>
-</select>
+            <label style="font-size:12px;">Modelo de Negocio:</label>
+            <select id="bizModel" onchange="toggleTeacherField()">
+                <option value="independiente">Alumno Independiente ℹ️</option>
+                <option value="embajador">Profesor Embajador ℹ️</option>
+                <option value="socio">Profesor Socio (Licencia) ℹ️</option>
+            </select>
 
-<div id="msg" style="font-size:12px; margin-top:5px; font-weight:bold;"></div>
-            <button class="btn-blue" onclick="registerStudent()">Guardar y Crear Acceso</button>
+            <div id="explanationArea" style="margin-bottom: 10px;">
+                <div class="tooltip-container">¿Qué significa este modelo?
+                    <span class="tooltip-text" id="modelDesc">
+                        <b>Independiente:</b> El alumno paga directamente a UCMI. No tiene profesor vinculado.
+                    </span>
+                </div>
+            </div>
+
+            <div id="teacherField" style="display:none; background: #f8fafc; padding: 10px; border-radius: 8px;">
+                <label style="font-size:12px; color: var(--accent);">Correo del Profesor Responsable:</label>
+                <input id="linkedTeacher" type="email" placeholder="profesor@ejemplo.com">
+            </div>
+
+            <label style="font-size:12px;">Vencimiento de Licencia:</label>
+            <input id="stuExp" type="date">
+
+            <label style="font-size:12px;">Rol de Sistema:</label>
+            <select id="stuRole">
+                <option value="student">Es Alumno</option>
+                <option value="teacher">Es Profesor</option>
+            </select>
+
+            <div id="msg" style="font-size:12px; margin-top:5px; font-weight:bold;"></div>
+            <button class="btn-blue" onclick="registerStudent()">Registrar en Auth y Firestore</button>
         </div>
 
         <div class="card">
-            <h3>👥 Alumnos Activos</h3>
+            <h3>👥 Base de Datos de Usuarios</h3>
             <div id="userList"></div>
-        </div>
-
-        <div class="card">
-            <h3>📊 Calificaciones</h3>
-            <div id="gradesFeed"></div>
         </div>
     </div>
 </div>
 
 <script type="module">
-    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -84,19 +115,28 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // --- LIMPIEZA TOTAL AL CARGAR ---
-    window.onload = () => {
-        document.getElementById("adminEmail").value = "";
-        document.getElementById("adminPass").value = "";
+    // Lógica de Tooltips y visualización
+    window.toggleTeacherField = () => {
+        const model = document.getElementById("bizModel").value;
+        const field = document.getElementById("teacherField");
+        const desc = document.getElementById("modelDesc");
+
+        if(model === "independiente") {
+            field.style.display = "none";
+            desc.innerHTML = "<b>Independiente:</b> El alumno te paga directamente. No está vinculado a ningún profesor.";
+        } else if(model === "embajador") {
+            field.style.display = "block";
+            desc.innerHTML = "<b>Embajador:</b> El profesor te recomienda alumnos. El alumno te paga a ti, pero el profesor puede ver sus notas.";
+        } else {
+            field.style.display = "block";
+            desc.innerHTML = "<b>Socio:</b> Tú vendes un paquete de licencias al profesor. Él le cobra a sus alumnos. El alumno se vincula al profesor automáticamente.";
+        }
     };
 
     onAuthStateChanged(auth, (user) => {
         if (user && user.email === "universitariodematematica@gmail.com") {
             document.getElementById("loginSection").style.display = "none";
             document.getElementById("adminPanel").style.display = "block";
-            // Limpiar campos por si acaso al entrar
-            document.getElementById("adminEmail").value = "";
-            document.getElementById("adminPass").value = "";
             syncData();
         } else {
             document.getElementById("loginSection").style.display = "block";
@@ -107,20 +147,10 @@
     window.adminLogin = async () => {
         const e = document.getElementById("adminEmail").value;
         const p = document.getElementById("adminPass").value;
-        try { 
-            await signInWithEmailAndPassword(auth, e, p); 
-        } catch { 
-            alert("Acceso denegado"); 
-            // Limpiar contraseña tras error
-            document.getElementById("adminPass").value = "";
-        }
+        try { await signInWithEmailAndPassword(auth, e, p); } catch { alert("Error de acceso"); }
     };
 
-    window.logout = async () => { 
-        await signOut(auth); 
-        // Forzar limpieza y recarga de página para borrar memoria de sesión
-        window.location.reload(); 
-    };
+    window.logout = async () => { await signOut(auth); window.location.reload(); };
 
     window.registerStudent = async () => {
         const name = document.getElementById("stuName").value.trim();
@@ -128,25 +158,40 @@
         const pass = document.getElementById("stuPass").value.trim();
         const exp = document.getElementById("stuExp").value;
         const role = document.getElementById("stuRole").value;
+        const model = document.getElementById("bizModel").value;
+        const teacher = document.getElementById("linkedTeacher").value.trim().toLowerCase();
         const msg = document.getElementById("msg");
 
-        if(!name || !email || !pass || !exp) return msg.innerText = "⚠️ Faltan datos";
+        if(!name || !email || !pass || !exp) return msg.innerText = "⚠️ Completa todos los campos";
 
         try {
-            msg.innerText = "⏳ Procesando...";
+            msg.style.color = "blue";
+            msg.innerText = "⏳ Creando acceso dual...";
+
+            // 1. Crear en Firestore
             await setDoc(doc(db, "users", email), {
-    name: name, email: email, expiration: exp, role: role
-});
-            const secondaryApp = initializeApp(firebaseConfig, "Secondary");
-            const secondaryAuth = getAuth(secondaryApp);
-            await createUserWithEmailAndPassword(secondaryAuth, email, pass);
-            await signOut(secondaryAuth);
+                name: name,
+                email: email,
+                expiration: exp,
+                role: role,
+                bizModel: model,
+                teacherID: (model !== "independiente") ? teacher : "none"
+            });
+
+            // 2. Crear en Firebase Auth (Sin cerrar sesión actual)
+            const tempAppName = "TempApp_" + Date.now();
+            const tempApp = initializeApp(firebaseConfig, tempAppName);
+            const tempAuth = getAuth(tempApp);
+            
+            await createUserWithEmailAndPassword(tempAuth, email, pass);
+            await signOut(tempAuth);
+            await deleteApp(tempApp); // Limpiar memoria
 
             msg.style.color = "green";
-            msg.innerText = "✅ Alumno creado correctamente";
-            document.getElementById("stuName").value = "";
-            document.getElementById("stuEmail").value = "";
-            document.getElementById("stuExp").value = "";
+            msg.innerText = "✅ ¡Usuario creado en Auth y Base de Datos!";
+            
+            // Limpiar formulario
+            ["stuName", "stuEmail", "stuExp", "linkedTeacher"].forEach(id => document.getElementById(id).value = "");
         } catch (e) {
             msg.style.color = "red";
             msg.innerText = "Error: " + e.message;
@@ -161,15 +206,22 @@
             snap.forEach(d => {
                 const u = d.data(); if(u.role === 'admin') return;
                 const isExp = hoy > u.expiration;
-                list.innerHTML += `<div class="user-item">
-                    <div><b>${u.name}</b><br><small>${u.email}</small> <span class="badge ${isExp?'expired':'active'}">${isExp?'EXPIRADO':u.expiration}</span></div>
-                    <button class="btn-red" onclick="deleteUser('${d.id}')">✖</button>
-                </div>`;
+                list.innerHTML += `
+                    <div class="user-item">
+                        <div>
+                            <b>${u.name}</b> <span class="badge ${u.role === 'teacher' ? 'active' : ''}">${u.role.toUpperCase()}</span>
+                            <span class="info-tag">Modelo: ${u.bizModel || 'independiente'}</span>
+                            <span class="info-tag">Profesor: ${u.teacherID || 'Ninguno'}</span>
+                            <small>${u.email}</small> 
+                            <span class="badge ${isExp?'expired':'active'}">${isExp?'EXPIRADO':u.expiration}</span>
+                        </div>
+                        <button class="btn-red" onclick="deleteUser('${d.id}')">✖</button>
+                    </div>`;
             });
         });
     }
 
-    window.deleteUser = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, "users", id)); };
+    window.deleteUser = async (id) => { if(confirm("¿Eliminar usuario por completo?")) await deleteDoc(doc(db, "users", id)); };
 </script>
 </body>
 </html>
