@@ -16,20 +16,13 @@
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-gray);
             margin: 0; padding: 20px;
             display: flex; flex-direction: column; align-items: center;
-            color: var(--text);
         }
 
-        .dashboard-container {
-            width: 100%;
-            max-width: 950px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+        .dashboard-container { width: 100%; max-width: 950px; display: flex; flex-direction: column; gap: 20px; }
 
         .dashboard-card {
             background: var(--white);
@@ -38,11 +31,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.08);
         }
 
-        .header { 
-            border-left: 5px solid var(--aqua); 
-            padding-left: 15px; 
-            margin-bottom: 25px; 
-        }
+        .header { border-left: 5px solid var(--aqua); padding-left: 15px; margin-bottom: 25px; }
         .user-name-title { color: var(--primary-blue); font-size: 1.8rem; font-weight: 800; }
 
         /* --- SKILLS PROGRESS --- */
@@ -77,16 +66,13 @@
         }
 
         .input-box { display: flex; flex-direction: column; gap: 8px; }
-        .input-box label { font-size: 0.85rem; font-weight: 600; color: #555; }
-        select { padding: 12px; border: 2px solid #eee; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+        select { padding: 12px; border: 2px solid #eee; border-radius: 8px; font-size: 1rem; }
 
         .btn-consultar {
             background-color: var(--primary-blue);
             color: white; border: none; padding: 14px;
             border-radius: 8px; font-weight: bold; cursor: pointer;
-            transition: transform 0.2s;
         }
-        .btn-consultar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,128,0.2); }
 
         .result-section { margin-top: 30px; text-align: center; }
         
@@ -94,7 +80,7 @@
             display: none;
             background: linear-gradient(135deg, var(--primary-blue), #0000cd);
             color: white; width: 220px; padding: 25px; margin: 0 auto 20px;
-            border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            border-radius: 20px;
         }
 
         .btn-gen-cert {
@@ -108,15 +94,14 @@
         #certificate-wrapper { display: none; width: 100%; max-width: 850px; margin-top: 30px; }
         #certificate-area {
             background: white; padding: 50px; border: 15px double var(--primary-blue);
-            position: relative; color: #333; text-align: center;
+            text-align: center; position: relative;
         }
-        .cert-text { font-size: 1.5rem; line-height: 1.8; margin-bottom: 30px; }
+        .cert-text { font-size: 1.4rem; line-height: 1.8; margin-bottom: 30px; }
         .highlight { font-weight: bold; color: var(--primary-blue); border-bottom: 2px solid var(--aqua); }
 
         @media print {
             .dashboard-card, .btn-gen-cert, .btn-consultar { display: none !important; }
             body { background: white; padding: 0; }
-            #certificate-area { border: 5px solid black; }
         }
     </style>
     
@@ -187,10 +172,10 @@
         <div class="result-section">
             <div id="alert-msg"></div>
             <div id="score-display">
-                <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px;">Resultado</div>
+                <div style="font-size: 0.8rem; text-transform: uppercase;">Resultado</div>
                 <div id="final-score-val" style="font-size: 4rem; font-weight: 900;">0.0</div>
             </div>
-            <button id="btn-gen-cert" class="btn-gen-cert">⭐ Generar Certificado de Logro</button>
+            <button id="btn-gen-cert" class="btn-gen-cert">⭐ Generar Certificado</button>
         </div>
     </div>
 
@@ -202,15 +187,13 @@
                 ha dominado la habilidad de <span class="highlight" id="pdf-skill">...</span> <br>
                 en la <span class="highlight">Unidad <span id="pdf-u"></span>, Tema <span id="pdf-t"></span></span> <br>
                 con una calificación de <span class="highlight" id="pdf-score">0.0</span>/10.
-                <br><br>
-                <small>Emitido: <span id="pdf-fecha"></span> | <span id="pdf-hora"></span></small>
             </div>
             <div style="border-top: 1px dashed #ccc; padding-top: 15px;">
-                <div style="font-size: 0.7rem; color: #999;">CÓDIGO DE VERIFICACIÓN</div>
+                <div style="font-size: 0.7rem; color: #999;">CÓDIGO DE VALIDACIÓN</div>
                 <div id="pdf-codigo" style="font-family: monospace; font-weight: bold;">---</div>
             </div>
         </div>
-        <button class="btn-consultar" style="background:#333; margin-top:20px; width:100%;" onclick="window.print()">📥 Guardar PDF / Imprimir</button>
+        <button class="btn-consultar" style="background:#333; margin-top:20px; width:100%;" onclick="window.print()">📥 Guardar PDF</button>
     </div>
 </div>
 
@@ -234,9 +217,8 @@
         if (user) {
             const userSnap = await getDoc(doc(db, "users", user.email.toLowerCase()));
             if (userSnap.exists()) {
-                const name = userSnap.data().name || user.email;
-                document.getElementById("student-name-header").innerText = name;
-                document.getElementById("pdf-student-name").innerText = name;
+                document.getElementById("student-name-header").innerText = userSnap.data().name || user.email;
+                document.getElementById("pdf-student-name").innerText = userSnap.data().name || user.email;
             }
             calculateOverallProgress(user.email.toLowerCase());
         } else {
@@ -251,9 +233,9 @@
         
         snap.forEach(doc => {
             const d = doc.data();
-            const id = (d.exercise_id || "").toLowerCase();
+            const id = (d.exercise_id || "").toLowerCase().replace(/[\s.]/g, '');
             for (let k in totals) {
-                if (id.includes(k)) {
+                if (id.startsWith(k)) {
                     totals[k].s += parseFloat(d.score || 0);
                     totals[k].n += 1;
                 }
@@ -276,27 +258,28 @@
         const btnGen = document.getElementById('btn-gen-cert');
 
         if (!u || !t || !s) {
-            alertMsg.innerHTML = "<span style='color:red'>Completa los campos de búsqueda.</span>";
+            alertMsg.innerHTML = "<span style='color:red'>Selecciona todos los campos.</span>";
             return;
         }
 
-        alertMsg.innerHTML = "Consultando base de datos...";
-        const pattern = `${s.toLowerCase()} ${u}.${t}`;
+        alertMsg.innerHTML = "Buscando nota...";
+        
+        // Patrón normalizado: ej. "erg11"
+        const searchPattern = `${s}${u}${t}`.toLowerCase().replace(/[\s.]/g, '');
 
         try {
-            // Consulta simplificada para evitar errores de índice
             const q = query(collection(db, "grades"), where("studentEmail", "==", auth.currentUser.email.toLowerCase()));
             const snap = await getDocs(q);
             let filtered = [];
 
             snap.forEach(doc => {
                 const d = doc.data();
-                if (d.exercise_id && d.exercise_id.toLowerCase().includes(pattern)) {
-                    filtered.push(d);
+                if (d.exercise_id) {
+                    const cleanID = d.exercise_id.toLowerCase().replace(/[\s.]/g, '');
+                    if (cleanID.startsWith(searchPattern)) filtered.push(d);
                 }
             });
 
-            // Ordenamos por tiempo manualmente
             filtered.sort((a, b) => (b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0));
 
             if (filtered.length > 0) {
@@ -304,28 +287,24 @@
                 document.getElementById('final-score-val').innerText = currentGradeData.score.toFixed(1);
                 scoreBox.style.display = "block";
                 btnGen.style.display = "block";
-                alertMsg.innerHTML = "<span style='color:green'>¡Nota recuperada con éxito!</span>";
+                alertMsg.innerHTML = "<span style='color:green'>¡Nota encontrada!</span>";
             } else {
                 scoreBox.style.display = "none";
                 btnGen.style.display = "none";
                 alertMsg.innerHTML = "<span style='color:orange'>No hay registros para este ejercicio.</span>";
             }
         } catch (e) {
-            console.error(e);
-            alertMsg.innerHTML = "<span style='color:red'>Error al conectar. Verifica tu sesión.</span>";
+            alertMsg.innerHTML = "Error de conexión.";
         }
     };
 
     window.mostrarCertificado = function() {
         if (!currentGradeData) return;
-        const date = currentGradeData.timestamp.toDate();
         document.getElementById('pdf-u').innerText = document.getElementById('unidad').value;
         document.getElementById('pdf-t').innerText = document.getElementById('tema').value;
         document.getElementById('pdf-skill').innerText = document.getElementById('skill').options[document.getElementById('skill').selectedIndex].text;
         document.getElementById('pdf-score').innerText = currentGradeData.score.toFixed(1);
-        document.getElementById('pdf-fecha').innerText = date.toLocaleDateString();
-        document.getElementById('pdf-hora').innerText = date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        document.getElementById('pdf-codigo').innerText = currentGradeData.certificate_code || "UCMI-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+        document.getElementById('pdf-codigo').innerText = currentGradeData.certificate_code || "UCMI-LOG";
         document.getElementById('certificate-wrapper').style.display = "block";
         window.scrollTo({ top: document.getElementById('certificate-wrapper').offsetTop, behavior: 'smooth' });
     };
