@@ -3,75 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Dashboard y Certificación</title>
+    <title>UCMI - Mi Progreso Académico</title>
     
     <style>
         :root {
             --primary-blue: #000080;
+            --aqua: #7FFFD4;
             --bg-gray: #f4f6f9;
             --success-green: #27ae60;
             --white: #ffffff;
+            --text: #333;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-gray);
-            margin: 0;
-            padding: 20px;
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+            color: var(--text);
+        }
+
+        /* --- DASHBOARD LAYOUT --- */
+        .dashboard-container {
+            width: 100%;
+            max-width: 950px;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            gap: 20px;
         }
 
         .dashboard-card {
             background: var(--white);
-            width: 100%;
-            max-width: 900px;
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
         }
 
-        .header { border-bottom: 2px solid var(--primary-blue); margin-bottom: 25px; padding-bottom: 10px; }
-        .user-name-title { color: var(--primary-blue); font-size: 1.8rem; font-weight: bold; }
+        .header { 
+            border-left: 5px solid var(--aqua); 
+            padding-left: 15px; 
+            margin-bottom: 25px; 
+        }
+        .user-name-title { color: var(--primary-blue); font-size: 1.8rem; font-weight: 800; }
 
+        /* --- SKILLS PROGRESS --- */
+        .skills-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .skill-stat {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+        .skill-stat label { font-size: 0.75rem; font-weight: bold; color: #666; text-transform: uppercase; }
+        .skill-stat .percent { display: block; font-size: 1.5rem; font-weight: 900; color: var(--primary-blue); }
+        .progress-bar { height: 6px; background: #e0e0e0; border-radius: 3px; margin-top: 8px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--aqua); width: 0%; transition: width 1s ease-in-out; }
+
+        /* --- FILTROS --- */
         .grid-layout {
             display: grid;
-            grid-template-columns: repeat(3, 1fr) auto;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
             align-items: flex-end;
+            background: #fdfdfd;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
         }
 
-        .input-box { display: flex; flex-direction: column; gap: 5px; }
-        select { padding: 10px; border: 2px solid #ddd; border-radius: 8px; }
+        .input-box { display: flex; flex-direction: column; gap: 8px; }
+        .input-box label { font-size: 0.85rem; font-weight: 600; color: #555; }
+        select { padding: 12px; border: 2px solid #eee; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+        select:focus { border-color: var(--primary-blue); outline: none; }
 
         .btn-consultar {
             background-color: var(--primary-blue);
-            color: white; border: none; padding: 12px 20px;
+            color: white; border: none; padding: 14px;
             border-radius: 8px; font-weight: bold; cursor: pointer;
+            transition: transform 0.2s;
         }
+        .btn-consultar:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,128,0.2); }
 
+        /* --- RESULTADOS --- */
         .result-section { 
-            margin-top: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 15px;
+            margin-top: 30px; 
+            text-align: center;
         }
         
         #score-display {
             display: none;
-            background: var(--primary-blue);
-            color: white; width: 180px; padding: 15px;
-            border-radius: 12px; text-align: center;
+            background: linear-gradient(135deg, var(--primary-blue), #0000cd);
+            color: white; width: 220px; padding: 25px; margin: 0 auto 20px;
+            border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);
         }
 
         .btn-gen-cert {
             display: none;
             background-color: var(--success-green);
-            color: white; border: none; padding: 12px 30px;
+            color: white; border: none; padding: 15px 40px; margin: 0 auto;
             border-radius: 50px; font-weight: bold; cursor: pointer;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         /* --- CERTIFICADO --- */
@@ -79,41 +122,31 @@
             display: none;
             width: 100%;
             max-width: 850px;
-            margin-top: 20px;
-            text-align: center;
+            margin-top: 30px;
         }
 
         #certificate-area {
             background: white;
-            padding: 60px;
+            padding: 50px;
             border: 15px double var(--primary-blue);
-            box-shadow: 0 0 40px rgba(0,0,0,0.1);
-            margin-bottom: 50px;
+            position: relative;
             color: #333;
         }
 
-        .cert-text {
-            font-size: 1.6rem;
-            line-height: 2;
-            text-align: center;
-            margin-bottom: 40px;
+        #certificate-area::before {
+            content: '';
+            position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 2px solid var(--aqua);
+            pointer-events: none;
         }
 
-        .highlight { font-weight: bold; color: var(--primary-blue); }
-
-        .cert-footer {
-            margin-top: 50px;
-            padding-top: 20px;
-            border-top: 1px dashed #ccc;
-        }
-
-        .code-label { font-size: 0.9rem; color: #777; letter-spacing: 2px; margin-bottom: 10px; }
-        .code-value { font-family: 'Courier New', monospace; font-size: 1.6rem; font-weight: bold; letter-spacing: 3px; }
+        .cert-text { font-size: 1.5rem; line-height: 1.8; margin-bottom: 30px; }
+        .highlight { font-weight: bold; color: var(--primary-blue); border-bottom: 2px solid var(--aqua); }
 
         @media print {
-            .dashboard-card, .btn-gen-cert, .sidebar-trigger, .side-menu { display: none !important; }
+            .dashboard-card, .btn-gen-cert, .btn-consultar, header { display: none !important; }
             body { background: white; padding: 0; }
-            #certificate-area { border: none; box-shadow: none; }
+            #certificate-area { border: 5px solid black; }
         }
     </style>
     
@@ -121,10 +154,34 @@
 </head>
 <body>
 
+<div class="dashboard-container">
     <div class="dashboard-card">
         <div class="header">
-            <span style="color:#777;">Estudiante:</span>
+            <span style="color:#777; font-size: 0.9rem;">Bienvenido de nuevo,</span>
             <div id="student-name-header" class="user-name-title">Cargando...</div>
+        </div>
+
+        <div class="skills-summary">
+            <div class="skill-stat">
+                <label>Grammar</label>
+                <span class="percent" id="stat-erg">0%</span>
+                <div class="progress-bar"><div id="bar-erg" class="progress-fill"></div></div>
+            </div>
+            <div class="skill-stat">
+                <label>Listening</label>
+                <span class="percent" id="stat-erl">0%</span>
+                <div class="progress-bar"><div id="bar-erl" class="progress-fill"></div></div>
+            </div>
+            <div class="skill-stat">
+                <label>Reading</label>
+                <span class="percent" id="stat-err">0%</span>
+                <div class="progress-bar"><div id="bar-err" class="progress-fill"></div></div>
+            </div>
+            <div class="skill-stat">
+                <label>Writing</label>
+                <span class="percent" id="stat-erw">0%</span>
+                <div class="progress-bar"><div id="bar-erw" class="progress-fill"></div></div>
+            </div>
         </div>
 
         <div class="grid-layout">
@@ -139,62 +196,68 @@
                 <label>Tema</label>
                 <select id="tema">
                     <option value="">--</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
+                    <option value="1">Tema 1</option>
+                    <option value="2">Tema 2</option>
+                    <option value="3">Tema 3</option>
                 </select>
             </div>
             <div class="input-box">
-                <label>Skill</label>
+                <label>Habilidad</label>
                 <select id="skill">
                     <option value="">--</option>
-                    <option value="Grammar">Grammar</option>
-                    <option value="Listening">Listening</option>
-                    <option value="Reading">Reading</option>
-                    <option value="Writing">Writing</option>
-                    <option value="Speaking">Speaking</option>
+                    <option value="erg">Grammar (ERG)</option>
+                    <option value="erl">Listening (ERL)</option>
+                    <option value="err">Reading (ERR)</option>
+                    <option value="erw">Writing (ERW)</option>
                 </select>
             </div>
-            <button class="btn-consultar" id="btnConsultar">Calificación</button>
+            <button class="btn-consultar" id="btnConsultar">Consultar Nota</button>
         </div>
 
         <div class="result-section">
             <div id="alert-msg"></div>
             <div id="score-display">
-                <div style="font-size: 0.7rem; text-transform: uppercase;">Calificación</div>
-                <div id="final-score-val" style="font-size: 3rem; font-weight: 900;">0.0</div>
+                <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px;">Resultado</div>
+                <div id="final-score-val" style="font-size: 4rem; font-weight: 900;">0.0</div>
             </div>
-            <button id="btn-gen-cert" class="btn-gen-cert">Ver Certificado</button>
+            <button id="btn-gen-cert" class="btn-gen-cert">⭐ Generar Certificado de Logro</button>
         </div>
     </div>
 
     <div id="certificate-wrapper">
         <div id="certificate-area">
             <div style="text-align: center; margin-bottom: 30px;">
-                <img alt="Logo UCMI" border="0" width="160" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEivYd4lw8N1dKU2AjM2w6EBfYGXsoF8MVfRRzw3gDXyZFSFMasW4PXwEHnDKwMwe3-_nCCrNKtJjYZFojEa5mPB6HlBYkcPwXMtvrbtVZux9CtCT-BDV7CmjPLk-t6EDVx3b2gtEq8Qd98Acg__HnOBIdiVsflSAwGFPqj6KIv_USy3U6CjsGPkUZyR1nJW/s320/Imagen%20UCMI%20-%20copia.png"/>
+                <img alt="Logo UCMI" width="180" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEivYd4lw8N1dKU2AjM2w6EBfYGXsoF8MVfRRzw3gDXyZFSFMasW4PXwEHnDKwMwe3-_nCCrNKtJjYZFojEa5mPB6HlBYkcPwXMtvrbtVZux9CtCT-BDV7CmjPLk-t6EDVx3b2gtEq8Qd98Acg__HnOBIdiVsflSAwGFPqj6KIv_USy3U6CjsGPkUZyR1nJW/s320/Imagen%20UCMI%20-%20copia.png"/>
             </div>
             
-            <div class="cert-text">
-                Se certifica que el estudiante <span class="highlight" id="pdf-student-name">...</span> <br>
-                ha completado con éxito el ejercicio de habilidad <span class="highlight" id="pdf-skill"></span> <br>
-                de la <span class="highlight">Unidad <span id="pdf-u"></span>, Tema <span id="pdf-t"></span></span>, <br>
-                obteniendo una calificación de <span class="highlight" id="pdf-score">0.0</span>/10.
+            <div class="cert-text" style="text-align: center;">
+                CERTIFICADO DE EXCELENCIA <br>
+                <span style="font-size: 1rem; color: #777;">Otorgado a:</span> <br>
+                <span class="highlight" id="pdf-student-name" style="font-size: 2.2rem;">...</span> <br>
+                <br>
+                Por haber demostrado dominio en la habilidad de <br>
+                <span class="highlight" id="pdf-skill">...</span> <br>
+                correspondiente a la <span class="highlight">Unidad <span id="pdf-u"></span>, Tema <span id="pdf-t"></span></span>. <br>
+                Calificación obtenida: <span class="highlight" id="pdf-score">0.0</span> / 10.
                 <br><br>
-                Este logro fue emitido el día <span id="pdf-fecha"></span> a las <span id="pdf-hora"></span> horas.
+                <small>Emitido el <span id="pdf-fecha"></span> a las <span id="pdf-hora"></span></small>
             </div>
 
-            <div class="cert-footer">
-                <div class="code-label">CÓDIGO ÚNICO DE VALIDACIÓN</div>
-                <div id="pdf-codigo" class="code-value">---------</div>
+            <div style="text-align: center; margin-top: 40px; border-top: 1px dashed #ccc; padding-top: 20px;">
+                <div style="font-size: 0.7rem; letter-spacing: 3px; color: #999;">VALIDACIÓN INTERNA</div>
+                <div id="pdf-codigo" style="font-family: monospace; font-size: 1.4rem; font-weight: bold;">---------</div>
             </div>
         </div>
-        <button class="btn-consultar" onclick="window.print()">Imprimir / Guardar PDF</button>
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="btn-consultar" style="background: #333;" onclick="window.print()">📥 Descargar como PDF / Imprimir</button>
+        </div>
     </div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
@@ -206,9 +269,8 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let currentGradeData = null; // Para guardar la nota encontrada temporalmente
+    let currentGradeData = null;
 
-    // 1. CARGAR NOMBRE DEL ALUMNO AL ENTRAR
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             const userSnap = await getDoc(doc(db, "users", user.email));
@@ -217,10 +279,39 @@
                 document.getElementById("student-name-header").innerText = name;
                 document.getElementById("pdf-student-name").innerText = name;
             }
+            calculateOverallProgress(user.email);
+        } else {
+            window.location.href = "index.html";
         }
     });
 
-    // 2. FUNCIÓN DE CONSULTA REAL EN FIREBASE
+    // --- NUEVO: Calcula promedios por Habilidad ---
+    async function calculateOverallProgress(email) {
+        const q = query(collection(db, "grades"), where("studentEmail", "==", email));
+        const snap = await getDocs(q);
+        
+        const totals = { erg: {s:0, n:0}, erl: {s:0, n:0}, err: {s:0, n:0}, erw: {s:0, n:0} };
+        
+        snap.forEach(doc => {
+            const d = doc.data();
+            const id = (d.exercise_id || "").toLowerCase();
+            const score = parseFloat(d.score || 0);
+            
+            for (let k in totals) {
+                if (id.includes(k)) {
+                    totals[k].s += score;
+                    totals[k].n += 1;
+                }
+            }
+        });
+
+        for (let k in totals) {
+            const avg = totals[k].n > 0 ? (totals[k].s / totals[k].n) * 10 : 0;
+            document.getElementById(`stat-${k}`).innerText = `${Math.round(avg)}%`;
+            document.getElementById(`bar-${k}`).style.width = `${Math.round(avg)}%`;
+        }
+    }
+
     window.consultar = async function() {
         const u = document.getElementById('unidad').value;
         const t = document.getElementById('tema').value;
@@ -230,68 +321,69 @@
         const btnGen = document.getElementById('btn-gen-cert');
 
         if (!u || !t || !s) {
-            alertMsg.innerHTML = "<span style='color:red'>❌ Falta completar campos.</span>";
+            alertMsg.innerHTML = "<span style='color:red'>Selecciona Unidad, Tema y Habilidad.</span>";
             return;
         }
 
-        alertMsg.innerHTML = "Buscando registro...";
+        alertMsg.innerHTML = "Verificando progreso...";
         
-        // Construimos el ID que buscamos (Ej: ERG.1.1.1)
-        // Nota: Ajusté esto para que coincida con tus códigos de ejercicio
-        const searchID = `ERG.${u}.${t}.1`; 
+        // Buscamos cualquier ejercicio que contenga el patrón (Ej: erg 1.1)
+        const pattern = `${s.toLowerCase()} ${u}.${t}`;
 
         try {
             const q = query(
                 collection(db, "grades"),
                 where("studentEmail", "==", auth.currentUser.email),
-                where("exercise_id", "==", searchID),
-                orderBy("timestamp", "desc"),
-                limit(1)
+                orderBy("timestamp", "desc")
             );
 
-            const querySnapshot = await getDocs(q);
+            const snap = await getDocs(q);
+            let found = null;
 
-            if (!querySnapshot.empty) {
-                const gradeDoc = querySnapshot.docs[0].data();
-                currentGradeData = gradeDoc; // Guardamos para el certificado
+            // Filtramos manualmente para mayor flexibilidad con los espacios y puntos
+            snap.forEach(doc => {
+                const data = doc.data();
+                if (data.exercise_id.toLowerCase().includes(pattern)) {
+                    if (!found) found = data; 
+                }
+            });
 
-                document.getElementById('final-score-val').innerText = gradeDoc.score.toFixed(1);
+            if (found) {
+                currentGradeData = found;
+                document.getElementById('final-score-val').innerText = found.score.toFixed(1);
                 scoreBox.style.display = "block";
                 btnGen.style.display = "block";
-                alertMsg.innerHTML = "<span style='color:green'>✅ Registro encontrado.</span>";
+                alertMsg.innerHTML = "<span style='color:green'>¡Excelente trabajo! Nota recuperada.</span>";
             } else {
                 scoreBox.style.display = "none";
                 btnGen.style.display = "none";
-                alertMsg.innerHTML = "<span style='color:orange'>⚠️ No se encontró calificación para este ejercicio.</span>";
+                alertMsg.innerHTML = "<span style='color:orange'>Aún no has completado este ejercicio.</span>";
             }
         } catch (error) {
             console.error(error);
-            alertMsg.innerHTML = "<span style='color:red'>❌ Error al conectar con la base de datos.</span>";
+            alertMsg.innerHTML = "Error de conexión.";
         }
     };
 
-    // 3. MOSTRAR EL CERTIFICADO CON DATOS REALES
     window.mostrarCertificado = function() {
         if (!currentGradeData) return;
-
         const date = currentGradeData.timestamp.toDate();
         
         document.getElementById('pdf-u').innerText = document.getElementById('unidad').value;
         document.getElementById('pdf-t').innerText = document.getElementById('tema').value;
-        document.getElementById('pdf-skill').innerText = document.getElementById('skill').value;
+        document.getElementById('pdf-skill').innerText = document.getElementById('skill').options[document.getElementById('skill').selectedIndex].text;
         document.getElementById('pdf-score').innerText = currentGradeData.score.toFixed(1);
         document.getElementById('pdf-fecha').innerText = date.toLocaleDateString();
         document.getElementById('pdf-hora').innerText = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        document.getElementById('pdf-codigo').innerText = currentGradeData.certificate_code || "N/A";
+        document.getElementById('pdf-codigo').innerText = currentGradeData.certificate_code || "UCMI-VERIFIED";
 
         document.getElementById('certificate-wrapper').style.display = "block";
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        window.scrollTo({ top: document.getElementById('certificate-wrapper').offsetTop, behavior: 'smooth' });
     };
 
-    // Asignar eventos a los botones
     document.getElementById("btnConsultar").onclick = consultar;
     document.getElementById("btn-gen-cert").onclick = mostrarCertificado;
-
 </script>
+
 </body>
 </html>
