@@ -53,7 +53,7 @@
     </div>
 
     <div class="table-container">
-        <div id="loading">Filtrando datos de tu grupo...</div>
+        <div id="loading">Sincronizando datos de tus alumnos...</div>
         <table id="gradesTable" style="display: none;">
             <thead>
                 <tr>
@@ -87,7 +87,17 @@
         let myStudentsEmails = [];
         let allGrades = [];
 
-        // 1. Verificar quién es el profesor
+        // Función para convertir Timestamp a texto legible
+        function formatDate(ts) {
+            if (!ts) return "---";
+            // Si es un objeto Timestamp de Firebase tiene el método .toDate()
+            const d = ts.toDate ? ts.toDate() : new Date(ts);
+            return d.toLocaleString('es-ES', { 
+                day: '2-digit', month: '2-digit', year: 'numeric', 
+                hour: '2-digit', minute: '2-digit' 
+            });
+        }
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentTeacherEmail = user.email.toLowerCase();
@@ -98,40 +108,37 @@
             }
         });
 
-        // 2. Cargar SOLO los alumnos vinculados a este profesor
         async function loadMyStudents() {
-            // Filtramos la colección "users" donde teacherID == correo del profesor actual
+            // Buscamos alumnos vinculados a este profesor
             const q = query(collection(db, "users"), where("teacherID", "==", currentTeacherEmail));
-            
             const userSnap = await getDocs(q);
             myStudentsEmails = [];
             
             userSnap.forEach(doc => {
                 const userData = doc.data();
-                studentNames[doc.id] = userData.name || doc.id;
-                myStudentsEmails.push(doc.id); // Guardamos los emails de sus alumnos
+                const email = doc.id.toLowerCase();
+                studentNames[email] = userData.name || doc.id;
+                myStudentsEmails.push(email);
             });
 
             if (myStudentsEmails.length === 0) {
-                document.getElementById("loading").innerText = "Aún no tienes alumnos vinculados.";
+                document.getElementById("loading").innerText = "No tienes alumnos vinculados a tu cuenta.";
                 return;
             }
-
             startGradesListener();
         }
 
-        // 3. Escuchar las notas (solo de sus alumnos)
         function startGradesListener() {
-            // Escuchamos la colección completa pero filtraremos en el renderizado
-            // Nota: Firestore tiene límites para el operador "in" (máx 30), 
-            // así que filtraremos por lógica para que sea más escalable.
             const q = query(collection(db, "grades"), orderBy("timestamp", "desc"));
             
             onSnapshot(q, (snapshot) => {
-                // Solo guardamos notas que pertenezcan a los alumnos del profesor
+                // Filtramos las notas: el email de la nota debe estar en nuestra lista de alumnos
                 allGrades = snapshot.docs
                     .map(doc => doc.data())
-                    .filter(grade => myStudentsEmails.includes(grade.studentEmail));
+                    .filter(grade => {
+                        const sEmail = grade.studentEmail ? grade.studentEmail.toLowerCase() : "";
+                        return myStudentsEmails.includes(sEmail);
+                    });
 
                 updateFilterOptions();
                 renderTable(document.getElementById("studentFilter").value);
@@ -141,7 +148,6 @@
         function updateFilterOptions() {
             const select = document.getElementById("studentFilter");
             const currentVal = select.value;
-            
             select.innerHTML = '<option value="all">Ver todos mis alumnos</option>';
             
             myStudentsEmails.forEach(email => {
@@ -155,25 +161,24 @@
 
         function renderTable(filter) {
             const body = document.getElementById("gradesBody");
-            const filtered = filter === "all" ? allGrades : allGrades.filter(g => g.studentEmail === filter);
+            const filtered = filter === "all" ? allGrades : allGrades.filter(g => g.studentEmail.toLowerCase() === filter.toLowerCase());
             
             let total = 0, sum = 0;
             body.innerHTML = "";
 
             if (filtered.length === 0) {
-                body.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay registros para mostrar.</td></tr>';
+                body.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay actividades registradas.</td></tr>';
             }
 
             filtered.forEach(data => {
                 total++;
                 const score = parseFloat(data.score || 0);
                 sum += score;
-                const nombre = studentNames[data.studentEmail] || data.studentEmail;
-                const fecha = data.timestamp ? data.timestamp.toString().split(' a las')[0] : "---";
-
+                const nombre = studentNames[data.studentEmail.toLowerCase()] || data.studentEmail;
+                
                 body.innerHTML += `
                     <tr>
-                        <td>${fecha}</td>
+                        <td>${formatDate(data.timestamp)}</td>
                         <td><strong>${nombre}</strong></td>
                         <td>${data.exercise_id}</td>
                         <td><span class="grade-badge ${score >= 7 ? 'pass' : 'fail'}">${score} / 10</span></td>
