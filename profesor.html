@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Panel del Profesor</title>
+    <title>UCMI - Panel del Profesor Pro</title>
     <script type="module" src="protect.js"></script>
     <style>
         :root { --navy: #000080; --aqua: #7FFFD4; --bg: #f0f2f5; }
-        body { font-family: sans-serif; background-color: var(--bg); }
-        h2 { color: var(--navy); border-bottom: 2px solid var(--aqua); padding-bottom: 10px; }
+        body { font-family: sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
+        h2 { color: var(--navy); border-bottom: 2px solid var(--aqua); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .prof-info { font-size: 0.9rem; background: var(--navy); color: white; padding: 5px 15px; border-radius: 20px; }
         .controls { 
             background: white; padding: 20px; border-radius: 15px; 
             margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -34,27 +35,30 @@
 </head>
 <body>
 
-    <h2>👨‍🏫 Panel de Control Docente</h2>
+    <h2>
+        <span>👨‍🏫 Panel de Control Docente</span>
+        <span id="profTag" class="prof-info">Cargando perfil...</span>
+    </h2>
     
     <div class="controls">
-        <label for="studentFilter"><strong>Seleccionar Alumno:</strong></label>
+        <label for="studentFilter"><strong>Mis Alumnos:</strong></label>
         <select id="studentFilter">
-            <option value="all">Ver todos los registros</option>
+            <option value="all">Ver todos mis alumnos</option>
         </select>
     </div>
 
     <div class="stats-grid">
         <div class="stat-card"><h3>Registros</h3><p id="totalGrades">0</p></div>
-        <div class="stat-card"><h3>Promedio</h3><p id="avgGrade">0.0</p></div>
+        <div class="stat-card"><h3>Promedio Grupal</h3><p id="avgGrade">0.0</p></div>
     </div>
 
     <div class="table-container">
-        <div id="loading">Sincronizando nombres y datos...</div>
+        <div id="loading">Filtrando datos de tu grupo...</div>
         <table id="gradesTable" style="display: none;">
             <thead>
                 <tr>
                     <th>Fecha</th>
-                    <th>Nombre del Alumno</th>
+                    <th>Alumno</th>
                     <th>Actividad</th>
                     <th>Calificación</th>
                 </tr>
@@ -65,7 +69,8 @@
 
     <script type="module">
         import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
@@ -74,57 +79,90 @@
         };
 
         const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let studentNames = {}; // Diccionario para guardar email -> nombre
+        let currentTeacherEmail = "";
+        let studentNames = {}; 
+        let myStudentsEmails = [];
         let allGrades = [];
 
-        // 1. Cargar el mapa de nombres desde la colección "users"
-        async function loadStudentNames() {
-            const userSnap = await getDocs(collection(db, "users"));
+        // 1. Verificar quién es el profesor
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentTeacherEmail = user.email.toLowerCase();
+                document.getElementById("profTag").innerText = `Profesor: ${currentTeacherEmail}`;
+                loadMyStudents();
+            } else {
+                window.location.href = "index.html";
+            }
+        });
+
+        // 2. Cargar SOLO los alumnos vinculados a este profesor
+        async function loadMyStudents() {
+            // Filtramos la colección "users" donde teacherID == correo del profesor actual
+            const q = query(collection(db, "users"), where("teacherID", "==", currentTeacherEmail));
+            
+            const userSnap = await getDocs(q);
+            myStudentsEmails = [];
+            
             userSnap.forEach(doc => {
                 const userData = doc.data();
-                // Usamos el ID del documento (email) para mapear al nombre
-                studentNames[doc.id] = userData.name || userData.nombre || doc.id;
+                studentNames[doc.id] = userData.name || doc.id;
+                myStudentsEmails.push(doc.id); // Guardamos los emails de sus alumnos
             });
+
+            if (myStudentsEmails.length === 0) {
+                document.getElementById("loading").innerText = "Aún no tienes alumnos vinculados.";
+                return;
+            }
+
             startGradesListener();
         }
 
-        // 2. Escuchar la colección "grades"
+        // 3. Escuchar las notas (solo de sus alumnos)
         function startGradesListener() {
+            // Escuchamos la colección completa pero filtraremos en el renderizado
+            // Nota: Firestore tiene límites para el operador "in" (máx 30), 
+            // así que filtraremos por lógica para que sea más escalable.
             const q = query(collection(db, "grades"), orderBy("timestamp", "desc"));
             
             onSnapshot(q, (snapshot) => {
-                allGrades = snapshot.docs.map(doc => doc.data());
+                // Solo guardamos notas que pertenezcan a los alumnos del profesor
+                allGrades = snapshot.docs
+                    .map(doc => doc.data())
+                    .filter(grade => myStudentsEmails.includes(grade.studentEmail));
+
                 updateFilterOptions();
                 renderTable(document.getElementById("studentFilter").value);
             });
         }
 
-        // 3. Actualizar el selector con nombres reales
         function updateFilterOptions() {
             const select = document.getElementById("studentFilter");
             const currentVal = select.value;
-            const uniqueEmails = [...new Set(allGrades.map(g => g.studentEmail))];
             
-            select.innerHTML = '<option value="all">Ver todos los registros</option>';
+            select.innerHTML = '<option value="all">Ver todos mis alumnos</option>';
             
-            uniqueEmails.forEach(email => {
+            myStudentsEmails.forEach(email => {
                 const option = document.createElement("option");
                 option.value = email;
-                option.textContent = studentNames[email] || email; // Si no hay nombre, usa el email
+                option.textContent = studentNames[email] || email;
                 select.appendChild(option);
             });
             select.value = currentVal;
         }
 
-        // 4. Dibujar la tabla
         function renderTable(filter) {
             const body = document.getElementById("gradesBody");
             const filtered = filter === "all" ? allGrades : allGrades.filter(g => g.studentEmail === filter);
             
             let total = 0, sum = 0;
             body.innerHTML = "";
+
+            if (filtered.length === 0) {
+                body.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay registros para mostrar.</td></tr>';
+            }
 
             filtered.forEach(data => {
                 total++;
@@ -150,9 +188,6 @@
         }
 
         document.getElementById("studentFilter").onchange = (e) => renderTable(e.target.value);
-
-        // Iniciar proceso
-        loadStudentNames();
     </script>
 </body>
 </html>
