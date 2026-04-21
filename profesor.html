@@ -7,60 +7,113 @@
     <script type="module" src="protect.js"></script>
     <style>
         :root { --navy: #000080; --aqua: #7FFFD4; --bg: #f0f2f5; }
-        body { font-family: sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
-        h2 { color: var(--navy); border-bottom: 2px solid var(--aqua); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .prof-info { font-size: 0.9rem; background: var(--navy); color: white; padding: 5px 15px; border-radius: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
+        
+        header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 3px solid var(--aqua); 
+            padding-bottom: 15px; 
+            margin-bottom: 25px; 
+        }
+        
+        h2 { color: var(--navy); margin: 0; }
+        .prof-info { font-size: 0.85rem; background: var(--navy); color: white; padding: 6px 15px; border-radius: 20px; font-weight: bold; }
+
         .controls { 
             background: white; padding: 20px; border-radius: 15px; 
             margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            display: flex; align-items: center; gap: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
         }
+
+        .filter-group { display: flex; flex-direction: column; gap: 8px; }
+        .filter-group label { font-size: 0.85rem; font-weight: bold; color: var(--navy); }
+        
         select { 
-            padding: 10px; border-radius: 8px; border: 1px solid #ccc; 
-            font-size: 1rem; color: var(--navy); width: 350px;
+            padding: 12px; border-radius: 8px; border: 1px solid #ddd; 
+            font-size: 0.95rem; color: #333; background-color: #fafafa;
+            transition: border-color 0.3s;
         }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .stat-card h3 { margin: 0; font-size: 0.9rem; color: #666; }
-        .stat-card p { margin: 10px 0 0; font-size: 1.8rem; font-weight: bold; color: var(--navy); }
+        select:focus { outline: none; border-color: var(--navy); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid var(--aqua); }
+        .stat-card h3 { margin: 0; font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card p { margin: 10px 0 0; font-size: 2rem; font-weight: bold; color: var(--navy); }
+
         .table-container { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; }
-        th { background-color: var(--navy); color: white; text-align: left; padding: 15px; font-size: 0.9rem; }
-        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.9rem; color: #333; }
-        .grade-badge { padding: 5px 10px; border-radius: 8px; font-weight: bold; }
+        th { background-color: var(--navy); color: white; text-align: left; padding: 18px; font-size: 0.85rem; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.9rem; color: #444; }
+        tr:hover { background-color: #f9f9f9; }
+
+        .grade-badge { padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; }
         .pass { background: #dcfce7; color: #166534; }
         .fail { background: #fee2e2; color: #991b1b; }
-        #loading { text-align: center; padding: 40px; color: var(--navy); font-weight: bold; }
+        
+        #loading { text-align: center; padding: 50px; color: var(--navy); font-size: 1.1rem; }
+        .empty-msg { text-align: center; padding: 30px; color: #888; font-style: italic; }
     </style>
 </head>
 <body>
 
-    <h2>
-        <span>👨‍🏫 Panel de Control Docente</span>
-        <span id="profTag" class="prof-info">Cargando perfil...</span>
-    </h2>
+    <header>
+        <h2>👨‍🏫 Panel Docente UCMI</h2>
+        <span id="profTag" class="prof-info">Autenticando...</span>
+    </header>
     
     <div class="controls">
-        <label for="studentFilter"><strong>Mis Alumnos:</strong></label>
-        <select id="studentFilter">
-            <option value="all">Ver todos mis alumnos</option>
-        </select>
+        <div class="filter-group">
+            <label>Filtrar por Alumno:</label>
+            <select id="studentFilter">
+                <option value="all">Todos mis alumnos</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Habilidad (Skill):</label>
+            <select id="skillFilter">
+                <option value="all">Todas las habilidades</option>
+                <option value="erg">Gramática (ERG)</option>
+                <option value="erl">Listening (ERL)</option>
+                <option value="err">Reading (ERR)</option>
+                <option value="erw">Writing (ERW)</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Unidad:</label>
+            <select id="unitFilter">
+                <option value="all">Todas las unidades</option>
+                <option value=" 1.">Unidad 1</option>
+                <option value=" 2.">Unidad 2</option>
+                <option value=" 3.">Unidad 3</option>
+                <option value=" 4.">Unidad 4</option>
+                <option value=" 5.">Unidad 5</option>
+                <option value=" 6.">Unidad 6</option>
+                <option value=" 7.">Unidad 7</option>
+                <option value=" 8.">Unidad 8</option>
+                <option value=" 9.">Unidad 9</option>
+                <option value=" 10.">Unidad 10</option>
+            </select>
+        </div>
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card"><h3>Registros</h3><p id="totalGrades">0</p></div>
-        <div class="stat-card"><h3>Promedio Grupal</h3><p id="avgGrade">0.0</p></div>
+        <div class="stat-card"><h3>Actividades Realizadas</h3><p id="totalGrades">0</p></div>
+        <div class="stat-card"><h3>Promedio Selección</h3><p id="avgGrade">0.0</p></div>
     </div>
 
     <div class="table-container">
-        <div id="loading">Sincronizando datos de tus alumnos...</div>
+        <div id="loading">Sincronizando con la nube...</div>
         <table id="gradesTable" style="display: none;">
             <thead>
                 <tr>
-                    <th>Fecha</th>
-                    <th>Alumno</th>
-                    <th>Actividad</th>
-                    <th>Calificación</th>
+                    <th>Fecha y Hora</th>
+                    <th>Nombre del Alumno</th>
+                    <th>Código de Actividad</th>
+                    <th>Resultado</th>
                 </tr>
             </thead>
             <tbody id="gradesBody"></tbody>
@@ -87,10 +140,9 @@
         let myStudentsEmails = [];
         let allGrades = [];
 
-        // Función para convertir Timestamp a texto legible
+        // --- UTILIDADES ---
         function formatDate(ts) {
             if (!ts) return "---";
-            // Si es un objeto Timestamp de Firebase tiene el método .toDate()
             const d = ts.toDate ? ts.toDate() : new Date(ts);
             return d.toLocaleString('es-ES', { 
                 day: '2-digit', month: '2-digit', year: 'numeric', 
@@ -98,10 +150,11 @@
             });
         }
 
+        // --- LÓGICA DE DATOS ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentTeacherEmail = user.email.toLowerCase();
-                document.getElementById("profTag").innerText = `Profesor: ${currentTeacherEmail}`;
+                document.getElementById("profTag").innerText = currentTeacherEmail;
                 loadMyStudents();
             } else {
                 window.location.href = "index.html";
@@ -109,30 +162,32 @@
         });
 
         async function loadMyStudents() {
-            // Buscamos alumnos vinculados a este profesor
-            const q = query(collection(db, "users"), where("teacherID", "==", currentTeacherEmail));
-            const userSnap = await getDocs(q);
-            myStudentsEmails = [];
-            
-            userSnap.forEach(doc => {
-                const userData = doc.data();
-                const email = doc.id.toLowerCase();
-                studentNames[email] = userData.name || doc.id;
-                myStudentsEmails.push(email);
-            });
+            try {
+                const q = query(collection(db, "users"), where("teacherID", "==", currentTeacherEmail));
+                const userSnap = await getDocs(q);
+                myStudentsEmails = [];
+                
+                userSnap.forEach(doc => {
+                    const userData = doc.data();
+                    const email = doc.id.toLowerCase();
+                    studentNames[email] = userData.name || doc.id;
+                    myStudentsEmails.push(email);
+                });
 
-            if (myStudentsEmails.length === 0) {
-                document.getElementById("loading").innerText = "No tienes alumnos vinculados a tu cuenta.";
-                return;
+                if (myStudentsEmails.length === 0) {
+                    document.getElementById("loading").innerHTML = "<div class='empty-msg'>No se encontraron alumnos vinculados a tu cuenta de profesor.</div>";
+                    return;
+                }
+                startGradesListener();
+            } catch (error) {
+                console.error("Error cargando alumnos:", error);
             }
-            startGradesListener();
         }
 
         function startGradesListener() {
             const q = query(collection(db, "grades"), orderBy("timestamp", "desc"));
             
             onSnapshot(q, (snapshot) => {
-                // Filtramos las notas: el email de la nota debe estar en nuestra lista de alumnos
                 allGrades = snapshot.docs
                     .map(doc => doc.data())
                     .filter(grade => {
@@ -140,15 +195,15 @@
                         return myStudentsEmails.includes(sEmail);
                     });
 
-                updateFilterOptions();
-                renderTable(document.getElementById("studentFilter").value);
+                updateStudentDropdown();
+                renderTable();
             });
         }
 
-        function updateFilterOptions() {
+        function updateStudentDropdown() {
             const select = document.getElementById("studentFilter");
             const currentVal = select.value;
-            select.innerHTML = '<option value="all">Ver todos mis alumnos</option>';
+            select.innerHTML = '<option value="all">Todos mis alumnos</option>';
             
             myStudentsEmails.forEach(email => {
                 const option = document.createElement("option");
@@ -159,40 +214,61 @@
             select.value = currentVal;
         }
 
-        function renderTable(filter) {
-            const body = document.getElementById("gradesBody");
-            const filtered = filter === "all" ? allGrades : allGrades.filter(g => g.studentEmail.toLowerCase() === filter.toLowerCase());
+        function renderTable() {
+            const studentSel = document.getElementById("studentFilter").value;
+            const skillSel = document.getElementById("skillFilter").value;
+            const unitSel = document.getElementById("unitFilter").value;
             
+            const body = document.getElementById("gradesBody");
+            
+            // FILTRO COMBINADO
+            const filtered = allGrades.filter(g => {
+                const exId = (g.exercise_id || "").toLowerCase();
+                const sEmail = (g.studentEmail || "").toLowerCase();
+                
+                const matchStudent = (studentSel === "all" || sEmail === studentSel);
+                const matchSkill = (skillSel === "all" || exId.includes(skillSel));
+                const matchUnit = (unitSel === "all" || exId.includes(unitSel));
+                
+                return matchStudent && matchSkill && matchUnit;
+            });
+
             let total = 0, sum = 0;
             body.innerHTML = "";
 
             if (filtered.length === 0) {
-                body.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay actividades registradas.</td></tr>';
+                body.innerHTML = '<tr><td colspan="4" class="empty-msg">No hay actividades que coincidan con los filtros seleccionados.</td></tr>';
+            } else {
+                filtered.forEach(data => {
+                    total++;
+                    const score = parseFloat(data.score || 0);
+                    sum += score;
+                    const nombre = studentNames[data.studentEmail.toLowerCase()] || data.studentEmail;
+                    
+                    body.innerHTML += `
+                        <tr>
+                            <td>${formatDate(data.timestamp)}</td>
+                            <td><strong>${nombre}</strong></td>
+                            <td><code>${data.exercise_id.toUpperCase()}</code></td>
+                            <td><span class="grade-badge ${score >= 7 ? 'pass' : 'fail'}">${score} / 10</span></td>
+                        </tr>
+                    `;
+                });
             }
 
-            filtered.forEach(data => {
-                total++;
-                const score = parseFloat(data.score || 0);
-                sum += score;
-                const nombre = studentNames[data.studentEmail.toLowerCase()] || data.studentEmail;
-                
-                body.innerHTML += `
-                    <tr>
-                        <td>${formatDate(data.timestamp)}</td>
-                        <td><strong>${nombre}</strong></td>
-                        <td>${data.exercise_id}</td>
-                        <td><span class="grade-badge ${score >= 7 ? 'pass' : 'fail'}">${score} / 10</span></td>
-                    </tr>
-                `;
-            });
-
+            // Actualizar Estadísticas
             document.getElementById("totalGrades").innerText = total;
             document.getElementById("avgGrade").innerText = total > 0 ? (sum / total).toFixed(1) : "0.0";
+            
+            // Mostrar tabla
             document.getElementById("loading").style.display = "none";
             document.getElementById("gradesTable").style.display = "table";
         }
 
-        document.getElementById("studentFilter").onchange = (e) => renderTable(e.target.value);
+        // Listeners de cambio
+        document.getElementById("studentFilter").onchange = renderTable;
+        document.getElementById("skillFilter").onchange = renderTable;
+        document.getElementById("unitFilter").onchange = renderTable;
     </script>
 </body>
 </html>
