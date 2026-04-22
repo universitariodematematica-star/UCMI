@@ -1,52 +1,49 @@
-// auth.js - El "cerebro" de la autenticación de UCMI
+// auth.js - Núcleo de Autenticación UCMI
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// Configuración real de tu proyecto UCMI
+// TODO: PEGA AQUÍ EL BLOQUE firebaseConfig QUE COPIASTE DE LA CONSOLA
 const firebaseConfig = {
-  apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
-  authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
-  projectId: "portal-autenticacion-a1ngles",
-  storageBucket: "portal-autenticacion-a1ngles.firebasestorage.app",
-  messagingSenderId: "1039504020190",
-  appId: "1:1039504020190:web:212cf030c3e6feb175a84f",
-  measurementId: "G-FHXCQSWG5H"
+  apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+  authDomain: "ucmi-13796634.firebaseapp.com",
+  projectId: "ucmi-13796634",
+  storageBucket: "ucmi-13796634.firebasestorage.app",
+  messagingSenderId: "1090719609536",
+  appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
+  measurementId: "G-3M3DH25722"
 };
 
-// Inicializar la conexión con el backend
+
+// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Escuchar cuando el usuario pulsa el botón "Entrar"
+// Lógica de acceso
 document.getElementById('form-login').addEventListener('submit', async (e) => {
-    e.preventDefault(); // Evita que la página se recargue
-
-    // 1. Obtener los valores del formulario
+    e.preventDefault();
+    
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const btn = document.getElementById('btn-submit');
 
-    // 2. Feedback visual
+    // Estado de carga
     btn.innerText = "Verificando en UCMI...";
     btn.disabled = true;
 
     try {
-        // 3. Intentar el inicio de sesión en Firebase
+        // Intento de entrada al sistema
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log("Acceso exitoso:", userCredential.user.email);
+        alert("¡Bienvenido al sistema UCMI!");
         
-        // 4. Si los datos son correctos
-        alert("Acceso concedido. ¡Bienvenido!");
-        console.log("Éxito:", userCredential.user.email);
-        
-        // Aquí puedes redirigir a la siguiente página de tu tesis
-        // window.location.href = "supralogica_dashboard.html";
+        // Aquí redirigiremos al Dashboard de la Supralógica
+        // window.location.href = "dashboard.html";
 
     } catch (error) {
-        // 5. Si hay error (usuario no existe, clave mal, etc.)
-        console.error("Error capturado:", error.code);
+        console.error("Error de Auth:", error.code);
         alert("Error de acceso: Verifique su usuario y contraseña.");
         
-        // Restaurar el botón
+        // Resetear botón
         btn.innerText = "Entrar a UCMI";
         btn.disabled = false;
     }
