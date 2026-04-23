@@ -7,11 +7,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, sans-serif; }
         .form-container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0px 10px 30px rgba(0,0,0,0.1); margin-top: 30px; margin-bottom: 50px; }
         .section-title { border-left: 5px solid #0056b3; padding-left: 15px; margin-bottom: 25px; color: #0056b3; font-weight: bold; }
         .btn-primary { background-color: #0056b3; border: none; padding: 15px; font-weight: bold; }
-        .logo-ucmi { max-height: 100px; width: auto; }
+        .logo-ucmi { max-height: 120px; width: auto; }
     </style>
 </head>
 <body>
@@ -20,7 +20,7 @@
     <div class="row justify-content-center">
         <div class="col-lg-9 form-container">
             <div class="text-center mb-4">
-                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiGorr06sfB3DGVDAPb7LfW18T5Iws9DunEX2U7D-nLT0Vk1hmI8Jj_PnuHAqEz4OoTeUNBtJkp-IDb0SlYV5aO1_rG5_v02TqLsm45COGzm5wRvP2Dp9jelaRSj42yfOCZKTYvKOA_5Lc38kG9hTEclhqhHIesaP2fuwd48wr-3Lp5joWtgRIQ6i4t0jUd/s166/logo_ucmi.png" alt="Logo UCMI" class="logo-ucmi mb-2">
+                <img id="imgLogo" src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo UCMI" class="logo-ucmi mb-2" crossorigin="anonymous">
                 <h2 class="fw-bold mb-0">UCMI</h2>
                 <p class="text-muted">Universitario de Ciencias Matemáticas e Idiomas</p>
             </div>
@@ -28,7 +28,7 @@
             <hr class="my-4">
 
             <form id="formPostulacion">
-                <h4 class="section-title">1. Identificación de la Institución</h4>
+                <h4 class="section-title">1. Identificación Institucional</h4>
                 <div class="row g-3 mb-4">
                     <div class="col-md-12"><label class="form-label fw-semibold">Nombre de la Academia</label><input type="text" class="form-control" id="nombreAcademia" required></div>
                     <div class="col-md-6"><label class="form-label fw-semibold">ID Fiscal (RIF / NIT)</label><input type="text" class="form-control" id="idFiscal" required></div>
@@ -38,7 +38,7 @@
                     <div class="col-md-6"><label class="form-label fw-semibold">WhatsApp</label><input type="tel" class="form-control" id="telefono" required></div>
                 </div>
 
-                <h4 class="section-title">2. Programas y Licencia</h4>
+                <h4 class="section-title">2. Programas y Tiempo de Licencia</h4>
                 <div class="row g-3 mb-4">
                     <div class="col-md-6"><label class="form-label fw-semibold">Cupos Solicitados</label><input type="number" class="form-control" id="cupos" required></div>
                     <div class="col-md-6"><label class="form-label fw-semibold">Tiempo Solicitado (Meses)</label><input type="number" class="form-control" id="meses" required></div>
@@ -46,7 +46,7 @@
                     <div class="col-md-12">
                         <label class="form-label fw-semibold">Programas de Interés</label>
                         <div class="card p-3 border-light shadow-sm">
-                            <div class="row" id="checkGroup">
+                            <div class="row">
                                 <div class="col-6">
                                     <div class="form-check"><input class="form-check-input" type="checkbox" value="Matemática AGEM"><label class="form-check-label">Matemática AGEM</label></div>
                                     <div class="form-check"><input class="form-check-input" type="checkbox" value="Física"><label class="form-check-label">Física</label></div>
@@ -64,8 +64,8 @@
                     </div>
                 </div>
 
-                <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-primary shadow">Enviar y Generar Constancia PDF</button>
+                <div class="d-grid">
+                    <button type="submit" id="btnEnviar" class="btn btn-primary shadow">Enviar y Descargar Constancia PDF</button>
                 </div>
             </form>
         </div>
@@ -88,10 +88,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const form = document.getElementById('formPostulacion');
-
-    form.addEventListener('submit', async (e) => {
+    document.getElementById('formPostulacion').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const btn = document.getElementById('btnEnviar');
+        btn.disabled = true;
 
         const seleccionados = [];
         document.querySelectorAll('input[type="checkbox"]:checked').forEach(c => seleccionados.push(c.value));
@@ -114,64 +114,58 @@
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.src = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiGorr06sfB3DGVDAPb7LfW18T5Iws9DunEX2U7D-nLT0Vk1hmI8Jj_PnuHAqEz4OoTeUNBtJkp-IDb0SlYV5aO1_rG5_v02TqLsm45COGzm5wRvP2Dp9jelaRSj42yfOCZKTYvKOA_5Lc38kG9hTEclhqhHIesaP2fuwd48wr-3Lp5joWtgRIQ6i4t0jUd/s166/logo_ucmi.png";
+            const imgElement = document.getElementById('imgLogo');
 
-            img.onload = function() {
-                // Logo y Texto Institucional
-                doc.addImage(img, 'PNG', 85, 10, 40, 40);
-                doc.setFontSize(14);
-                doc.setFont("helvetica", "bold");
-                doc.text("Universitario de Ciencias Matemáticas e Idiomas", 105, 55, { align: "center" });
-                
-                // Título de la Constancia
-                doc.setFontSize(18);
-                doc.setTextColor(0, 86, 179);
-                doc.text("Constancia de solicitud de servicio", 105, 75, { align: "center" });
-                
-                doc.setDrawColor(0, 86, 179);
-                doc.line(20, 80, 190, 80);
-                
-                // Datos del Formulario
-                doc.setFontSize(11);
-                doc.setTextColor(0, 0, 0);
-                doc.setFont("helvetica", "normal");
-                
-                let y = 95;
-                const items = [
-                    ["Nombre de la Academia:", data.academia],
-                    ["ID Fiscal:", data.rif],
-                    ["Ubicación:", data.ubicacion],
-                    ["Director Responsable:", data.director],
-                    ["Correo:", data.email],
-                    ["Teléfono:", data.telefono],
-                    ["Cupos:", data.cupos],
-                    ["Meses de Licencia:", data.meses],
-                    ["Programas seleccionados:", data.programas],
-                    ["Fecha de Solicitud:", data.fecha]
-                ];
+            // Encabezado Institucional
+            try {
+                doc.addImage(imgElement, 'PNG', 85, 10, 40, 40);
+            } catch (e) { console.log("Error al procesar logo en PDF"); }
 
-                items.forEach(([label, value]) => {
-                    doc.setFont("helvetica", "bold"); doc.text(label, 20, y);
-                    doc.setFont("helvetica", "normal"); 
-                    // Manejo de texto largo para programas
-                    const splitValue = doc.splitTextToSize(value.toString(), 110);
-                    doc.text(splitValue, 80, y);
-                    y += (splitValue.length * 7);
-                });
-
-                doc.save(`UCMI_Solicitud_${data.academia}.pdf`);
-                alert('Solicitud enviada. Su PDF se ha descargado.');
-                form.reset();
-            };
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("Universitario de Ciencias Matemáticas e Idiomas", 105, 55, { align: "center" });
             
-            img.onerror = function() {
-                alert("Error cargando el logo para el PDF, pero los datos se guardaron.");
-            };
+            doc.setFontSize(18);
+            doc.setTextColor(0, 86, 179);
+            doc.text("Constancia de solicitud de servicio", 105, 75, { align: "center" });
+            
+            doc.setDrawColor(0, 86, 179);
+            doc.line(20, 80, 190, 80);
+            
+            // Datos del formulario
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont("helvetica", "normal");
+            
+            let y = 95;
+            const rows = [
+                ["Academia:", data.academia],
+                ["ID Fiscal:", data.rif],
+                ["Ubicación:", data.ubicacion],
+                ["Director:", data.director],
+                ["Correo:", data.email],
+                ["Teléfono:", data.telefono],
+                ["Cupos:", data.cupos],
+                ["Meses de Licencia:", data.meses],
+                ["Programas:", data.programas],
+                ["Fecha de Solicitud:", data.fecha]
+            ];
+
+            rows.forEach(([label, val]) => {
+                doc.setFont("helvetica", "bold"); doc.text(label, 20, y);
+                doc.setFont("helvetica", "normal");
+                const textVal = doc.splitTextToSize(val.toString(), 110);
+                doc.text(textVal, 80, y);
+                y += (textVal.length * 8);
+            });
+
+            doc.save(`UCMI_Constancia_${data.academia}.pdf`);
+            alert('¡Postulación enviada! Su PDF ha sido generado.');
+            location.reload();
 
         } catch (e) {
             alert("Error al conectar con la base de datos.");
+            btn.disabled = false;
         }
     });
 </script>
