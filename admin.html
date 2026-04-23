@@ -3,225 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Admin Maestro Pro</title>
+    <title>Master Admin - UCMI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root { --primary: #0f172a; --accent: #2563eb; --bg: #f4f6fb; }
-        body { font-family: 'Segoe UI', Arial; background: var(--bg); margin: 0; }
-        .header { background: var(--primary); color: white; padding: 20px; text-align: center; font-weight: bold; position: sticky; top: 0; z-index: 100; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; padding: 20px; }
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); height: fit-content; }
-        input, select { width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 14px; }
-        button { width: 100%; padding: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
-        .btn-blue { background: var(--accent); color: white; }
-        .btn-blue:hover { background: #1d4ed8; }
-        .btn-red { background: #fee2e2; color: #ef4444; width: auto; padding: 5px 10px; }
-        
-        /* Estilos de Tooltips */
-        .tooltip-container { position: relative; display: inline-block; cursor: help; color: var(--accent); font-weight: bold; text-decoration: underline; }
-        .tooltip-text { 
-            visibility: hidden; width: 220px; background-color: #334155; color: #fff; text-align: center;
-            border-radius: 6px; padding: 10px; position: absolute; z-index: 1; bottom: 125%; left: 50%;
-            margin-left: -110px; opacity: 0; transition: opacity 0.3s; font-size: 12px; font-weight: normal; line-height: 1.4;
-        }
-        .tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; }
-
-        .user-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .badge { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; margin-left: 5px; }
-        .active { background: #dcfce7; color: #166534; }
-        .expired { background: #fee2e2; color: #991b1b; }
-        .info-tag { font-size: 10px; color: #64748b; margin-top: 2px; display: block; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
+        .sidebar { background: #1a2a3a; color: white; min-height: 100vh; padding: 20px; }
+        .badge-perfil { font-size: 0.75rem; padding: 5px 10px; border-radius: 50px; }
+        .bg-academia { background: #e74c3c; color: white; }
+        .bg-embajador { background: #3498db; color: white; }
+        .bg-socio { background: #9b59b6; color: white; }
+        .bg-alumno { background: #2ecc71; color: white; }
+        .table-container { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
 
-<div id="loginSection" class="card" style="max-width:350px; margin:100px auto; text-align:center;">
-    <h3>🔐 Acceso Admin Maestro</h3>
-    <input id="adminEmail" type="email" placeholder="Correo Admin">
-    <input id="adminPass" type="password" placeholder="Contraseña">
-    <button class="btn-blue" onclick="adminLogin()">Entrar al Panel</button>
-</div>
-
-<div id="adminPanel" style="display:none;">
-    <div class="header">
-        UCMI - PANEL DE CONTROL ESTRATÉGICO
-        <button onclick="logout()" style="width:auto; float:right; background:#334155; color: white;">Salir</button>
-    </div>
-    
-    <div class="grid">
-        <div class="card">
-            <h3>➕ Registro de Nuevo Usuario</h3>
-            
-            <label style="font-size:12px;">Nombre Completo:</label>
-            <input id="stuName" placeholder="Ej. Juan Pérez">
-            
-            <label style="font-size:12px;">Correo de Acceso:</label>
-            <input id="stuEmail" type="email" placeholder="correo@ejemplo.com">
-            
-            <label style="font-size:12px;">Contraseña:</label>
-            <input id="stuPass" type="text" value="UCMI2026">
-
-            <label style="font-size:12px;">Modelo de Negocio:</label>
-            <select id="bizModel" onchange="toggleTeacherField()">
-                <option value="independiente">Alumno Independiente ℹ️</option>
-                <option value="embajador">Profesor Embajador ℹ️</option>
-                <option value="socio">Profesor Socio (Licencia) ℹ️</option>
-            </select>
-
-            <div id="explanationArea" style="margin-bottom: 10px;">
-                <div class="tooltip-container">¿Qué significa este modelo?
-                    <span class="tooltip-text" id="modelDesc">
-                        <b>Independiente:</b> El alumno paga directamente a UCMI. No tiene profesor vinculado.
-                    </span>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 sidebar d-none d-md-block">
+            <h3 class="fw-bold text-center mt-3">UCMI</h3>
+            <p class="text-center small text-muted">Consola Maestra</p>
+            <hr>
+            <nav class="nav flex-column">
+                <a class="nav-link text-white fw-bold" href="#">📊 Dashboard</a>
+                <p class="small text-uppercase text-white-50 mt-4 mb-2">Filtros</p>
+                <div class="ps-2">
+                    <div class="text-white-50 small mb-1">Academia: <span id="countAcademia">0</span></div>
+                    <div class="text-white-50 small mb-1">Embajadores: <span id="countEmbajador">0</span></div>
+                    <div class="text-white-50 small mb-1">Socios: <span id="countSocio">0</span></div>
+                    <div class="text-white-50 small mb-1">Alumnos: <span id="countAlumno">0</span></div>
                 </div>
-            </div>
-
-            <div id="teacherField" style="display:none; background: #f8fafc; padding: 10px; border-radius: 8px;">
-                <label style="font-size:12px; color: var(--accent);">Correo del Profesor Responsable:</label>
-                <input id="linkedTeacher" type="email" placeholder="profesor@ejemplo.com">
-            </div>
-
-            <label style="font-size:12px;">Vencimiento de Licencia:</label>
-            <input id="stuExp" type="date">
-
-            <label style="font-size:12px;">Rol de Sistema:</label>
-            <select id="stuRole">
-                <option value="student">Es Alumno</option>
-                <option value="teacher">Es Profesor</option>
-            </select>
-
-            <div id="msg" style="font-size:12px; margin-top:5px; font-weight:bold;"></div>
-            <button class="btn-blue" onclick="registerStudent()">Registrar en Auth y Firestore</button>
+            </nav>
         </div>
 
-        <div class="card">
-            <h3>👥 Base de Datos de Usuarios</h3>
-            <div id="userList"></div>
+        <div class="col-md-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">Solicitudes de Ingreso</h2>
+                <img src="logo_ucmi.png" alt="Logo" style="height: 50px;">
+            </div>
+
+            <div class="table-container p-3">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Solicitante / Email</th>
+                            <th>Perfil</th>
+                            <th>Programas</th>
+                            <th>Cupos/Meses</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaMaestra">
+                        </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <script type="module">
-    import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyCbZU7aTOgpkxFIH_s2dOiMiBANEWKPXA4",
-        authDomain: "portal-autenticacion-a1ngles.firebaseapp.com",
-        projectId: "portal-autenticacion-a1ngles",
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    // Lógica de Tooltips y visualización
-    window.toggleTeacherField = () => {
-        const model = document.getElementById("bizModel").value;
-        const field = document.getElementById("teacherField");
-        const desc = document.getElementById("modelDesc");
+    // 1. ESCUCHAR SOLICITUDES EN TIEMPO REAL
+    onSnapshot(collection(db, "postulaciones"), (snapshot) => {
+        const tbody = document.getElementById('listaMaestra');
+        tbody.innerHTML = '';
+        let counts = { Academia: 0, "Profesor Embajador": 0, "Profesor Socio": 0, "Alumno Autodidacta": 0 };
 
-        if(model === "independiente") {
-            field.style.display = "none";
-            desc.innerHTML = "<b>Independiente:</b> El alumno te paga directamente. No está vinculado a ningún profesor.";
-        } else if(model === "embajador") {
-            field.style.display = "block";
-            desc.innerHTML = "<b>Embajador:</b> El profesor te recomienda alumnos. El alumno te paga a ti, pero el profesor puede ver sus notas.";
-        } else {
-            field.style.display = "block";
-            desc.innerHTML = "<b>Socio:</b> Tú vendes un paquete de licencias al profesor. Él le cobra a sus alumnos. El alumno se vincula al profesor automáticamente.";
-        }
-    };
+        snapshot.forEach((d) => {
+            const data = d.data();
+            const id = d.id;
+            const perfil = data.tipoSolicitante || "Sin definir";
+            
+            if(counts[perfil] !== undefined) counts[perfil]++;
 
-    onAuthStateChanged(auth, (user) => {
-        if (user && user.email === "universitariodematematica@gmail.com") {
-            document.getElementById("loginSection").style.display = "none";
-            document.getElementById("adminPanel").style.display = "block";
-            syncData();
-        } else {
-            document.getElementById("loginSection").style.display = "block";
-            document.getElementById("adminPanel").style.display = "none";
-        }
+            const colorClase = perfil.includes("Academia") ? "bg-academia" : 
+                               perfil.includes("Embajador") ? "bg-embajador" :
+                               perfil.includes("Socio") ? "bg-socio" : "bg-alumno";
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${data.academia || data.director}</strong><br><small class="text-muted">${data.email}</small></td>
+                    <td><span class="badge-perfil ${colorClase}">${perfil}</span></td>
+                    <td><small>${data.programas}</small></td>
+                    <td>${data.cupos} cupos / ${data.meses}m</td>
+                    <td>
+                        <button onclick="aprobarYCrear('${id}')" class="btn btn-sm btn-success shadow-sm">Aceptar y Registrar</button>
+                        <button onclick="rechazar('${id}')" class="btn btn-sm btn-link text-danger">Eliminar</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('countAcademia').innerText = counts["Academia"];
+        document.getElementById('countEmbajador').innerText = counts["Profesor Embajador"];
+        document.getElementById('countSocio').innerText = counts["Profesor Socio"];
+        document.getElementById('countAlumno').innerText = counts["Alumno Autodidacta"];
     });
 
-    window.adminLogin = async () => {
-        const e = document.getElementById("adminEmail").value;
-        const p = document.getElementById("adminPass").value;
-        try { await signInWithEmailAndPassword(auth, e, p); } catch { alert("Error de acceso"); }
-    };
-
-    window.logout = async () => { await signOut(auth); window.location.reload(); };
-
-    window.registerStudent = async () => {
-        const name = document.getElementById("stuName").value.trim();
-        const email = document.getElementById("stuEmail").value.trim().toLowerCase();
-        const pass = document.getElementById("stuPass").value.trim();
-        const exp = document.getElementById("stuExp").value;
-        const role = document.getElementById("stuRole").value;
-        const model = document.getElementById("bizModel").value;
-        const teacher = document.getElementById("linkedTeacher").value.trim().toLowerCase();
-        const msg = document.getElementById("msg");
-
-        if(!name || !email || !pass || !exp) return msg.innerText = "⚠️ Completa todos los campos";
-
+    // 2. FUNCIÓN DE APROBACIÓN AUTOMÁTICA
+    window.aprobarYCrear = async (id) => {
         try {
-            msg.style.color = "blue";
-            msg.innerText = "⏳ Creando acceso dual...";
+            const docRef = doc(db, "postulaciones", id);
+            const docSnap = await getDoc(docRef);
 
-            // 1. Crear en Firestore
-            await setDoc(doc(db, "users", email), {
-                name: name,
-                email: email,
-                expiration: exp,
-                role: role,
-                bizModel: model,
-                teacherID: (model !== "independiente") ? teacher : "none"
-            });
+            if (docSnap.exists()) {
+                const datos = docSnap.data();
+                const passTemporal = "UCMI2026"; // Contraseña establecida por ti
 
-            // 2. Crear en Firebase Auth (Sin cerrar sesión actual)
-            const tempAppName = "TempApp_" + Date.now();
-            const tempApp = initializeApp(firebaseConfig, tempAppName);
-            const tempAuth = getAuth(tempApp);
-            
-            await createUserWithEmailAndPassword(tempAuth, email, pass);
-            await signOut(tempAuth);
-            await deleteApp(tempApp); // Limpiar memoria
+                // A. Crear en Auth
+                const userCredential = await createUserWithEmailAndPassword(auth, datos.email, passTemporal);
+                const newUid = userCredential.user.uid;
 
-            msg.style.color = "green";
-            msg.innerText = "✅ ¡Usuario creado en Auth y Base de Datos!";
-            
-            // Limpiar formulario
-            ["stuName", "stuEmail", "stuExp", "linkedTeacher"].forEach(id => document.getElementById(id).value = "");
-        } catch (e) {
-            msg.style.color = "red";
-            msg.innerText = "Error: " + e.message;
+                // B. Guardar en Colección Usuarios (Sincronizado)
+                await setDoc(doc(db, "usuarios", newUid), {
+                    nombre: datos.academia || datos.director,
+                    email: datos.email,
+                    rol: datos.tipoSolicitante,
+                    rif: datos.rif || "N/A",
+                    ubicacion: datos.ubicacion || "N/A",
+                    estado: "activo",
+                    fechaRegistro: new Date().toLocaleString()
+                });
+
+                // C. Borrar la postulación ya procesada
+                await deleteDoc(docRef);
+
+                alert(`¡Proceso Exitoso!\n\nUsuario: ${datos.email}\nClave: ${passTemporal}\n\nLa solicitud ha sido movida a la base de datos oficial.`);
+                
+                // Recargar para evitar conflictos de sesión de Firebase
+                location.reload();
+            }
+        } catch (error) {
+            console.error("Error en el despliegue:", error);
+            if(error.code === 'auth/email-already-in-use') {
+                alert("Este correo ya está registrado en el sistema UCMI.");
+            } else {
+                alert("Error al procesar el registro automático. Revisa la consola.");
+            }
         }
     };
 
-    function syncData() {
-        onSnapshot(collection(db, "users"), (snap) => {
-            const list = document.getElementById("userList");
-            list.innerHTML = "";
-            const hoy = new Date().toISOString().split('T')[0];
-            snap.forEach(d => {
-                const u = d.data(); if(u.role === 'admin') return;
-                const isExp = hoy > u.expiration;
-                list.innerHTML += `
-                    <div class="user-item">
-                        <div>
-                            <b>${u.name}</b> <span class="badge ${u.role === 'teacher' ? 'active' : ''}">${u.role.toUpperCase()}</span>
-                            <span class="info-tag">Modelo: ${u.bizModel || 'independiente'}</span>
-                            <span class="info-tag">Profesor: ${u.teacherID || 'Ninguno'}</span>
-                            <small>${u.email}</small> 
-                            <span class="badge ${isExp?'expired':'active'}">${isExp?'EXPIRADO':u.expiration}</span>
-                        </div>
-                        <button class="btn-red" onclick="deleteUser('${d.id}')">✖</button>
-                    </div>`;
-            });
-        });
-    }
-
-    window.deleteUser = async (id) => { if(confirm("¿Eliminar usuario por completo?")) await deleteDoc(doc(db, "users", id)); };
+    window.rechazar = async (id) => {
+        if(confirm("¿Estás seguro de eliminar esta solicitud sin registrarla?")) {
+            await deleteDoc(doc(db, "postulaciones", id));
+        }
+    };
 </script>
 </body>
 </html>
