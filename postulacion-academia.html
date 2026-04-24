@@ -7,14 +7,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --azul-ucmi: #1a2a3a; --azul-intenso: #003366; --dorado-ucmi: #c5a059; }
+        :root { --azul-ucmi: #1a2a3a; --azul-intenso: #003366; --dorado-ucmi: #c5a059; --rojo-error: #dc3545; }
         body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; padding: 40px 0; }
         .card-form { border: none; border-radius: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); background: white; max-width: 850px; margin: auto; overflow: hidden; }
         .header-minimalista { text-align: center; padding: 50px 20px 20px 20px; }
         .header-minimalista h2 { color: var(--azul-ucmi); font-weight: 800; font-size: 1.7rem; text-transform: uppercase; margin-top: 20px; }
-        .instruccion-azul { color: var(--azul-intenso); font-weight: 700; font-size: 1.1rem; margin-top: 10px; }
         .linea-decorativa { width: 70px; height: 4px; background: var(--dorado-ucmi); margin: 25px auto; border-radius: 2px; }
-        .form-control, .form-select { border-radius: 12px; padding: 14px; border: 1.5px solid #dee2e6; }
+        
+        /* Validación visual */
+        .form-control:invalid:focus { border-color: var(--rojo-error); box-shadow: 0 0 0 0.25 margin-rgba(220, 53, 69, 0.25); }
+        .is-invalid { border: 2px solid var(--rojo-error) !important; }
+        
+        .form-control, .form-select { border-radius: 12px; padding: 14px; border: 1.5px solid #dee2e6; transition: 0.3s; }
         .seccion-dinamica { display: none; animation: slideIn 0.3s ease-out; background: #fbfbfb; padding: 20px; border-radius: 15px; border: 1px solid #eee; margin-top: 15px; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .program-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #ddd; }
@@ -30,15 +34,14 @@
         <div class="header-minimalista">
             <img src="logo_ucmi.png" alt="Logo UCMI" style="height: 120px; width: auto;">
             <h2>Universitario de Ciencias Matemáticas e Idiomas</h2>
-            <p class="instruccion-azul">Registro de Postulación Institucional</p>
             <div class="linea-decorativa"></div>
         </div>
 
-        <form id="formUCMI" class="p-4 p-md-5 pt-0">
+        <form id="formUCMI" class="p-4 p-md-5 pt-0" novalidate>
             <div class="mb-4">
                 <label class="form-label fw-bold">Tipo de Postulante:</label>
                 <select class="form-select form-select-lg" id="perfilPrincipal" required onchange="gestionarFlujo()">
-                    <option value="" selected disabled>Seleccione...</option>
+                    <option value="" selected disabled>Seleccione una opción...</option>
                     <option value="Academia">Academia</option>
                     <option value="Independiente">Profesor Independiente</option>
                     <option value="Estudiante autodidacta">Estudiante autodidacta</option>
@@ -55,17 +58,38 @@
 
             <div id="cuerpoFormulario" style="display: none;">
                 <div class="row g-3">
-                    <div class="col-md-6"><input type="text" id="nombreInput" class="form-control" placeholder="Nombre" required></div>
-                    <div class="col-md-6"><input type="email" id="emailInput" class="form-control" placeholder="Correo electrónico" required></div>
-                    <div class="col-md-6"><input type="text" id="whatsappInput" class="form-control" placeholder="WhatsApp" required></div>
-                    <div class="col-md-6"><input type="text" id="ubicacionInput" class="form-control" placeholder="Ciudad y País" required></div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold">Nombre Completo:</label>
+                        <input type="text" id="nombreInput" class="form-control" placeholder="Ej: Juan Pérez" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold">Correo Electrónico:</label>
+                        <input type="email" id="emailInput" class="form-control" placeholder="correo@ejemplo.com" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold">WhatsApp (con código de país):</label>
+                        <input type="text" id="whatsappInput" class="form-control" placeholder="+58 412..." required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold">Ciudad y País:</label>
+                        <input type="text" id="ubicacionInput" class="form-control" placeholder="Caracas, Venezuela" required>
+                    </div>
                 </div>
 
                 <div id="camposAcademia" class="seccion-dinamica">
                     <div class="row g-3">
-                        <div class="col-12"><input type="text" id="entidadInput" class="form-control" placeholder="Nombre de la Institución"></div>
-                        <div class="col-md-6"><input type="text" id="rifInput" class="form-control" placeholder="RIF / Registro"></div>
-                        <div class="col-md-6"><input type="number" id="cuposInput" class="form-control" placeholder="Cantidad de cupos"></div>
+                        <div class="col-12">
+                            <label class="small fw-bold">Nombre de la Institución:</label>
+                            <input type="text" id="entidadInput" class="form-control" placeholder="Academia Superior de..." required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small fw-bold">RIF / Registro Fiscal:</label>
+                            <input type="text" id="rifInput" class="form-control" placeholder="J-12345678" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small fw-bold">Cupos Solicitados:</label>
+                            <input type="number" id="cuposInput" class="form-control" placeholder="Ej: 150" required min="1">
+                        </div>
                     </div>
                 </div>
 
@@ -73,17 +97,17 @@
                 <div class="check-all-container">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="selectAll">
-                        <label class="form-check-label fw-bold" for="selectAll">Seleccionar todos</label>
+                        <label class="form-check-label fw-bold" for="selectAll">Seleccionar todos los programas</label>
                     </div>
                 </div>
                 <div class="program-grid mb-3" id="gridProgramas"></div>
                 
                 <div class="mb-3">
-                    <label class="form-label fw-bold small">Duración de licencia (meses):</label>
-                    <input type="number" id="mesesInput" class="form-control" placeholder="Ej: 30" required>
+                    <label class="form-label fw-bold small">Duración del contrato (meses):</label>
+                    <input type="number" id="mesesInput" class="form-control" placeholder="Ej: 30" required min="1">
                 </div>
 
-                <button type="submit" id="btnSubmit" class="btn btn-enviar shadow">ENVIAR Y ABRIR COMPROBANTE</button>
+                <button type="submit" id="btnSubmit" class="btn btn-enviar shadow">ENVIAR POSTULACIÓN</button>
             </div>
         </form>
     </div>
@@ -117,49 +141,73 @@
 
     window.gestionarFlujo = () => {
         const principal = document.getElementById('perfilPrincipal').value;
+        const academiaCampos = document.querySelectorAll('#camposAcademia input');
+        
         document.getElementById('cuerpoFormulario').style.display = 'block';
         document.getElementById('subSeccionProfesor').style.display = (principal === 'Independiente') ? 'block' : 'none';
-        document.getElementById('camposAcademia').style.display = (principal === 'Academia') ? 'block' : 'none';
+        
+        if (principal === 'Academia') {
+            document.getElementById('camposAcademia').style.display = 'block';
+            academiaCampos.forEach(i => i.required = true);
+        } else {
+            document.getElementById('camposAcademia').style.display = 'none';
+            academiaCampos.forEach(i => i.required = false);
+        }
     };
 
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const form = e.target;
         const btn = document.getElementById('btnSubmit');
+
+        // VALIDACIÓN DE CAMPOS VACÍOS
+        if (!form.checkValidity()) {
+            e.stopPropagation();
+            form.classList.add('was-validated');
+            // Marcar visualmente los inválidos
+            form.querySelectorAll(':invalid').forEach(el => el.classList.add('is-invalid'));
+            alert("Por favor, rellene todos los campos marcados en rojo.");
+            return;
+        }
+
         btn.disabled = true;
+        btn.innerText = "Registrando...";
 
         const principal = document.getElementById('perfilPrincipal').value;
         const tipoFinal = (principal === 'Independiente') ? document.getElementById('subTipoProfesor').value : principal;
-        const programasTexto = Array.from(document.querySelectorAll('.prog-check:checked')).map(c => c.value).join(", ");
+        const programasSel = Array.from(document.querySelectorAll('.prog-check:checked')).map(c => c.value).join(", ");
 
-        // MAPEADO EXACTO PARA EL ADMIN QUE ME PASASTE:
+        // VALORES NUMÉRICOS PUROS (Asegura que 150 sea 150)
+        const nCupos = (principal === "Academia") ? parseInt(document.getElementById('cuposInput').value) : 1;
+        const nMeses = parseInt(document.getElementById('mesesInput').value);
+
         const datos = {
             tipoSolicitante: tipoFinal,
-            perfil: tipoFinal, // duplicado por seguridad
-            director: document.getElementById('nombreInput').value,
-            email: document.getElementById('emailInput').value,
-            telefono: document.getElementById('whatsappInput').value, // El admin busca "telefono"
-            ubicacion: document.getElementById('ubicacionInput').value,
-            programas: programasTexto || "N/A",
-            meses: document.getElementById('mesesInput').value, // El admin busca "meses"
+            perfil: tipoFinal,
+            director: document.getElementById('nombreInput').value.trim(),
+            email: document.getElementById('emailInput').value.trim(),
+            telefono: document.getElementById('whatsappInput').value.trim(),
+            ubicacion: document.getElementById('ubicacionInput').value.trim(),
+            programas: programasSel || "Sin programas específicos",
+            meses: nMeses, // Número puro para el Admin
+            cupos: nCupos, // Número puro para el Admin
             fecha: new Date().toLocaleString()
         };
 
         if (principal === "Academia") {
-            datos.academia = document.getElementById('entidadInput').value || "No especificada"; // El admin busca "academia"
-            datos.rif = document.getElementById('rifInput').value || "N/A";
-            datos.cupos = document.getElementById('cuposInput').value; // Valor directo
+            datos.academia = document.getElementById('entidadInput').value.trim();
+            datos.rif = document.getElementById('rifInput').value.trim();
         } else {
             datos.academia = "N/A";
             datos.rif = "N/A";
-            datos.cupos = "1"; // Valor por defecto
         }
 
         try {
             await addDoc(collection(db, "postulaciones"), datos);
             generarPDF(datos);
-            setTimeout(() => location.reload(), 2000);
+            setTimeout(() => location.reload(), 2500);
         } catch (err) {
-            alert("Error");
+            alert("Error al enviar. Verifique su conexión.");
             btn.disabled = false;
         }
     });
@@ -172,32 +220,39 @@
         img.onload = () => {
             doc.setFillColor(26, 42, 58); doc.rect(0, 0, 210, 45, 'F');
             try { doc.addImage(img, 'PNG', 15, 7, 30, 30); } catch(e){}
-            doc.setTextColor(255, 255, 255); doc.setFontSize(16);
+            doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont(undefined, 'bold');
             doc.text("UNIVERSITARIO DE CIENCIAS", 55, 20);
             doc.text("MATEMÁTICAS E IDIOMAS", 55, 28);
-            doc.setTextColor(0, 0, 0); doc.setFontSize(11); doc.setFont(undefined, 'bold');
-            doc.text(`SOLICITUD: ${d.tipoSolicitante.toUpperCase()}`, 20, 58);
+            
+            doc.setTextColor(0, 0, 0); doc.setFontSize(11);
+            doc.text(`REGISTRO DE POSTULACIÓN: ${d.perfil.toUpperCase()}`, 20, 58);
             doc.setFontSize(9); doc.setFont(undefined, 'normal');
-            doc.text(`FECHA: ${d.fecha}`, 130, 58);
+            doc.text(`FECHA: ${d.fecha}`, 140, 58);
             doc.line(20, 62, 190, 62);
+            
             let y = 75;
             const filas = [
-                ["DIRECTOR:", d.director],
+                ["DIRECTOR / RESPONSABLE:", d.director],
                 ["WHATSAPP:", d.telefono],
                 ["EMAIL:", d.email],
-                ["ENTIDAD:", d.academia],
-                ["RIF:", d.rif],
-                ["CUPOS:", d.cupos],
-                ["DURACIÓN:", d.meses + " meses"],
-                ["PROGRAMAS:", d.programas]
+                ["INSTITUCIÓN / ENTIDAD:", d.academia],
+                ["RIF / ID FISCAL:", d.rif],
+                ["CANTIDAD DE CUPOS:", String(d.cupos)], // Fuerza string para evitar errores de librería
+                ["TIEMPO DE LICENCIA:", d.meses + " meses"],
+                ["PROGRAMAS SOLICITADOS:", d.programas]
             ];
+
             filas.forEach(f => {
                 doc.setFont(undefined, 'bold'); doc.text(f[0], 20, y);
                 doc.setFont(undefined, 'normal'); 
-                const st = doc.splitTextToSize(String(f[1]), 130);
-                doc.text(st, 65, y);
-                y += (st.length * 8);
+                const st = doc.splitTextToSize(String(f[1]), 120);
+                doc.text(st, 75, y);
+                y += (st.length * 8) + 2;
             });
+            
+            doc.setFontSize(8); doc.setTextColor(100);
+            doc.text("Este documento es un comprobante de solicitud y no garantiza la activación hasta que sea procesado por administración.", 20, 280);
+            
             window.open(doc.output('bloburl'), '_blank');
         };
         img.onerror = () => window.open(doc.output('bloburl'), '_blank');
