@@ -20,6 +20,7 @@
         @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .btn-enviar { background: var(--azul-ucmi); color: white; font-weight: bold; padding: 18px; border-radius: 15px; border: none; font-size: 1.2rem; transition: 0.3s; width: 100%; }
         .btn-enviar:hover { background: var(--azul-intenso); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .program-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; background: white; padding: 15px; border-radius: 12px; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
@@ -35,7 +36,7 @@
 
         <form id="formUCMI" class="p-4 p-md-5 pt-0">
             <div class="mb-4">
-                <label class="form-label fw-bold">¿En qué calidad se postula?</label>
+                <label class="form-label fw-bold text-dark">¿En qué calidad se postula?</label>
                 <select class="form-select form-select-lg" id="selectorPerfil" required onchange="alternarCampos()">
                     <option value="" selected disabled>Elija una modalidad...</option>
                     <option value="ACADEMIA">Academia o Institución</option>
@@ -46,19 +47,35 @@
 
             <div id="datosComunes" style="display: none;">
                 <div class="row g-3">
-                    <div class="col-md-6"><input type="text" id="nombrePostulante" class="form-control" placeholder="Nombre Completo / Director" required></div>
-                    <div class="col-md-6"><input type="email" id="emailPostulante" class="form-control" placeholder="Correo Electrónico (Sin tildes)" required></div>
-                    <div class="col-md-6"><input type="text" id="whatsappPostulante" class="form-control" placeholder="WhatsApp (Ej: +584...)" required></div>
+                    <div class="col-md-6"><input type="text" id="nombrePostulante" class="form-control" placeholder="Nombre Completo" required></div>
+                    <div class="col-md-6"><input type="email" id="emailPostulante" class="form-control" placeholder="Correo (Sin tildes)" required></div>
+                    <div class="col-md-6"><input type="text" id="whatsappPostulante" class="form-control" placeholder="WhatsApp (Ej: +58...)" required></div>
                     <div class="col-md-6"><input type="text" id="ubicacionPostulante" class="form-control" placeholder="Ciudad y País" required></div>
                 </div>
                 <hr class="my-4">
+            </div>
+
+            <div id="seccionProgramas" class="seccion-dinamica">
+                <h6 class="text-primary fw-bold mb-3">PROGRAMAS DE INTERÉS Y DURACIÓN</h6>
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label class="small fw-bold mb-2">Seleccione los programas:</label>
+                        <div class="program-grid" id="listaProgramas">
+                            </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <input type="text" id="duracionPrograma" class="form-control" placeholder="Duración estimada (Ej: 6 meses, 1 año, intensivo)">
+                    </div>
+                </div>
             </div>
 
             <div id="camposAcademia" class="seccion-dinamica">
                 <h6 class="text-primary fw-bold mb-3">DATOS INSTITUCIONALES</h6>
                 <div class="row g-3">
                     <div class="col-12"><input type="text" id="nombreEntidad" class="form-control" placeholder="Nombre de la Academia"></div>
-                    <div class="col-md-6"><input type="text" id="rifEntidad" class="form-control" placeholder="RIF / Identificación Fiscal"></div>
+                    <div class="col-md-6"><input type="text" id="rifEntidad" class="form-control" placeholder="RIF / ID Fiscal"></div>
                     <div class="col-md-6"><input type="number" id="cuposEntidad" class="form-control" placeholder="Cupos Solicitados"></div>
                 </div>
             </div>
@@ -67,21 +84,16 @@
                 <h6 class="text-primary fw-bold mb-3">MODELO DE COLABORACIÓN</h6>
                 <div class="form-check p-3 border rounded mb-2 bg-white">
                     <input class="form-check-input ms-0" type="radio" name="tipoProfesor" id="profSocio" value="SOCIO" checked>
-                    <label class="form-check-label ms-4" for="profSocio"><strong>Profesor Socio:</strong> Yo gestiono y vendo mis propios cupos.</label>
+                    <label class="ms-4" for="profSocio"><strong>Profesor Socio:</strong> Yo gestiono mis propios cupos.</label>
                 </div>
                 <div class="form-check p-3 border rounded bg-white">
                     <input class="form-check-input ms-0" type="radio" name="tipoProfesor" id="profEmbajador" value="EMBAJADOR">
-                    <label class="form-check-label ms-4" for="profEmbajador"><strong>Profesor Embajador:</strong> UCMI gestiona y vende los cupos por mí.</label>
+                    <label class="ms-4" for="profEmbajador"><strong>Profesor Embajador:</strong> UCMI gestiona los cupos.</label>
                 </div>
             </div>
 
-            <div id="camposEstudiante" class="seccion-dinamica">
-                <h6 class="text-primary fw-bold mb-3">INTERÉS ACADÉMICO</h6>
-                <textarea id="interesEstudiante" class="form-control" rows="3" placeholder="Indique áreas de interés..."></textarea>
-            </div>
-
             <div id="footerForm" class="mt-4" style="display: none;">
-                <button type="submit" id="btnSubmit" class="btn btn-enviar shadow">ENVIAR POSTULACIÓN Y VER COMPROBANTE</button>
+                <button type="submit" id="btnSubmit" class="btn btn-enviar shadow">ENVIAR Y VER COMPROBANTE OFICIAL</button>
             </div>
         </form>
     </div>
@@ -103,26 +115,47 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    const programas = [
+        "Matemática AGEM", "Física", "Química", "Biología", "Lógica", 
+        "Estadística", "Razonamiento numérico", "Razonamiento abstracto", 
+        "Lengua", "Inglés A1", "Inglés A2", "Inglés B1", "Inglés B1+", 
+        "Inglés B2", "Inglés B2+", "Inglés C1"
+    ];
+
+    // Cargar programas en el diseño
+    const grid = document.getElementById('listaProgramas');
+    programas.forEach(p => {
+        grid.innerHTML += `<div class="form-check">
+            <input class="form-check-input" type="checkbox" value="${p}" id="check_${p.replace(/\s/g,'')}">
+            <label class="form-check-label small" for="check_${p.replace(/\s/g,'')}">${p}</label>
+        </div>`;
+    });
+
     window.alternarCampos = () => {
         const perfil = document.getElementById('selectorPerfil').value;
         document.querySelectorAll('.seccion-dinamica').forEach(s => s.style.display = 'none');
         document.getElementById('datosComunes').style.display = 'block';
         document.getElementById('footerForm').style.display = 'block';
+
+        if(perfil === 'ACADEMIA' || perfil === 'ESTUDIANTE') document.getElementById('seccionProgramas').style.display = 'block';
         if(perfil === 'ACADEMIA') document.getElementById('camposAcademia').style.display = 'block';
         if(perfil === 'PROFESOR') document.getElementById('camposProfesor').style.display = 'block';
-        if(perfil === 'ESTUDIANTE') document.getElementById('camposEstudiante').style.display = 'block';
     };
 
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnSubmit');
         btn.disabled = true;
-        btn.innerText = "Abriendo Comprobante...";
+        btn.innerText = "Generando Documento...";
 
         const seleccion = document.getElementById('selectorPerfil').value;
         let perfilAsignado = (seleccion === "ACADEMIA") ? "Academia" : 
                          (seleccion === "PROFESOR") ? (document.getElementById('profSocio').checked ? "Profesor Socio" : "Profesor Embajador") : 
                          "Estudiante Autodidacta";
+
+        // Obtener programas seleccionados
+        const elegidos = [];
+        document.querySelectorAll('#listaProgramas input:checked').forEach(c => elegidos.push(c.value));
 
         const datos = {
             tipoSolicitante: perfilAsignado,
@@ -130,19 +163,20 @@
             email: document.getElementById('emailPostulante').value,
             telefono: document.getElementById('whatsappPostulante').value,
             ubicacion: document.getElementById('ubicacionPostulante').value,
+            programas: elegidos.join(", ") || "No especificado",
+            duracion: document.getElementById('duracionPrograma').value || "N/A",
             academia: document.getElementById('nombreEntidad')?.value || "N/A",
             rif: document.getElementById('rifEntidad')?.value || "N/A",
             cupos: document.getElementById('cuposEntidad')?.value || "1",
-            interes: document.getElementById('interesEstudiante')?.value || "N/A",
             fecha: new Date().toLocaleString()
         };
 
         try {
             await addDoc(collection(db, "postulaciones"), datos);
             generarYAbrirPDF(datos);
-            setTimeout(() => { window.location.reload(); }, 2000);
+            setTimeout(() => { window.location.reload(); }, 3000);
         } catch (error) {
-            alert("Error de conexión. Verifique el formato del correo.");
+            alert("Error al conectar con Firebase.");
             btn.disabled = false;
         }
     });
@@ -154,54 +188,47 @@
         img.src = 'logo_ucmi.png';
 
         img.onload = function() {
-            // Cabecera institucional
             doc.setFillColor(26, 42, 58);
             doc.rect(0, 0, 210, 45, 'F');
-            try { doc.addImage(img, 'PNG', 15, 7, 30, 30); } catch (e) {}
+            try { doc.addImage(img, 'PNG', 15, 7, 30, 30); } catch(e){}
             
             doc.setTextColor(255, 255, 255);
-            doc.setFontSize(16);
-            doc.setFont(undefined, 'bold');
+            doc.setFontSize(16); doc.setFont(undefined, 'bold');
             doc.text("UNIVERSITARIO DE CIENCIAS", 55, 20);
             doc.text("MATEMÁTICAS E IDIOMA", 55, 28);
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'normal');
+            doc.setFontSize(10); doc.setFont(undefined, 'normal');
             doc.text("COMPROBANTE OFICIAL DE REGISTRO", 55, 36);
 
-            // Contenido
             doc.setTextColor(0, 0, 0);
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'bold');
+            doc.setFontSize(11); doc.setFont(undefined, 'bold');
             doc.text(`PERFIL: ${d.tipoSolicitante.toUpperCase()}`, 20, 60);
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'normal');
-            doc.text(`Fecha: ${d.fecha}`, 20, 68);
-            doc.line(20, 72, 190, 72);
+            doc.text(`FECHA: ${d.fecha}`, 140, 60);
+            doc.line(20, 65, 190, 65);
 
-            let y = 85;
-            const filas = [["POSTULANTE:", d.director], ["EMAIL:", d.email], ["UBICACIÓN:", d.ubicacion]];
+            let y = 75;
+            const filas = [
+                ["NOMBRE:", d.director], ["EMAIL:", d.email], ["UBICACIÓN:", d.ubicacion],
+                ["DURACIÓN:", d.duracion], ["PROGRAMAS:", d.programas]
+            ];
+            
             if(d.tipoSolicitante === "Academia") {
                 filas.push(["INSTITUCIÓN:", d.academia], ["RIF/ID:", d.rif], ["CUPOS:", d.cupos]);
             }
-            
+
             filas.forEach(f => {
-                doc.setFont(undefined, 'bold'); doc.text(f[0], 25, y);
-                doc.setFont(undefined, 'normal'); doc.text(f[1], 70, y);
-                y += 10;
+                doc.setFont(undefined, 'bold'); doc.text(f[0], 20, y);
+                doc.setFont(undefined, 'normal'); 
+                const textSplit = doc.splitTextToSize(f[1], 120);
+                doc.text(textSplit, 60, y);
+                y += (textSplit.length * 7);
             });
 
-            doc.setFontSize(8);
-            doc.setTextColor(150);
-            doc.text("Documento generado automáticamente por el sistema UCMI 2026.", 105, 285, { align: 'center' });
-
-            // ABRIR AUTOMÁTICAMENTE EN PESTAÑA NUEVA
+            doc.setFontSize(8); doc.setTextColor(150);
+            doc.text("Universitario UCMI 2026 - Documento de carácter informativo.", 105, 285, { align: 'center' });
+            
             window.open(doc.output('bloburl'), '_blank');
         };
-        
-        img.onerror = function() {
-            // Si el logo falla, abrir de todas formas para no trabar el proceso
-            window.open(doc.output('bloburl'), '_blank');
-        };
+        img.onerror = () => { window.open(doc.output('bloburl'), '_blank'); };
     }
 </script>
 </body>
