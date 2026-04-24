@@ -56,9 +56,7 @@
 
             <div id="cuerpoFormulario" style="display: none;">
                 <div class="row g-3">
-                    <div class="col-md-6">
-                        <input type="text" id="nombrePersona" class="form-control" placeholder="Nombre" required>
-                    </div>
+                    <div class="col-md-6"><input type="text" id="nombrePersona" class="form-control" placeholder="Nombre" required></div>
                     <div class="col-md-6"><input type="email" id="emailPersona" class="form-control" placeholder="Correo (Sin tildes)" required></div>
                     <div class="col-md-6"><input type="text" id="whatsappPersona" class="form-control" placeholder="WhatsApp" required></div>
                     <div class="col-md-6"><input type="text" id="ubicacionPersona" class="form-control" placeholder="Ciudad y País" required></div>
@@ -109,15 +107,13 @@
     const db = getFirestore(app);
 
     const programas = ["Matemática AGEM", "Física", "Química", "Biología", "Lógica", "Estadística", "Razonamiento numérico", "Razonamiento abstracto", "Lengua", "Inglés A1", "Inglés A2", "Inglés B1", "Inglés B1+", "Inglés B2", "Inglés B2+", "Inglés C1"];
-    
     const grid = document.getElementById('gridProgramas');
     programas.forEach(p => {
         grid.innerHTML += `<div class="form-check"><input class="form-check-input prog-check" type="checkbox" value="${p}" id="chk_${p.replace(/\s/g,'')}"><label class="form-check-label small" for="chk_${p.replace(/\s/g,'')}">${p}</label></div>`;
     });
 
     document.getElementById('selectAll').addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('.prog-check');
-        checkboxes.forEach(cb => cb.checked = this.checked);
+        document.querySelectorAll('.prog-check').forEach(cb => cb.checked = this.checked);
     });
 
     window.gestionarFlujo = () => {
@@ -129,7 +125,7 @@
 
         if (principal === 'Academia') campoNombre.placeholder = "Nombre del responsable";
         else if (principal === 'Independiente') campoNombre.placeholder = "Nombre del profesor";
-        else if (principal === 'Estudiante autodidacta') campoNombre.placeholder = "Nombre del estudiante";
+        else campoNombre.placeholder = "Nombre del estudiante";
     };
 
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
@@ -139,11 +135,11 @@
 
         const principal = document.getElementById('perfilPrincipal').value;
         let tipoFinal = (principal === 'Independiente') ? document.getElementById('subTipoProfesor').value : principal;
+        const seleccionados = Array.from(document.querySelectorAll('.prog-check:checked')).map(c => c.value);
 
-        const seleccionados = [];
-        document.querySelectorAll('.prog-check:checked').forEach(c => seleccionados.push(c.value));
+        // Captura forzada de cupos
+        const cuposInput = document.getElementById('cuposEntidad').value;
 
-        // CAPTURA DE DATOS LIMPIA
         const datos = {
             tipoSolicitante: tipoFinal,
             nombreResponsable: document.getElementById('nombrePersona').value,
@@ -155,20 +151,16 @@
             fecha: new Date().toLocaleString()
         };
 
-        // Lógica de campos condicionales para evitar el "indefinido"
+        // Lógica de validación de campos según perfil
         if (tipoFinal === "Academia") {
             datos.entidad = document.getElementById('nombreEntidad').value || "No especificada";
             datos.rif = document.getElementById('rifEntidad').value || "No aplica";
-            datos.cupos = document.getElementById('cuposEntidad').value || "0";
+            datos.cupos = cuposInput || "0";
         } else if (tipoFinal === "Profesor asociado") {
             datos.entidad = "No aplica (Independiente)";
             datos.rif = "No aplica";
-            datos.cupos = "Solicitados"; // Tú pediste que apareciera que sí tiene cupos
-        } else if (tipoFinal === "Profesor embajador") {
-            datos.entidad = "No aplica (Independiente)";
-            datos.rif = "No aplica";
-            datos.cupos = "No aplica";
-        } else { // Estudiante
+            datos.cupos = "Gestión propia"; 
+        } else {
             datos.entidad = "No aplica";
             datos.rif = "No aplica";
             datos.cupos = "No aplica";
@@ -220,11 +212,7 @@
                 const st = doc.splitTextToSize(f[1], 130);
                 doc.text(st, 60, y);
                 y += (st.length * 8);
-                if (y > 270) { doc.addPage(); y = 20; }
             });
-            
-            doc.setFontSize(8); doc.setTextColor(150);
-            doc.text("Universitario UCMI 2026 - Registro de Postulación Oficial.", 105, 285, { align: 'center' });
             window.open(doc.output('bloburl'), '_blank');
         };
         img.onerror = () => window.open(doc.output('bloburl'), '_blank');
