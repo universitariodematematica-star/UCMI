@@ -16,11 +16,11 @@
         .instruccion-azul { color: var(--azul-intenso); font-weight: 700; font-size: 1.1rem; margin-top: 10px; }
         .linea-decorativa { width: 70px; height: 4px; background: var(--dorado-ucmi); margin: 25px auto; border-radius: 2px; }
         .form-control, .form-select { border-radius: 12px; padding: 14px; border: 1.5px solid #dee2e6; }
-        .seccion-dinamica { display: none; animation: slideIn 0.4s ease-out; background: #fbfbfb; padding: 25px; border-radius: 20px; margin-bottom: 25px; border: 1px solid #eee; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        .program-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #ddd; }
-        .btn-enviar { background: var(--azul-ucmi); color: white; font-weight: bold; padding: 18px; border-radius: 15px; border: none; font-size: 1.2rem; transition: 0.3s; width: 100%; }
-        .btn-enviar:hover { background: var(--azul-intenso); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .seccion-dinamica { display: none; animation: slideIn 0.3s ease-out; background: #fbfbfb; padding: 20px; border-radius: 15px; border: 1px solid #eee; margin-top: 15px; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .program-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #ddd; }
+        .btn-enviar { background: var(--azul-ucmi); color: white; font-weight: bold; padding: 18px; border-radius: 15px; border: none; font-size: 1.2rem; width: 100%; margin-top: 25px; transition: 0.3s; }
+        .btn-enviar:hover { background: var(--azul-intenso); transform: translateY(-3px); }
     </style>
 </head>
 <body>
@@ -30,51 +30,54 @@
         <div class="header-minimalista">
             <img src="logo_ucmi.png" id="imgLogo" alt="Logo UCMI" style="height: 120px; width: auto;">
             <h2>Universitario de Ciencias Matemáticas e Idiomas</h2>
-            <p class="instruccion-azul">Registro de Postulación Oficial</p>
+            <p class="instruccion-azul">Registro de Postulación Institucional</p>
             <div class="linea-decorativa"></div>
         </div>
 
         <form id="formUCMI" class="p-4 p-md-5 pt-0">
             <div class="mb-4">
-                <label class="form-label fw-bold">Seleccione su Perfil:</label>
-                <select class="form-select form-select-lg" id="selectorPerfil" required onchange="alternarCampos()">
-                    <option value="" selected disabled>Elija una opción...</option>
-                    <option value="Academia">1. Academia</option>
-                    <option value="Profesor Socio">2. Profesor Socio</option>
-                    <option value="Profesor Embajador">3. Profesor Embajador</option>
-                    <option value="Estudiante Autodidacta">4. Estudiante Autodidacta</option>
+                <label class="form-label fw-bold">Tipo de Postulante:</label>
+                <select class="form-select form-select-lg" id="perfilPrincipal" required onchange="gestionarFlujo()">
+                    <option value="" selected disabled>Seleccione...</option>
+                    <option value="Academia">Academia</option>
+                    <option value="Independiente">Profesor Independiente</option>
+                    <option value="Estudiante autodidacta">Estudiante autodidacta</option>
                 </select>
             </div>
 
-            <div id="bloqueGlobal" style="display: none;">
-                <div class="row g-3">
-                    <div class="col-md-6"><input type="text" id="nombrePostulante" class="form-control" placeholder="Nombre Completo" required></div>
-                    <div class="col-md-6"><input type="email" id="emailPostulante" class="form-control" placeholder="Correo (Sin tildes)" required></div>
-                    <div class="col-md-6"><input type="text" id="whatsappPostulante" class="form-control" placeholder="WhatsApp" required></div>
-                    <div class="col-md-6"><input type="text" id="ubicacionPostulante" class="form-control" placeholder="Ciudad y País" required></div>
-                </div>
-                <hr class="my-4">
+            <div id="subSeccionProfesor" class="seccion-dinamica mb-4">
+                <label class="form-label fw-bold text-primary">Modalidad de Profesor:</label>
+                <select class="form-select" id="subTipoProfesor">
+                    <option value="Profesor asociado" selected>Profesor asociado</option>
+                    <option value="Profesor embajador">Profesor embajador</option>
+                </select>
+            </div>
 
-                <h6 class="text-primary fw-bold mb-3 text-uppercase">Programas Solicitados y Licencia</h6>
-                <div class="program-grid mb-3" id="gridProgramas"></div>
-                
-                <div class="mb-4">
-                    <label class="form-label fw-bold small">Duración de la licencia (en meses):</label>
-                    <input type="number" id="duracionLicencia" class="form-control" placeholder="Ej: 12" required>
+            <div id="cuerpoFormulario" style="display: none;">
+                <div class="row g-3">
+                    <div class="col-md-6"><input type="text" id="nombre" class="form-control" placeholder="Nombre Completo" required></div>
+                    <div class="col-md-6"><input type="email" id="email" class="form-control" placeholder="Correo (Sin tildes)" required></div>
+                    <div class="col-md-6"><input type="text" id="whatsapp" class="form-control" placeholder="WhatsApp" required></div>
+                    <div class="col-md-6"><input type="text" id="ubicacion" class="form-control" placeholder="Ciudad y País" required></div>
                 </div>
 
                 <div id="camposAcademia" class="seccion-dinamica">
-                    <h6 class="text-primary fw-bold mb-3 text-uppercase">Datos Institucionales</h6>
                     <div class="row g-3">
-                        <div class="col-12"><input type="text" id="nombreEntidad" class="form-control" placeholder="Nombre de la Institución"></div>
-                        <div class="col-md-6"><input type="text" id="rifEntidad" class="form-control" placeholder="RIF / ID Fiscal"></div>
-                        <div class="col-md-6"><input type="number" id="cuposEntidad" class="form-control" placeholder="Cupos Solicitados"></div>
+                        <div class="col-12"><input type="text" id="nombreAcademia" class="form-control" placeholder="Nombre de la Institución"></div>
+                        <div class="col-md-6"><input type="text" id="rif" class="form-control" placeholder="RIF / Registro"></div>
+                        <div class="col-md-6"><input type="number" id="cupos" class="form-control" placeholder="Cupos Solicitados"></div>
                     </div>
                 </div>
 
-                <div id="footerForm" class="mt-4">
-                    <button type="submit" id="btnSubmit" class="btn btn-enviar shadow">ENVIAR Y VER COMPROBANTE OFICIAL</button>
+                <h6 class="mt-4 fw-bold text-uppercase small text-secondary">Programas Académicos</h6>
+                <div class="program-grid mb-3" id="gridProgramas"></div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Duración de licencia (meses):</label>
+                    <input type="number" id="meses" class="form-control" placeholder="Ej: 12" required>
                 </div>
+
+                <button type="submit" id="btnSubmit" class="btn btn-enviar shadow">ENVIAR Y ABRIR COMPROBANTE</button>
             </div>
         </form>
     </div>
@@ -103,10 +106,11 @@
         grid.innerHTML += `<div class="form-check"><input class="form-check-input" type="checkbox" value="${p}" id="chk_${p.replace(/\s/g,'')}"><label class="form-check-label small" for="chk_${p.replace(/\s/g,'')}">${p}</label></div>`;
     });
 
-    window.alternarCampos = () => {
-        const perfil = document.getElementById('selectorPerfil').value;
-        document.getElementById('bloqueGlobal').style.display = 'block';
-        document.getElementById('camposAcademia').style.display = (perfil === 'Academia') ? 'block' : 'none';
+    window.gestionarFlujo = () => {
+        const principal = document.getElementById('perfilPrincipal').value;
+        document.getElementById('cuerpoFormulario').style.display = 'block';
+        document.getElementById('subSeccionProfesor').style.display = (principal === 'Independiente') ? 'block' : 'none';
+        document.getElementById('camposAcademia').style.display = (principal === 'Academia') ? 'block' : 'none';
     };
 
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
@@ -114,37 +118,42 @@
         const btn = document.getElementById('btnSubmit');
         btn.disabled = true; btn.innerText = "Procesando...";
 
+        const principal = document.getElementById('perfilPrincipal').value;
+        let tipoFinal = principal;
+        if(principal === 'Independiente') tipoFinal = document.getElementById('subTipoProfesor').value;
+
         const seleccionados = [];
         document.querySelectorAll('#gridProgramas input:checked').forEach(c => seleccionados.push(c.value));
 
         const datos = {
-            tipoSolicitante: document.getElementById('selectorPerfil').value,
-            director: document.getElementById('nombrePostulante').value,
-            email: document.getElementById('emailPostulante').value,
-            telefono: document.getElementById('whatsappPostulante').value,
-            ubicacion: document.getElementById('ubicacionPostulante').value,
-            programas: seleccionados.join(", ") || "No seleccionados",
-            duracionMeses: document.getElementById('duracionLicencia').value + " meses",
-            academia: document.getElementById('nombreEntidad')?.value || "N/A",
-            rif: document.getElementById('rifEntidad')?.value || "N/A",
-            cupos: document.getElementById('cuposEntidad')?.value || "N/A",
+            tipoSolicitante: tipoFinal, // Valor exacto para Firestore
+            nombre: document.getElementById('nombre').value,
+            email: document.getElementById('email').value,
+            whatsapp: document.getElementById('whatsapp').value,
+            ubicacion: document.getElementById('ubicacion').value,
+            programas: seleccionados.join(", "),
+            duracionLicencia: document.getElementById('meses').value + " meses",
+            academiaInfo: (principal === 'Academia') ? {
+                nombre: document.getElementById('nombreAcademia').value,
+                rif: document.getElementById('rif').value,
+                cupos: document.getElementById('cupos').value
+            } : "N/A",
             fecha: new Date().toLocaleString()
         };
 
         try {
             await addDoc(collection(db, "postulaciones"), datos);
-            generarYAbrirPDF(datos);
-            setTimeout(() => { window.location.reload(); }, 3000);
-        } catch (error) { alert("Error al guardar."); btn.disabled = false; }
+            generarPDF(datos);
+            setTimeout(() => location.reload(), 3000);
+        } catch (f) { alert("Error al guardar"); btn.disabled = false; }
     });
 
-    function generarYAbrirPDF(d) {
+    function generarPDF(d) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const img = new Image();
         img.src = 'logo_ucmi.png';
-
-        img.onload = function() {
+        img.onload = () => {
             doc.setFillColor(26, 42, 58); doc.rect(0, 0, 210, 45, 'F');
             try { doc.addImage(img, 'PNG', 15, 7, 30, 30); } catch(e){}
             doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont(undefined, 'bold');
@@ -153,31 +162,26 @@
             doc.setFontSize(10); doc.setFont(undefined, 'normal');
             doc.text("COMPROBANTE OFICIAL DE REGISTRO", 55, 36);
 
-            doc.setTextColor(0, 0, 0); doc.setFontSize(11); doc.setFont(undefined, 'bold');
-            doc.text(`MODALIDAD: ${d.tipoSolicitante.toUpperCase()}`, 20, 60);
-            doc.text(`FECHA: ${d.fecha}`, 140, 60);
+            doc.setTextColor(0, 0, 0); doc.setFontSize(11);
+            doc.text(`TIPO DE SOLICITUD: ${d.tipoSolicitante.toUpperCase()}`, 20, 60);
             doc.line(20, 65, 190, 65);
 
             let y = 75;
-            const filas = [
-                ["POSTULANTE:", d.director], ["EMAIL:", d.email], ["UBICACIÓN:", d.ubicacion],
-                ["DURACIÓN LICENCIA:", d.duracionMeses], ["PROGRAMAS:", d.programas]
-            ];
-            if(d.tipoSolicitante === 'Academia') filas.push(["INSTITUCIÓN:", d.academia], ["RIF:", d.rif], ["CUPOS:", d.cupos]);
+            const filas = [["NOMBRE:", d.nombre], ["EMAIL:", d.email], ["UBICACIÓN:", d.ubicacion], ["LICENCIA:", d.duracionLicencia], ["PROGRAMAS:", d.programas]];
+            if(d.academiaInfo !== "N/A") {
+                filas.push(["ACADEMIA:", d.academiaInfo.nombre], ["RIF:", d.academiaInfo.rif], ["CUPOS:", d.academiaInfo.cupos]);
+            }
 
             filas.forEach(f => {
                 doc.setFont(undefined, 'bold'); doc.text(f[0], 20, y);
                 doc.setFont(undefined, 'normal'); 
-                const splitT = doc.splitTextToSize(f[1], 130);
-                doc.text(splitT, 65, y);
-                y += (splitT.length * 8);
+                const st = doc.splitTextToSize(f[1], 130);
+                doc.text(st, 65, y);
+                y += (st.length * 8);
             });
-
-            doc.setFontSize(8); doc.setTextColor(150);
-            doc.text("Universitario UCMI 2026 - Registro Institucional.", 105, 285, { align: 'center' });
             window.open(doc.output('bloburl'), '_blank');
         };
-        img.onerror = () => { window.open(doc.output('bloburl'), '_blank'); };
+        img.onerror = () => window.open(doc.output('bloburl'), '_blank');
     }
 </script>
 </body>
