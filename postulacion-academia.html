@@ -115,7 +115,6 @@
         grid.innerHTML += `<div class="form-check"><input class="form-check-input prog-check" type="checkbox" value="${p}" id="chk_${p.replace(/\s/g,'')}"><label class="form-check-label small" for="chk_${p.replace(/\s/g,'')}">${p}</label></div>`;
     });
 
-    // Lógica Seleccionar Todos
     document.getElementById('selectAll').addEventListener('change', function() {
         const checkboxes = document.querySelectorAll('.prog-check');
         checkboxes.forEach(cb => cb.checked = this.checked);
@@ -124,19 +123,13 @@
     window.gestionarFlujo = () => {
         const principal = document.getElementById('perfilPrincipal').value;
         const campoNombre = document.getElementById('nombre');
-        
         document.getElementById('cuerpoFormulario').style.display = 'block';
         document.getElementById('subSeccionProfesor').style.display = (principal === 'Independiente') ? 'block' : 'none';
         document.getElementById('camposAcademia').style.display = (principal === 'Academia') ? 'block' : 'none';
 
-        // Lógica de Placeholders dinámicos
-        if (principal === 'Academia') {
-            campoNombre.placeholder = "Nombre del responsable";
-        } else if (principal === 'Independiente') {
-            campoNombre.placeholder = "Nombre del profesor";
-        } else if (principal === 'Estudiante autodidacta') {
-            campoNombre.placeholder = "Nombre del estudiante";
-        }
+        if (principal === 'Academia') campoNombre.placeholder = "Nombre del responsable";
+        else if (principal === 'Independiente') campoNombre.placeholder = "Nombre del profesor";
+        else if (principal === 'Estudiante autodidacta') campoNombre.placeholder = "Nombre del estudiante";
     };
 
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
@@ -163,7 +156,7 @@
                 rif: document.getElementById('rif').value,
                 cupos: document.getElementById('cupos').value
             } : "N/A",
-            fecha: new Date().toLocaleString()
+            fecha: new Date().toLocaleString() // Captura de fecha y hora actual
         };
 
         try {
@@ -181,17 +174,23 @@
         img.onload = () => {
             doc.setFillColor(26, 42, 58); doc.rect(0, 0, 210, 45, 'F');
             try { doc.addImage(img, 'PNG', 15, 7, 30, 30); } catch(e){}
-            doc.setTextColor(255, 255, 255); doc.setFontSize(16); doc.setFont(undefined, 'bold');
+            doc.setTextColor(255, 255, 255); 
+            doc.setFontSize(16); doc.setFont(undefined, 'bold');
             doc.text("UNIVERSITARIO DE CIENCIAS", 55, 20);
             doc.text("MATEMÁTICAS E IDIOMAS", 55, 28);
             doc.setFontSize(10); doc.setFont(undefined, 'normal');
             doc.text("COMPROBANTE OFICIAL DE REGISTRO", 55, 36);
 
-            doc.setTextColor(0, 0, 0); doc.setFontSize(11);
-            doc.text(`TIPO DE SOLICITUD: ${d.tipoSolicitante.toUpperCase()}`, 20, 60);
-            doc.line(20, 65, 190, 65);
+            doc.setTextColor(0, 0, 0); doc.setFontSize(11); doc.setFont(undefined, 'bold');
+            doc.text(`TIPO DE SOLICITUD: ${d.tipoSolicitante.toUpperCase()}`, 20, 58);
+            
+            // REINTEGRADA: FECHA Y HORA EN EL PDF
+            doc.setFont(undefined, 'normal'); doc.setFontSize(10);
+            doc.text(`FECHA DE REGISTRO: ${d.fecha}`, 125, 58);
+            
+            doc.line(20, 62, 190, 62);
 
-            let y = 75;
+            let y = 72;
             const filas = [["NOMBRE:", d.nombre], ["EMAIL:", d.email], ["UBICACIÓN:", d.ubicacion], ["LICENCIA:", d.duracionLicencia], ["PROGRAMAS:", d.programas]];
             if(d.academiaInfo !== "N/A") {
                 filas.push(["ACADEMIA:", d.academiaInfo.nombre], ["RIF:", d.academiaInfo.rif], ["CUPOS:", d.academiaInfo.cupos]);
@@ -204,6 +203,10 @@
                 doc.text(st, 65, y);
                 y += (st.length * 8);
             });
+            
+            doc.setFontSize(8); doc.setTextColor(150);
+            doc.text("Universitario UCMI 2026 - Este documento certifica la recepción de sus datos.", 105, 285, { align: 'center' });
+            
             window.open(doc.output('bloburl'), '_blank');
         };
         img.onerror = () => window.open(doc.output('bloburl'), '_blank');
