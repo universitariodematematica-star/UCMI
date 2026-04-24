@@ -30,22 +30,23 @@
         <div class="header-minimalista">
             <img src="logo_ucmi.png" id="imgLogo" alt="Logo UCMI" style="height: 120px; width: auto;">
             <h2>Universitario de Ciencias Matemáticas e Idiomas</h2>
-            <p class="instruccion-azul">Formulario Global de Postulación</p>
+            <p class="instruccion-azul">Registro de Postulación Oficial</p>
             <div class="linea-decorativa"></div>
         </div>
 
         <form id="formUCMI" class="p-4 p-md-5 pt-0">
             <div class="mb-4">
-                <label class="form-label fw-bold">Modalidad de Postulación</label>
+                <label class="form-label fw-bold">Seleccione su Perfil:</label>
                 <select class="form-select form-select-lg" id="selectorPerfil" required onchange="alternarCampos()">
                     <option value="" selected disabled>Elija una opción...</option>
-                    <option value="ACADEMIA">Academia o Institución</option>
-                    <option value="PROFESOR">Profesor Independiente</option>
-                    <option value="ESTUDIANTE">Estudiante Autodidacta</option>
+                    <option value="Academia">1. Academia</option>
+                    <option value="Profesor Socio">2. Profesor Socio</option>
+                    <option value="Profesor Embajador">3. Profesor Embajador</option>
+                    <option value="Estudiante Autodidacta">4. Estudiante Autodidacta</option>
                 </select>
             </div>
 
-            <div id="datosComunes" style="display: none;">
+            <div id="bloqueGlobal" style="display: none;">
                 <div class="row g-3">
                     <div class="col-md-6"><input type="text" id="nombrePostulante" class="form-control" placeholder="Nombre Completo" required></div>
                     <div class="col-md-6"><input type="email" id="emailPostulante" class="form-control" placeholder="Correo (Sin tildes)" required></div>
@@ -54,38 +55,26 @@
                 </div>
                 <hr class="my-4">
 
-                <h6 class="text-primary fw-bold mb-3 text-uppercase">Programas Académicos Solicitados</h6>
+                <h6 class="text-primary fw-bold mb-3 text-uppercase">Programas Solicitados y Licencia</h6>
                 <div class="program-grid mb-3" id="gridProgramas"></div>
                 
                 <div class="mb-4">
                     <label class="form-label fw-bold small">Duración de la licencia (en meses):</label>
-                    <input type="number" id="duracionLicencia" class="form-control" placeholder="Ej: 6, 12, 24" required>
+                    <input type="number" id="duracionLicencia" class="form-control" placeholder="Ej: 12" required>
                 </div>
-            </div>
 
-            <div id="camposAcademia" class="seccion-dinamica">
-                <h6 class="text-primary fw-bold mb-3 text-uppercase">Datos de la Institución</h6>
-                <div class="row g-3">
-                    <div class="col-12"><input type="text" id="nombreEntidad" class="form-control" placeholder="Nombre de la Academia"></div>
-                    <div class="col-md-6"><input type="text" id="rifEntidad" class="form-control" placeholder="RIF / ID Fiscal"></div>
-                    <div class="col-md-6"><input type="number" id="cuposEntidad" class="form-control" placeholder="Cupos Solicitados"></div>
+                <div id="camposAcademia" class="seccion-dinamica">
+                    <h6 class="text-primary fw-bold mb-3 text-uppercase">Datos Institucionales</h6>
+                    <div class="row g-3">
+                        <div class="col-12"><input type="text" id="nombreEntidad" class="form-control" placeholder="Nombre de la Institución"></div>
+                        <div class="col-md-6"><input type="text" id="rifEntidad" class="form-control" placeholder="RIF / ID Fiscal"></div>
+                        <div class="col-md-6"><input type="number" id="cuposEntidad" class="form-control" placeholder="Cupos Solicitados"></div>
+                    </div>
                 </div>
-            </div>
 
-            <div id="camposProfesor" class="seccion-dinamica">
-                <h6 class="text-primary fw-bold mb-3 text-uppercase">Modelo de Colaboración</h6>
-                <div class="form-check p-3 border rounded mb-2 bg-white">
-                    <input class="form-check-input ms-0" type="radio" name="tipoProfesor" id="profSocio" value="SOCIO" checked>
-                    <label class="ms-4" for="profSocio"><strong>Socio:</strong> Gestión propia de cupos.</label>
+                <div id="footerForm" class="mt-4">
+                    <button type="submit" id="btnSubmit" class="btn btn-enviar shadow">ENVIAR Y VER COMPROBANTE OFICIAL</button>
                 </div>
-                <div class="form-check p-3 border rounded bg-white">
-                    <input class="form-check-input ms-0" type="radio" name="tipoProfesor" id="profEmbajador" value="EMBAJADOR">
-                    <label class="ms-4" for="profEmbajador"><strong>Embajador:</strong> Gestión UCMI.</label>
-                </div>
-            </div>
-
-            <div id="footerForm" class="mt-4" style="display: none;">
-                <button type="submit" id="btnSubmit" class="btn btn-enviar shadow">ENVIAR Y VER COMPROBANTE OFICIAL</button>
             </div>
         </form>
     </div>
@@ -116,11 +105,8 @@
 
     window.alternarCampos = () => {
         const perfil = document.getElementById('selectorPerfil').value;
-        document.getElementById('datosComunes').style.display = 'block';
-        document.getElementById('footerForm').style.display = 'block';
-        document.querySelectorAll('.seccion-dinamica').forEach(s => s.style.display = 'none');
-        if(perfil === 'ACADEMIA') document.getElementById('camposAcademia').style.display = 'block';
-        if(perfil === 'PROFESOR') document.getElementById('camposProfesor').style.display = 'block';
+        document.getElementById('bloqueGlobal').style.display = 'block';
+        document.getElementById('camposAcademia').style.display = (perfil === 'Academia') ? 'block' : 'none';
     };
 
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
@@ -168,7 +154,7 @@
             doc.text("COMPROBANTE OFICIAL DE REGISTRO", 55, 36);
 
             doc.setTextColor(0, 0, 0); doc.setFontSize(11); doc.setFont(undefined, 'bold');
-            doc.text(`MODALIDAD: ${d.tipoSolicitante}`, 20, 60);
+            doc.text(`MODALIDAD: ${d.tipoSolicitante.toUpperCase()}`, 20, 60);
             doc.text(`FECHA: ${d.fecha}`, 140, 60);
             doc.line(20, 65, 190, 65);
 
@@ -177,7 +163,7 @@
                 ["POSTULANTE:", d.director], ["EMAIL:", d.email], ["UBICACIÓN:", d.ubicacion],
                 ["DURACIÓN LICENCIA:", d.duracionMeses], ["PROGRAMAS:", d.programas]
             ];
-            if(d.tipoSolicitante === 'ACADEMIA') filas.push(["INSTITUCIÓN:", d.academia], ["RIF:", d.rif], ["CUPOS:", d.cupos]);
+            if(d.tipoSolicitante === 'Academia') filas.push(["INSTITUCIÓN:", d.academia], ["RIF:", d.rif], ["CUPOS:", d.cupos]);
 
             filas.forEach(f => {
                 doc.setFont(undefined, 'bold'); doc.text(f[0], 20, y);
