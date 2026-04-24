@@ -21,6 +21,7 @@
         .program-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #ddd; }
         .btn-enviar { background: var(--azul-ucmi); color: white; font-weight: bold; padding: 18px; border-radius: 15px; border: none; font-size: 1.2rem; width: 100%; margin-top: 25px; transition: 0.3s; }
         .btn-enviar:hover { background: var(--azul-intenso); transform: translateY(-3px); }
+        .check-all-container { background: #e9ecef; padding: 10px 20px; border-radius: 10px 10px 0 0; border: 1px solid #ddd; border-bottom: none; }
     </style>
 </head>
 <body>
@@ -55,7 +56,9 @@
 
             <div id="cuerpoFormulario" style="display: none;">
                 <div class="row g-3">
-                    <div class="col-md-6"><input type="text" id="nombre" class="form-control" placeholder="Nombre completo del responsable de la academia" required></div>
+                    <div class="col-md-6">
+                        <input type="text" id="nombre" class="form-control" placeholder="Nombre" required>
+                    </div>
                     <div class="col-md-6"><input type="email" id="email" class="form-control" placeholder="Correo (Sin tildes)" required></div>
                     <div class="col-md-6"><input type="text" id="whatsapp" class="form-control" placeholder="WhatsApp" required></div>
                     <div class="col-md-6"><input type="text" id="ubicacion" class="form-control" placeholder="Ciudad y País" required></div>
@@ -69,7 +72,13 @@
                     </div>
                 </div>
 
-                <h6 class="mt-4 fw-bold text-uppercase small text-secondary">Programas Académicos</h6>
+                <h6 class="mt-4 fw-bold text-uppercase small text-secondary">Programas Académicos Solicitados</h6>
+                <div class="check-all-container">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAll">
+                        <label class="form-check-label fw-bold" for="selectAll">Seleccionar todos los programas</label>
+                    </div>
+                </div>
                 <div class="program-grid mb-3" id="gridProgramas"></div>
                 
                 <div class="mb-3">
@@ -103,14 +112,31 @@
     
     const grid = document.getElementById('gridProgramas');
     programas.forEach(p => {
-        grid.innerHTML += `<div class="form-check"><input class="form-check-input" type="checkbox" value="${p}" id="chk_${p.replace(/\s/g,'')}"><label class="form-check-label small" for="chk_${p.replace(/\s/g,'')}">${p}</label></div>`;
+        grid.innerHTML += `<div class="form-check"><input class="form-check-input prog-check" type="checkbox" value="${p}" id="chk_${p.replace(/\s/g,'')}"><label class="form-check-label small" for="chk_${p.replace(/\s/g,'')}">${p}</label></div>`;
+    });
+
+    // Lógica Seleccionar Todos
+    document.getElementById('selectAll').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.prog-check');
+        checkboxes.forEach(cb => cb.checked = this.checked);
     });
 
     window.gestionarFlujo = () => {
         const principal = document.getElementById('perfilPrincipal').value;
+        const campoNombre = document.getElementById('nombre');
+        
         document.getElementById('cuerpoFormulario').style.display = 'block';
         document.getElementById('subSeccionProfesor').style.display = (principal === 'Independiente') ? 'block' : 'none';
         document.getElementById('camposAcademia').style.display = (principal === 'Academia') ? 'block' : 'none';
+
+        // Lógica de Placeholders dinámicos
+        if (principal === 'Academia') {
+            campoNombre.placeholder = "Nombre del responsable";
+        } else if (principal === 'Independiente') {
+            campoNombre.placeholder = "Nombre del profesor";
+        } else if (principal === 'Estudiante autodidacta') {
+            campoNombre.placeholder = "Nombre del estudiante";
+        }
     };
 
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
@@ -119,14 +145,13 @@
         btn.disabled = true; btn.innerText = "Procesando...";
 
         const principal = document.getElementById('perfilPrincipal').value;
-        let tipoFinal = principal;
-        if(principal === 'Independiente') tipoFinal = document.getElementById('subTipoProfesor').value;
+        let tipoFinal = (principal === 'Independiente') ? document.getElementById('subTipoProfesor').value : principal;
 
         const seleccionados = [];
-        document.querySelectorAll('#gridProgramas input:checked').forEach(c => seleccionados.push(c.value));
+        document.querySelectorAll('.prog-check:checked').forEach(c => seleccionados.push(c.value));
 
         const datos = {
-            tipoSolicitante: tipoFinal, // Valor exacto para Firestore
+            tipoSolicitante: tipoFinal,
             nombre: document.getElementById('nombre').value,
             email: document.getElementById('email').value,
             whatsapp: document.getElementById('whatsapp').value,
