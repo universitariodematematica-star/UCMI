@@ -56,35 +56,35 @@
 
             <div id="cuerpoFormulario" style="display: none;">
                 <div class="row g-3">
-                    <div class="col-md-6"><input type="text" id="nombrePersona" class="form-control" placeholder="Nombre" required></div>
-                    <div class="col-md-6"><input type="email" id="emailPersona" class="form-control" placeholder="Correo (Sin tildes)" required></div>
-                    <div class="col-md-6"><input type="text" id="whatsappPersona" class="form-control" placeholder="WhatsApp" required></div>
-                    <div class="col-md-6"><input type="text" id="ubicacionPersona" class="form-control" placeholder="Ciudad y País" required></div>
+                    <div class="col-md-6"><input type="text" id="nombreInput" class="form-control" placeholder="Nombre" required></div>
+                    <div class="col-md-6"><input type="email" id="emailInput" class="form-control" placeholder="Correo electrónico" required></div>
+                    <div class="col-md-6"><input type="text" id="whatsappInput" class="form-control" placeholder="WhatsApp" required></div>
+                    <div class="col-md-6"><input type="text" id="ubicacionInput" class="form-control" placeholder="Ciudad y País" required></div>
                 </div>
 
                 <div id="camposAcademia" class="seccion-dinamica">
                     <div class="row g-3">
-                        <div class="col-12"><input type="text" id="nombreEntidad" class="form-control" placeholder="Nombre de la Institución"></div>
-                        <div class="col-md-6"><input type="text" id="rifEntidad" class="form-control" placeholder="RIF / Registro"></div>
-                        <div class="col-md-6"><input type="number" id="cuposEntidad" class="form-control" placeholder="Cupos Solicitados"></div>
+                        <div class="col-12"><input type="text" id="entidadInput" class="form-control" placeholder="Nombre de la Institución"></div>
+                        <div class="col-md-6"><input type="text" id="rifInput" class="form-control" placeholder="RIF / Registro Fiscal"></div>
+                        <div class="col-md-6"><input type="number" id="cuposInput" class="form-control" placeholder="Cupos Solicitados"></div>
                     </div>
                 </div>
 
-                <h6 class="mt-4 fw-bold text-uppercase small text-secondary">Programas Académicos Solicitados</h6>
+                <h6 class="mt-4 fw-bold text-uppercase small text-secondary">Programas Académicos</h6>
                 <div class="check-all-container">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="selectAll">
-                        <label class="form-check-label fw-bold" for="selectAll">Seleccionar todos los programas</label>
+                        <label class="form-check-label fw-bold" for="selectAll">Seleccionar todos</label>
                     </div>
                 </div>
                 <div class="program-grid mb-3" id="gridProgramas"></div>
                 
                 <div class="mb-3">
-                    <label class="form-label fw-bold small">Duración de licencia (en meses):</label>
-                    <input type="number" id="mesesLicencia" class="form-control" placeholder="Ej: 12" required>
+                    <label class="form-label fw-bold small">Duración de licencia (meses):</label>
+                    <input type="number" id="duracionInput" class="form-control" placeholder="Ej: 12" required>
                 </div>
 
-                <button type="submit" id="btnSubmit" class="btn btn-enviar shadow">ENVIAR Y ABRIR COMPROBANTE</button>
+                <button type="submit" id="btnSubmit" class="btn btn-enviar shadow">ENVIAR Y GENERAR COMPROBANTE</button>
             </div>
         </form>
     </div>
@@ -106,71 +106,78 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // Listado de programas
     const programas = ["Matemática AGEM", "Física", "Química", "Biología", "Lógica", "Estadística", "Razonamiento numérico", "Razonamiento abstracto", "Lengua", "Inglés A1", "Inglés A2", "Inglés B1", "Inglés B1+", "Inglés B2", "Inglés B2+", "Inglés C1"];
     const grid = document.getElementById('gridProgramas');
     programas.forEach(p => {
         grid.innerHTML += `<div class="form-check"><input class="form-check-input prog-check" type="checkbox" value="${p}" id="chk_${p.replace(/\s/g,'')}"><label class="form-check-label small" for="chk_${p.replace(/\s/g,'')}">${p}</label></div>`;
     });
 
+    // Seleccionar todo
     document.getElementById('selectAll').addEventListener('change', function() {
         document.querySelectorAll('.prog-check').forEach(cb => cb.checked = this.checked);
     });
 
+    // Lógica visual de perfiles
     window.gestionarFlujo = () => {
         const principal = document.getElementById('perfilPrincipal').value;
-        const campoNombre = document.getElementById('nombrePersona');
+        const nombreInput = document.getElementById('nombreInput');
         document.getElementById('cuerpoFormulario').style.display = 'block';
         document.getElementById('subSeccionProfesor').style.display = (principal === 'Independiente') ? 'block' : 'none';
         document.getElementById('camposAcademia').style.display = (principal === 'Academia') ? 'block' : 'none';
 
-        if (principal === 'Academia') campoNombre.placeholder = "Nombre del responsable";
-        else if (principal === 'Independiente') campoNombre.placeholder = "Nombre del profesor";
-        else campoNombre.placeholder = "Nombre del estudiante";
+        if (principal === 'Academia') nombreInput.placeholder = "Nombre del responsable de la academia";
+        else if (principal === 'Independiente') nombreInput.placeholder = "Nombre del profesor";
+        else nombreInput.placeholder = "Nombre del estudiante";
     };
 
+    // Envío a Firestore
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnSubmit');
-        btn.disabled = true; btn.innerText = "Procesando...";
+        btn.disabled = true; btn.innerText = "Registrando...";
 
         const principal = document.getElementById('perfilPrincipal').value;
         let tipoFinal = (principal === 'Independiente') ? document.getElementById('subTipoProfesor').value : principal;
-        const seleccionados = Array.from(document.querySelectorAll('.prog-check:checked')).map(c => c.value);
+        const programasSel = Array.from(document.querySelectorAll('.prog-check:checked')).map(c => c.value).join(", ");
 
-        // Captura forzada de cupos
-        const cuposInput = document.getElementById('cuposEntidad').value;
-
+        // MAPEADO INFALIBLE PARA LA INTERFAZ DE DETALLES
         const datos = {
             tipoSolicitante: tipoFinal,
-            nombreResponsable: document.getElementById('nombrePersona').value,
-            email: document.getElementById('emailPersona').value,
-            whatsapp: document.getElementById('whatsappPersona').value,
-            ubicacion: document.getElementById('ubicacionPersona').value,
-            programas: seleccionados.join(", ") || "Ninguno",
-            duracionLicencia: document.getElementById('mesesLicencia').value + " meses",
+            perfil: tipoFinal,
+            director: document.getElementById('nombreInput').value,
+            nombreResponsable: document.getElementById('nombreInput').value,
+            email: document.getElementById('emailInput').value,
+            whatsapp: document.getElementById('whatsappInput').value,
+            ubicacion: document.getElementById('ubicacionInput').value,
+            programas: programasSel || "Ninguno seleccionado",
+            duracion: document.getElementById('duracionInput').value,
+            duracionLicencia: document.getElementById('duracionInput').value + " meses",
             fecha: new Date().toLocaleString()
         };
 
-        // Lógica de validación de campos según perfil
-        if (tipoFinal === "Academia") {
-            datos.entidad = document.getElementById('nombreEntidad').value || "No especificada";
-            datos.rif = document.getElementById('rifEntidad').value || "No aplica";
-            datos.cupos = cuposInput || "0";
-        } else if (tipoFinal === "Profesor asociado") {
+        // Lógica de campos según tipo para evitar "undefined"
+        if (principal === "Academia") {
+            datos.entidad = document.getElementById('entidadInput').value || "No especificada";
+            datos.rif = document.getElementById('rifInput').value || "No aplica";
+            datos.cupos = document.getElementById('cuposInput').value || "0";
+            datos.cuposSolicitados = datos.cupos;
+        } else {
             datos.entidad = "No aplica (Independiente)";
             datos.rif = "No aplica";
-            datos.cupos = "Gestión propia"; 
-        } else {
-            datos.entidad = "No aplica";
-            datos.rif = "No aplica";
-            datos.cupos = "No aplica";
+            datos.cupos = (tipoFinal === "Profesor asociado") ? "Gestión propia" : "N/A";
+            datos.cuposSolicitados = datos.cupos;
         }
 
         try {
             await addDoc(collection(db, "postulaciones"), datos);
             generarPDF(datos);
-            setTimeout(() => location.reload(), 3000);
-        } catch (f) { alert("Error al guardar"); btn.disabled = false; }
+            setTimeout(() => location.reload(), 2000);
+        } catch (err) {
+            alert("Error al conectar con la base de datos");
+            btn.disabled = false;
+            btn.innerText = "REINTENTAR ENVÍO";
+        }
     });
 
     function generarPDF(d) {
@@ -189,20 +196,20 @@
 
             doc.setTextColor(0, 0, 0); doc.setFontSize(11); doc.setFont(undefined, 'bold');
             doc.text(`SOLICITUD: ${d.tipoSolicitante.toUpperCase()}`, 20, 58);
-            doc.setFont(undefined, 'normal'); doc.setFontSize(9);
-            doc.text(`FECHA: ${d.fecha}`, 135, 58);
+            doc.setFontSize(9); doc.setFont(undefined, 'normal');
+            doc.text(`FECHA/HORA: ${d.fecha}`, 130, 58);
             doc.line(20, 62, 190, 62);
 
             let y = 75;
             const filas = [
-                ["RESPONSABLE:", d.nombreResponsable],
+                ["DIRECTOR / RESPONSABLE:", d.director],
                 ["WHATSAPP:", d.whatsapp],
                 ["EMAIL:", d.email],
                 ["UBICACIÓN:", d.ubicacion],
                 ["ENTIDAD:", d.entidad],
-                ["RIF/ID:", d.rif],
+                ["RIF / ID:", d.rif],
                 ["CUPOS:", d.cupos],
-                ["DURACIÓN:", d.duracionLicencia],
+                ["DURACIÓN LICENCIA:", d.duracionLicencia],
                 ["PROGRAMAS:", d.programas]
             ];
 
@@ -210,7 +217,7 @@
                 doc.setFont(undefined, 'bold'); doc.text(f[0], 20, y);
                 doc.setFont(undefined, 'normal'); 
                 const st = doc.splitTextToSize(f[1], 130);
-                doc.text(st, 60, y);
+                doc.text(st, 70, y);
                 y += (st.length * 8);
             });
             window.open(doc.output('bloburl'), '_blank');
