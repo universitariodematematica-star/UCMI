@@ -142,19 +142,28 @@
 
     window.gestionarFlujo = () => {
         const principal = document.getElementById('perfilPrincipal').value;
-        const academiaCampos = document.querySelectorAll('#camposAcademia input');
+        const subTipo = document.getElementById('subTipoProfesor').value;
+        const camposAcademiaDoc = document.getElementById('camposAcademia');
+        const inputsAcademia = camposAcademiaDoc.querySelectorAll('input');
         
         document.getElementById('cuerpoFormulario').style.display = 'block';
         document.getElementById('subSeccionProfesor').style.display = (principal === 'Independiente') ? 'block' : 'none';
         
-        if (principal === 'Academia') {
-            document.getElementById('camposAcademia').style.display = 'block';
-            academiaCampos.forEach(i => i.required = true);
+        // Lógica: Mostrar cupos solo si es Academia O si es Profesor asociado
+        const esAsociado = (principal === 'Independiente' && subTipo === 'Profesor asociado');
+        const esAcademia = (principal === 'Academia');
+
+        if (esAcademia || esAsociado) {
+            camposAcademiaDoc.style.display = 'block';
+            inputsAcademia.forEach(i => i.required = true);
         } else {
-            document.getElementById('camposAcademia').style.display = 'none';
-            academiaCampos.forEach(i => i.required = false);
+            camposAcademiaDoc.style.display = 'none';
+            inputsAcademia.forEach(i => i.required = false);
         }
     };
+
+    // Esto hace que el formulario reaccione al cambiar entre Embajador y Asociado
+    document.getElementById('subTipoProfesor').addEventListener('change', window.gestionarFlujo);
 
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -179,8 +188,12 @@
         const programasSel = Array.from(document.querySelectorAll('.prog-check:checked')).map(c => c.value).join(", ");
 
         // VALORES NUMÉRICOS PUROS (Asegura que 150 sea 150)
-        const nCupos = (principal === "Academia") ? parseInt(document.getElementById('cuposInput').value) : 1;
-        const nMeses = parseInt(document.getElementById('mesesInput').value);
+        // VALORES NUMÉRICOS PUROS (Captura 150 si es Academia o Asociado)
+const esAsociado = (principal === "Independiente" && document.getElementById('subTipoProfesor').value === "Profesor asociado");
+const esAcademia = (principal === "Academia");
+
+const nCupos = (esAcademia || esAsociado) ? parseInt(document.getElementById('cuposInput').value) : 1;
+const nMeses = parseInt(document.getElementById('mesesInput').value);
 
         const datos = {
             tipoSolicitante: tipoFinal,
