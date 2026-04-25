@@ -177,7 +177,7 @@
                             <td><span class="fw-bold text-primary">${data.cupos}</span> / ${data.duracionLicencia}</td>
                             <td>
                                 <button onclick="verDetalles('${id}')" class="btn btn-sm btn-outline-dark">👁️ Revisar</button>
-                                <button onclick="borrarSinProcesar('${id}')" class="btn btn-sm btn-link text-danger">×</button>
+                                <button onclick="borrarPostulacion('${id}')" class="btn btn-sm btn-link text-danger fw-bold" style="text-decoration: none;">×</button>
                             </td>
                         </tr>
                     `;
@@ -264,9 +264,16 @@
         }
     });
 
-    window.borrarSinProcesar = async (id) => {
-        if(confirm("¿Eliminar permanentemente?")) {
-            await deleteDoc(doc(db, "postulaciones", id));
+    window.borrarPostulacion = async (id) => {
+        if (confirm("¿Estás seguro de que deseas eliminar esta postulación permanentemente?")) {
+            try {
+                // Borra el documento directamente de la colección "postulaciones" en Firebase
+                await deleteDoc(doc(db, "postulaciones", id));
+                console.log("Documento eliminado con éxito:", id);
+            } catch (error) {
+                console.error("Error al eliminar el documento:", error);
+                alert("Hubo un error al intentar eliminar la postulación.");
+            }
         }
     };
 </script>
