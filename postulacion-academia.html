@@ -212,7 +212,6 @@
         const tipoFinal = (principal === 'Independiente') ? subValor : principal;
         const programasSel = Array.from(document.querySelectorAll('.prog-check:checked')).map(c => c.value).join(", ");
 
-        // CAMBIALO POR ESTO:
         const datos = {
             tipoSolicitante: tipoFinal,
             perfil: tipoFinal,
@@ -222,17 +221,18 @@
             ubicacion: document.getElementById('ubicacionInput').value.trim(),
             programas: programasSel || "Sin programas específicos",
             duracionLicencia: document.getElementById('mesesInput').value + " meses",
-            // Si es Academia o Asociado toma el input, si no, asigna 1 automáticamente
+            // Lógica de cupos: 1 para estudiantes/embajadores, manual para el resto
             cupos: (principal === "Academia" || (principal === "Independiente" && subValor === "Profesor asociado")) 
                     ? (document.getElementById('cuposInput').value || "1") 
                     : "1",
-            // Cambiamos N/A por términos profesionales
+            // Identificación: "Persona Natural" para estudiantes
             rif: (principal === 'Estudiante autodidacta') 
                     ? "Persona Natural" 
                     : document.getElementById('rifInput').value.trim(),
-entidad: (principal === 'Estudiante autodidacta') 
-        ? document.getElementById('nombreInput').value.trim() 
-        : document.getElementById('entidadInput').value.trim(),
+            // Entidad: Si es estudiante, usamos su propio nombre
+            entidad: (principal === 'Estudiante autodidacta') 
+                    ? document.getElementById('nombreInput').value.trim() 
+                    : document.getElementById('entidadInput').value.trim(),
             fecha: new Date().toLocaleString()
         };
         try {
