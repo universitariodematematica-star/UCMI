@@ -152,7 +152,7 @@
         document.getElementById('cuerpoFormulario').style.display = 'block';
         document.getElementById('subSeccionProfesor').style.display = (principal === 'Independiente') ? 'block' : 'none';
         
-        // Activamos los campos fiscales para Academia e Independientes (Asociado y Embajador)
+        // Activamos los campos fiscales para Academia e Independientes
         if (principal === 'Academia' || principal === 'Independiente') {
             camposAcademiaDoc.style.display = 'block';
             inputRif.required = true;
@@ -164,17 +164,25 @@
                 inputCupos.parentElement.style.display = "block";
                 inputCupos.required = true;
             } else {
-                // Personalización para Independiente (Asociado o Embajador)
                 labelEntidad.innerText = "Razón Social o Firma Personal:";
                 inputEntidad.placeholder = "Ej: Juan Pérez (Independiente)";
-                
-                // El RIF es obligatorio para ambos, pero los cupos solo para el Asociado
                 const esAsociado = (subTipo === 'Profesor asociado');
                 inputCupos.parentElement.style.display = esAsociado ? "block" : "none";
                 inputCupos.required = esAsociado;
             }
         } else {
+            // ESTO ES LO QUE FALTABA: Para Estudiante Autodidacta
             camposAcademiaDoc.style.display = 'none';
+            
+            // DESACTIVAMOS la obligatoriedad para que el navegador deje enviar el formulario
+            inputRif.required = false;
+            inputEntidad.required = false;
+            inputCupos.required = false;
+            
+            // Limpiamos valores por seguridad
+            inputRif.value = "";
+            inputEntidad.value = "";
+            inputCupos.value = "";
         }
     };
 
