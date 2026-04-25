@@ -80,7 +80,7 @@
                 <div id="camposAcademia" class="seccion-dinamica">
                     <div class="row g-3">
                         <div class="col-12">
-                            <label class="small fw-bold">Nombre de la Institución:</label>
+                            <label class="small fw-bold" id="labelEntidad" for="entidadInput">Nombre de la Institución:</label>
                             <input type="text" id="entidadInput" class="form-control" placeholder="Academia Superior de..." required>
                         </div>
                         <div class="col-md-6">
@@ -144,21 +144,37 @@
         const principal = document.getElementById('perfilPrincipal').value;
         const subTipo = document.getElementById('subTipoProfesor').value;
         const camposAcademiaDoc = document.getElementById('camposAcademia');
-        const inputsAcademia = camposAcademiaDoc.querySelectorAll('input');
+        const labelEntidad = document.getElementById('labelEntidad');
+        const inputEntidad = document.getElementById('entidadInput');
+        const inputRif = document.getElementById('rifInput');
+        const inputCupos = document.getElementById('cuposInput');
         
         document.getElementById('cuerpoFormulario').style.display = 'block';
         document.getElementById('subSeccionProfesor').style.display = (principal === 'Independiente') ? 'block' : 'none';
         
-        // Lógica: Mostrar cupos solo si es Academia O si es Profesor asociado
-        const esAsociado = (principal === 'Independiente' && subTipo === 'Profesor asociado');
-        const esAcademia = (principal === 'Academia');
-
-        if (esAcademia || esAsociado) {
+        // Activamos los campos fiscales para Academia e Independientes (Asociado y Embajador)
+        if (principal === 'Academia' || principal === 'Independiente') {
             camposAcademiaDoc.style.display = 'block';
-            inputsAcademia.forEach(i => i.required = true);
+            inputRif.required = true;
+            inputEntidad.required = true;
+
+            if (principal === 'Academia') {
+                labelEntidad.innerText = "Nombre de la Institución:";
+                inputEntidad.placeholder = "Ej: Academia Siglo XXI";
+                inputCupos.parentElement.style.display = "block";
+                inputCupos.required = true;
+            } else {
+                // Personalización para Independiente (Asociado o Embajador)
+                labelEntidad.innerText = "Razón Social o Firma Personal:";
+                inputEntidad.placeholder = "Ej: Juan Pérez (Independiente)";
+                
+                // El RIF es obligatorio para ambos, pero los cupos solo para el Asociado
+                const esAsociado = (subTipo === 'Profesor asociado');
+                inputCupos.parentElement.style.display = esAsociado ? "block" : "none";
+                inputCupos.required = esAsociado;
+            }
         } else {
             camposAcademiaDoc.style.display = 'none';
-            inputsAcademia.forEach(i => i.required = false);
         }
     };
 
@@ -184,38 +200,24 @@
         btn.innerText = "Registrando...";
 
         const principal = document.getElementById('perfilPrincipal').value;
-        const tipoFinal = (principal === 'Independiente') ? document.getElementById('subTipoProfesor').value : principal;
+        const subValor = document.getElementById('subTipoProfesor').value;
+        const tipoFinal = (principal === 'Independiente') ? subValor : principal;
         const programasSel = Array.from(document.querySelectorAll('.prog-check:checked')).map(c => c.value).join(", ");
-
-        // VALORES NUMÉRICOS PUROS (Asegura que 150 sea 150)
-        // VALORES NUMÉRICOS PUROS (Captura 150 si es Academia o Asociado)
-const esAsociado = (principal === "Independiente" && document.getElementById('subTipoProfesor').value === "Profesor asociado");
-const esAcademia = (principal === "Academia");
-
-const nCupos = (esAcademia || esAsociado) ? parseInt(document.getElementById('cuposInput').value) : 1;
-const nMeses = parseInt(document.getElementById('mesesInput').value);
 
         const datos = {
             tipoSolicitante: tipoFinal,
             perfil: tipoFinal,
-            director: document.getElementById('nombreInput').value.trim(),
+            nombreResponsable: document.getElementById('nombreInput').value.trim(),
             email: document.getElementById('emailInput').value.trim(),
-            telefono: document.getElementById('whatsappInput').value.trim(),
+            whatsapp: document.getElementById('whatsappInput').value.trim(),
             ubicacion: document.getElementById('ubicacionInput').value.trim(),
             programas: programasSel || "Sin programas específicos",
-            meses: nMeses, // Número puro para el Admin
-            cupos: nCupos, // Número puro para el Admin
+            duracionLicencia: document.getElementById('mesesInput').value + " meses",
+            cupos: (principal === "Academia" || (principal === "Independiente" && subValor === "Profesor asociado")) ? (document.getElementById('cuposInput').value || "0") : "N/A",
+            rif: (principal === 'Estudiante autodidacta') ? "N/A" : document.getElementById('rifInput').value.trim(),
+            entidad: (principal === 'Estudiante autodidacta') ? "N/A" : document.getElementById('entidadInput').value.trim(),
             fecha: new Date().toLocaleString()
         };
-
-        if (principal === "Academia") {
-            datos.academia = document.getElementById('entidadInput').value.trim();
-            datos.rif = document.getElementById('rifInput').value.trim();
-        } else {
-            datos.academia = "N/A";
-            datos.rif = "N/A";
-        }
-
         try {
             await addDoc(collection(db, "postulaciones"), datos);
             generarPDF(datos);
@@ -246,14 +248,14 @@ const nMeses = parseInt(document.getElementById('mesesInput').value);
             
             let y = 75;
             const filas = [
-                ["DIRECTOR / RESPONSABLE:", d.director],
-                ["WHATSAPP:", d.telefono],
-                ["EMAIL:", d.email],
-                ["INSTITUCIÓN / ENTIDAD:", d.academia],
-                ["RIF / ID FISCAL:", d.rif],
-                ["CANTIDAD DE CUPOS:", String(d.cupos)], // Fuerza string para evitar errores de librería
-                ["TIEMPO DE LICENCIA:", d.meses + " meses"],
-                ["PROGRAMAS SOLICITADOS:", d.programas]
+                ["RESPONSABLE:", String(d.nombreResponsable)],
+                ["WHATSAPP:", String(d.whatsapp)],
+                ["EMAIL:", String(d.email)],
+                ["IDENTIFICACIÓN / RIF:", String(d.rif)],
+                ["ENTIDAD / FIRMA:", String(d.entidad)],
+                ["CANTIDAD DE CUPOS:", String(d.cupos)], 
+                ["TIEMPO DE LICENCIA:", String(d.duracionLicencia)],
+                ["PROGRAMAS SOLICITADOS:", String(d.programas)]
             ];
 
             filas.forEach(f => {
@@ -265,7 +267,7 @@ const nMeses = parseInt(document.getElementById('mesesInput').value);
             });
             
             doc.setFontSize(8); doc.setTextColor(100);
-            doc.text("Este documento es un comprobante de solicitud y no garantiza la activación hasta que sea procesado por administración.", 20, 280);
+            doc.text("Comprobante oficial de postulación UCMI. Este documento no garantiza la activación inmediata.", 20, 285);
             
             window.open(doc.output('bloburl'), '_blank');
         };
