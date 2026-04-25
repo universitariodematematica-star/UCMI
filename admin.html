@@ -70,7 +70,20 @@
                 </div>
                 <img src="logo_ucmi.png" alt="Logo" style="height: 60px;">
             </div>
-
+<ul class="nav nav-tabs mb-3" id="filtroPostulantes">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" data-filtro="Todos">Todos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-filtro="Profesor embajador">Embajadores</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-filtro="Profesor asociado">Asociados</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-filtro="Estudiante autodidacta">Autodidactas</a>
+                </li>
+            </ul>
             <div class="table-container">
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
@@ -126,6 +139,7 @@
     const auth = getAuth(app);
 
     let currentSolicitud = null;
+    let filtroActual = "Todos";
 
     onSnapshot(collection(db, "postulaciones"), (snapshot) => {
         const tbody = document.getElementById('listaMaestra');
@@ -137,30 +151,34 @@
             const id = d.id;
             const perfil = data.tipoSolicitante || "Pendiente";
             
+            // 1. Siempre contamos todos para que el resumen de la izquierda esté correcto
             if(counts[perfil] !== undefined) counts[perfil]++;
 
-            const colorClass = perfil.includes("Academia") ? "bg-academia" : 
-                               perfil.includes("embajador") ? "bg-embajador" :
-                               perfil.includes("asociado") ? "bg-socio" : "bg-alumno";
+            // 2. Lógica de Filtrado: Solo dibujamos si el filtro es "Todos" o coincide con el perfil
+            if (filtroActual === "Todos" || perfil === filtroActual) {
+                const colorClass = perfil.includes("Academia") ? "bg-academia" : 
+                                   perfil.includes("embajador") ? "bg-embajador" :
+                                   perfil.includes("asociado") ? "bg-socio" : "bg-alumno";
 
-            tbody.innerHTML += `
-                <tr>
-                    <td>
-                        <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
-                        <div class="small text-muted">${data.email}</div>
-                    </td>
-                    <td><span class="badge-perfil ${colorClass}">${perfil}</span></td>
-                    <td><small>${data.ubicacion}</small></td>
-                    <td><span class="fw-bold text-primary">${data.cupos}</span> / ${data.duracionLicencia}</td>
-                    <td>
-                        <button onclick="verDetalles('${id}')" class="btn btn-sm btn-outline-dark">👁️ Revisar</button>
-                        <button onclick="borrarSinProcesar('${id}')" class="btn btn-sm btn-link text-danger">×</button>
-                    </td>
-                </tr>
-            `;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <div class="fw-bold">${data.entidad && data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
+                            <div class="small text-muted">${data.email}</div>
+                        </td>
+                        <td><span class="badge-perfil ${colorClass}">${perfil}</span></td>
+                        <td><small>${data.ubicacion}</small></td>
+                        <td><span class="fw-bold text-primary">${data.cupos}</span> / ${data.duracionLicencia}</td>
+                        <td>
+                            <button onclick="verDetalles('${id}')" class="btn btn-sm btn-outline-dark">👁️ Revisar</button>
+                            <button onclick="borrarSinProcesar('${id}')" class="btn btn-sm btn-link text-danger">×</button>
+                        </td>
+                    </tr>
+                `;
+            }
         });
 
-        // Actualizar contadores
+        // 3. Actualizar contadores del panel lateral (siempre visibles)
         document.getElementById('countAcademia').innerText = counts["Academia"];
         document.getElementById('countEmbajador').innerText = counts["Profesor embajador"];
         document.getElementById('countAsociado').innerText = counts["Profesor asociado"];
