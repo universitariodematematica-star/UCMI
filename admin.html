@@ -12,7 +12,6 @@
         }
         body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        /* Sidebar Estilizada */
         .sidebar { 
             background: var(--azul-ucmi); 
             color: white; 
@@ -26,17 +25,6 @@
         .nav-link:hover { color: white; background: rgba(255,255,255,0.1); border-radius: 8px; }
         .nav-link.active { color: white; font-weight: bold; }
 
-        /* Tarjetas de Conteo */
-        .stat-card {
-            border: none;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            background: white;
-            text-align: center;
-        }
-
-        /* Badges de Perfil */
         .badge-perfil { font-size: 0.7rem; padding: 6px 12px; border-radius: 50px; text-transform: uppercase; font-weight: 600; }
         .bg-academia { background: #e74c3c; color: white; }
         .bg-embajador { background: #3498db; color: white; }
@@ -64,14 +52,13 @@
             <p class="small text-uppercase fw-bold text-muted mb-3">Resumen de Red</p>
             <div class="mb-2 d-flex justify-content-between small"><span>Academias:</span> <span id="countAcademia" class="badge bg-danger">0</span></div>
             <div class="mb-2 d-flex justify-content-between small"><span>Embajadores:</span> <span id="countEmbajador" class="badge bg-primary">0</span></div>
-            <div class="mb-2 d-flex justify-content-between small"><span>Socios:</span> <span id="countSocio" class="badge bg-info text-dark">0</span></div>
+            <div class="mb-2 d-flex justify-content-between small"><span>Asociados:</span> <span id="countAsociado" class="badge bg-info text-dark">0</span></div>
             <div class="mb-2 d-flex justify-content-between small"><span>Alumnos:</span> <span id="countAlumno" class="badge bg-success">0</span></div>
             
             <hr class="border-secondary mt-4">
             <nav class="nav flex-column">
-                <a class="nav-link active" href="#">📥 Solicitudes Pendientes</a>
-                <a class="nav-link" href="#">✅ Usuarios Activos</a>
-                <a class="nav-link" href="#">⚙️ Configuración</a>
+                <a class="nav-link active" href="#">📥 Solicitudes</a>
+                <a class="nav-link" href="#">✅ Usuarios</a>
             </nav>
         </div>
 
@@ -88,15 +75,14 @@
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>Solicitante</th>
+                            <th>Solicitante / Entidad</th>
                             <th>Perfil</th>
-                            <th>Localidad</th>
-                            <th>Plan Solicitado</th>
+                            <th>Ubicación</th>
+                            <th>Plan</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="listaMaestra">
-                        </tbody>
+                    <tbody id="listaMaestra"></tbody>
                 </table>
             </div>
         </div>
@@ -110,8 +96,7 @@
                 <h4 class="fw-bold">Detalles de la Solicitud</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body py-4" id="contenidoModal">
-                </div>
+            <div class="modal-body py-4" id="contenidoModal"></div>
             <div class="modal-footer border-0">
                 <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cerrar</button>
                 <button type="button" id="btnConfirmarAcceso" class="btn btn-success px-4 fw-bold">Confirmar Pago y Activar</button>
@@ -142,11 +127,10 @@
 
     let currentSolicitud = null;
 
-    // 1. ESCUCHA ACTIVA DE SOLICITUDES
     onSnapshot(collection(db, "postulaciones"), (snapshot) => {
         const tbody = document.getElementById('listaMaestra');
         tbody.innerHTML = '';
-        let counts = { "Academia": 0, "Profesor Embajador": 0, "Profesor Socio": 0, "Alumno Autodidacta": 0 };
+        let counts = { "Academia": 0, "Profesor embajador": 0, "Profesor asociado": 0, "Estudiante autodidacta": 0 };
 
         snapshot.forEach((d) => {
             const data = d.data();
@@ -156,18 +140,18 @@
             if(counts[perfil] !== undefined) counts[perfil]++;
 
             const colorClass = perfil.includes("Academia") ? "bg-academia" : 
-                               perfil.includes("Embajador") ? "bg-embajador" :
-                               perfil.includes("Socio") ? "bg-socio" : "bg-alumno";
+                               perfil.includes("embajador") ? "bg-embajador" :
+                               perfil.includes("asociado") ? "bg-socio" : "bg-alumno";
 
             tbody.innerHTML += `
                 <tr>
                     <td>
-                        <div class="fw-bold">${data.academia || data.director}</div>
+                        <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
                         <div class="small text-muted">${data.email}</div>
                     </td>
                     <td><span class="badge-perfil ${colorClass}">${perfil}</span></td>
                     <td><small>${data.ubicacion}</small></td>
-                    <td><span class="fw-bold text-primary">${data.cupos} cupos</span> / ${data.meses}m</td>
+                    <td><span class="fw-bold text-primary">${data.cupos}</span> / ${data.duracionLicencia}</td>
                     <td>
                         <button onclick="verDetalles('${id}')" class="btn btn-sm btn-outline-dark">👁️ Revisar</button>
                         <button onclick="borrarSinProcesar('${id}')" class="btn btn-sm btn-link text-danger">×</button>
@@ -176,14 +160,13 @@
             `;
         });
 
-        // Actualizar contadores del sidebar
-        Object.keys(counts).forEach(k => {
-            const idKey = `count${k.split(' ').pop()}`;
-            if(document.getElementById(idKey)) document.getElementById(idKey).innerText = counts[k];
-        });
+        // Actualizar contadores
+        document.getElementById('countAcademia').innerText = counts["Academia"];
+        document.getElementById('countEmbajador').innerText = counts["Profesor embajador"];
+        document.getElementById('countAsociado').innerText = counts["Profesor asociado"];
+        document.getElementById('countAlumno').innerText = counts["Estudiante autodidacta"];
     });
 
-    // 2. VER EXPEDIENTE COMPLETO (MODAL)
     window.verDetalles = async (id) => {
         const docRef = doc(db, "postulaciones", id);
         const docSnap = await getDoc(docRef);
@@ -196,22 +179,23 @@
                 <div class="row g-4">
                     <div class="col-md-6 border-end">
                         <h6 class="text-uppercase text-muted small fw-bold">Datos Legales</h6>
-                        <p class="mb-1"><strong>Entidad:</strong> ${d.academia || "N/A"}</p>
-                        <p class="mb-1"><strong>Director:</strong> ${d.director}</p>
+                        <p class="mb-1"><strong>Entidad/Firma:</strong> ${d.entidad}</p>
+                        <p class="mb-1"><strong>Responsable:</strong> ${d.nombreResponsable}</p>
                         <p class="mb-1"><strong>RIF/ID Fiscal:</strong> ${d.rif}</p>
-                        <p class="mb-1"><strong>WhatsApp:</strong> ${d.telefono}</p>
+                        <p class="mb-1"><strong>WhatsApp:</strong> ${d.whatsapp}</p>
+                        <p class="mb-1"><strong>Email:</strong> ${d.email}</p>
                     </div>
                     <div class="col-md-6">
                         <h6 class="text-uppercase text-muted small fw-bold">Pedido UCMI</h6>
                         <p class="mb-1"><strong>Perfil:</strong> ${d.tipoSolicitante}</p>
-                        <p class="mb-1"><strong>Cupos Solicitados:</strong> ${d.cupos}</p>
-                        <p class="mb-1"><strong>Programas:</strong> ${d.programas}</p>
-                        <p class="mb-1"><strong>Duración:</strong> ${d.meses} meses</p>
+                        <p class="mb-1"><strong>Cupos:</strong> ${d.cupos}</p>
+                        <p class="mb-1"><strong>Duración:</strong> ${d.duracionLicencia}</p>
+                        <p class="mb-1"><strong>Programas:</strong> <small>${d.programas}</small></p>
                     </div>
                     <div class="col-12 mt-4">
                         <div class="p-3 bg-light rounded border border-warning">
                             <strong>Instrucción para Juan Carlos:</strong> 
-                            Verifica que el depósito bancario o transferencia cubra los ${d.cupos} cupos antes de presionar el botón de activación.
+                            Verifica el depósito de los cupos (${d.cupos}) antes de activar la cuenta.
                         </div>
                     </div>
                 </div>
@@ -221,24 +205,19 @@
         }
     };
 
-    // 3. ACTIVACIÓN REAL (AUTH + FIRESTORE)
     document.getElementById('btnConfirmarAcceso').addEventListener('click', async () => {
         if(!currentSolicitud) return;
-        
         const btn = document.getElementById('btnConfirmarAcceso');
-        btn.innerText = "Procesando Registro...";
+        btn.innerText = "Activando...";
         btn.disabled = true;
 
         try {
             const passTemporal = "UCMI2026";
-            
-            // A. Crear en Auth
             const userCredential = await createUserWithEmailAndPassword(auth, currentSolicitud.email, passTemporal);
             const uid = userCredential.user.uid;
 
-            // B. Guardar en la Base de Datos oficial de Usuarios
             await setDoc(doc(db, "usuarios", uid), {
-                nombre: currentSolicitud.academia || currentSolicitud.director,
+                nombre: currentSolicitud.entidad !== "N/A" ? currentSolicitud.entidad : currentSolicitud.nombreResponsable,
                 email: currentSolicitud.email,
                 rol: currentSolicitud.tipoSolicitante,
                 rif: currentSolicitud.rif,
@@ -247,14 +226,10 @@
                 fechaActivacion: new Date().toLocaleString()
             });
 
-            // C. Eliminar de la lista de pendientes
             await deleteDoc(doc(db, "postulaciones", currentSolicitud.id));
-
-            alert("¡USUARIO ACTIVADO!\n\nEmail: " + currentSolicitud.email + "\nClave: " + passTemporal);
+            alert("¡USUARIO ACTIVADO!\nEmail: " + currentSolicitud.email);
             location.reload();
-
         } catch (error) {
-            console.error(error);
             alert("Error: " + error.message);
             btn.innerText = "Confirmar Pago y Activar";
             btn.disabled = false;
@@ -262,7 +237,7 @@
     });
 
     window.borrarSinProcesar = async (id) => {
-        if(confirm("¿Deseas eliminar esta solicitud permanentemente?")) {
+        if(confirm("¿Eliminar permanentemente?")) {
             await deleteDoc(doc(db, "postulaciones", id));
         }
     };
