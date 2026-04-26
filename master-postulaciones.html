@@ -1,585 +1,306 @@
 <!DOCTYPE html>
-
 <html lang="es">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>UCMI - Control de Postulaciones</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     
-
     <style>
-
         :root {
-
             --dorado-ucmi: #c5a059;
-
             --azul-profundo: #06090f;
-
             --rojo-peligro: #ff4d4d;
-
         }
-
-
 
         body {
-
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-
             background-size: cover;
-
             font-family: 'Segoe UI', sans-serif;
-
             color: white;
-
             margin: 0;
-
         }
-
-
 
         .super-overlay {
-
             background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.92) 100%);
-
             min-height: 100vh;
-
         }
 
-
-
+        /* SIDEBAR */
         .sidebar {
-
             background: rgba(26, 42, 58, 0.9);
-
             backdrop-filter: blur(10px);
-
             min-height: 100vh;
-
             border-right: 1px solid rgba(197, 160, 89, 0.3);
-
             padding: 25px 15px;
-
         }
 
-
-
+        /* BOTONES ESTILO PÍLDORA */
         .btn-pill-main {
-
             background: transparent;
-
             border: 1px solid rgba(255, 255, 255, 0.8) !important;
-
             color: white !important;
-
             border-radius: 50px;
-
             padding: 10px 20px;
-
             text-transform: uppercase;
-
             font-size: 0.75rem;
-
+            letter-spacing: 1px;
             font-weight: 600;
-
-            text-decoration: none;
-
-            transition: 0.3s;
-
+            transition: all 0.3s;
             display: flex; align-items: center; justify-content: center;
-
+            text-decoration: none;
         }
 
-
+        .btn-pill-main:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--dorado-ucmi) !important;
+            border-color: var(--dorado-ucmi) !important;
+        }
 
         .btn-pill-danger {
-
             background: rgba(255, 77, 77, 0.1);
-
             border: 1px solid var(--rojo-peligro) !important;
-
             color: var(--rojo-peligro) !important;
-
             border-radius: 50px;
-
             padding: 10px 20px;
-
             text-transform: uppercase;
-
             font-size: 0.75rem;
-
             font-weight: 600;
-
+            display: flex; align-items: center; justify-content: center;
         }
 
-
-
+        /* ESTILO EXPEDIENTE (GLASS CON ESQUINAS REDONDEADAS) */
         .glass-expediente {
-
             background: rgba(255, 255, 255, 0.03);
-
             backdrop-filter: blur(25px);
-
             -webkit-backdrop-filter: blur(25px);
-
             border: 1px solid rgba(255, 255, 255, 0.1);
-
             border-radius: 25px !important; 
-
             overflow: hidden; 
-
+            padding: 0; 
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-
         }
 
+        .table-ucmi {
+            margin-bottom: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+            color: white;
+            vertical-align: middle;
+        }
 
+        .table-ucmi thead tr {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--dorado-ucmi);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .table-ucmi th, .table-ucmi td {
+            padding: 15px 20px;
+            border: none;
+        }
 
         .header-expediente { color: var(--dorado-ucmi); font-weight: bold; font-size: 1.1rem; }
+        .label-ucmi { color: var(--dorado-ucmi); font-size: 0.65rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        .val-ucmi { color: white; font-size: 0.9rem; margin-bottom: 15px; display: block; }
 
-        .label-ucmi { color: var(--dorado-ucmi); font-size: 0.65rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; opacity: 0.8; }
+        .modal-content-ucmi {
+            background: transparent;
+            border: none;
+        }
 
-        .val-ucmi { color: white; font-size: 0.9rem; margin-bottom: 20px; display: block; }
-
-
-
-        .table-ucmi { color: white; vertical-align: middle; margin-bottom: 0; }
-
-        .table-ucmi thead { background: rgba(255, 255, 255, 0.05); color: var(--dorado-ucmi); font-size: 0.75rem; text-transform: uppercase; }
-
-
-
-        .modal-content-ucmi { background: transparent; border: none; }
-
+        .padding-contenido { padding: 30px; }
     </style>
-
 </head>
-
 <body>
 
-
-
 <div class="super-overlay">
-
     <div class="container-fluid">
-
         <div class="row">
-
             <div class="col-md-2 sidebar d-none d-md-block">
-
                 <div class="text-center mb-5">
-
                     <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 60px;">
-
                 </div>
-
                 <div class="nav flex-column gap-3">
-
                     <a href="super-admin.html" class="btn-pill-main"><i class="bi bi-grid-fill me-2"></i> Panel Principal</a>
-
                     <a href="master-usuarios.html" class="btn-pill-main"><i class="bi bi-people me-2"></i> Usuarios</a>
-
                     <a href="master-vigencia.html" class="btn-pill-main"><i class="bi bi-clock me-2"></i> Vigencia</a>
-
                     <a href="https://universitariodematematica-star.github.io/UCMI/master-repositorio.html" class="btn-pill-main">
-
                         <i class="bi bi-journal-bookmark me-2"></i> Repositorio
-
                     </a>
-
                     <button id="btnLogout" class="btn-pill-danger mt-5"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</button>
-
                 </div>
-
             </div>
-
-
 
             <div class="col-md-10 p-4">
-
                 <div class="d-flex align-items-center mb-4">
-
                     <i class="bi bi-folder2-open fs-2 text-warning me-3"></i>
-
                     <div>
-
                         <h2 class="fw-bold mb-0">POSTULACIONES RECIBIDAS</h2>
-
                         <p class="text-white-50 small">Gestión de accesos institucionales bajo protocolo.</p>
-
                     </div>
-
                 </div>
-
-
 
                 <div class="glass-expediente">
-
                     <table class="table table-ucmi">
-
                         <thead>
-
                             <tr>
-
                                 <th>Entidad</th>
-
                                 <th>Responsable</th>
-
                                 <th>Fecha</th>
-
                                 <th>Programa</th>
-
                                 <th class="text-end">Acción</th>
-
                             </tr>
-
                         </thead>
-
-                        <tbody id="tablaCuerpo">
-
+                        <tbody id="tablaPostulaciones">
                             <tr>
-
                                 <td>Instituto Científico Omega</td>
-
                                 <td>Magister Carlos Arturo Paéz</td>
-
                                 <td>26/4/2026</td>
-
                                 <td>Matemática AGEM</td>
-
                                 <td class="text-end">
-
-                                    <button class="btn btn-sm rounded-pill px-3" style="border: 1px solid var(--dorado-ucmi); color: var(--dorado-ucmi);" data-bs-toggle="modal" data-bs-target="#modalExpediente">
-
+                                    <button class="btn-pill-main ms-auto" style="border-color: var(--dorado-ucmi) !important; color: var(--dorado-ucmi) !important;" data-bs-toggle="modal" data-bs-target="#modalExpediente">
                                         REVISAR
-
                                     </button>
-
                                 </td>
-
                             </tr>
-
                         </tbody>
-
                     </table>
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
 </div>
-
-
 
 <div class="modal fade" id="modalExpediente" tabindex="-1" aria-hidden="true">
-
     <div class="modal-dialog modal-xl modal-dialog-centered">
-
         <div class="modal-content modal-content-ucmi">
-
-            <div class="glass-expediente p-5">
-
-                <div class="d-flex justify-content-between align-items-center mb-4">
-
-                    <div class="d-flex align-items-center">
-
-                        <i class="bi bi-folder-fill text-warning fs-3 me-2"></i>
-
-                        <h4 class="mb-0 fw-bold">EXPEDIENTE DE ASPIRANTES</h4>
-
-                    </div>
-
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-
-                </div>
-
-                
-
-                <p class="text-white-50 small mb-5">Revisión de solicitudes de acceso institucional y validación de programas académicas.</p>
-
-
-
-                <div class="row mb-5">
-
-                    <div class="col-12">
-
-                        <h5 class="header-expediente mb-4"><i class="bi bi-bank me-2"></i> Información de la Entidad</h5>
-
-                        <div class="row">
-
-                            <div class="col-md-4">
-
-                                <label class="label-ucmi">Entidad</label>
-
-                                <span class="val-ucmi">Instituto Científico Omega</span>
-
-                                
-
-                                <label class="label-ucmi">RIF</label>
-
-                                <span class="val-ucmi">1000000</span>
-
-
-
-                                <label class="label-ucmi">Ubicación</label>
-
-                                <span class="val-ucmi">Bogotá, Colombia</span>
-
-                            </div>
-
-                            <div class="col-md-4">
-
-                                <label class="label-ucmi">Responsable</label>
-
-                                <span class="val-ucmi">Magister Carlos Arturo Paéz</span>
-
-
-
-                                <label class="label-ucmi">Correo Electrónico</label>
-
-                                <span class="val-ucmi text-info">director@edu.ve</span>
-
-
-
-                                <label class="label-ucmi">WhatsApp / Contacto</label>
-
-                                <span class="val-ucmi">+51 987 654 321</span>
-
-                            </div>
-
-                            <div class="col-md-4">
-
-                                <label class="label-ucmi">Fecha de Solicitud</label>
-
-                                <span class="val-ucmi">26/4/2026, 0:31:37</span>
-
-
-
-                                <label class="label-ucmi">Tipo de Solicitante</label>
-
-                                <span class="val-ucmi">Academia</span>
-
-
-
-                                <label class="label-ucmi">Perfil de Aplicación</label>
-
-                                <span class="val-ucmi">Academia</span>
-
-                            </div>
-
+            <div class="glass-expediente">
+                <div class="padding-contenido">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-folder-fill text-warning fs-3 me-2"></i>
+                            <h4 class="mb-0 fw-bold">EXPEDIENTE DE ASPIRANTES</h4>
                         </div>
-
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
+                    
+                    <p class="text-white-50 small mb-4">Revisión de solicitudes de acceso institucional y validación de programas académicas.</p>
 
-                </div>
-
-
-
-                <div class="row border-top border-white border-opacity-10 pt-4">
-
-                    <div class="col-12">
-
-                        <h5 class="header-expediente mb-4"><i class="bi bi-mortarboard me-2"></i> Programas & Licencia</h5>
-
-                        <div class="row align-items-end">
-
-                            <div class="col-md-4">
-
-                                <label class="label-ucmi">Programas Solicitados</label>
-
-                                <span class="val-ucmi">Matemática AGEM</span>
-
-                            </div>
-
-                            <div class="col-md-3">
-
-                                <label class="label-ucmi">Cupos Solicitados</label>
-
-                                <span class="val-ucmi">1000</span>
-
-                            </div>
-
-                            <div class="col-md-2">
-
-                                <label class="label-ucmi">Duración de Licencia</label>
-
-                                <span class="val-ucmi">50 meses</span>
-
-                            </div>
-
-                            <div class="col-md-3 text-end">
-
-                                <div class="d-flex gap-2 justify-content-end">
-
-                                    <button class="btn btn-outline-danger rounded-pill px-4" onclick="rechazarPostulante('ID_DEL_DOCUMENTO')">
-
-                                        <i class="bi bi-x-circle me-1"></i> Rechazar
-
-                                    </button>
-
-                                    <button class="btn rounded-pill px-4 fw-bold" style="background: var(--dorado-ucmi); color: black;">
-
-                                        <i class="bi bi-check-circle me-1"></i> Validar Acceso
-
-                                    </button>
-
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <h5 class="header-expediente mb-4"><i class="bi bi-bank me-2"></i> Información de la Entidad</h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="label-ucmi">Entidad</label>
+                                    <span class="val-ucmi">Instituto Científico Omega</span>
+                                    <label class="label-ucmi">RIF</label>
+                                    <span class="val-ucmi">J-1000000</span>
                                 </div>
-
+                                <div class="col-md-4">
+                                    <label class="label-ucmi">Responsable</label>
+                                    <span class="val-ucmi">Magister Carlos Arturo Paéz</span>
+                                    <label class="label-ucmi">Correo Electrónico</label>
+                                    <span class="val-ucmi text-info">director@edu.ve</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="label-ucmi">Fecha de Solicitud</label>
+                                    <span class="val-ucmi">26/4/2026</span>
+                                    <label class="label-ucmi">Tipo de Solicitante</label>
+                                    <span class="val-ucmi">Academia</span>
+                                </div>
                             </div>
-
                         </div>
 
+                        <div class="col-12 border-top border-white border-opacity-10 pt-4">
+                            <h5 class="header-expediente mb-4"><i class="bi bi-mortarboard me-2"></i> Programas & Licencia</h5>
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <label class="label-ucmi">Programas Solicitados</label>
+                                    <span class="val-ucmi">Matemática AGEM</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="label-ucmi">Cupos Solicitados</label>
+                                    <span class="val-ucmi">1000</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="label-ucmi">Duración de Licencia</label>
+                                    <span class="val-ucmi">50 meses</span>
+                                </div>
+                                <div class="col-md-2 text-end d-flex gap-2 justify-content-end">
+                                    <button class="btn btn-sm px-3 rounded-pill btn-outline-danger" onclick="rechazarPostulante('ID_POSTULACION_AQUI')">
+                                        <i class="bi bi-x-circle me-1"></i> Rechazar
+                                    </button>
+                                    <button class="btn btn-sm px-4 rounded-pill fw-bold" style="background: var(--dorado-ucmi); color: black;">
+                                        <i class="bi bi-check-circle me-1"></i> Validar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
 </div>
-
-
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-
-
 <script type="module">
-
+    // --- IMPORTACIONES FIREBASE ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-
     import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
     import { getFirestore, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-
-
-    // Reemplaza con tus credenciales reales de Firebase
-
-    const firebaseConfig = {
-
-        apiKey: "TU_API_KEY",
-
-        authDomain: "TU_DOMAIN",
-
-        projectId: "TU_PROJECT_ID",
-
-        storageBucket: "TU_BUCKET",
-
-        messagingSenderId: "TU_SENDER",
-
-        appId: "TU_APP_ID"
-
-    };
-
-
-
+    // Tu configuración de Firebase (Asegúrate de que 'firebaseConfig' esté definida o cargada)
     const app = initializeApp(firebaseConfig);
-
     const auth = getAuth(app);
-
     const db = getFirestore(app);
 
-
-
-    // FUNCIÓN PARA RECHAZAR Y ELIMINAR DE FIRESTORE
-
-    window.rechazarPostulante = async function(idDoc) {
-
-        const result = await Swal.fire({
-
+    // --- LÓGICA DE RECHAZO ---
+    window.rechazarPostulante = async function(idDocumento) {
+        Swal.fire({
             title: '¿Confirmar rechazo?',
-
-            text: "Esta acción eliminará el registro permanentemente de Firestore.",
-
+            text: "Esta acción eliminará la postulación permanentemente de la base de datos.",
             icon: 'warning',
-
             showCancelButton: true,
-
             confirmButtonColor: '#ff4d4d',
-
             cancelButtonColor: '#6e7881',
-
             confirmButtonText: 'Sí, eliminar',
-
             cancelButtonText: 'Cancelar',
-
             background: '#06090f',
-
             color: '#ffffff'
-
-        });
-
-
-
-        if (result.isConfirmed) {
-
-            try {
-
-                // Eliminación física del registro
-
-                await deleteDoc(doc(db, "postulaciones", idDoc));
-
-                
-
-                await Swal.fire({
-
-                    title: 'Eliminado',
-
-                    text: 'La postulación ha sido borrada.',
-
-                    icon: 'success',
-
-                    background: '#06090f',
-
-                    color: '#ffffff',
-
-                    timer: 2000,
-
-                    showConfirmButton: false
-
-                });
-
-                
-
-                location.reload(); // Recargar para actualizar la lista
-
-            } catch (error) {
-
-                Swal.fire('Error', 'No se pudo eliminar: ' + error.message, 'error');
-
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await deleteDoc(doc(db, "postulaciones", idDocumento));
+                    
+                    Swal.fire({
+                        title: 'Eliminado',
+                        text: 'El expediente ha sido removido con éxito.',
+                        icon: 'success',
+                        background: '#06090f',
+                        color: '#ffffff',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    setTimeout(() => { location.reload(); }, 2000);
+                } catch (error) {
+                    Swal.fire('Error', 'No se pudo eliminar el registro.', 'error');
+                }
             }
-
-        }
-
+        });
     };
 
-
-
+    // --- CIERRE DE SESIÓN ---
     document.getElementById('btnLogout').addEventListener('click', () => {
-
         signOut(auth).then(() => { window.location.href = "index.html"; });
-
     });
-
 </script>
 
 </body>
-
 </html>
