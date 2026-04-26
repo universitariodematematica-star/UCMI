@@ -95,37 +95,37 @@
                     <div class="col-md-4">
                         <label class="label-ucmi">Responsable</label>
                         <span class="val-ucmi" id="exp-responsable"></span>
-                        <label class="label-ucmi">Correo</label>
-                        <span class="val-ucmi text-info" id="exp-correo"></span>
-                        <label class="label-ucmi">WhatsApp</label>
-                        <span class="val-ucmi" id="exp-telefono"></span>
+                        <label class="label-ucmi">Correo Electrónico</label>
+                        <span class="val-ucmi text-info" id="exp-email"></span>
+                        <label class="label-ucmi">WhatsApp / Contacto</label>
+                        <span class="val-ucmi" id="exp-whatsapp"></span>
                     </div>
                     <div class="col-md-4">
-                        <label class="label-ucmi">Fecha</label>
+                        <label class="label-ucmi">Fecha de Solicitud</label>
                         <span class="val-ucmi" id="exp-fecha"></span>
-                        <label class="label-ucmi">Tipo</label>
-                        <span class="val-ucmi" id="exp-tipo"></span>
-                        <label class="label-ucmi">Perfil</label>
+                        <label class="label-ucmi">Tipo de Solicitante</label>
+                        <span class="val-ucmi" id="exp-tipoSolicitante"></span>
+                        <label class="label-ucmi">Perfil de Aplicación</label>
                         <span class="val-ucmi" id="exp-perfil"></span>
                     </div>
                 </div>
 
                 <div class="row border-top border-white border-opacity-10 pt-4">
                     <div class="col-md-4">
-                        <label class="label-ucmi">Programas</label>
+                        <label class="label-ucmi">Programas Solicitados</label>
                         <span class="val-ucmi" id="exp-programas"></span>
                     </div>
                     <div class="col-md-3">
-                        <label class="label-ucmi">Cupos</label>
+                        <label class="label-ucmi">Cupos Solicitados</label>
                         <span class="val-ucmi" id="exp-cupos"></span>
                     </div>
                     <div class="col-md-2">
-                        <label class="label-ucmi">Duración</label>
+                        <label class="label-ucmi">Duración de Licencia</label>
                         <span class="val-ucmi" id="exp-duracion"></span>
                     </div>
-                    <div class="col-md-3 text-end">
+                    <div class="col-md-3 text-end d-flex align-items-end justify-content-end gap-2">
                         <button class="btn btn-outline-danger rounded-pill px-4" id="btnRechazar">Rechazar</button>
-                        <button class="btn rounded-pill px-4" style="background: var(--dorado-ucmi);">Validar</button>
+                        <button class="btn rounded-pill px-4" style="background: var(--dorado-ucmi); color: black; font-weight: bold;">Validar Acceso</button>
                     </div>
                 </div>
             </div>
@@ -139,10 +139,10 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, onSnapshot, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // ASEGÚRATE DE QUE ESTOS DATOS SEAN LOS CORRECTOS DE TU CONSOLA FIREBASE
+    // CONFIGURACIÓN DE TU FIREBASE
     const firebaseConfig = {
         apiKey: "TU_API_KEY",
-        authDomain: "TU_PROYECTO.firebaseapp.com",
+        authDomain: "TU_DOMINIO.firebaseapp.com",
         projectId: "TU_PROYECTO_ID",
         storageBucket: "TU_PROYECTO.appspot.com",
         messagingSenderId: "TU_ID",
@@ -152,73 +152,73 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const tabla = document.getElementById('tablaPostulaciones');
-    let docIdSeleccionado = null;
+    let idActivo = null;
 
-    // ESCUCHAR FIREBASE (TIEMPO REAL)
+    // CARGA EN TIEMPO REAL (Corrige el error de no ver registros)
     onSnapshot(collection(db, "postulaciones"), (snapshot) => {
-        console.log("Datos recibidos de Firebase:", snapshot.size); // Esto saldrá en la consola (F12)
         tabla.innerHTML = '';
-        
         snapshot.forEach((docSnap) => {
-            const d = docSnap.data();
+            const data = docSnap.data();
             const id = docSnap.id;
             
-            // Usamos nombres exactos de tus fotos de Firebase
+            // Renderizamos la fila de la tabla
             tabla.innerHTML += `
                 <tr>
-                    <td>${d.entidad || 'S/N'}</td>
-                    <td>${d.nombreResponsable || d.responsable || 'S/R'}</td>
-                    <td>${d.fecha || 'N/A'}</td>
-                    <td>${d.programas || 'N/A'}</td>
+                    <td>${data.entidad || 'N/A'}</td>
+                    <td>${data.nombreResponsable || 'N/A'}</td>
+                    <td>${data.fecha ? data.fecha.split(',')[0] : 'N/A'}</td>
+                    <td>${data.programas || 'N/A'}</td>
                     <td class="text-end">
                         <button class="btn btn-sm rounded-pill px-3" 
                                 style="border: 1px solid var(--dorado-ucmi); color: var(--dorado-ucmi);"
-                                onclick="window.verDetalle('${id}')">
+                                onclick="window.abrirExpediente('${id}')">
                             REVISAR
                         </button>
                     </td>
                 </tr>`;
         });
-    }, (error) => {
-        console.error("Error en Firebase:", error);
     });
 
-    // VER DETALLE
-    window.verDetalle = async (id) => {
-        docIdSeleccionado = id;
-        const s = await getDoc(doc(db, "postulaciones", id));
-        if (s.exists()) {
-            const d = s.data();
-            document.getElementById('exp-entidad').innerText = d.entidad || '';
-            document.getElementById('exp-rif').innerText = d.rif || '';
-            document.getElementById('exp-ubicacion').innerText = d.ubicacion || '';
-            document.getElementById('exp-responsable').innerText = d.nombreResponsable || '';
-            document.getElementById('exp-correo').innerText = d.correo || '';
-            document.getElementById('exp-telefono').innerText = d.telefono || '';
-            document.getElementById('exp-fecha').innerText = d.fecha || '';
-            document.getElementById('exp-tipo').innerText = d.tipoSolicitante || '';
-            document.getElementById('exp-perfil').innerText = d.perfilAplicacion || '';
-            document.getElementById('exp-programas').innerText = d.programas || '';
-            document.getElementById('exp-cupos').innerText = d.cupos || '';
-            document.getElementById('exp-duracion').innerText = d.duracion || '';
-            new bootstrap.Modal(document.getElementById('modalExpediente')).show();
+    // FUNCIÓN PARA MOSTRAR LOS DATOS EXACTOS EN EL MODAL
+    window.abrirExpediente = async (id) => {
+        idActivo = id;
+        const snapshot = await getDoc(doc(db, "postulaciones", id));
+        if (snapshot.exists()) {
+            const d = snapshot.data();
+            
+            // Mapeo exacto según tus capturas de Firebase
+            document.getElementById('exp-entidad').innerText = d.entidad || 'No definido';
+            document.getElementById('exp-rif').innerText = d.rif || 'No definido';
+            document.getElementById('exp-ubicacion').innerText = d.ubicacion || 'No definido';
+            document.getElementById('exp-responsable').innerText = d.nombreResponsable || 'No definido';
+            document.getElementById('exp-email').innerText = d.email || 'No definido';
+            document.getElementById('exp-whatsapp').innerText = d.whatsapp || 'No definido';
+            document.getElementById('exp-fecha').innerText = d.fecha || 'No definido';
+            document.getElementById('exp-tipoSolicitante').innerText = d.tipoSolicitante || 'No definido';
+            document.getElementById('exp-perfil').innerText = d.perfil || 'No definido';
+            document.getElementById('exp-programas').innerText = d.programas || 'No definido';
+            document.getElementById('exp-cupos').innerText = d.cupos || '0';
+            document.getElementById('exp-duracion').innerText = d.duracionLicencia || '0 meses';
+
+            const modal = new bootstrap.Modal(document.getElementById('modalExpediente'));
+            modal.show();
         }
     };
 
-    // RECHAZAR (ELIMINAR)
+    // FUNCIÓN PARA RECHAZAR (BORRAR DE FIREBASE)
     document.getElementById('btnRechazar').onclick = async () => {
-        const confirmacion = await Swal.fire({
-            title: '¿Rechazar postulación?',
-            text: "Se eliminará permanentemente de la base de datos.",
+        const confirm = await Swal.fire({
+            title: '¿Confirmar rechazo?',
+            text: "Esta acción borrará el registro de la base de datos.",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ff4d4d',
-            confirmButtonText: 'Sí, borrar',
+            confirmButtonText: 'Sí, eliminar',
             background: '#06090f', color: '#fff'
         });
 
-        if (confirmacion.isConfirmed) {
-            await deleteDoc(doc(db, "postulaciones", docIdSeleccionado));
+        if (confirm.isConfirmed && idActivo) {
+            await deleteDoc(doc(db, "postulaciones", idActivo));
             bootstrap.Modal.getInstance(document.getElementById('modalExpediente')).hide();
             Swal.fire({ title: 'Eliminado', icon: 'success', background: '#06090f', color: '#fff' });
         }
