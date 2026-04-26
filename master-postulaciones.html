@@ -121,19 +121,8 @@
                                 <th class="text-end">Acción</th>
                             </tr>
                         </thead>
-                        <tbody id="tablaCuerpo">
-                            <tr>
-                                <td>Instituto Científico Omega</td>
-                                <td>Magister Carlos Arturo Paéz</td>
-                                <td>26/4/2026</td>
-                                <td>Matemática AGEM</td>
-                                <td class="text-end">
-                                    <button class="btn btn-sm rounded-pill px-3" style="border: 1px solid var(--dorado-ucmi); color: var(--dorado-ucmi);" data-bs-toggle="modal" data-bs-target="#modalExpediente">
-                                        REVISAR
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
+                        <tbody id="tablaPostulaciones">
+    </tbody>
                     </table>
                 </div>
             </div>
@@ -247,6 +236,36 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const tabla = document.getElementById('tablaPostulaciones');
+
+// Esta función escucha los cambios en la colección "postulaciones"
+onSnapshot(collection(db, "postulaciones"), (snapshot) => {
+    tabla.innerHTML = ''; // Limpiamos la tabla para que no se dupliquen al cargar
+    
+    snapshot.forEach((doc) => {
+        const data = doc.data();
+        const id = doc.id;
+
+        // Insertamos una fila por cada registro encontrado en Firebase
+        tabla.innerHTML += `
+            <tr>
+                <td>${data.entidad || 'Sin nombre'}</td>
+                <td>${data.nombreResponsable || 'Sin responsable'}</td>
+                <td>${data.fecha || 'N/A'}</td>
+                <td>${data.programas || 'N/A'}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm rounded-pill px-3" 
+                            style="border: 1px solid var(--dorado-ucmi); color: var(--dorado-ucmi);"
+                            onclick="verExpediente('${id}')">
+                        REVISAR
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+});
 
     // FUNCIÓN PARA RECHAZAR Y ELIMINAR DE FIRESTORE
     window.rechazarPostulante = async function(idDoc) {
