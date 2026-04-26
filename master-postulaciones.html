@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
         :root { --dorado-ucmi: #c5a059; --azul-profundo: #06090f; }
         body {
@@ -29,15 +30,17 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-2 sidebar d-none d-md-block">
-                <div class="text-center mb-5"><img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 60px;"></div>
+                <div class="text-center mb-5">
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 60px;">
+                </div>
                 <div class="nav flex-column gap-3">
                     <a href="super-admin.html" class="btn-pill-main"><i class="bi bi-grid-fill me-2"></i> Panel Principal</a>
-                    <button class="btn btn-outline-danger rounded-pill mt-5" id="btnLogout">Salir</button>
+                    <button class="btn btn-outline-danger rounded-pill mt-5" id="btnLogout">Cerrar Sesión</button>
                 </div>
             </div>
 
             <div class="col-md-10 p-4">
-                <h2 class="fw-bold mb-4"><i class="bi bi-folder2-open text-warning me-2"></i> POSTULACIONES RECIBIDAS</h2>
+                <h2 class="fw-bold mb-4"><i class="bi bi-folder2-open text-warning me-2"></i> POSTULACIONES</h2>
                 <div class="glass-expediente">
                     <table class="table table-ucmi">
                         <thead>
@@ -63,7 +66,7 @@
         <div class="modal-content border-0 bg-transparent">
             <div class="glass-expediente p-5">
                 <div class="d-flex justify-content-between mb-4">
-                    <h4 class="fw-bold text-white">EXPEDIENTE DETALLADO</h4>
+                    <h4 class="fw-bold text-white">DETALLE DE POSTULACIÓN</h4>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="row">
@@ -74,7 +77,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="label-ucmi">Responsable</label><span class="val-ucmi" id="exp-responsable"></span>
-                        <label class="label-ucmi">Correo</label><span class="val-ucmi text-info" id="exp-correo"></span>
+                        <label class="label-ucmi">Correo</label><span class="val-ucmi" id="exp-correo"></span>
                         <label class="label-ucmi">WhatsApp</label><span class="val-ucmi" id="exp-whatsapp"></span>
                     </div>
                     <div class="col-md-4">
@@ -83,12 +86,12 @@
                         <label class="label-ucmi">Programas</label><span class="val-ucmi" id="exp-programas"></span>
                     </div>
                 </div>
-                <div class="row border-top border-white border-opacity-10 pt-4 mt-2">
+                <div class="row border-top border-white border-opacity-10 pt-4">
                     <div class="col-md-4"><label class="label-ucmi">Cupos</label><span class="val-ucmi" id="exp-cupos"></span></div>
                     <div class="col-md-4"><label class="label-ucmi">Duración</label><span class="val-ucmi" id="exp-duracion"></span></div>
                     <div class="col-md-4 text-end">
                         <button class="btn btn-outline-danger rounded-pill px-4" id="btnRechazar">Rechazar</button>
-                        <button class="btn btn-warning rounded-pill px-4 fw-bold">Validar Acceso</button>
+                        <button class="btn btn-warning rounded-pill px-4 fw-bold">Validar</button>
                     </div>
                 </div>
             </div>
@@ -107,7 +110,7 @@
         authDomain: "TU_PROYECTO.firebaseapp.com",
         projectId: "TU_PROYECTO_ID",
         storageBucket: "TU_PROYECTO.appspot.com",
-        messagingSenderId: "TU_SENDER_ID",
+        messagingSenderId: "TU_ID",
         appId: "TU_APP_ID"
     };
 
@@ -115,10 +118,10 @@
     const db = getFirestore(app);
     let idSeleccionado = null;
 
-    // Conexión a la colección "Postulaciones" (Asegúrate de la P mayúscula)
-    const colRef = collection(db, "Postulaciones");
+    // Asegúrate de que en Firebase la colección se llame "Postulaciones" (con P mayúscula)
+    const refCol = collection(db, "Postulaciones");
 
-    onSnapshot(colRef, (snapshot) => {
+    onSnapshot(refCol, (snapshot) => {
         const tabla = document.getElementById('tablaPostulaciones');
         tabla.innerHTML = '';
         
@@ -137,13 +140,15 @@
                     <td>${d.fecha || '---'}</td>
                     <td>${d.programas || '---'}</td>
                     <td class="text-end">
-                        <button class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="abrirExpediente('${id}')">REVISAR</button>
+                        <button class="btn btn-sm btn-outline-warning rounded-pill" onclick="abrirExpediente('${id}')">REVISAR</button>
                     </td>
                 </tr>`;
         });
+    }, (error) => {
+        console.error("Error cargando datos:", error);
     });
 
-    // Función expuesta globalmente para el botón onclick
+    // Función global para el botón
     window.abrirExpediente = async (id) => {
         idSeleccionado = id;
         const snap = await getDoc(doc(db, "Postulaciones", id));
@@ -166,7 +171,7 @@
     };
 
     document.getElementById('btnRechazar').onclick = async () => {
-        if (confirm("¿Seguro que deseas eliminar esta postulación?")) {
+        if (idSeleccionado && confirm("¿Eliminar registro?")) {
             await deleteDoc(doc(db, "Postulaciones", idSeleccionado));
             bootstrap.Modal.getInstance(document.getElementById('modalExpediente')).hide();
         }
