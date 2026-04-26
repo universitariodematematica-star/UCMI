@@ -197,37 +197,30 @@
     </audio>
 
     <script>
-        // Seleccionamos los campos de entrada
         const inputs = document.querySelectorAll('input');
         const audio = document.getElementById('audio-inicio');
-        audio.volume = 0.4; // Nivel de volumen inicial
+        audio.volume = 0.4;
 
-        // Función para iniciar el audio al interactuar
         const iniciarAudio = () => {
             if (audio.paused) {
-                audio.play().catch(error => {
-                    console.log("El navegador requiere una interacción más directa para el audio.");
-                });
+                audio.play().catch(error => console.log("Audio esperando interacción."));
             }
-            // Una vez que inicia, quitamos los escuchadores para no repetir la lógica
             inputs.forEach(input => input.removeEventListener('click', iniciarAudio));
             document.removeEventListener('click', iniciarAudio);
         };
 
-        // Detectar clic en inputs o en cualquier parte del formulario
         inputs.forEach(input => {
             input.addEventListener('click', iniciarAudio, { once: true });
         });
 
-        // Por si el usuario hace clic directamente en el botón de entrar sin tocar los inputs
-        document.getElementById('form-login').addEventListener('submit', function() {
+        document.getElementById('form-login').addEventListener('submit', () => {
             if (audio.paused) audio.play();
         });
     </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -242,17 +235,23 @@
         const auth = getAuth(app);
         const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
 
-        // 1. VIGILANTE: Si ya estás logueado, te redirige al Panel de inmediato
+        // VIGILANTE DE REDIRECCIÓN AUTOMÁTICA
         onAuthStateChanged(auth, (user) => {
-            if (user && user.uid === MI_UID_MAESTRO) {
-                window.location.href = "https://universitariodematematica-star.github.io/UCMI/super-admin.html";
+            if (user) {
+                if (user.uid === MI_UID_MAESTRO) {
+                    console.log("Super Administrador Detectado");
+                    window.location.href = "https://universitariodematematica-star.github.io/UCMI/super-admin.html";
+                } else {
+                    // Si alguien logueado no eres tú, se cierra la sesión
+                    signOut(auth);
+                }
             }
         });
 
-        // 2. PROCESO DE LOGIN
+        // MANEJO DEL FORMULARIO
         const loginForm = document.getElementById('form-login');
         loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Evita que la página se recargue
+            e.preventDefault();
 
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
@@ -263,26 +262,19 @@
 
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-                
-                if (userCredential.user.uid === MI_UID_MAESTRO) {
-                    // Acceso concedido al Super Administrador
-                    window.location.href = "https://universitariodematematica-star.github.io/UCMI/super-admin.html";
-                } else {
-                    // Si entra otro usuario registrado que no eres tú
-                    alert("ACCESO RESTRINGIDO: Esta entrada es exclusiva para el Super Administrador.");
-                    await auth.signOut();
+                if (userCredential.user.uid !== MI_UID_MAESTRO) {
+                    alert("ACCESO DENEGADO: No tiene perfil de Super Administrador.");
+                    await signOut(auth);
                     location.reload();
                 }
             } catch (error) {
-                console.error("Error de login:", error);
-                alert("CREDENCIALES INVÁLIDAS");
+                console.error("Error:", error);
+                alert("DATOS DE ACCESO INCORRECTOS");
                 btn.disabled = false;
                 btn.innerText = "Entrar a UCMI";
             }
         });
     </script>
-</body>
-</html>
 
 </body>
 </html>
