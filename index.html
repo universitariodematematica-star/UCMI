@@ -192,6 +192,39 @@
         </div>
     </div>
 
+    <audio id="audio-inicio" loop>
+        <source src="The God That Failed (Remastered).mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Seleccionamos los campos de entrada
+        const inputs = document.querySelectorAll('input');
+        const audio = document.getElementById('audio-inicio');
+        audio.volume = 0.4; // Nivel de volumen inicial
+
+        // Función para iniciar el audio al interactuar
+        const iniciarAudio = () => {
+            if (audio.paused) {
+                audio.play().catch(error => {
+                    console.log("El navegador requiere una interacción más directa para el audio.");
+                });
+            }
+            // Una vez que inicia, quitamos los escuchadores para no repetir la lógica
+            inputs.forEach(input => input.removeEventListener('click', iniciarAudio));
+            document.removeEventListener('click', iniciarAudio);
+        };
+
+        // Detectar clic en inputs o en cualquier parte del formulario
+        inputs.forEach(input => {
+            input.addEventListener('click', iniciarAudio, { once: true });
+        });
+
+        // Por si el usuario hace clic directamente en el botón de entrar sin tocar los inputs
+        document.getElementById('form-login').addEventListener('submit', function() {
+            if (audio.paused) audio.play();
+        });
+    </script>
+
     <script type="module" src="auth.js"></script>
 
 </body>
