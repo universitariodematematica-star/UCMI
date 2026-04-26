@@ -225,7 +225,64 @@
         });
     </script>
 
-    <script type="module" src="auth.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+            authDomain: "ucmi-13796634.firebaseapp.com",
+            projectId: "ucmi-13796634",
+            storageBucket: "ucmi-13796634.firebasestorage.app",
+            messagingSenderId: "1090719609536",
+            appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
+
+        // 1. VIGILANTE: Si ya estás logueado, te redirige al Panel de inmediato
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.uid === MI_UID_MAESTRO) {
+                window.location.href = "https://universitariodematematica-star.github.io/UCMI/super-admin.html";
+            }
+        });
+
+        // 2. PROCESO DE LOGIN
+        const loginForm = document.getElementById('form-login');
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Evita que la página se recargue
+
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            const btn = document.getElementById('btn-submit');
+
+            btn.disabled = true;
+            btn.innerText = "VERIFICANDO IDENTIDAD...";
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+                
+                if (userCredential.user.uid === MI_UID_MAESTRO) {
+                    // Acceso concedido al Super Administrador
+                    window.location.href = "https://universitariodematematica-star.github.io/UCMI/super-admin.html";
+                } else {
+                    // Si entra otro usuario registrado que no eres tú
+                    alert("ACCESO RESTRINGIDO: Esta entrada es exclusiva para el Super Administrador.");
+                    await auth.signOut();
+                    location.reload();
+                }
+            } catch (error) {
+                console.error("Error de login:", error);
+                alert("CREDENCIALES INVÁLIDAS");
+                btn.disabled = false;
+                btn.innerText = "Entrar a UCMI";
+            }
+        });
+    </script>
+</body>
+</html>
 
 </body>
 </html>
