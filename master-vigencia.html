@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Control de Vigencia Temporal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --azul-profundo: #06090f;
+            --dorado-ucmi: #c5a059;
+            --purpura-neon: #bc13fe;
+            --peligro-neon: #ff0055;
+            --blanco-suave: rgba(255, 255, 255, 0.85);
+        }
+
+        body {
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            color: white;
+            min-height: 100vh;
+        }
+
+        .overlay {
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.9) 100%);
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+
+        .navbar-master {
+            background: rgba(6, 9, 15, 0.85);
+            border-bottom: 1px solid rgba(197, 160, 89, 0.5);
+            backdrop-filter: blur(15px);
+            padding: 0.8rem 2rem;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .progress {
+            background-color: rgba(255, 255, 255, 0.1);
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-vigencia {
+            background: linear-gradient(90deg, var(--purpura-neon), var(--dorado-ucmi));
+            box-shadow: 0 0 10px var(--purpura-neon);
+        }
+
+        .time-badge {
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 5px;
+            background: rgba(188, 19, 254, 0.2);
+            border: 1px solid var(--purpura-neon);
+            color: white;
+        }
+
+        .status-expired {
+            color: var(--peligro-neon);
+            text-shadow: 0 0 5px var(--peligro-neon);
+            font-weight: bold;
+        }
+
+        /* Reproductor Maestro */
+        #audio-panel {
+            position: fixed;
+            bottom: 25px;
+            left: 25px;
+            z-index: 2000;
+            background: rgba(6, 9, 15, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 8px 20px 8px 8px;
+            border-radius: 50px;
+            border: 1px solid var(--dorado-ucmi);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        #play-btn {
+            background: var(--dorado-ucmi);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .text-glow-purple {
+            color: #d880ff;
+            text-shadow: 0 0 10px rgba(188, 19, 254, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+<div class="overlay">
+    <nav class="navbar navbar-master sticky-top">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <a href="super-admin.html" class="text-white text-decoration-none">
+                <i class="bi bi-arrow-left me-2"></i> Panel Central
+            </a>
+            <img src="logo_ucmi.png" alt="UCMI Logo" style="height: 50px;">
+            <span class="text-glow-purple fw-bold">Monitor de Vigencia</span>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="fw-bold"><i class="bi bi-hourglass-split me-3 text-glow-purple"></i>Control de Ciclos Temporales</h2>
+                <p class="text-white-50">Gestión de caducidad y renovación de credenciales de acceso.</p>
+            </div>
+        </div>
+
+        <div class="glass-panel">
+            <div class="table-responsive">
+                <table class="table table-borderless align-middle text-white">
+                    <thead>
+                        <tr class="text-white-50 border-bottom border-secondary">
+                            <th>Usuario</th>
+                            <th>Inicio de Ciclo</th>
+                            <th>Progreso de Tiempo</th>
+                            <th>Tiempo Restante</th>
+                            <th class="text-end">Gestión</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td class="py-4">
+                                <span class="fw-bold d-block">Juan Carlos Riera</span>
+                                <small class="text-info">ID: 001-MASTER</small>
+                            </td>
+                            <td>20 Feb 2026</td>
+                            <td style="width: 30%;">
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-vigencia" style="width: 85%;"></div>
+                                </div>
+                            </td>
+                            <td><span class="time-badge">312 Días</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-light rounded-pill px-3"><i class="bi bi-arrow-repeat me-1"></i> Renovar</button>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="py-4">
+                                <span class="fw-bold d-block">Usuario de Prueba</span>
+                                <small class="text-info">ID: 045-TEMP</small>
+                            </td>
+                            <td>15 Ene 2026</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar bg-danger" style="width: 95%;"></div>
+                                </div>
+                            </td>
+                            <td><span class="status-expired">EXPIRANDO</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-danger rounded-pill px-3"><i class="bi bi-slash-circle me-1"></i> Revocar</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="audio-panel">
+    <button onclick="toggleAudio()" id="play-btn"><i class="bi bi-play-fill" id="audio-icon" style="color: black; font-size: 1.5rem;"></i></button>
+    <div style="line-height: 1;">
+        <small class="d-block text-white-50" style="font-size: 0.6rem;">SYSTEM AUDIO</small>
+        <span style="color: var(--dorado-ucmi); font-size: 0.75rem; font-weight: bold;">The God That Failed</span>
+    </div>
+    <audio id="master-bgm" loop><source src="The God That Failed (Remastered).mp3" type="audio/mpeg"></audio>
+</div>
+
+<script>
+    const audio = document.getElementById('master-bgm');
+    const icon = document.getElementById('audio-icon');
+    audio.volume = 0.4;
+
+    function toggleAudio() {
+        if (audio.paused) {
+            audio.play();
+            icon.classList.replace('bi-play-fill', 'bi-pause-fill');
+        } else {
+            audio.pause();
+            icon.classList.replace('bi-pause-fill', 'bi-play-fill');
+        }
+    }
+
+    const triggerAutoplay = () => {
+        if (audio.paused) toggleAudio();
+        ['click', 'scroll', 'keydown'].forEach(e => document.removeEventListener(e, triggerAutoplay));
+    };
+    ['click', 'scroll', 'keydown'].forEach(e => document.addEventListener(e, triggerAutoplay));
+</script>
+
+</body>
+</html>
