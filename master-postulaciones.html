@@ -38,28 +38,36 @@
             display: flex;
             flex-direction: column;
         }
+
+        .logo-sidebar {
+            height: 55px;
+            border-radius: 12px; /* Redondeo solicitado */
+            margin-bottom: 10px;
+        }
         
         .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; margin-bottom: 5px; }
         .nav-link:hover { color: white; background: rgba(255,255,255,0.1); border-radius: 8px; }
         .nav-link.active { color: var(--dorado-ucmi); font-weight: bold; background: rgba(197, 160, 89, 0.1); border-radius: 8px; }
 
-        /* BOTÓN VOLVER REFORZADO */
+        /* BOTÓN VOLVER CON ESTILO "LOGOUT" */
         .btn-volver-maestro {
-            background: rgba(255,255,255,0.05);
-            border: 2px solid rgba(255, 255, 255, 0.9) !important; /* Líneas blancas potentes */
-            color: white !important;
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3) !important;
+            color: #ff4d4d !important;
             font-weight: 600;
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
             font-size: 0.75rem;
+            border-radius: 50px;
+            padding: 10px;
         }
 
         .btn-volver-maestro:hover {
-            background: rgba(255,255,255,0.2) !important;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+            background: #ff4d4d !important;
+            color: white !important;
+            box-shadow: 0 0 15px rgba(255, 77, 77, 0.4);
             transform: translateY(-2px);
-            border-color: #fff !important;
         }
 
         .badge-perfil { font-size: 0.7rem; padding: 6px 12px; border-radius: 50px; text-transform: uppercase; font-weight: 600; }
@@ -86,7 +94,7 @@
         <div class="row">
             <div class="col-md-2 sidebar d-none d-md-flex">
                 <div class="text-center mb-4">
-                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 50px;" alt="Logo">
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" class="logo-sidebar" alt="Logo">
                     <h5 class="fw-bold mt-2 text-white">UCMI ADMIN</h5>
                 </div>
                 <hr class="border-secondary">
@@ -104,7 +112,7 @@
                 </nav>
 
                 <div class="mt-4 pt-4 border-top border-secondary border-opacity-25">
-                    <a href="https://universitariodematematica-star.github.io/UCMI/super-admin.html" class="btn btn-volver-maestro rounded-pill w-100">
+                    <a href="super-admin.html" class="btn btn-volver-maestro w-100">
                         <i class="bi bi-arrow-left me-2"></i> Panel Maestro
                     </a>
                 </div>
@@ -148,7 +156,7 @@
 
                 <footer class="mt-5 text-center">
                     <p class="text-white-50 small mb-4">Módulo de Postulaciones v2.0 - Juan Carlos Riera</p>
-                    <a href="https://universitariodematematica-star.github.io/UCMI/super-admin.html" class="btn btn-volver-maestro rounded-pill px-5">
+                    <a href="super-admin.html" class="btn btn-volver-maestro px-5">
                         <i class="bi bi-arrow-left me-2"></i> Regresar a la Consola de Control
                     </a>
                 </footer>
@@ -177,7 +185,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -192,6 +200,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
+
+    // SEGURIDAD: Solo tú pasas
+    onAuthStateChanged(auth, (user) => {
+        if (!user || user.uid !== MI_UID_MAESTRO) {
+            window.location.href = "index.html";
+        }
+    });
 
     let currentSolicitud = null;
     let filtroActual = "Todos";
@@ -257,7 +273,6 @@
                         <h6 class="text-uppercase text-muted small fw-bold mb-3">Información Legal</h6>
                         <p class="mb-1"><strong>Razón/Nombre:</strong> ${d.entidad}</p>
                         <p class="mb-1"><strong>Titular:</strong> ${d.nombreResponsable}</p>
-                        <p class="mb-1"><strong>Documento ID:</strong> ${d.rif}</p>
                         <p class="mb-1"><strong>WhatsApp:</strong> ${d.whatsapp}</p>
                     </div>
                     <div class="col-md-6">
@@ -269,7 +284,7 @@
                 </div>
                 <div class="alert alert-warning mt-4 rounded-4 border-0">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    <strong>Nota para Juan Carlos:</strong> Confirma que el abono por los <b>${d.cupos} cupos</b> esté efectivo antes de proceder.
+                    <strong>Confirmación de Pago:</strong> Asegúrate de que el abono por los <b>${d.cupos} cupos</b> esté efectivo.
                 </div>
             `;
             new bootstrap.Modal(document.getElementById('modalDetalles')).show();
