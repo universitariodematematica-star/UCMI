@@ -3,62 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Admin - UCMI</title>
+    <title>UCMI - Control de Postulaciones</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         :root {
-            --azul-ucmi: #1a2a3a;
+            --azul-ucmi: #06090f;
+            --azul-sidebar: #1a2a3a;
             --verde-exito: #27ae60;
+            --dorado-ucmi: #c5a059;
         }
         
-        /* APLICACIÓN DEL FONDO CÓSMICO */
         body { 
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
             background-size: cover;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', sans-serif; 
             margin: 0;
-            padding: 0;
+            color: white;
         }
 
-        /* Capa overlay para dar legibilidad (filtro oscuro suave) */
         .super-overlay {
             background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%);
             min-height: 100vh;
-            width: 100%;
         }
         
-        /* Tu Sidebar Original */
         .sidebar { 
-            background: var(--azul-ucmi); 
-            color: white; 
+            background: rgba(26, 42, 58, 0.95); 
+            backdrop-filter: blur(10px);
             min-height: 100vh; 
             padding: 25px 15px; 
             position: sticky;
             top: 0;
+            border-right: 1px solid rgba(197, 160, 89, 0.3);
             display: flex;
             flex-direction: column;
         }
         
-        .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; }
+        .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; margin-bottom: 5px; }
         .nav-link:hover { color: white; background: rgba(255,255,255,0.1); border-radius: 8px; }
-        .nav-link.active { color: white; font-weight: bold; }
+        .nav-link.active { color: var(--dorado-ucmi); font-weight: bold; background: rgba(197, 160, 89, 0.1); border-radius: 8px; }
 
-        .badge-perfil { font-size: 0.7rem; padding: 6px 12px; border-radius: 50px; text-transform: uppercase; font-weight: 600; }
-        
-        .bg-academia { background: #dc3545 !important; color: white; }
-        .bg-embajador { background: #0d6efd !important; color: white; }
-        .bg-socio { background: #6f42c1 !important; color: white; }
-        .bg-alumno { background: #198754 !important; color: white; }
-
-        .table-container { 
-            background: white; 
-            border-radius: 15px; 
-            padding: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+        /* BOTÓN VOLVER REFORZADO */
+        .btn-volver-maestro {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255, 255, 255, 0.9) !important; /* Líneas blancas potentes */
+            color: white !important;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.75rem;
         }
 
-        .modal-content { border: none; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); }
+        .btn-volver-maestro:hover {
+            background: rgba(255,255,255,0.2) !important;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            border-color: #fff !important;
+        }
+
+        .badge-perfil { font-size: 0.7rem; padding: 6px 12px; border-radius: 50px; text-transform: uppercase; font-weight: 600; }
+        .bg-academia { background: #dc3545 !important; }
+        .bg-embajador { background: #0d6efd !important; }
+        .bg-socio { background: #6f42c1 !important; }
+        .bg-alumno { background: #198754 !important; }
+
+        .table-container { 
+            background: rgba(255, 255, 255, 0.95); 
+            border-radius: 20px; 
+            padding: 25px; 
+            color: #333;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); 
+        }
+
+        .modal-content { border: none; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -66,11 +84,14 @@
 <div class="super-overlay">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-2 sidebar d-none d-md-block">
-                <h4 class="fw-bold text-center mb-4">UCMI ADMIN</h4>
+            <div class="col-md-2 sidebar d-none d-md-flex">
+                <div class="text-center mb-4">
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 50px;" alt="Logo">
+                    <h5 class="fw-bold mt-2 text-white">UCMI ADMIN</h5>
+                </div>
                 <hr class="border-secondary">
                 
-                <p class="small text-uppercase fw-bold text-muted mb-3">Resumen de Red</p>
+                <p class="small text-uppercase fw-bold text-muted mb-3">Red de Postulantes</p>
                 <div class="mb-2 d-flex justify-content-between small"><span>Academias:</span> <span id="countAcademia" class="badge bg-academia">0</span></div>
                 <div class="mb-2 d-flex justify-content-between small"><span>Embajadores:</span> <span id="countEmbajador" class="badge bg-embajador">0</span></div>
                 <div class="mb-2 d-flex justify-content-between small"><span>Asociados:</span> <span id="countAsociado" class="badge bg-socio">0</span></div>
@@ -78,53 +99,57 @@
                 
                 <hr class="border-secondary mt-4">
                 <nav class="nav flex-column mb-auto">
-                    <a class="nav-link active" href="#">📥 Solicitudes</a>
-                    <a class="nav-link" href="#">✅ Usuarios</a>
+                    <a class="nav-link active" href="#"><i class="bi bi-inbox me-2"></i> Solicitudes</a>
+                    <a class="nav-link" href="https://universitariodematematica-star.github.io/UCMI/master-usuarios.html"><i class="bi bi-people me-2"></i> Usuarios</a>
                 </nav>
 
-                <div class="mt-4 pt-4 border-top border-secondary border-opacity-25 text-center">
-                    <a href="https://universitariodematematica-star.github.io/UCMI/super-admin.html" class="btn btn-sm btn-outline-light rounded-pill px-4 opacity-50 w-100">
-                        <i class="bi bi-arrow-left"></i> Panel Maestro
+                <div class="mt-4 pt-4 border-top border-secondary border-opacity-25">
+                    <a href="https://universitariodematematica-star.github.io/UCMI/super-admin.html" class="btn btn-volver-maestro rounded-pill w-100">
+                        <i class="bi bi-arrow-left me-2"></i> Panel Maestro
                     </a>
                 </div>
             </div>
 
             <div class="col-md-10 p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-4">
                     <div>
-                        <h2 class="fw-bold mb-0 text-white">Control de Postulaciones</h2>
-                        <p class="text-white-50">Gestión de acceso al ecosistema UCMI</p>
+                        <h1 class="display-5 fw-bold mb-0">Control de Postulaciones</h1>
+                        <p class="fs-5 text-white-50">Validación de accesos al ecosistema de Supralógica</p>
                     </div>
                     <div class="text-end">
-                        <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo" style="height: 60px;" class="mb-2 d-block ms-auto">
-                        <select class="form-select form-select-sm shadow-sm" id="selectorFiltro" style="width: 250px;">
-                            <option value="Todos">Ver todos los postulantes</option>
-                            <option value="Academia">Solo Academias</option>
-                            <option value="Profesor embajador">Solo Embajadores</option>
-                            <option value="Profesor asociado">Solo Asociados</option>
-                            <option value="Estudiante autodidacta">Solo Autodidactas</option>
+                        <label class="text-white-50 small d-block mb-2">Filtrar por categoría:</label>
+                        <select class="form-select border-0 shadow-lg" id="selectorFiltro" style="width: 250px; background: rgba(255,255,255,0.9);">
+                            <option value="Todos">Todas las postulaciones</option>
+                            <option value="Academia">Academias</option>
+                            <option value="Profesor embajador">Embajadores</option>
+                            <option value="Profesor asociado">Asociados</option>
+                            <option value="Estudiante autodidacta">Autodidactas</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="table-container">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Solicitante / Entidad</th>
-                                <th>Perfil</th>
-                                <th>Ubicación</th>
-                                <th>Plan</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="listaMaestra"></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr class="text-muted small text-uppercase">
+                                    <th>Identidad / Entidad</th>
+                                    <th>Perfil UCMI</th>
+                                    <th>Localización</th>
+                                    <th>Plan / Cupos</th>
+                                    <th class="text-center">Acción Maestra</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaMaestra" class="border-top-0">
+                                </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <footer class="mt-5 text-center">
-                    <a href="https://universitariodematematica-star.github.io/UCMI/super-admin.html" class="btn btn-sm btn-outline-light rounded-pill px-4 opacity-50">
-                        <i class="bi bi-arrow-left"></i> Volver al Panel de Control Maestro
+                    <p class="text-white-50 small mb-4">Módulo de Postulaciones v2.0 - Juan Carlos Riera</p>
+                    <a href="https://universitariodematematica-star.github.io/UCMI/super-admin.html" class="btn btn-volver-maestro rounded-pill px-5">
+                        <i class="bi bi-arrow-left me-2"></i> Regresar a la Consola de Control
                     </a>
                 </footer>
             </div>
@@ -136,20 +161,20 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header border-0 pb-0">
-                <h4 class="fw-bold">Detalles de la Solicitud</h4>
+                <h3 class="fw-bold text-dark">Expediente de Aspirante</h3>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body py-4" id="contenidoModal"></div>
+            <div class="modal-body py-4" id="contenidoModal">
+                </div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" id="btnConfirmarAcceso" class="btn btn-success px-4 fw-bold">Confirmar Pago y Activar</button>
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" id="btnConfirmarAcceso" class="btn btn-success rounded-pill px-4 fw-bold">Confirmar Pago y Activar</button>
             </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -186,7 +211,6 @@
                 const data = d.data();
                 const id = d.id;
                 const perfil = data.tipoSolicitante || "Pendiente";
-                
                 if(counts[perfil] !== undefined) counts[perfil]++;
 
                 if (filtroActual === "Todos" || perfil === filtroActual) {
@@ -195,17 +219,17 @@
                                        perfil.includes("asociado") ? "bg-socio" : "bg-alumno";
 
                     tbody.innerHTML += `
-                        <tr>
+                        <tr class="border-bottom">
                             <td>
-                                <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
+                                <div class="fw-bold text-dark">${data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
                                 <div class="small text-muted">${data.email}</div>
                             </td>
-                            <td><span class="badge-perfil ${colorClass}">${perfil}</span></td>
-                            <td><small>${data.ubicacion}</small></td>
-                            <td><span class="fw-bold text-primary">${data.cupos}</span> / ${data.duracionLicencia}</td>
-                            <td>
-                                <button onclick="verDetalles('${id}')" class="btn btn-sm btn-outline-dark">👁️ Revisar</button>
-                                <button onclick="borrarPostulacion('${id}')" class="btn btn-sm btn-link text-danger fw-bold" style="text-decoration: none;">×</button>
+                            <td><span class="badge-perfil ${colorClass} text-white">${perfil}</span></td>
+                            <td class="small">${data.ubicacion}</td>
+                            <td><span class="fw-bold text-primary">${data.cupos}</span> <span class="text-muted small">(${data.duracionLicencia})</span></td>
+                            <td class="text-center">
+                                <button onclick="verDetalles('${id}')" class="btn btn-sm btn-dark rounded-pill px-3 me-2">👁️ Revisar</button>
+                                <button onclick="borrarPostulacion('${id}')" class="btn btn-sm btn-outline-danger border-0 rounded-circle"><i class="bi bi-trash"></i></button>
                             </td>
                         </tr>
                     `;
@@ -224,81 +248,64 @@
     window.verDetalles = async (id) => {
         const docRef = doc(db, "postulaciones", id);
         const docSnap = await getDoc(docRef);
-        
         if (docSnap.exists()) {
             currentSolicitud = { id, ...docSnap.data() };
             const d = currentSolicitud;
-
             document.getElementById('contenidoModal').innerHTML = `
-                <div class="row g-4">
+                <div class="row g-4 text-dark">
                     <div class="col-md-6 border-end">
-                        <h6 class="text-uppercase text-muted small fw-bold">Datos Legales</h6>
-                        <p class="mb-1"><strong>Entidad/Firma:</strong> ${d.entidad}</p>
-                        <p class="mb-1"><strong>Responsable:</strong> ${d.nombreResponsable}</p>
-                        <p class="mb-1"><strong>RIF/ID Fiscal:</strong> ${d.rif}</p>
+                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Información Legal</h6>
+                        <p class="mb-1"><strong>Razón/Nombre:</strong> ${d.entidad}</p>
+                        <p class="mb-1"><strong>Titular:</strong> ${d.nombreResponsable}</p>
+                        <p class="mb-1"><strong>Documento ID:</strong> ${d.rif}</p>
                         <p class="mb-1"><strong>WhatsApp:</strong> ${d.whatsapp}</p>
-                        <p class="mb-1"><strong>Email:</strong> ${d.email}</p>
                     </div>
                     <div class="col-md-6">
-                        <h6 class="text-uppercase text-muted small fw-bold">Pedido UCMI</h6>
-                        <p class="mb-1"><strong>Perfil:</strong> ${d.tipoSolicitante}</p>
-                        <p class="mb-1"><strong>Cupos:</strong> ${d.cupos}</p>
-                        <p class="mb-1"><strong>Duración:</strong> ${d.duracionLicencia}</p>
-                        <p class="mb-1"><strong>Programas:</strong> <small>${d.programas}</small></p>
-                    </div>
-                    <div class="col-12 mt-4">
-                        <div class="p-3 bg-light rounded border border-warning">
-                            <strong>Instrucción para Juan Carlos:</strong> 
-                            Verifica el depósito de los cupos (${d.cupos}) antes de activar la cuenta.
-                        </div>
+                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Detalle del Pedido</h6>
+                        <p class="mb-1"><strong>Cupos Solicitados:</strong> ${d.cupos}</p>
+                        <p class="mb-1"><strong>Licencia:</strong> ${d.duracionLicencia}</p>
+                        <p class="mb-1"><strong>Programas:</strong> ${d.programas}</p>
                     </div>
                 </div>
+                <div class="alert alert-warning mt-4 rounded-4 border-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Nota para Juan Carlos:</strong> Confirma que el abono por los <b>${d.cupos} cupos</b> esté efectivo antes de proceder.
+                </div>
             `;
-            const myModal = new bootstrap.Modal(document.getElementById('modalDetalles'));
-            myModal.show();
+            new bootstrap.Modal(document.getElementById('modalDetalles')).show();
         }
     };
 
     document.getElementById('btnConfirmarAcceso').addEventListener('click', async () => {
         if(!currentSolicitud) return;
         const btn = document.getElementById('btnConfirmarAcceso');
-        btn.innerText = "Activando...";
+        btn.innerText = "Procesando...";
         btn.disabled = true;
 
         try {
             const passTemporal = "UCMI2026";
             const userCredential = await createUserWithEmailAndPassword(auth, currentSolicitud.email, passTemporal);
-            const uid = userCredential.user.uid;
-
-            await setDoc(doc(db, "usuarios", uid), {
+            await setDoc(doc(db, "usuarios", userCredential.user.uid), {
                 nombre: currentSolicitud.entidad !== "N/A" ? currentSolicitud.entidad : currentSolicitud.nombreResponsable,
                 email: currentSolicitud.email,
                 rol: currentSolicitud.tipoSolicitante,
-                rif: currentSolicitud.rif,
-                cupos_contratados: currentSolicitud.cupos,
+                cupos: currentSolicitud.cupos,
                 estado: "activo",
-                fechaActivacion: new Date().toLocaleString()
+                creado: new Date().toISOString()
             });
-
             await deleteDoc(doc(db, "postulaciones", currentSolicitud.id));
-            alert("¡USUARIO ACTIVADO!\nEmail: " + currentSolicitud.email);
+            alert("Acceso activado con éxito.");
             location.reload();
-        } catch (error) {
-            alert("Error: " + error.message);
+        } catch (e) {
+            alert("Error al activar: " + e.message);
             btn.innerText = "Confirmar Pago y Activar";
             btn.disabled = false;
         }
     });
 
     window.borrarPostulacion = async (id) => {
-        if (confirm("¿Estás seguro de que deseas eliminar esta postulación permanentemente?")) {
-            try {
-                await deleteDoc(doc(db, "postulaciones", id));
-                console.log("Documento eliminado con éxito:", id);
-            } catch (error) {
-                console.error("Error al eliminar el documento:", error);
-                alert("Hubo un error al intentar eliminar la postulación.");
-            }
+        if (confirm("¿Eliminar postulación definitivamente?")) {
+            await deleteDoc(doc(db, "postulaciones", id));
         }
     };
 </script>
