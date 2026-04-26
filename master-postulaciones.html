@@ -49,7 +49,6 @@
         .nav-link:hover { color: white; background: rgba(255,255,255,0.1); border-radius: 8px; }
         .nav-link.active { color: var(--dorado-ucmi); font-weight: bold; background: rgba(197, 160, 89, 0.1); border-radius: 8px; }
 
-        /* BOTÓN TRANSPARENTE LÍNEAS BLANCAS (Panel Principal) */
         .btn-panel-principal {
             background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.8) !important;
@@ -73,7 +72,6 @@
             border-color: #fff !important;
         }
 
-        /* Botón Cerrar Sesión Rojo */
         .btn-cerrar-sesion {
             background: rgba(255, 0, 0, 0.1);
             border: 1px solid rgba(255, 0, 0, 0.3) !important;
@@ -182,13 +180,8 @@
                 </div>
 
                 <footer class="mt-5 text-center">
-                    <p class="text-white-50 small mb-3">Módulo de Postulaciones v2.0 — Sistema de Gestión Supralógica</p>
-                    <div class="d-flex justify-content-center gap-2">
-                        <a href="super-admin.html" class="btn-panel-principal px-4" style="font-size: 0.65rem;">
-                            <i class="bi bi-grid-fill me-2"></i> Panel Principal
-                        </a>
-                    </div>
-                    <p class="text-white-25 tiny mt-2">Juan Carlos Riera © 2026</p>
+                    <p class="text-white-50 small">Módulo de Postulaciones v2.0 — Sistema de Gestión Supralógica</p>
+                    <p class="text-white-25 tiny mt-1">Juan Carlos Riera © 2026</p>
                 </footer>
             </div>
         </div>
@@ -241,7 +234,6 @@
         signOut(auth).then(() => { window.location.href = "index.html"; });
     });
 
-    // ... Resto de la lógica de renderizado y modal igual a la anterior ...
     let currentSolicitud = null;
     let filtroActual = "Todos";
 
@@ -255,15 +247,18 @@
             const tbody = document.getElementById('listaMaestra');
             tbody.innerHTML = '';
             let counts = { "Academia": 0, "Profesor embajador": 0, "Profesor asociado": 0, "Estudiante autodidacta": 0 };
+
             snapshot.forEach((d) => {
                 const data = d.data();
                 const id = d.id;
                 const perfil = data.tipoSolicitante || "Pendiente";
                 if(counts[perfil] !== undefined) counts[perfil]++;
+
                 if (filtroActual === "Todos" || perfil === filtroActual) {
                     const colorClass = perfil.includes("Academia") ? "bg-academia" : 
                                        perfil.includes("embajador") ? "bg-embajador" :
                                        perfil.includes("asociado") ? "bg-socio" : "bg-alumno";
+
                     tbody.innerHTML += `
                         <tr class="border-bottom">
                             <td>
@@ -281,12 +276,14 @@
                     `;
                 }
             });
+
             document.getElementById('countAcademia').innerText = counts["Academia"];
             document.getElementById('countEmbajador').innerText = counts["Profesor embajador"];
             document.getElementById('countAsociado').innerText = counts["Profesor asociado"];
             document.getElementById('countAlumno').innerText = counts["Estudiante autodidacta"];
         });
     }
+
     renderTable();
 
     window.verDetalles = async (id) => {
@@ -319,6 +316,7 @@
         const btn = document.getElementById('btnConfirmarAcceso');
         btn.innerText = "Procesando...";
         btn.disabled = true;
+
         try {
             const passTemporal = "UCMI2026";
             const userCredential = await createUserWithEmailAndPassword(auth, currentSolicitud.email, passTemporal);
