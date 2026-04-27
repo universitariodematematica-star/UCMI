@@ -209,21 +209,21 @@
     }
 };
 
-    // ACCIÓN: ACTIVAR (ESPEJO TOTAL - VERSIÓN CORREGIDA)
+    // ACCIÓN: ACTIVAR (VERSIÓN CORREGIDA Y GARANTIZADA)
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
         if(!currentId || !currentData) return;
         
         try {
-            // 1. Manejo de Auth
+            // 1. Intentar crear el acceso en Auth
             try {
                 await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
             } catch (authError) {
+                // Si ya existe, seguimos adelante para actualizar la base de datos
                 if (authError.code !== 'auth/email-already-in-use') throw authError;
             }
 
-            // 2. Construcción del objeto con las variables que TÚ definiste
-            // He eliminado 'nombre' y 'rol' para que no se mezclen con 'entidad' y 'perfil'
-            const dataEspejo = {
+            // 2. Preparamos el objeto con las 14 variables que necesitas
+            const dataFinal = {
                 cupos: currentData.cupos || "0",
                 duracionLicencia: currentData.duracionLicencia || "N/A",
                 email: currentData.email,
@@ -240,22 +240,22 @@
                 fechaActivacion: new Date().toLocaleString()
             };
 
-            // 3. Guardar en "usuarios" usando el email como ID ÚNICO
-            await setDoc(doc(db, "usuarios", currentData.email), dataEspejo);
+            // 3. Guardar en "usuarios" (Usamos el EMAIL como ID de documento)
+            await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
 
-            // 4. Guardar en historial
+            // 4. Guardar en "historial_postulaciones" (Usamos el mismo ID que tenía la postulación)
             await setDoc(doc(db, "historial_postulaciones", currentId), {
-                ...dataEspejo,
+                ...dataFinal,
                 decisionFinal: "ACEPTADO",
                 fechaProceso: new Date().toLocaleString()
             });
 
-            // 5. Borrar de pendientes
+            // 5. Borrar de la lista de pendientes
             await deleteDoc(doc(db, "postulaciones", currentId));
             
             await Swal.fire({
                 title: "¡Acceso Activado!",
-                text: "Expediente completo replicado en Usuarios e Historial.",
+                text: "Se replicaron todos los campos en Usuarios e Historial.",
                 icon: "success",
                 confirmButtonColor: "#27ae60"
             });
@@ -263,7 +263,8 @@
             location.reload();
 
         } catch (e) { 
-            Swal.fire("Error en el proceso", e.message, "error"); 
+            console.error("Error completo:", e);
+            Swal.fire("Error", "No se pudo procesar: " + e.message, "error"); 
         }
     };
     // ACCIÓN: RECHAZAR Y ARCHIVAR
