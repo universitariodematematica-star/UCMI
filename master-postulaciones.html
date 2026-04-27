@@ -71,7 +71,7 @@
             box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
         }
 
-        /* --- 1. EL CONTENEDOR TRASLÚCIDO --- */
+        /* --- CONTENEDOR TRASLÚCIDO --- */
         .table-container { 
             background: rgba(255, 255, 255, 0.03) !important;
             backdrop-filter: blur(15px) saturate(150%);
@@ -83,7 +83,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
 
-        /* --- 2. LA TABLA --- */
         .table {
             --bs-table-bg: transparent !important; 
             --bs-table-color: white !important;
@@ -94,7 +93,6 @@
             border-spacing: 0 5px;
         }
 
-        /* --- 3. LAS CELDAS --- */
         .table th, .table td {
             background-color: transparent !important; 
             border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
@@ -103,7 +101,6 @@
             transition: all 0.3s ease-in-out;
         }
 
-        /* --- 4. ENCABEZADOS --- */
         .table thead th {
             background-color: transparent !important;
             color: rgba(255, 255, 255, 0.6) !important;
@@ -114,7 +111,6 @@
             border: none;
         }
 
-        /* --- 5. TEXTOS Y EFECTO NEÓN --- */
         .table td .fw-bold { color: #ffffff !important; font-size: 1rem; }
         .table td .text-muted, .table td .small, .table td span { 
             color: rgba(255, 255, 255, 0.5) !important; 
@@ -129,12 +125,10 @@
         .table-hover tbody tr:hover td * { 
             color: #ffffff !important;
             opacity: 1 !important;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 
-                         0 0 20px rgba(255, 255, 255, 0.4) !important;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 20px rgba(255, 255, 255, 0.4) !important;
             filter: brightness(1.2);
         }
 
-        /* --- 6. BOTONES DE ACCIÓN --- */
         .btn-dark.btn-sm {
             background-color: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(255,255,255,0.2) !important;
@@ -150,19 +144,19 @@
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
         }
 
-        /* ESTILOS DEL EXPEDIENTE */
+        /* --- ESTILOS DEL EXPEDIENTE --- */
         .modal-content { border-radius: 24px; color: #333; }
         .label-exp { color: #888; font-size: 0.7rem; text-transform: uppercase; font-weight: 800; margin-bottom: 2px; display: block; }
         .val-exp { color: #111; font-size: 1rem; font-weight: 500; margin-bottom: 15px; display: block; border-bottom: 1px solid #f0f0f0; padding-bottom: 5px; }
         .badge-perfil { font-size: 0.7rem; padding: 5px 10px; border-radius: 50px; color: white; font-weight: 700; }
         
-        /* --- AJUSTE FINAL DE COLORES --- */
-        .bg-academia { background: #dc3545; }
-        .bg-embajador { background: #0d6efd; }
-        .bg-socio { background: #6f42c1; }
+        /* --- CONFIGURACIÓN DE COLORES DE PERFIL --- */
+        .bg-academia  { background: #dc3545; } /* Rojo */
+        .bg-embajador { background: #0d6efd; } /* Azul */
+        .bg-socio     { background: #6f42c1; } /* Púrpura */
         
-        .bg-profesor { background: var(--indigo-ucmi); } /* Profesor Asociado en Índigo */
-        .bg-alumno { background: var(--verde-exito); }   /* Estudiante vuelve a Verde */
+        .bg-profesor  { background: var(--indigo-ucmi); } /* Profesor -> ÍNDIGO */
+        .bg-alumno    { background: var(--verde-exito); }  /* Estudiante -> VERDE */
     </style>
 </head>
 <body>
@@ -261,7 +255,20 @@
             const data = d.data();
             const id = d.id;
             const perfil = data.tipoSolicitante || "Alumno";
-            const colorClass = perfil.includes("Academia") ? "bg-academia" : perfil.includes("embajador") ? "bg-embajador" : "bg-alumno";
+            
+// --- NUEVA LÓGICA DE DETECCIÓN ---
+let colorClass = "";
+const p = perfil.toLowerCase(); // Convertimos a minúsculas para no fallar por tildes o mayúsculas
+
+if (p.includes("academia")) {
+    colorClass = "bg-academia";
+} else if (p.includes("embajador")) {
+    colorClass = "bg-embajador";
+} else if (p.includes("asociado") || p.includes("profesor")) {
+    colorClass = "bg-profesor"; // Aplicará el Índigo
+} else {
+    colorClass = "bg-alumno";   // Aplicará el Verde para Estudiantes
+}
             
             tbody.innerHTML += `
                 <tr>
