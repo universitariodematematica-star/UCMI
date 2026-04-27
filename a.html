@@ -187,18 +187,6 @@
 
             <div class="col-md-10 p-4">
                 <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
-                <div class="row mb-4">
-    <div class="col-md-4">
-        <label class="small text-muted fw-bold mb-2 uppercase">Filtrar por Perfil</label>
-        <select id="filtroPerfil" class="form-select bg-dark text-white border-secondary rounded-pill px-3" style="background-color: rgba(255,255,255,0.1) !important; backdrop-filter: blur(10px);">
-            <option value="todos">Todos los perfiles</option>
-            <option value="academia">Academia</option>
-            <option value="embajador">Profesor Embajador</option>
-            <option value="asociado">Profesor Asociado</option>
-            <option value="autodidacta">Estudiante Autodidacta</option>
-        </select>
-    </div>
-</div>
                 <div class="table-container mt-4">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
@@ -259,61 +247,14 @@
     let currentId = null;
     let currentData = null;
 
-    // Variable para el filtro
-const selectorFiltro = document.getElementById('filtroPerfil');
-
-// RENDERIZAR TABLA CON FILTRO
-onSnapshot(collection(db, "postulaciones"), (snapshot) => {
-    renderizarTabla(snapshot, selectorFiltro.value);
-});
-
-// Escuchar cuando el usuario cambia el filtro
-selectorFiltro.addEventListener('change', () => {
-    // Para filtrar sin recargar, pedimos un nuevo snapshot o guardamos los datos
-    location.reload(); // La forma más sencilla para que onSnapshot vuelva a ejecutarse con el valor actual
-});
-
-function renderizarTabla(snapshot, filtro) {
-    const tbody = document.getElementById('listaMaestra');
-    tbody.innerHTML = '';
-    
-    snapshot.forEach((d) => {
-        const data = d.data();
-        const id = d.id;
-        const perfil = data.tipoSolicitante || "Alumno";
-        const pLow = perfil.toLowerCase();
-
-        // --- LÓGICA DE FILTRADO ---
-        if (filtro !== "todos") {
-            if (!pLow.includes(filtro)) return; // Si no coincide con el filtro, saltar este registro
-        }
-
-        // --- LÓGICA DE COLORES CORREGIDA ---
-        let colorClass = "";
-        if (pLow.includes("academia")) {
-            colorClass = "bg-academia";
-        } else if (pLow.includes("embajador")) {
-            colorClass = "bg-embajador";
-        } else if (pLow.includes("asociado") || pLow.includes("profesor")) {
-            colorClass = "bg-profesor";
-        } else {
-            colorClass = "bg-alumno";
-        }
-        
-        tbody.innerHTML += `
-            <tr>
-                <td>
-                    <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
-                    <div class="small text-muted">${data.email}</div>
-                </td>
-                <td><span class="badge-perfil ${colorClass}">${perfil}</span></td>
-                <td class="small">${data.ubicacion || '---'}</td>
-                <td class="text-center">
-                    <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3">Revisar</button>
-                </td>
-            </tr>`;
-    });
-}
+    // RENDERIZAR TABLA
+    onSnapshot(collection(db, "postulaciones"), (snapshot) => {
+        const tbody = document.getElementById('listaMaestra');
+        tbody.innerHTML = '';
+        snapshot.forEach((d) => {
+            const data = d.data();
+            const id = d.id;
+            const perfil = data.tipoSolicitante || "Alumno";
             
 // --- NUEVA LÓGICA DE DETECCIÓN ---
 let colorClass = "";
