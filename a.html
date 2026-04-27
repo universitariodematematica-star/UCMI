@@ -400,79 +400,75 @@
     function generarPDF(d) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        const logoUrl = "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
         
-        // --- 1. CABECERA INSTITUCIONAL (Aspecto Metálico/Oscuro) ---
+        // --- 1. CABECERA INSTITUCIONAL ---
         doc.setFillColor(26, 42, 58); // Azul UCMI profundo
-        doc.rect(0, 0, 210, 50, 'F');
+        doc.rect(0, 0, 210, 55, 'F');
         
-        // Simulación de Logo (Si tienes la URL base64 la puedes poner, si no, dejamos el espacio)
+        // INSERTAR LOGO EN LA PARTE SUPERIOR IZQUIERDA
+        // Coordenadas: x=15, y=8 | Tamaño: ancho=35, alto=35 (ajustable)
+        doc.addImage(logoUrl, 'PNG', 15, 8, 35, 35);
+        
+        // TEXTOS DE CABECERA (Desplazados a la derecha para no chocar con el logo)
         doc.setTextColor(197, 160, 89); // Dorado
         doc.setFont("times", "bold");
-        doc.setFontSize(22);
-        doc.text("U C M I", 105, 20, { align: "center" });
+        doc.setFontSize(20);
+        doc.text("U C M I", 120, 22, { align: "center" });
         
-        // Nombre Institucional
         doc.setFontSize(10);
         doc.setFont("times", "italic");
-        doc.text("Universitario de Ciencias Matemáticas e Idiomas", 105, 28, { align: "center" });
+        doc.text("Universitario de Ciencias Matemáticas e Idiomas", 120, 30, { align: "center" });
         
-        // Título de la sección con "Brillo Dorado" (Doble trazo sutil)
         doc.setFontSize(16);
         doc.setFont("helvetica", "bold");
-        doc.text("POSTULACIÓN ACADÉMICA", 105, 40, { align: "center" });
+        doc.text("POSTULACIÓN ACADÉMICA", 120, 42, { align: "center" });
         
         // --- 2. CUERPO DEL EXPEDIENTE ---
         doc.setTextColor(40, 40, 40);
         doc.setFontSize(9);
-        doc.text(`Expediente Nro: ${Math.floor(Math.random() * 1000000)}`, 20, 60);
-        doc.text(`Fecha de Emisión: ${d.fecha}`, 130, 60);
-        doc.line(20, 63, 190, 63); // Línea divisoria
+        doc.text(`ID de Control: ${Math.floor(Math.random() * 1000000)}`, 20, 65);
+        doc.text(`Fecha: ${d.fecha}`, 140, 65);
+        doc.line(20, 68, 190, 68); 
 
-        // --- 3. TABLA DE DATOS (Estilo elegante) ---
-        let y = 75;
+        // --- 3. TABLA DE DATOS ---
+        let y = 80;
         const margin = 20;
         const col1 = 25;
         const col2 = 75;
 
-        // Función auxiliar para filas
         const drawRow = (label, value) => {
-            doc.setFillColor(245, 245, 245);
-            doc.rect(margin, y - 5, 170, 8, 'F'); // Fondo gris suave
+            doc.setFillColor(248, 248, 248);
+            doc.rect(margin, y - 5, 170, 9, 'F'); 
             
             doc.setFont("helvetica", "bold");
-            doc.setTextColor(150, 120, 60); // Tono ocre para etiquetas
+            doc.setTextColor(150, 120, 60); 
             doc.text(label, col1, y);
             
             doc.setFont("helvetica", "normal");
             doc.setTextColor(0, 0, 0);
             
-            // Ajustar texto largo (especialmente para programas)
             const splitValue = doc.splitTextToSize(String(value), 110);
             doc.text(splitValue, col2, y);
-            
-            y += (splitValue.length * 5) + 5; // Salto de línea dinámico
+            y += (splitValue.length * 5) + 6; 
         };
 
-        // Datos a imprimir (Ordenados según tu petición)
+        // Mapeo de datos
         drawRow("PERFIL:", d.perfil.toUpperCase());
         drawRow("RESPONSABLE:", d.nombreResponsable);
-        drawRow("EMAIL:", d.email);
-        drawRow("WHATSAPP:", d.whatsapp);
         drawRow("ENTIDAD:", d.entidad);
         drawRow("ID FISCAL:", d.rif);
+        drawRow("WHATSAPP:", d.whatsapp);
         drawRow("UBICACIÓN:", d.ubicacion);
         drawRow("CUPOS:", d.cupos);
         drawRow("LICENCIA:", d.duracionLicencia);
         drawRow("PROGRAMAS:", d.programas);
 
-        // --- 4. PIE DE PÁGINA (Sello de seguridad) ---
+        // --- 4. PIE DE PÁGINA ---
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
-        const footerY = 280;
-        doc.text("Documento generado bajo el Protocolo Supralógico de Validación UCMI.", 105, footerY, { align: "center" });
-        doc.text("La veracidad de estos datos está sujeta a revisión por el consejo académico.", 105, footerY + 4, { align: "center" });
+        doc.text("Documento Oficial - Protocolo Supralógico UCMI - Transmisión Encriptada", 105, 285, { align: "center" });
 
-        // Abrir PDF
         window.open(doc.output('bloburl'), '_blank');
     }
 </script>
