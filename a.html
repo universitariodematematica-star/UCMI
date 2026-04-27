@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
+    <<style>
     :root {
         --azul-ucmi: #06090f;
         --azul-sidebar: #1a2a3a;
@@ -22,7 +22,7 @@
         background-size: cover; font-family: 'Segoe UI', sans-serif; margin: 0; color: white;
     }
 
-    .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); min-height: 100vh; }
+    .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); min-height: 100vh; transition: filter 0.3s ease; }
     
     .sidebar { 
         background: rgba(26, 42, 58, 0.95); backdrop-filter: blur(10px); min-height: 100vh; padding: 25px 15px; position: sticky; top: 0; border-right: 1px solid rgba(197, 160, 89, 0.3); display: flex; flex-direction: column;
@@ -71,7 +71,7 @@
         box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
     }
 
-    /* --- CONTENEDOR TRASLÚCIDO --- */
+    /* --- CONTENEDOR TRASLÚCIDO (TABLA) --- */
     .table-container { 
         background: rgba(255, 255, 255, 0.03) !important;
         backdrop-filter: blur(15px) saturate(150%);
@@ -143,26 +143,28 @@
         color: black !important;
     }
 
-    /* --- MODAL EXPEDIENTE TRASLÚCIDO (GLASSMORPHISM) --- */
+    /* --- MODAL EXPEDIENTE (CLON DEL CONTENEDOR DE DATOS) --- */
     .modal-content { 
-        background: rgba(26, 42, 58, 0.8) !important; /* Base azul sidebar traslúcida */
-        backdrop-filter: blur(25px) saturate(160%);
-        -webkit-backdrop-filter: blur(25px) saturate(160%);
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        background: rgba(255, 255, 255, 0.03) !important; /* Misma opacidad que la tabla */
+        backdrop-filter: blur(15px) saturate(150%) !important; /* Mismo desenfoque que la tabla */
+        -webkit-backdrop-filter: blur(15px) saturate(150%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important; /* Mismo borde que la tabla */
         border-radius: 32px; 
         color: white !important;
         box-shadow: 0 30px 60px rgba(0,0,0,0.7);
     }
 
-    .modal-header .btn-close { filter: invert(1) grayscale(1) brightness(2); } /* Equis blanca */
+    .modal-header, .modal-footer { border: none !important; background: transparent !important; }
+    .modal-header .btn-close { filter: invert(1) grayscale(1) brightness(2); }
 
     .label-exp { 
-        color: rgba(197, 160, 89, 0.8) !important; /* Tono Dorado UCMI para etiquetas */
+        color: var(--dorado-ucmi) !important; /* Dorado UCMI para resaltar etiquetas */
         font-size: 0.7rem; 
         text-transform: uppercase; 
         font-weight: 800; 
         margin-bottom: 2px; 
-        display: block; 
+        display: block;
+        opacity: 0.9;
     }
 
     .val-exp { 
@@ -177,11 +179,11 @@
 
     .badge-perfil { font-size: 0.7rem; padding: 5px 10px; border-radius: 50px; color: white; font-weight: 700; }
     
-    /* Fondo para los programas seleccionados dentro del modal */
     #contenidoModal .bg-white {
         background: rgba(255, 255, 255, 0.05) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         color: rgba(255, 255, 255, 0.8) !important;
+        border-radius: 12px;
     }
 
     /* --- CONFIGURACIÓN DE COLORES DE PERFIL --- */
@@ -191,30 +193,24 @@
     .bg-profesor  { background: var(--indigo-ucmi); } 
     .bg-alumno    { background: var(--verde-exito); }
 
-/* --- EFECTO DE ENFOQUE AL ABRIR MODAL --- */
+    /* --- EFECTO DE ENFOQUE AL ABRIR MODAL --- */
+    body.modal-open .super-overlay {
+        filter: blur(8px) brightness(0.7);
+    }
 
-/* Oscurece y desenfoca todo el contenido detrás del modal */
-body.modal-open .super-overlay {
-    filter: blur(8px) brightness(0.7);
-    transition: filter 0.3s ease;
-}
+    .modal-backdrop.show {
+        opacity: 0.4;
+        backdrop-filter: blur(4px);
+    }
 
-/* Personalización del "backdrop" (la capa oscura que pone Bootstrap) */
-.modal-backdrop.show {
-    opacity: 0.6;
-    backdrop-filter: blur(4px);
-}
+    .modal.fade .modal-dialog {
+        transform: scale(0.95);
+        transition: transform 0.3s ease-out;
+    }
 
-/* Animación suave para la entrada del contenido del modal */
-.modal.fade .modal-dialog {
-    transform: scale(0.9);
-    transition: transform 0.3s ease-out;
-}
-
-.modal.show .modal-dialog {
-    transform: scale(1);
-}
-        
+    .modal.show .modal-dialog {
+        transform: scale(1);
+    }
 </style>
 </head>
 <body>
