@@ -261,28 +261,38 @@
     let currentId = null;
     let currentData = null;
 
-    // RENDERIZAR TABLA
+    // 1. Referencia al selector (Añade esta línea justo arriba de onSnapshot)
+    const selectorFiltro = document.getElementById('filtroPerfil');
+
+    // 2. El bloque onSnapshot actualizado
     onSnapshot(collection(db, "postulaciones"), (snapshot) => {
         const tbody = document.getElementById('listaMaestra');
+        const valorFiltro = selectorFiltro.value; // Capturamos el filtro actual
         tbody.innerHTML = '';
+
         snapshot.forEach((d) => {
             const data = d.data();
             const id = d.id;
             const perfil = data.tipoSolicitante || "Alumno";
-            
-// --- NUEVA LÓGICA DE DETECCIÓN ---
-let colorClass = "";
-const p = perfil.toLowerCase(); // Convertimos a minúsculas para no fallar por tildes o mayúsculas
+            const p = perfil.toLowerCase();
 
-if (p.includes("academia")) {
-    colorClass = "bg-academia";
-} else if (p.includes("embajador")) {
-    colorClass = "bg-embajador";
-} else if (p.includes("asociado") || p.includes("profesor")) {
-    colorClass = "bg-profesor"; // Aplicará el Índigo
-} else {
-    colorClass = "bg-alumno";   // Aplicará el Verde para Estudiantes
-}
+            // --- FILTRO DE PERFIL ---
+            // Si el filtro no es "todos" y el perfil no contiene la palabra clave, saltamos este registro
+            if (valorFiltro !== "todos" && !p.includes(valorFiltro)) {
+                return; 
+            }
+
+            // --- TU LÓGICA DE COLORES EXISTENTE ---
+            let colorClass = "";
+            if (p.includes("academia")) {
+                colorClass = "bg-academia";
+            } else if (p.includes("embajador")) {
+                colorClass = "bg-embajador";
+            } else if (p.includes("asociado") || p.includes("profesor")) {
+                colorClass = "bg-profesor"; 
+            } else {
+                colorClass = "bg-alumno";   
+            }
             
             tbody.innerHTML += `
                 <tr>
@@ -297,6 +307,12 @@ if (p.includes("academia")) {
                     </td>
                 </tr>`;
         });
+    });
+
+    // 3. Escuchador de cambios (Añade esto debajo del cierre de onSnapshot)
+    selectorFiltro.addEventListener('change', () => {
+        // Recargamos ligeramente para aplicar el filtro sobre el snapshot actual
+        location.reload();
     });
 
     // FUNCIÓN PARA VER EL EXPEDIENTE (Mapeo de tu imagen de Firestore)
