@@ -217,25 +217,24 @@
             // 1. Crear el acceso en Firebase Auth
             const userCred = await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
             
-            // 2. Crear el documento en "usuarios" con la DATA COMPLETA (Mapeo total)
-            await setDoc(doc(db, "usuarios", userCred.user.uid), {
-                uid: userCred.user.uid,
-                entidad: currentData.entidad || "N/A",
-                nombreResponsable: currentData.nombreResponsable || "N/A",
-                email: currentData.email,
-                whatsapp: currentData.whatsapp || "N/A",
-                rif: currentData.rif || "N/A",
-                ubicacion: currentData.ubicacion || "N/A",
-                perfil: currentData.perfil || currentData.tipoSolicitante || "N/A",
-                tipoSolicitante: currentData.tipoSolicitante || "N/A",
-                cupos: currentData.cupos || "0",
-                duracionLicencia: currentData.duracionLicencia || "N/A",
-                programas: currentData.programas || "No especificados",
-                fechaPostulacion: currentData.fecha || "N/A",
-                fechaActivacion: new Date().toLocaleString(), // Fecha en que le das acceso
-                estado: "activo"
-            });
-
+            // 2. Crear el documento en "usuarios" con la DATA COMPLETA
+await setDoc(doc(db, "usuarios", userCred.user.uid), {
+    uid: userCred.user.uid,
+    entidad: currentData.entidad || "N/A",                // <--- Esto creará el campo 'entidad'
+    nombreResponsable: currentData.nombreResponsable || "N/A", // <--- Esto creará 'nombreResponsable'
+    email: currentData.email,                             // <--- Campo 'email'
+    whatsapp: currentData.whatsapp || "N/A",              // <--- Campo 'whatsapp'
+    rif: currentData.rif || "N/A",                        // <--- Campo 'rif'
+    ubicacion: currentData.ubicacion || "N/A",            // <--- Campo 'ubicacion'
+    perfil: currentData.perfil || currentData.tipoSolicitante || "N/A",
+    tipoSolicitante: currentData.tipoSolicitante || "N/A",
+    cupos: currentData.cupos || "0",
+    duracionLicencia: currentData.duracionLicencia || "N/A",
+    programas: currentData.programas || "No especificados",
+    fechaPostulacion: currentData.fecha || "N/A",         // <--- Aquí guardamos la fecha original
+    fechaActivacion: new Date().toLocaleString(),         // <--- Aquí la fecha de hoy
+    estado: "activo"
+});
             // 3. RESPALDO: Guardar en historial antes de borrar
             await setDoc(doc(db, "historial_postulaciones", currentId), {
                 ...currentData,
