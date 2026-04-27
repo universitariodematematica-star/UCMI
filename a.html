@@ -209,29 +209,78 @@
     }
 };
 
-    // ACCIÓN: ACTIVAR
+    // ACCIÓN: ACTIVAR (ACTUALIZADO CON HISTORIAL)
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
-        if(!currentData) return;
+        if(!currentId || !currentData) return;
+        
         try {
+            // 1. Crear el usuario en Auth
             const userCred = await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
+            
+            // 2. Mover a la colección de usuarios activos (Tu lógica original mejorada)
             await setDoc(doc(db, "usuarios", userCred.user.uid), {
                 nombre: currentData.entidad !== "N/A" ? currentData.entidad : currentData.nombreResponsable,
                 email: currentData.email,
-                rol: currentData.tipoSolicitante,
+                rol: currentData.tipoSolicitante || currentData.perfil,
                 cupos: currentData.cupos,
-                estado: "activo"
+                estado: "activo",
+                fechaActivacion: new Date().toLocaleString()
             });
-            await deleteDoc(doc(db, "postulaciones", currentId));
-            Swal.fire("¡Activado!", "Usuario creado y postulación movida a la red.", "success");
-            location.reload();
-        } catch (e) { Swal.fire("Error", e.message, "error"); }
-    };
 
-    // ACCIÓN: RECHAZAR
-    document.getElementById('btnEliminar').onclick = async () => {
-        if(confirm("¿Seguro que quieres eliminar esta postulación?")) {
+            // 3. NUEVO PASO: Guardar copia en "historial_postulaciones" como ACEPTADO
+            await setDoc(doc(db, "historial_postulaciones", currentId), {
+                ...currentData,
+                decisionFinal: "ACEPTADO",
+                fechaProceso: new Date().toLocaleString()
+            });
+
+            // 4. Borrar de postulaciones pendientes
             await deleteDoc(doc(db, "postulaciones", currentId));
+            
+            await Swal.fire({
+                title: "¡Activado!",
+                text: "Usuario creado y registro respaldado en el historial.",
+                icon: "success",
+                confirmButtonColor: "#27ae60"
+            });
+            
             location.reload();
+        } catch (e) { 
+            Swal.fire("Error", "No se pudo activar: " + e.message, "error"); 
+        }
+    };
+    // ACCIÓN: RECHAZAR Y ARCHIVAR
+    document.getElementById('btnEliminar').onclick = async () => {
+        if(!currentId || !currentData) return;
+
+        const confirmacion = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Se rechazará la solicitud de ${currentData.entidad !== "N/A" ? currentData.entidad : currentData.nombreResponsable} y se moverá al historial.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, rechazar y archivar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (confirmacion.isConfirmed) {
+            try {
+                // 1. Guardar copia en "historial_postulaciones" como RECHAZADO
+                await setDoc(doc(db, "historial_postulaciones", currentId), {
+                    ...currentData,
+                    decisionFinal: "RECHAZADO",
+                    fechaProceso: new Date().toLocaleString()
+                });
+
+                // 2. Eliminar de la colección activa
+                await deleteDoc(doc(db, "postulaciones", currentId));
+
+                await Swal.fire('Procesado', 'La postulación se ha movido al historial de rechazados.', 'success');
+                location.reload();
+            } catch (e) {
+                Swal.fire("Error", "No se pudo procesar: " + e.message, "error");
+            }
         }
     };
 </script>
