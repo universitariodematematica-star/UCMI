@@ -209,44 +209,53 @@
     }
 };
 
-    // ACCIÓN: ACTIVAR (ACTUALIZADO CON HISTORIAL)
+    // ACCIÓN: ACTIVAR (CON TODA LA INFORMACIÓN DEL EXPEDIENTE)
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
         if(!currentId || !currentData) return;
         
         try {
-            // 1. Crear el usuario en Auth
+            // 1. Crear el acceso en Firebase Auth
             const userCred = await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
             
-            // 2. Mover a la colección de usuarios activos (Tu lógica original mejorada)
+            // 2. Crear el documento en "usuarios" con la DATA COMPLETA (Mapeo total)
             await setDoc(doc(db, "usuarios", userCred.user.uid), {
-                nombre: currentData.entidad !== "N/A" ? currentData.entidad : currentData.nombreResponsable,
+                uid: userCred.user.uid,
+                entidad: currentData.entidad || "N/A",
+                nombreResponsable: currentData.nombreResponsable || "N/A",
                 email: currentData.email,
-                rol: currentData.tipoSolicitante || currentData.perfil,
-                cupos: currentData.cupos,
-                estado: "activo",
-                fechaActivacion: new Date().toLocaleString()
+                whatsapp: currentData.whatsapp || "N/A",
+                rif: currentData.rif || "N/A",
+                ubicacion: currentData.ubicacion || "N/A",
+                perfil: currentData.perfil || currentData.tipoSolicitante || "N/A",
+                tipoSolicitante: currentData.tipoSolicitante || "N/A",
+                cupos: currentData.cupos || "0",
+                duracionLicencia: currentData.duracionLicencia || "N/A",
+                programas: currentData.programas || "No especificados",
+                fechaPostulacion: currentData.fecha || "N/A",
+                fechaActivacion: new Date().toLocaleString(), // Fecha en que le das acceso
+                estado: "activo"
             });
 
-            // 3. NUEVO PASO: Guardar copia en "historial_postulaciones" como ACEPTADO
+            // 3. RESPALDO: Guardar en historial antes de borrar
             await setDoc(doc(db, "historial_postulaciones", currentId), {
                 ...currentData,
                 decisionFinal: "ACEPTADO",
                 fechaProceso: new Date().toLocaleString()
             });
 
-            // 4. Borrar de postulaciones pendientes
+            // 4. Eliminar de la lista de pendientes
             await deleteDoc(doc(db, "postulaciones", currentId));
             
             await Swal.fire({
-                title: "¡Activado!",
-                text: "Usuario creado y registro respaldado en el historial.",
+                title: "¡Acceso Activado!",
+                text: "El usuario ha sido creado con toda su información legal y de licencia.",
                 icon: "success",
                 confirmButtonColor: "#27ae60"
             });
             
             location.reload();
         } catch (e) { 
-            Swal.fire("Error", "No se pudo activar: " + e.message, "error"); 
+            Swal.fire("Error al activar", e.message, "error"); 
         }
     };
     // ACCIÓN: RECHAZAR Y ARCHIVAR
