@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Postulación Oficial - UCMI</title>
@@ -15,6 +16,36 @@
             --rojo-error: #ff4d4d;
             --blanco-suave: rgba(255, 255, 255, 0.9);
         }
+
+        .header-institucional {
+    text-align: center;
+    padding: 60px 20px;
+    background: rgba(0, 0, 0, 0.3); /* Fondo sutil para resaltar */
+    border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+}
+
+.inst-logo {
+    height: 120px; /* Tamaño prominente */
+    filter: drop-shadow(0 0 15px rgba(197, 160, 89, 0.2));
+    margin-bottom: 20px;
+}
+
+.inst-nombre {
+    font-family: 'Cinzel', serif; /* O una Serif elegante similar */
+    color: #f3f0df;
+    font-size: 1.2rem;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.inst-titulo {
+    font-family: 'Segoe UI', sans-serif;
+    color: #c5a059; /* Dorado principal */
+    font-weight: 800;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
 
         body { 
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
@@ -159,12 +190,16 @@
 
 <div class="container">
     <div class="card-form">
-        <div class="header-minimalista">
-            <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo UCMI" style="height: 100px; width: auto;">
-            <h2>Universitario de Ciencias Matemáticas e Idiomas</h2>
-            <h1 class="text-glow-gold text-uppercase mt-2" style="font-size: 1.8rem;">Registro de Postulación</h1>
-            <div class="linea-decorativa"></div>
-        </div>
+        <div class="header-institucional">
+    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" 
+         alt="Logo UCMI" class="inst-logo">
+    
+    <div class="inst-nombre">Universitario de Ciencias Matemáticas e Idiomas</div>
+    
+    <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA</h1>
+    
+    <div class="linea-decorativa"></div>
+</div>
 
         <form id="formUCMI" class="p-4 p-md-5 pt-4" novalidate>
             <div class="mb-4">
@@ -365,35 +400,75 @@
     function generarPDF(d) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.setFillColor(26, 42, 58); doc.rect(0, 0, 210, 45, 'F');
-        doc.setTextColor(197, 160, 89); doc.setFontSize(18); doc.setFont(undefined, 'bold');
-        doc.text("UCMI - REGISTRO OFICIAL", 55, 25);
+        const logoUrl = "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
         
-        doc.setTextColor(0, 0, 0); doc.setFontSize(11);
-        doc.text(`POSTULACIÓN: ${d.perfil.toUpperCase()}`, 20, 60);
-        doc.setFontSize(9); doc.text(`FECHA: ${d.fecha}`, 140, 60);
-        doc.line(20, 65, 190, 65);
+        // --- 1. CABECERA INSTITUCIONAL ---
+        doc.setFillColor(11, 27, 43); // Azul UCMI profundo
+        doc.rect(0, 0, 210, 55, 'F');
         
-        let y = 80;
-        const filas = [
-            ["RESPONSABLE:", d.nombreResponsable],
-            ["ENTIDAD:", d.entidad],
-            ["ID FISCAL:", d.rif],
-            ["WHATSAPP:", d.whatsapp],
-            ["UBICACIÓN:", d.ubicacion],
-            ["CUPOS:", d.cupos], 
-            ["LICENCIA:", d.duracionLicencia],
-            ["PROGRAMAS:", d.programas]
-        ];
+        // INSERTAR LOGO EN LA PARTE SUPERIOR IZQUIERDA
+        // Coordenadas: x=15, y=8 | Tamaño: ancho=35, alto=35 (ajustable)
+        doc.addImage(logoUrl, 'PNG', 15, 8, 35, 35);
+        
+        // TEXTOS DE CABECERA (Desplazados a la derecha para no chocar con el logo)
+        doc.setTextColor(197, 160, 89); // Dorado
+        doc.setFont("times", "bold");
+        doc.setFontSize(20);
+        doc.text("U C M I", 120, 22, { align: "center" });
+        
+        doc.setFontSize(10);
+        doc.setFont("times", "italic");
+        doc.text("Universitario de Ciencias Matemáticas e Idiomas", 120, 30, { align: "center" });
+        
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.text("POSTULACIÓN ACADÉMICA", 120, 42, { align: "center" });
+        
+        // --- 2. CUERPO DEL EXPEDIENTE ---
+        doc.setTextColor(40, 40, 40);
+        doc.setFontSize(9);
+        doc.text(`ID de Control: ${Math.floor(Math.random() * 1000000)}`, 20, 65);
+        doc.text(`Fecha: ${d.fecha}`, 140, 65);
+        doc.line(20, 68, 190, 68); 
 
-        filas.forEach(f => {
-            doc.setFont(undefined, 'bold'); doc.text(f[0], 20, y);
-            doc.setFont(undefined, 'normal'); 
-            const text = doc.splitTextToSize(String(f[1]), 120);
-            doc.text(text, 70, y);
-            y += (text.length * 7) + 3;
-        });
-        
+        // --- 3. TABLA DE DATOS ---
+        let y = 80;
+        const margin = 20;
+        const col1 = 25;
+        const col2 = 75;
+
+        const drawRow = (label, value) => {
+            doc.setFillColor(248, 248, 248);
+            doc.rect(margin, y - 5, 170, 9, 'F'); 
+            
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(150, 120, 60); 
+            doc.text(label, col1, y);
+            
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(0, 0, 0);
+            
+            const splitValue = doc.splitTextToSize(String(value), 110);
+            doc.text(splitValue, col2, y);
+            y += (splitValue.length * 5) + 6; 
+        };
+
+        // Mapeo de datos
+        drawRow("PERFIL:", d.perfil.toUpperCase());
+        drawRow("RESPONSABLE:", d.nombreResponsable);
+        drawRow("ENTIDAD:", d.entidad);
+        drawRow("ID FISCAL:", d.rif);
+        drawRow("WHATSAPP:", d.whatsapp);
+        drawRow("UBICACIÓN:", d.ubicacion);
+        drawRow("CUPOS:", d.cupos);
+        drawRow("LICENCIA:", d.duracionLicencia);
+        drawRow("PROGRAMAS:", d.programas);
+
+        // --- 4. PIE DE PÁGINA ---
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text("Documento Oficial - Protocolo Supralógico UCMI - Transmisión Encriptada", 105, 285, { align: "center" });
+
         window.open(doc.output('bloburl'), '_blank');
     }
 </script>
