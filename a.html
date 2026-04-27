@@ -1,321 +1,291 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Panel de Control Maestro</title>
+    <title>Postulación Oficial - UCMI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root {
-            --azul-profundo: #06090f;
-            --dorado-ucmi: #c5a059;
-            --cian-neon: #00f2ff;
-            --purpura-neon: #bc13fe;
-            --magenta-neon: #ff00ff;
-            --verde-neon: #39ff14;
-            --blanco-suave: rgba(255, 255, 255, 0.85);
+        :root { 
+            --azul-ucmi: #1a2a3a; 
+            --azul-intenso: #003366; 
+            --dorado-ucmi: #c5a059; 
+            --rojo-error: #ff4d4d;
+            --blanco-suave: rgba(255, 255, 255, 0.9);
         }
 
-        body {
+        .header-institucional {
+    text-align: center;
+    padding: 60px 20px;
+    background: rgba(0, 0, 0, 0.3); /* Fondo sutil para resaltar */
+    border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+}
+
+.inst-logo {
+    height: 120px; /* Tamaño prominente */
+    filter: drop-shadow(0 0 15px rgba(197, 160, 89, 0.2));
+    margin-bottom: 20px;
+}
+
+.inst-nombre {
+    font-family: 'Cinzel', serif; /* O una Serif elegante similar */
+    color: #f3f0df;
+    font-size: 1.2rem;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.inst-titulo {
+    font-family: 'Segoe UI', sans-serif;
+    color: #c5a059; /* Dorado principal */
+    font-weight: 800;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+        body { 
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
             background-size: cover;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', sans-serif; 
+            padding: 40px 0; 
             color: white;
-            min-height: 100vh;
-            margin: 0;
         }
 
         .overlay {
-            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%);
-            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding-bottom: 50px;
-        }
-
-        .navbar-master {
-            background: rgba(6, 9, 15, 0.8);
-            border-bottom: 1px solid rgba(197, 160, 89, 0.5);
-            backdrop-filter: blur(15px);
-            padding: 0.8rem 2rem;
-        }
-
-        .logo-nav {
-            height: 60px;
-            filter: drop-shadow(0 0 5px rgba(197, 160, 89, 0.3));
-        }
-
-        .btn-logout {
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            color: #ff4d4d;
-            padding: 5px 15px;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-logout:hover {
-            background: #ff4d4d;
-            color: white;
-            box-shadow: 0 0 15px rgba(255, 77, 77, 0.4);
-        }
-
-        .admin-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-decoration: none;
-            color: white;
             height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 40px 20px;
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.9) 100%);
+            z-index: -1;
         }
 
-        .admin-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-12px);
-            border-color: var(--dorado-ucmi);
-            color: white;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-        }
-
-        .icon-circle {
-            width: 80px;
-            height: 80px;
-            background: rgba(197, 160, 89, 0.1);
-            border: 1px solid rgba(197, 160, 89, 0.3);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.2rem;
-            margin: 0 auto 20px;
-            color: var(--dorado-ucmi);
-            text-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
-        }
-
-        .badge-custom {
-            font-size: 0.75rem;
-            letter-spacing: 1.5px;
-            padding: 8px 16px;
-            border-radius: 50px;
-            font-weight: 800;
-        }
-
-        .badge-entrada { background: var(--cian-neon); color: #000; box-shadow: 0 0 15px rgba(0, 242, 255, 0.5); }
-        .badge-temporal { background: var(--purpura-neon); color: #fff; box-shadow: 0 0 15px rgba(188, 19, 254, 0.5); }
-        .badge-jerarquia { background: var(--magenta-neon); color: #fff; box-shadow: 0 0 15px rgba(255, 0, 255, 0.5); }
-        .badge-registro { background: var(--verde-neon); color: #000; box-shadow: 0 0 15px rgba(57, 255, 20, 0.5); }
-
-        .repo-academico {
-            background: rgba(6, 9, 15, 0.7) !important;
-            border: 1px solid rgba(197, 160, 89, 0.4) !important;
+        .card-form { 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 30px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5); 
+            background: rgba(255, 255, 255, 0.05); 
             backdrop-filter: blur(20px);
-            border-radius: 28px;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
-            margin-top: 40px;
+            max-width: 850px; 
+            margin: auto; 
+            overflow: hidden; 
+        }
+
+        .header-minimalista { 
+            text-align: center; 
+            padding: 50px 20px 20px 20px; 
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .header-minimalista h2 { 
+            color: var(--blanco-suave); 
+            font-weight: 800; 
+            font-size: 1.5rem; 
+            text-transform: uppercase; 
+            margin-top: 20px; 
+            letter-spacing: 1px;
         }
 
         .text-glow-gold {
             color: var(--dorado-ucmi);
-            text-shadow: 0 0 15px rgba(197, 160, 89, 0.6);
-        }
-
-        .stats-circle {
-            border: 2px solid var(--dorado-ucmi);
-            border-radius: 50%;
-            width: 130px;
-            height: 130px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: rgba(197, 160, 89, 0.05);
-            box-shadow: inset 0 0 20px rgba(197, 160, 89, 0.2), 0 0 15px rgba(197, 160, 89, 0.1);
-            margin: 0 auto;
-        }
-
-        .btn-master-primary {
-            background: var(--dorado-ucmi);
-            color: #000;
+            text-shadow: 0 0 15px rgba(197, 160, 89, 0.5);
             font-weight: 700;
-            border-radius: 50px;
-            padding: 12px 45px;
-            border: none;
-            transition: 0.3s;
-            text-transform: uppercase;
+        }
+
+        .linea-decorativa { 
+            width: 70px; 
+            height: 4px; 
+            background: var(--dorado-ucmi); 
+            margin: 25px auto; 
+            border-radius: 2px; 
+            box-shadow: 0 0 10px var(--dorado-ucmi);
+        }
+        
+        .form-label { color: var(--dorado-ucmi); font-size: 0.9rem; letter-spacing: 0.5px; }
+
+        .form-control, .form-select { 
+            border-radius: 12px; 
+            padding: 14px; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            transition: 0.3s; 
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--dorado-ucmi);
+            color: white;
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.3);
+        }
+
+        .form-control::placeholder { color: rgba(255, 255, 255, 0.4); }
+
+        /* Estilo para las opciones del select en modo oscuro */
+        select option { background: #1a1a1a; color: white; }
+
+        .seccion-dinamica { 
+            display: none; 
+            animation: slideIn 0.4s ease-out; 
+            background: rgba(0, 0, 0, 0.2); 
+            padding: 25px; 
+            border-radius: 15px; 
+            border: 1px solid rgba(197, 160, 89, 0.2); 
+            margin-top: 15px; 
+        }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .program-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+            gap: 12px; 
+            background: rgba(255, 255, 255, 0.03); 
+            padding: 20px; 
+            border-radius: 12px; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+        }
+
+        .btn-enviar { 
+            background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); 
+            color: #000; 
+            font-weight: 800; 
+            padding: 18px; 
+            border-radius: 15px; 
+            border: none; 
+            font-size: 1.1rem; 
+            width: 100%; 
+            margin-top: 25px; 
+            transition: 0.3s; 
             letter-spacing: 1px;
-            text-decoration: none;
-            display: inline-block;
         }
 
-        .btn-master-primary:hover {
-            background: white;
-            box-shadow: 0 0 25px var(--dorado-ucmi);
-            transform: scale(1.05);
-            color: black;
+        .btn-enviar:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 10px 25px rgba(197, 160, 89, 0.4);
+            filter: brightness(1.1);
         }
 
-        .text-light-opacity {
-            color: var(--blanco-suave);
-            font-weight: 300;
+        .check-all-container { 
+            background: rgba(197, 160, 89, 0.1); 
+            padding: 12px 20px; 
+            border-radius: 10px 10px 0 0; 
+            border: 1px solid rgba(197, 160, 89, 0.3); 
+            border-bottom: none; 
         }
+
+        .form-check-input:checked { background-color: var(--dorado-ucmi); border-color: var(--dorado-ucmi); }
+        
+        .is-invalid { border: 2px solid var(--rojo-error) !important; }
     </style>
 </head>
 <body>
 
-<div class="overlay">
-    <nav class="navbar navbar-master sticky-top">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a href="index.html">
-                <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="UCMI Logo" class="logo-nav">
-            </a>
-            <div class="d-flex align-items-center">
-                <div class="text-end me-3 d-none d-md-block">
-                    <small class="d-block opacity-75 text-white">Consola Maestra</small>
-                    <span class="fw-bold text-glow-gold">Juan Carlos Riera</span>
-                    <button id="btnLogout" class="btn btn-logout ms-2">Salir <i class="bi bi-box-arrow-right"></i></button>
+<div class="overlay"></div>
+
+<div class="container">
+    <div class="card-form">
+        <div class="header-institucional">
+    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" 
+         alt="Logo UCMI" class="inst-logo">
+    
+    <div class="inst-nombre">Universitario de Ciencias Matemáticas e Idiomas</div>
+    
+    <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA</h1>
+    
+    <div class="linea-decorativa"></div>
+</div>
+
+        <form id="formUCMI" class="p-4 p-md-5 pt-4" novalidate>
+            <div class="mb-4">
+                <label class="form-label fw-bold"><i class="bi bi-person-badge me-2"></i>Tipo de Postulante:</label>
+                <select class="form-select form-select-lg" id="perfilPrincipal" required onchange="gestionarFlujo()">
+                    <option value="" selected disabled>Seleccione su perfil...</option>
+                    <option value="Academia">Academia / Institución</option>
+                    <option value="Independiente">Profesor Independiente</option>
+                    <option value="Estudiante autodidacta">Estudiante Autodidacta</option>
+                </select>
+            </div>
+
+            <div id="subSeccionProfesor" class="seccion-dinamica mb-4">
+                <label class="form-label fw-bold"><i class="bi bi-mortarboard me-2"></i>Modalidad de Profesor:</label>
+                <select class="form-select" id="subTipoProfesor">
+                    <option value="Profesor asociado" selected>Profesor Asociado (Gestión de Cupos)</option>
+                    <option value="Profesor embajador">Profesor Embajador (Marca Blanca)</option>
+                </select>
+            </div>
+
+            <div id="cuerpoFormulario" style="display: none;">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Nombre Completo:</label>
+                        <input type="text" id="nombreInput" class="form-control" placeholder="Nombre del responsable" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Correo Institucional / Personal:</label>
+                        <input type="email" id="emailInput" class="form-control" placeholder="ejemplo@ucmi.edu" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">WhatsApp:</label>
+                        <input type="text" id="whatsappInput" class="form-control" placeholder="+58..." required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Ciudad y País:</label>
+                        <input type="text" id="ubicacionInput" class="form-control" placeholder="Ubicación geográfica" required>
+                    </div>
                 </div>
-                <div class="icon-circle mb-0" style="width: 50px; height: 50px; font-size: 1.2rem; margin: 0;">
-                    <i class="bi bi-person-fill"></i>
-                </div>
-            </div>
-        </div>
-    </nav>
 
-    <div class="container py-5">
-        <div class="row mb-5 text-center">
-            <div class="col-12">
-                <h1 class="display-3 fw-bold mb-0">Control Maestro</h1>
-                <p class="lead text-glow-gold fs-4">Universitario de Ciencias Matemáticas e Idiomas</p>
-                <div class="mx-auto" style="width: 60px; height: 4px; background: var(--dorado-ucmi); border-radius: 10px; margin-top: 15px;"></div>
-            </div>
-        </div>
-
-        <div class="row g-4 gy-5">
-            <div class="col-md-3">
-                <a href="https://universitariodematematica-star.github.io/UCMI/master-postulaciones.html" class="admin-card text-center">
-                    <div class="icon-circle"><i class="bi bi-person-plus"></i></div>
-                    <h3 class="fw-bold">Solicitudes</h3>
-                    <p class="text-light-opacity small px-3">Gestión de aspirantes y validación de nuevos ingresos.</p>
-                    <div class="mt-3">
-                        <span class="badge-custom badge-entrada">FILTRO DE ENTRADA</span>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-3">
-                <a href="master-vigencia.html" class="admin-card text-center">
-                    <div class="icon-circle"><i class="bi bi-clock-history"></i></div>
-                    <h3 class="fw-bold">Vigencia</h3>
-                    <p class="text-light-opacity small px-3">Monitoreo de ciclos temporales y caducidad.</p>
-                    <div class="mt-3">
-                        <span class="badge-custom badge-temporal">ESTADO TEMPORAL</span>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-3">
-                <a href="https://universitariodematematica-star.github.io/UCMI/master-usuarios.html" class="admin-card text-center">
-                    <div class="icon-circle"><i class="bi bi-cpu"></i></div>
-                    <h3 class="fw-bold">Usuarios</h3>
-                    <p class="text-light-opacity small px-3">Control de roles validados y jerarquías.</p>
-                    <div class="mt-3">
-                        <span class="badge-custom badge-jerarquia">MAPA JERÁRQUICO</span>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-3">
-                <a href="https://universitariodematematica-star.github.io/UCMI/historial-postulaciones.html" class="admin-card text-center">
-                    <div class="icon-circle"><i class="bi bi-archive"></i></div>
-                    <h3 class="fw-bold">Historial</h3>
-                    <p class="text-light-opacity small px-3">Bitácora histórica de postulaciones procesadas.</p>
-                    <div class="mt-3">
-                        <span class="badge-custom badge-registro">ARCHIVO MAESTRO</span>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-3">
-                <a href="directorio.html" class="admin-card text-center">
-                    <div class="icon-circle"><i class="bi bi-person-lines-fill"></i></div>
-                    <h3 class="fw-bold">Directorio</h3>
-                    <p class="text-light-opacity small px-3">Base de datos de contactos y miembros de la red UCMI.</p>
-                    <div class="mt-3">
-                        <span class="badge-custom" style="background: #ff8c00; color: #fff; box-shadow: 0 0 15px rgba(255, 140, 0, 0.5);">NÚCLEO DE CONTACTOS</span>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-3">
-                <a href="ofertas-academicas.html" class="admin-card text-center">
-                    <div class="icon-circle"><i class="bi bi-mortarboard-fill"></i></div>
-                    <h3 class="fw-bold">Ofertas</h3>
-                    <p class="text-light-opacity small px-3">Administración de programas académicos.</p>
-                    <div class="mt-3">
-                        <span class="badge-custom" style="background: #00ff7f; color: #000; box-shadow: 0 0 15px rgba(0, 255, 127, 0.5);">PLAN DOCENTE</span>
-                    </div>
-                </a>
-            </div>
-        </div> <div class="row mt-5">
-            <div class="col-12">
-                <div class="card repo-academico p-5 border-0">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h2 class="fw-bold mb-4 d-flex align-items-center text-glow-gold">
-                                <i class="bi bi-infinity me-3"></i>
-                                Repositorio Académico Universal
-                            </h2>
-                            <p class="text-light-opacity fs-5 mb-4" style="font-style: italic;">
-                                "Donde la lógica formal se encuentra con la inteligencia aplicada."
-                            </p>
-                            <p class="text-light-opacity mb-5">
-                                Acceso total a la arquitectura de conocimientos. Explora la formalización de la 
-                                <b>Supralógica</b>, la metodología pedagógica <b>AGEM</b> y el catálogo 
-                                completo de idiomas y desarrollos matemáticos avanzados.
-                            </p>
-                            <div class="d-flex flex-wrap gap-3">
-                                <a href="https://universitariodematematica-star.github.io/UCMI/master-repositorio.html" class="btn-master-primary">
-                                    <i class="bi bi-eye-fill me-2"></i> Explorar Contenidos
-                                </a>
-                            </div>
+                <div id="camposAcademia" class="seccion-dinamica">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label small fw-bold" id="labelEntidad" for="entidadInput">Nombre de la Institución:</label>
+                            <input type="text" id="entidadInput" class="form-control" placeholder="Razón social" required>
                         </div>
-                        <div class="col-md-4 text-center d-none d-md-block">
-                            <div class="stats-circle mb-3">
-                                <h2 class="display-4 fw-bold text-glow-gold mb-0">15</h2>
-                                <span class="text-uppercase small fw-bold text-white-50" style="font-size: 0.65rem;">Capítulos</span>
-                            </div>
-                            <p class="text-white-50 small mb-2">Progreso de Tesis Supralógica</p>
-                            <div class="progress bg-dark mx-auto shadow-sm" style="height: 8px; width: 80%; border-radius: 10px;">
-                                <div class="progress-bar" role="progressbar" style="width: 75%; background: linear-gradient(90deg, var(--dorado-ucmi), #fff); box-shadow: 0 0 15px var(--dorado-ucmi);" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Identificación Fiscal (RIF/DNI):</label>
+                            <input type="text" id="rifInput" class="form-control" placeholder="Registro oficial" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Cupos Solicitados:</label>
+                            <input type="number" id="cuposInput" class="form-control" placeholder="Cant. estudiantes" required min="1">
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <footer class="mt-5 pt-4 text-center">
-            <p class="text-white-50 small">UCMI - Universitario de Ciencias Matemáticas e Idiomas</p>
-            <p class="text-glow-gold fw-bold small">NÚCLEO DE CONTROL MAESTRO v1.0</p>
-        </footer>
+                <div class="mt-4">
+                    <label class="form-label fw-bold text-uppercase small text-white-50">Programas Académicos a Vincular</label>
+                    <div class="check-all-container">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="selectAll">
+                            <label class="form-check-label fw-bold" for="selectAll">Seleccionar Todo el Ecosistema</label>
+                        </div>
+                    </div>
+                    <div class="program-grid mb-3" id="gridProgramas"></div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold small">Duración de la Licencia (Meses):</label>
+                    <input type="number" id="mesesInput" class="form-control" placeholder="Mínimo sugerido: 12" required min="1">
+                </div>
+
+                <button type="submit" id="btnSubmit" class="btn btn-enviar shadow">ENVIAR POSTULACIÓN OFICIAL</button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="text-center mt-4">
+        <p class="text-white-50 small"><i class="bi bi-shield-check me-1"></i> Transmisión encriptada bajo el Protocolo Supralógico UCMI</p>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -327,23 +297,228 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
+    const db = getFirestore(app);
 
-    onAuthStateChanged(auth, (user) => {
-        if (!user || user.uid !== MI_UID_MAESTRO) {
-            window.location.href = "index.html";
+// --- PASO 2: CARGA DINÁMICA DESDE FIREBASE ---
+async function cargarOfertas() {
+    const grid = document.getElementById('gridProgramas');
+    
+    try {
+        // Consultamos la colección 'ofertas' y ordenamos por el nuevo campo 'modulo'
+        const q = query(collection(db, "ofertas"), orderBy("modulo", "asc"));
+        const querySnapshot = await getDocs(q);
+        
+        grid.innerHTML = ""; // Limpiamos el mensaje de "Cargando..."
+
+        if (querySnapshot.empty) {
+            grid.innerHTML = "<p class='text-white-50 small p-3'>No hay módulos disponibles.</p>";
+            return;
         }
-    });
 
-    document.getElementById('btnLogout').addEventListener('click', () => {
-        signOut(auth).then(() => {
-            window.location.href = "index.html";
-        }).catch((error) => {
-            console.error("Error al cerrar sesión", error);
+        // Por cada documento encontrado, creamos un checkbox
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const nombreDelModulo = data.modulo; // <--- Aquí usamos la nueva variable
+            
+            if (nombreDelModulo) {
+                grid.innerHTML += `
+                    <div class="form-check">
+                        <input class="form-check-input prog-check" type="checkbox" value="${nombreDelModulo}" id="chk_${doc.id}">
+                        <label class="form-check-label small text-white" for="chk_${doc.id}">${nombreDelModulo}</label>
+                    </div>`;
+            }
         });
-    });
-</script>
+    } catch (error) {
+        console.error("Error en el flujo Supralógico:", error);
+        grid.innerHTML = "<p class='text-danger small'>Error de conexión con el núcleo.</p>";
+    }
+}
 
+// LANZAR LA CARGA
+cargarOfertas();
+
+    document.getElementById('selectAll').addEventListener('change', function() {
+        document.querySelectorAll('.prog-check').forEach(cb => cb.checked = this.checked);
+    });
+
+    window.gestionarFlujo = () => {
+        const principal = document.getElementById('perfilPrincipal').value;
+        const subTipo = document.getElementById('subTipoProfesor').value;
+        const camposAcademiaDoc = document.getElementById('camposAcademia');
+        const labelEntidad = document.getElementById('labelEntidad');
+        const inputEntidad = document.getElementById('entidadInput');
+        const inputRif = document.getElementById('rifInput');
+        const inputCupos = document.getElementById('cuposInput');
+        
+        document.getElementById('cuerpoFormulario').style.display = 'block';
+        document.getElementById('subSeccionProfesor').style.display = (principal === 'Independiente') ? 'block' : 'none';
+        
+        if (principal === 'Academia' || principal === 'Independiente') {
+            camposAcademiaDoc.style.display = 'block';
+            inputRif.required = true;
+            inputEntidad.required = true;
+
+            if (principal === 'Academia') {
+                labelEntidad.innerText = "Nombre de la Institución:";
+                inputCupos.parentElement.style.display = "block";
+                inputCupos.required = true;
+            } else {
+                labelEntidad.innerText = "Razón Social o Firma Personal:";
+                const esAsociado = (subTipo === 'Profesor asociado');
+                inputCupos.parentElement.style.display = esAsociado ? "block" : "none";
+                inputCupos.required = esAsociado;
+            }
+        } else {
+            camposAcademiaDoc.style.display = 'none';
+            inputRif.required = false; inputEntidad.required = false; inputCupos.required = false;
+            inputRif.value = ""; inputEntidad.value = ""; inputCupos.value = "";
+        }
+    };
+
+    document.getElementById('subTipoProfesor').addEventListener('change', window.gestionarFlujo);
+
+    // --- PASO 3: PROCESAR Y ENVIAR DATOS ---
+document.getElementById('formUCMI').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const btn = document.getElementById('btnSubmit');
+    
+    // 1. Capturamos los programas seleccionados del grid dinámico
+    const programasCheckboxes = document.querySelectorAll('.prog-check:checked');
+
+    // Validación: Si no marcó nada, detenemos el proceso
+    if (programasCheckboxes.length === 0) {
+        alert("Debe seleccionar al menos un programa académico para postularse.");
+        return;
+    }
+
+    // Validación de campos obligatorios de Bootstrap
+    if (!form.checkValidity()) {
+        e.stopPropagation();
+        form.classList.add('was-validated');
+        return;
+    }
+
+    // Bloqueamos el botón para evitar envíos dobles
+    btn.disabled = true;
+    btn.innerText = "Procesando Postulación...";
+
+    // 2. Preparamos los datos para el envío
+    const principal = document.getElementById('perfilPrincipal').value;
+    const subValor = document.getElementById('subTipoProfesor').value;
+    const tipoFinal = (principal === 'Independiente') ? subValor : principal;
+    
+    // Convertimos la lista de checkboxes seleccionados en un texto separado por comas
+    const programasSel = Array.from(programasCheckboxes).map(c => c.value).join(", ");
+
+    const datos = {
+        tipoSolicitante: tipoFinal,
+        perfil: tipoFinal,
+        nombreResponsable: document.getElementById('nombreInput').value.trim(),
+        email: document.getElementById('emailInput').value.trim(),
+        whatsapp: document.getElementById('whatsappInput').value.trim(),
+        ubicacion: document.getElementById('ubicacionInput').value.trim(),
+        programas: programasSel, // <--- Aquí van los nombres de los módulos dinámicos
+        duracionLicencia: document.getElementById('mesesInput').value + " meses",
+        cupos: (principal === "Academia" || (principal === "Independiente" && subValor === "Profesor asociado")) ? (document.getElementById('cuposInput').value || "1") : "1",
+        rif: (principal === 'Estudiante autodidacta') ? "Persona Natural" : document.getElementById('rifInput').value.trim(),
+        entidad: (principal === 'Estudiante autodidacta') ? document.getElementById('nombreInput').value.trim() : document.getElementById('entidadInput').value.trim(),
+        fecha: new Date().toLocaleString()
+    };
+
+    try {
+        // 3. Guardado oficial en la colección 'postulaciones'
+        await addDoc(collection(db, "postulaciones"), datos);
+        
+        // Llamamos a la función del PDF (que ya tienes)
+        generarPDF(datos);
+        
+        alert("¡Postulación registrada con éxito en el Ecosistema UCMI!");
+        
+        // Reiniciamos para permitir nuevas entradas
+        setTimeout(() => location.reload(), 2000);
+    } catch (err) {
+        console.error("Error en la transmisión:", err);
+        alert("Error al enviar. Por favor, verifique su conexión al núcleo.");
+        btn.disabled = false;
+        btn.innerText = "ENVIAR POSTULACIÓN OFICIAL";
+    }
+});
+
+    function generarPDF(d) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const logoUrl = "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+        
+        // --- 1. CABECERA INSTITUCIONAL ---
+        doc.setFillColor(11, 27, 43); // Azul UCMI profundo
+        doc.rect(0, 0, 210, 55, 'F');
+        
+        // INSERTAR LOGO EN LA PARTE SUPERIOR IZQUIERDA
+        // Coordenadas: x=15, y=8 | Tamaño: ancho=35, alto=35 (ajustable)
+        doc.addImage(logoUrl, 'PNG', 15, 8, 35, 35);
+        
+        // TEXTOS DE CABECERA (Desplazados a la derecha para no chocar con el logo)
+        doc.setTextColor(197, 160, 89); // Dorado
+        doc.setFont("times", "bold");
+        doc.setFontSize(20);
+        doc.text("U C M I", 120, 22, { align: "center" });
+        
+        doc.setFontSize(10);
+        doc.setFont("times", "italic");
+        doc.text("Universitario de Ciencias Matemáticas e Idiomas", 120, 30, { align: "center" });
+        
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.text("POSTULACIÓN ACADÉMICA", 120, 42, { align: "center" });
+        
+        // --- 2. CUERPO DEL EXPEDIENTE ---
+        doc.setTextColor(40, 40, 40);
+        doc.setFontSize(9);
+        doc.text(`ID de Control: ${Math.floor(Math.random() * 1000000)}`, 20, 65);
+        doc.text(`Fecha: ${d.fecha}`, 140, 65);
+        doc.line(20, 68, 190, 68); 
+
+        // --- 3. TABLA DE DATOS ---
+        let y = 80;
+        const margin = 20;
+        const col1 = 25;
+        const col2 = 75;
+
+        const drawRow = (label, value) => {
+            doc.setFillColor(248, 248, 248);
+            doc.rect(margin, y - 5, 170, 9, 'F'); 
+            
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(150, 120, 60); 
+            doc.text(label, col1, y);
+            
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(0, 0, 0);
+            
+            const splitValue = doc.splitTextToSize(String(value), 110);
+            doc.text(splitValue, col2, y);
+            y += (splitValue.length * 5) + 6; 
+        };
+
+        // Mapeo de datos
+        drawRow("PERFIL:", d.perfil.toUpperCase());
+        drawRow("RESPONSABLE:", d.nombreResponsable);
+        drawRow("ENTIDAD:", d.entidad);
+        drawRow("ID FISCAL:", d.rif);
+        drawRow("WHATSAPP:", d.whatsapp);
+        drawRow("UBICACIÓN:", d.ubicacion);
+        drawRow("CUPOS:", d.cupos);
+        drawRow("LICENCIA:", d.duracionLicencia);
+        drawRow("PROGRAMAS:", d.programas);
+
+        // --- 4. PIE DE PÁGINA ---
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text("Documento Oficial - Protocolo Supralógico UCMI - Transmisión Encriptada", 105, 285, { align: "center" });
+
+        window.open(doc.output('bloburl'), '_blank');
+    }
+</script>
 </body>
 </html>
