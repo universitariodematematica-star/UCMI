@@ -187,6 +187,20 @@
 
             <div class="col-md-10 p-4">
                 <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
+                <div class="row mt-4">
+    <div class="col-md-4">
+        <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
+            <label class="small text-muted fw-bold mb-2 d-block text-uppercase" style="letter-spacing: 1px;">Filtrar por Perfil</label>
+            <select id="filtroPerfil" class="form-select bg-dark text-white border-0 rounded-pill px-3 shadow-sm">
+                <option value="todos">Mostrar todos</option>
+                <option value="academia">Academias</option>
+                <option value="embajador">Profesor Embajador</option>
+                <option value="asociado">Profesor Asociado</option>
+                <option value="alumno">Estudiante Autodidacta</option>
+            </select>
+        </div>
+    </div>
+</div>
                 <div class="table-container mt-4">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
@@ -247,29 +261,38 @@
     let currentId = null;
     let currentData = null;
 
-    // RENDERIZAR TABLA
+    // --- LÓGICA DE FILTRADO PROFESIONAL (SIN RECARGA) ---
+    const selectorFiltro = document.getElementById('filtroPerfil');
+    let registrosLocales = []; // Almacén para filtrar en tiempo real
+
+    // Escucha activa de Firebase
     onSnapshot(collection(db, "postulaciones"), (snapshot) => {
+        registrosLocales = snapshot.docs; 
+        renderizarTabla(); 
+    });
+
+    // Función que dibuja la tabla según el filtro
+    function renderizarTabla() {
         const tbody = document.getElementById('listaMaestra');
+        const valorFiltro = selectorFiltro.value; 
         tbody.innerHTML = '';
-        snapshot.forEach((d) => {
+
+        registrosLocales.forEach((d) => {
             const data = d.data();
             const id = d.id;
             const perfil = data.tipoSolicitante || "Alumno";
-            
-// --- NUEVA LÓGICA DE DETECCIÓN ---
-let colorClass = "";
-const p = perfil.toLowerCase(); // Convertimos a minúsculas para no fallar por tildes o mayúsculas
+            const pLow = perfil.toLowerCase();
 
-if (p.includes("academia")) {
-    colorClass = "bg-academia";
-} else if (p.includes("embajador")) {
-    colorClass = "bg-embajador";
-} else if (p.includes("asociado") || p.includes("profesor")) {
-    colorClass = "bg-profesor"; // Aplicará el Índigo
-} else {
-    colorClass = "bg-alumno";   // Aplicará el Verde para Estudiantes
-}
-            
+            // Aplicar Filtro: Si no coincide con la selección, ignorar registro
+            if (valorFiltro !== "todos" && !pLow.includes(valorFiltro)) return;
+
+            // Definir Color del Badge
+            let colorClass = "";
+            if (pLow.includes("academia")) colorClass = "bg-academia";
+            else if (pLow.includes("embajador")) colorClass = "bg-embajador";
+            else if (pLow.includes("asociado") || pLow.includes("profesor")) colorClass = "bg-profesor";
+            else colorClass = "bg-alumno";
+
             tbody.innerHTML += `
                 <tr>
                     <td>
@@ -283,7 +306,10 @@ if (p.includes("academia")) {
                     </td>
                 </tr>`;
         });
-    });
+    }
+
+    // Escuchar el cambio del selector y redibujar al instante
+    selectorFiltro.addEventListener('change', renderizarTabla);
 
     // FUNCIÓN PARA VER EL EXPEDIENTE (Mapeo de tu imagen de Firestore)
     window.verExpediente = async (id) => {
