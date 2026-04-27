@@ -1,291 +1,119 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Postulación Oficial - UCMI</title>
+    <title>UCMI - Control de Postulaciones</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root { 
-            --azul-ucmi: #1a2a3a; 
-            --azul-intenso: #003366; 
-            --dorado-ucmi: #c5a059; 
-            --rojo-error: #ff4d4d;
-            --blanco-suave: rgba(255, 255, 255, 0.9);
+        :root {
+            --azul-ucmi: #06090f;
+            --azul-sidebar: #1a2a3a;
+            --verde-exito: #27ae60;
+            --dorado-ucmi: #c5a059;
         }
-
-        .header-institucional {
-    text-align: center;
-    padding: 60px 20px;
-    background: rgba(0, 0, 0, 0.3); /* Fondo sutil para resaltar */
-    border-bottom: 1px solid rgba(197, 160, 89, 0.2);
-}
-
-.inst-logo {
-    height: 120px; /* Tamaño prominente */
-    filter: drop-shadow(0 0 15px rgba(197, 160, 89, 0.2));
-    margin-bottom: 20px;
-}
-
-.inst-nombre {
-    font-family: 'Cinzel', serif; /* O una Serif elegante similar */
-    color: #f3f0df;
-    font-size: 1.2rem;
-    letter-spacing: 5px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-}
-
-.inst-titulo {
-    font-family: 'Segoe UI', sans-serif;
-    color: #c5a059; /* Dorado principal */
-    font-weight: 800;
-    font-size: 2.5rem;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-}
-
+        
         body { 
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-            background-size: cover;
-            font-family: 'Segoe UI', sans-serif; 
-            padding: 40px 0; 
-            color: white;
+            background-size: cover; font-family: 'Segoe UI', sans-serif; margin: 0; color: white;
         }
 
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.9) 100%);
-            z-index: -1;
-        }
-
-        .card-form { 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 30px; 
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5); 
-            background: rgba(255, 255, 255, 0.05); 
-            backdrop-filter: blur(20px);
-            max-width: 850px; 
-            margin: auto; 
-            overflow: hidden; 
-        }
-
-        .header-minimalista { 
-            text-align: center; 
-            padding: 50px 20px 20px 20px; 
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .header-minimalista h2 { 
-            color: var(--blanco-suave); 
-            font-weight: 800; 
-            font-size: 1.5rem; 
-            text-transform: uppercase; 
-            margin-top: 20px; 
-            letter-spacing: 1px;
-        }
-
-        .text-glow-gold {
-            color: var(--dorado-ucmi);
-            text-shadow: 0 0 15px rgba(197, 160, 89, 0.5);
-            font-weight: 700;
-        }
-
-        .linea-decorativa { 
-            width: 70px; 
-            height: 4px; 
-            background: var(--dorado-ucmi); 
-            margin: 25px auto; 
-            border-radius: 2px; 
-            box-shadow: 0 0 10px var(--dorado-ucmi);
-        }
+        .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); min-height: 100vh; }
         
-        .form-label { color: var(--dorado-ucmi); font-size: 0.9rem; letter-spacing: 0.5px; }
-
-        .form-control, .form-select { 
-            border-radius: 12px; 
-            padding: 14px; 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
-            transition: 0.3s; 
+        .sidebar { 
+            background: rgba(26, 42, 58, 0.95); backdrop-filter: blur(10px); min-height: 100vh; padding: 25px 15px; position: sticky; top: 0; border-right: 1px solid rgba(197, 160, 89, 0.3); display: flex; flex-direction: column;
         }
 
-        .form-control:focus, .form-select:focus {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: var(--dorado-ucmi);
-            color: white;
-            box-shadow: 0 0 15px rgba(197, 160, 89, 0.3);
-        }
-
-        .form-control::placeholder { color: rgba(255, 255, 255, 0.4); }
-
-        /* Estilo para las opciones del select en modo oscuro */
-        select option { background: #1a1a1a; color: white; }
-
-        .seccion-dinamica { 
-            display: none; 
-            animation: slideIn 0.4s ease-out; 
-            background: rgba(0, 0, 0, 0.2); 
-            padding: 25px; 
-            border-radius: 15px; 
-            border: 1px solid rgba(197, 160, 89, 0.2); 
-            margin-top: 15px; 
-        }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .program-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
-            gap: 12px; 
-            background: rgba(255, 255, 255, 0.03); 
-            padding: 20px; 
-            border-radius: 12px; 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-        }
-
-        .btn-enviar { 
-            background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); 
-            color: #000; 
-            font-weight: 800; 
-            padding: 18px; 
-            border-radius: 15px; 
-            border: none; 
-            font-size: 1.1rem; 
-            width: 100%; 
-            margin-top: 25px; 
-            transition: 0.3s; 
-            letter-spacing: 1px;
-        }
-
-        .btn-enviar:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 10px 25px rgba(197, 160, 89, 0.4);
-            filter: brightness(1.1);
-        }
-
-        .check-all-container { 
-            background: rgba(197, 160, 89, 0.1); 
-            padding: 12px 20px; 
-            border-radius: 10px 10px 0 0; 
-            border: 1px solid rgba(197, 160, 89, 0.3); 
-            border-bottom: none; 
-        }
-
-        .form-check-input:checked { background-color: var(--dorado-ucmi); border-color: var(--dorado-ucmi); }
+        .logo-sidebar { height: 55px; border-radius: 12px; margin-bottom: 10px; }
         
-        .is-invalid { border: 2px solid var(--rojo-error) !important; }
+        .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; margin-bottom: 5px; text-decoration: none; padding: 10px; display: block; }
+        .nav-link:hover { color: white; background: rgba(255,255,255,0.1); border-radius: 8px; }
+        .nav-link.active { color: var(--dorado-ucmi); font-weight: bold; background: rgba(197, 160, 89, 0.1); border-radius: 8px; }
+
+        .btn-volver-maestro {
+            background: rgba(255, 0, 0, 0.1); border: 1px solid rgba(255, 0, 0, 0.3) !important; color: #ff4d4d !important; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; border-radius: 50px; padding: 10px; text-decoration: none; text-align: center;
+        }
+
+        .table-container { background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 25px; color: #333; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+
+        /* ESTILOS DEL EXPEDIENTE */
+        .modal-content { border-radius: 24px; color: #333; }
+        .label-exp { color: #888; font-size: 0.7rem; text-transform: uppercase; font-weight: 800; margin-bottom: 2px; display: block; }
+        .val-exp { color: #111; font-size: 1rem; font-weight: 500; margin-bottom: 15px; display: block; border-bottom: 1px solid #f0f0f0; padding-bottom: 5px; }
+        .badge-perfil { font-size: 0.7rem; padding: 5px 10px; border-radius: 50px; color: white; font-weight: 700; }
+        .bg-academia { background: #dc3545; }
+        .bg-embajador { background: #0d6efd; }
+        .bg-socio { background: #6f42c1; }
+        .bg-alumno { background: #198754; }
     </style>
 </head>
 <body>
 
-<div class="overlay"></div>
-
-<div class="container">
-    <div class="card-form">
-        <div class="header-institucional">
-    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" 
-         alt="Logo UCMI" class="inst-logo">
-    
-    <div class="inst-nombre">Universitario de Ciencias Matemáticas e Idiomas</div>
-    
-    <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA</h1>
-    
-    <div class="linea-decorativa"></div>
-</div>
-
-        <form id="formUCMI" class="p-4 p-md-5 pt-4" novalidate>
-            <div class="mb-4">
-                <label class="form-label fw-bold"><i class="bi bi-person-badge me-2"></i>Tipo de Postulante:</label>
-                <select class="form-select form-select-lg" id="perfilPrincipal" required onchange="gestionarFlujo()">
-                    <option value="" selected disabled>Seleccione su perfil...</option>
-                    <option value="Academia">Academia / Institución</option>
-                    <option value="Independiente">Profesor Independiente</option>
-                    <option value="Estudiante autodidacta">Estudiante Autodidacta</option>
-                </select>
+<div class="super-overlay">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 sidebar d-none d-md-flex">
+                <div class="text-center mb-4">
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" class="logo-sidebar">
+                    <h5 class="fw-bold mt-2 text-white">UCMI ADMIN</h5>
+                </div>
+                <nav class="nav flex-column mb-auto">
+                    <a class="nav-link active" href="#"><i class="bi bi-inbox me-2"></i> Solicitudes</a>
+                    <a class="nav-link" href="master-usuarios.html"><i class="bi bi-people me-2"></i> Usuarios</a>
+                </nav>
+                <div class="mt-4 pt-4 border-top border-secondary">
+                    <a href="super-admin.html" class="btn-volver-maestro w-100"><i class="bi bi-arrow-left me-2"></i> Panel Maestro</a>
+                </div>
             </div>
 
-            <div id="subSeccionProfesor" class="seccion-dinamica mb-4">
-                <label class="form-label fw-bold"><i class="bi bi-mortarboard me-2"></i>Modalidad de Profesor:</label>
-                <select class="form-select" id="subTipoProfesor">
-                    <option value="Profesor asociado" selected>Profesor Asociado (Gestión de Cupos)</option>
-                    <option value="Profesor embajador">Profesor Embajador (Marca Blanca)</option>
-                </select>
+            <div class="col-md-10 p-4">
+                <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
+                <div class="table-container mt-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr class="text-muted small">
+                                    <th>IDENTIDAD</th>
+                                    <th>PERFIL</th>
+                                    <th>LOCALIZACIÓN</th>
+                                    <th class="text-center">ACCIÓN</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaMaestra"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-
-            <div id="cuerpoFormulario" style="display: none;">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold">Nombre Completo:</label>
-                        <input type="text" id="nombreInput" class="form-control" placeholder="Nombre del responsable" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold">Correo Institucional / Personal:</label>
-                        <input type="email" id="emailInput" class="form-control" placeholder="ejemplo@ucmi.edu" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold">WhatsApp:</label>
-                        <input type="text" id="whatsappInput" class="form-control" placeholder="+58..." required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold">Ciudad y País:</label>
-                        <input type="text" id="ubicacionInput" class="form-control" placeholder="Ubicación geográfica" required>
-                    </div>
-                </div>
-
-                <div id="camposAcademia" class="seccion-dinamica">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label small fw-bold" id="labelEntidad" for="entidadInput">Nombre de la Institución:</label>
-                            <input type="text" id="entidadInput" class="form-control" placeholder="Razón social" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold">Identificación Fiscal (RIF/DNI):</label>
-                            <input type="text" id="rifInput" class="form-control" placeholder="Registro oficial" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold">Cupos Solicitados:</label>
-                            <input type="number" id="cuposInput" class="form-control" placeholder="Cant. estudiantes" required min="1">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <label class="form-label fw-bold text-uppercase small text-white-50">Programas Académicos a Vincular</label>
-                    <div class="check-all-container">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="selectAll">
-                            <label class="form-check-label fw-bold" for="selectAll">Seleccionar Todo el Ecosistema</label>
-                        </div>
-                    </div>
-                    <div class="program-grid mb-3" id="gridProgramas"></div>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="form-label fw-bold small">Duración de la Licencia (Meses):</label>
-                    <input type="number" id="mesesInput" class="form-control" placeholder="Mínimo sugerido: 12" required min="1">
-                </div>
-
-                <button type="submit" id="btnSubmit" class="btn btn-enviar shadow">ENVIAR POSTULACIÓN OFICIAL</button>
-            </div>
-        </form>
-    </div>
-    
-    <div class="text-center mt-4">
-        <p class="text-white-50 small"><i class="bi bi-shield-check me-1"></i> Transmisión encriptada bajo el Protocolo Supralógico UCMI</p>
+        </div>
     </div>
 </div>
 
+<div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h4 class="fw-bold"><i class="bi bi-file-earmark-person me-2"></i>Expediente del Aspirante</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="row" id="contenidoModal">
+                    </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-outline-danger rounded-pill px-4" id="btnEliminar">Rechazar</button>
+                <button class="btn btn-success rounded-pill px-4 fw-bold" id="btnConfirmarAcceso">Activar Acceso</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -298,179 +126,181 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
+    let currentId = null;
+    let currentData = null;
 
-    const programas = ["Matemática AGEM", "Física", "Química", "Biología", "Lógica", "Estadística", "Razonamiento numérico", "Razonamiento abstracto", "Lengua", "Inglés A1", "Inglés A2", "Inglés B1", "Inglés B1+", "Inglés B2", "Inglés B2+", "Inglés C1"];
-    const grid = document.getElementById('gridProgramas');
-    programas.forEach(p => {
-        grid.innerHTML += `<div class="form-check"><input class="form-check-input prog-check" type="checkbox" value="${p}" id="chk_${p.replace(/\s/g,'')}"><label class="form-check-label small text-white" for="chk_${p.replace(/\s/g,'')}">${p}</label></div>`;
+    // RENDERIZAR TABLA
+    onSnapshot(collection(db, "postulaciones"), (snapshot) => {
+        const tbody = document.getElementById('listaMaestra');
+        tbody.innerHTML = '';
+        snapshot.forEach((d) => {
+            const data = d.data();
+            const id = d.id;
+            const perfil = data.tipoSolicitante || "Alumno";
+            const colorClass = perfil.includes("Academia") ? "bg-academia" : perfil.includes("embajador") ? "bg-embajador" : "bg-alumno";
+            
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
+                        <div class="small text-muted">${data.email}</div>
+                    </td>
+                    <td><span class="badge-perfil ${colorClass}">${perfil}</span></td>
+                    <td class="small">${data.ubicacion || '---'}</td>
+                    <td class="text-center">
+                        <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3">Revisar</button>
+                    </td>
+                </tr>`;
+        });
     });
 
-    document.getElementById('selectAll').addEventListener('change', function() {
-        document.querySelectorAll('.prog-check').forEach(cb => cb.checked = this.checked);
-    });
-
-    window.gestionarFlujo = () => {
-        const principal = document.getElementById('perfilPrincipal').value;
-        const subTipo = document.getElementById('subTipoProfesor').value;
-        const camposAcademiaDoc = document.getElementById('camposAcademia');
-        const labelEntidad = document.getElementById('labelEntidad');
-        const inputEntidad = document.getElementById('entidadInput');
-        const inputRif = document.getElementById('rifInput');
-        const inputCupos = document.getElementById('cuposInput');
+    // FUNCIÓN PARA VER EL EXPEDIENTE (Mapeo de tu imagen de Firestore)
+    window.verExpediente = async (id) => {
+    currentId = id;
+    const snap = await getDoc(doc(db, "postulaciones", id));
+    if (snap.exists()) {
+        currentData = snap.data();
+        const d = currentData;
         
-        document.getElementById('cuerpoFormulario').style.display = 'block';
-        document.getElementById('subSeccionProfesor').style.display = (principal === 'Independiente') ? 'block' : 'none';
-        
-        if (principal === 'Academia' || principal === 'Independiente') {
-            camposAcademiaDoc.style.display = 'block';
-            inputRif.required = true;
-            inputEntidad.required = true;
+        document.getElementById('contenidoModal').innerHTML = `
+            <div class="col-md-12 mb-4 border-bottom pb-2">
+                <label class="label-exp">Fecha de Solicitud</label>
+                <span class="val-exp text-primary fw-bold"><i class="bi bi-calendar3 me-2"></i>${d.fecha || 'N/A'}</span>
+            </div>
 
-            if (principal === 'Academia') {
-                labelEntidad.innerText = "Nombre de la Institución:";
-                inputCupos.parentElement.style.display = "block";
-                inputCupos.required = true;
-            } else {
-                labelEntidad.innerText = "Razón Social o Firma Personal:";
-                const esAsociado = (subTipo === 'Profesor asociado');
-                inputCupos.parentElement.style.display = esAsociado ? "block" : "none";
-                inputCupos.required = esAsociado;
+            <div class="col-md-6">
+                <label class="label-exp">Entidad / Institución</label>
+                <span class="val-exp">${d.entidad || 'N/A'}</span>
+
+                <label class="label-exp">Responsable Legal</label>
+                <span class="val-exp">${d.nombreResponsable || 'N/A'}</span>
+
+                <label class="label-exp">Registro de Información Fiscal (RIF)</label>
+                <span class="val-exp">${d.rif || 'N/A'}</span>
+
+                <label class="label-exp">Email de Contacto</label>
+                <span class="val-exp text-lowercase">${d.email || 'N/A'}</span>
+
+                <label class="label-exp">WhatsApp / Teléfono</label>
+                <span class="val-exp">${d.whatsapp || 'N/A'}</span>
+            </div>
+
+            <div class="col-md-6" style="background: rgba(0,0,0,0.03); border-radius: 15px; padding: 15px;">
+                <label class="label-exp">Perfil / Tipo de Solicitante</label>
+                <span class="val-exp fw-bold text-success">${d.tipoSolicitante || d.perfil || 'N/A'}</span>
+
+                <label class="label-exp">Duración de la Licencia</label>
+                <span class="val-exp">${d.duracionLicencia || 'N/A'}</span>
+
+                <label class="label-exp">Cupos Solicitados</label>
+                <span class="val-exp">${d.cupos || '0'}</span>
+
+                <label class="label-exp">Ubicación</label>
+                <span class="val-exp">${d.ubicacion || 'N/A'}</span>
+
+                <label class="label-exp">Programas Seleccionados</label>
+                <div class="small p-2 bg-white border rounded" style="max-height: 100px; overflow-y: auto;">
+                    ${d.programas || 'No especificados'}
+                </div>
+            </div>
+        `;
+        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+    }
+};
+
+    // ACCIÓN: ACTIVAR (VERSIÓN CORREGIDA Y GARANTIZADA)
+    document.getElementById('btnConfirmarAcceso').onclick = async () => {
+        if(!currentId || !currentData) return;
+        
+        try {
+            // 1. Intentar crear el acceso en Auth
+            try {
+                await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
+            } catch (authError) {
+                // Si ya existe, seguimos adelante para actualizar la base de datos
+                if (authError.code !== 'auth/email-already-in-use') throw authError;
             }
-        } else {
-            camposAcademiaDoc.style.display = 'none';
-            inputRif.required = false; inputEntidad.required = false; inputCupos.required = false;
-            inputRif.value = ""; inputEntidad.value = ""; inputCupos.value = "";
+
+            // 2. Preparamos el objeto con las 14 variables que necesitas
+            const dataFinal = {
+                cupos: currentData.cupos || "0",
+                duracionLicencia: currentData.duracionLicencia || "N/A",
+                email: currentData.email,
+                entidad: currentData.entidad || "N/A",
+                fecha: currentData.fecha || "N/A",
+                nombreResponsable: currentData.nombreResponsable || "N/A",
+                perfil: currentData.perfil || currentData.tipoSolicitante || "N/A",
+                programas: currentData.programas || "No especificados",
+                rif: currentData.rif || "N/A",
+                tipoSolicitante: currentData.tipoSolicitante || "N/A",
+                ubicacion: currentData.ubicacion || "N/A",
+                whatsapp: currentData.whatsapp || "N/A",
+                estado: "activo",
+                fechaActivacion: new Date().toLocaleString()
+            };
+
+            // 3. Guardar en "usuarios" (Usamos el EMAIL como ID de documento)
+            await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
+
+            // 4. Guardar en "historial_postulaciones" (Usamos el mismo ID que tenía la postulación)
+            await setDoc(doc(db, "historial_postulaciones", currentId), {
+                ...dataFinal,
+                decisionFinal: "ACEPTADO",
+                fechaProceso: new Date().toLocaleString()
+            });
+
+            // 5. Borrar de la lista de pendientes
+            await deleteDoc(doc(db, "postulaciones", currentId));
+            
+            await Swal.fire({
+                title: "¡Acceso Activado!",
+                text: "Se replicaron todos los campos en Usuarios e Historial.",
+                icon: "success",
+                confirmButtonColor: "#27ae60"
+            });
+            
+            location.reload();
+
+        } catch (e) { 
+            console.error("Error completo:", e);
+            Swal.fire("Error", "No se pudo procesar: " + e.message, "error"); 
         }
     };
+    // ACCIÓN: RECHAZAR Y ARCHIVAR
+    document.getElementById('btnEliminar').onclick = async () => {
+        if(!currentId || !currentData) return;
 
-    document.getElementById('subTipoProfesor').addEventListener('change', window.gestionarFlujo);
+        const confirmacion = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Se rechazará la solicitud de ${currentData.entidad !== "N/A" ? currentData.entidad : currentData.nombreResponsable} y se moverá al historial.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, rechazar y archivar',
+            cancelButtonText: 'Cancelar'
+        });
 
-    document.getElementById('formUCMI').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const btn = document.getElementById('btnSubmit');
-        const gridProgramas = document.getElementById('gridProgramas');
-        const programasCheckboxes = document.querySelectorAll('.prog-check:checked');
+        if (confirmacion.isConfirmed) {
+            try {
+                // 1. Guardar copia en "historial_postulaciones" como RECHAZADO
+                await setDoc(doc(db, "historial_postulaciones", currentId), {
+                    ...currentData,
+                    decisionFinal: "RECHAZADO",
+                    fechaProceso: new Date().toLocaleString()
+                });
 
-        if (programasCheckboxes.length === 0) {
-            alert("Debe seleccionar al menos un programa académico.");
-            return;
+                // 2. Eliminar de la colección activa
+                await deleteDoc(doc(db, "postulaciones", currentId));
+
+                await Swal.fire('Procesado', 'La postulación se ha movido al historial de rechazados.', 'success');
+                location.reload();
+            } catch (e) {
+                Swal.fire("Error", "No se pudo procesar: " + e.message, "error");
+            }
         }
-
-        if (!form.checkValidity()) {
-            e.stopPropagation();
-            form.classList.add('was-validated');
-            return;
-        }
-
-        btn.disabled = true;
-        btn.innerText = "Procesando Postulación...";
-
-        const principal = document.getElementById('perfilPrincipal').value;
-        const subValor = document.getElementById('subTipoProfesor').value;
-        const tipoFinal = (principal === 'Independiente') ? subValor : principal;
-        const programasSel = Array.from(document.querySelectorAll('.prog-check:checked')).map(c => c.value).join(", ");
-
-        const datos = {
-            tipoSolicitante: tipoFinal,
-            perfil: tipoFinal,
-            nombreResponsable: document.getElementById('nombreInput').value.trim(),
-            email: document.getElementById('emailInput').value.trim(),
-            whatsapp: document.getElementById('whatsappInput').value.trim(),
-            ubicacion: document.getElementById('ubicacionInput').value.trim(),
-            programas: programasSel,
-            duracionLicencia: document.getElementById('mesesInput').value + " meses",
-            cupos: (principal === "Academia" || (principal === "Independiente" && subValor === "Profesor asociado")) ? (document.getElementById('cuposInput').value || "1") : "1",
-            rif: (principal === 'Estudiante autodidacta') ? "Persona Natural" : document.getElementById('rifInput').value.trim(),
-            entidad: (principal === 'Estudiante autodidacta') ? document.getElementById('nombreInput').value.trim() : document.getElementById('entidadInput').value.trim(),
-            fecha: new Date().toLocaleString()
-        };
-
-        try {
-            await addDoc(collection(db, "postulaciones"), datos);
-            generarPDF(datos);
-            alert("¡Postulación registrada con éxito! Se abrirá el comprobante.");
-            setTimeout(() => location.reload(), 2000);
-        } catch (err) {
-            alert("Error al enviar. Intente de nuevo.");
-            btn.disabled = false;
-        }
-    });
-
-    function generarPDF(d) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const logoUrl = "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-        
-        // --- 1. CABECERA INSTITUCIONAL ---
-        doc.setFillColor(11, 27, 43); // Azul UCMI profundo
-        doc.rect(0, 0, 210, 55, 'F');
-        
-        // INSERTAR LOGO EN LA PARTE SUPERIOR IZQUIERDA
-        // Coordenadas: x=15, y=8 | Tamaño: ancho=35, alto=35 (ajustable)
-        doc.addImage(logoUrl, 'PNG', 15, 8, 35, 35);
-        
-        // TEXTOS DE CABECERA (Desplazados a la derecha para no chocar con el logo)
-        doc.setTextColor(197, 160, 89); // Dorado
-        doc.setFont("times", "bold");
-        doc.setFontSize(20);
-        doc.text("U C M I", 120, 22, { align: "center" });
-        
-        doc.setFontSize(10);
-        doc.setFont("times", "italic");
-        doc.text("Universitario de Ciencias Matemáticas e Idiomas", 120, 30, { align: "center" });
-        
-        doc.setFontSize(16);
-        doc.setFont("helvetica", "bold");
-        doc.text("POSTULACIÓN ACADÉMICA", 120, 42, { align: "center" });
-        
-        // --- 2. CUERPO DEL EXPEDIENTE ---
-        doc.setTextColor(40, 40, 40);
-        doc.setFontSize(9);
-        doc.text(`ID de Control: ${Math.floor(Math.random() * 1000000)}`, 20, 65);
-        doc.text(`Fecha: ${d.fecha}`, 140, 65);
-        doc.line(20, 68, 190, 68); 
-
-        // --- 3. TABLA DE DATOS ---
-        let y = 80;
-        const margin = 20;
-        const col1 = 25;
-        const col2 = 75;
-
-        const drawRow = (label, value) => {
-            doc.setFillColor(248, 248, 248);
-            doc.rect(margin, y - 5, 170, 9, 'F'); 
-            
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(150, 120, 60); 
-            doc.text(label, col1, y);
-            
-            doc.setFont("helvetica", "normal");
-            doc.setTextColor(0, 0, 0);
-            
-            const splitValue = doc.splitTextToSize(String(value), 110);
-            doc.text(splitValue, col2, y);
-            y += (splitValue.length * 5) + 6; 
-        };
-
-        // Mapeo de datos
-        drawRow("PERFIL:", d.perfil.toUpperCase());
-        drawRow("RESPONSABLE:", d.nombreResponsable);
-        drawRow("ENTIDAD:", d.entidad);
-        drawRow("ID FISCAL:", d.rif);
-        drawRow("WHATSAPP:", d.whatsapp);
-        drawRow("UBICACIÓN:", d.ubicacion);
-        drawRow("CUPOS:", d.cupos);
-        drawRow("LICENCIA:", d.duracionLicencia);
-        drawRow("PROGRAMAS:", d.programas);
-
-        // --- 4. PIE DE PÁGINA ---
-        doc.setFontSize(8);
-        doc.setTextColor(150, 150, 150);
-        doc.text("Documento Oficial - Protocolo Supralógico UCMI - Transmisión Encriptada", 105, 285, { align: "center" });
-
-        window.open(doc.output('bloburl'), '_blank');
-    }
+    };
 </script>
 </body>
 </html>
