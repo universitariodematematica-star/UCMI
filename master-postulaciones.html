@@ -209,33 +209,38 @@
     }
 };
 
-    // ACCIÓN: ACTIVAR (CON TODA LA INFORMACIÓN DEL EXPEDIENTE)
+    // ACCIÓN: ACTIVAR (VERSIÓN LIMPIA)
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
-        if(!currentId || !currentData) return;
+        if(!currentId || !currentData) {
+            Swal.fire("Error", "No hay datos seleccionados", "error");
+            return;
+        }
         
         try {
             // 1. Crear el acceso en Firebase Auth
             const userCred = await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
+            const nuevoUid = userCred.user.uid;
             
             // 2. Crear el documento en "usuarios" con la DATA COMPLETA
-await setDoc(doc(db, "usuarios", userCred.user.uid), {
-    uid: userCred.user.uid,
-    entidad: currentData.entidad || "N/A",                // <--- Esto creará el campo 'entidad'
-    nombreResponsable: currentData.nombreResponsable || "N/A", // <--- Esto creará 'nombreResponsable'
-    email: currentData.email,                             // <--- Campo 'email'
-    whatsapp: currentData.whatsapp || "N/A",              // <--- Campo 'whatsapp'
-    rif: currentData.rif || "N/A",                        // <--- Campo 'rif'
-    ubicacion: currentData.ubicacion || "N/A",            // <--- Campo 'ubicacion'
-    perfil: currentData.perfil || currentData.tipoSolicitante || "N/A",
-    tipoSolicitante: currentData.tipoSolicitante || "N/A",
-    cupos: currentData.cupos || "0",
-    duracionLicencia: currentData.duracionLicencia || "N/A",
-    programas: currentData.programas || "No especificados",
-    fechaPostulacion: currentData.fecha || "N/A",         // <--- Aquí guardamos la fecha original
-    fechaActivacion: new Date().toLocaleString(),         // <--- Aquí la fecha de hoy
-    estado: "activo"
-});
-            // 3. RESPALDO: Guardar en historial antes de borrar
+            await setDoc(doc(db, "usuarios", nuevoUid), {
+                uid: nuevoUid,
+                entidad: currentData.entidad || "N/A",
+                nombreResponsable: currentData.nombreResponsable || "N/A",
+                email: currentData.email,
+                whatsapp: currentData.whatsapp || "N/A",
+                rif: currentData.rif || "N/A",
+                ubicacion: currentData.ubicacion || "N/A",
+                perfil: currentData.perfil || currentData.tipoSolicitante || "N/A",
+                tipoSolicitante: currentData.tipoSolicitante || "N/A",
+                cupos: currentData.cupos || "0",
+                duracionLicencia: currentData.duracionLicencia || "N/A",
+                programas: currentData.programas || "No especificados",
+                fechaPostulacion: currentData.fecha || "N/A",
+                fechaActivacion: new Date().toLocaleString(),
+                estado: "activo"
+            });
+
+            // 3. RESPALDO: Guardar en historial
             await setDoc(doc(db, "historial_postulaciones", currentId), {
                 ...currentData,
                 decisionFinal: "ACEPTADO",
@@ -247,14 +252,20 @@ await setDoc(doc(db, "usuarios", userCred.user.uid), {
             
             await Swal.fire({
                 title: "¡Acceso Activado!",
-                text: "El usuario ha sido creado con toda su información legal y de licencia.",
+                text: "El usuario ha sido creado con éxito.",
                 icon: "success",
                 confirmButtonColor: "#27ae60"
             });
             
             location.reload();
+
         } catch (e) { 
-            Swal.fire("Error al activar", e.message, "error"); 
+            console.error(e);
+            let mensajeError = e.message;
+            if(e.code === 'auth/email-already-in-use') {
+                mensajeError = "Este correo ya está registrado en el sistema.";
+            }
+            Swal.fire("Error al activar", mensajeError, "error"); 
         }
     };
     // ACCIÓN: RECHAZAR Y ARCHIVAR
