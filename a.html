@@ -339,255 +339,138 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-
     import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
     import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-
-
     const firebaseConfig = {
-
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-
         authDomain: "ucmi-13796634.firebaseapp.com",
-
         projectId: "ucmi-13796634",
-
         storageBucket: "ucmi-13796634.firebasestorage.app",
-
         messagingSenderId: "1090719609536",
-
         appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-
     };
 
-
-
     const app = initializeApp(firebaseConfig);
-
     const db = getFirestore(app);
-
     const auth = getAuth(app);
-
     let currentId = null;
-
     let currentData = null;
 
+    // --- FUNCIÓN DE MENSAJERÍA AUTOMÁTICA ---
+    const prepararMensajeWhatsApp = (data, decision) => {
+        const nombre = data.nombreResponsable || "Postulante";
+        const telefono = data.whatsapp || "";
+        
+        if (!telefono || telefono === "N/A") return;
 
+        const msjAceptado = `¡Hola ${nombre}! Te saluda UCMI. Nos complace informarte que tu solicitud ha sido ACEPTADA. Puedes acceder con tu correo: ${data.email} y la clave: UCMI2026.`;
+        const msjRechazado = `Hola ${nombre}. Gracias por tu interés en UCMI. Te informamos que en esta ocasión tu solicitud no ha sido aprobada. Saludos cordiales.`;
 
-    // --- LÓGICA DE FILTRADO PROFESIONAL (SIN RECARGA) ---
+        const texto = (decision === "ACEPTADO") ? msjAceptado : msjRechazado;
+        const telLimpio = telefono.toString().replace(/\D/g, '');
+        const url = `https://wa.me/${telLimpio}?text=${encodeURIComponent(texto)}`;
+        
+        window.open(url, '_blank');
+    };
 
+    // --- LÓGICA DE FILTRADO ---
     const selectorFiltro = document.getElementById('filtroPerfil');
-
-    let registrosLocales = []; // Almacén para filtrar en tiempo real
-
-
-
-    // Escucha activa de Firebase
+    let registrosLocales = [];
 
     onSnapshot(collection(db, "postulaciones"), (snapshot) => {
-
         registrosLocales = snapshot.docs; 
-
         renderizarTabla(); 
-
     });
-
-
-
-    // Función que dibuja la tabla según el filtro
 
     function renderizarTabla() {
-    const tbody = document.getElementById('listaMaestra');
-    const valorFiltro = selectorFiltro.value; 
-    tbody.innerHTML = '';
+        const tbody = document.getElementById('listaMaestra');
+        const valorFiltro = selectorFiltro.value; 
+        tbody.innerHTML = '';
 
-    registrosLocales.forEach((d) => {
-        const data = d.data();
-        const id = d.id;
-        
-        // Obtenemos el perfil y lo normalizamos
-        const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
-        const pLow = perfilOriginal.toLowerCase().trim();
+        registrosLocales.forEach((d) => {
+            const data = d.data();
+            const id = d.id;
+            const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
+            const pLow = perfilOriginal.toLowerCase().trim();
 
-        // Aplicar Filtro
-        if (valorFiltro !== "todos" && !pLow.includes(valorFiltro)) return;
+            if (valorFiltro !== "todos" && !pLow.includes(valorFiltro)) return;
 
-        // --- LÓGICA DE COLORES CORREGIDA ---
-        let colorClass = "";
-        let textoMostrar = perfilOriginal;
+            let colorClass = "";
+            if (pLow.includes("academia")) colorClass = "bg-academia";
+            else if (pLow.includes("embajador")) colorClass = "bg-embajador";
+            else if (pLow.includes("asociado")) colorClass = "bg-socio";
+            else if (pLow.includes("autodidacta") || pLow.includes("alumno")) colorClass = "bg-alumno";
+            else colorClass = "bg-secondary";
 
-        if (pLow.includes("academia")) {
-            colorClass = "bg-academia";
-        } else if (pLow.includes("embajador")) {
-            colorClass = "bg-embajador";
-        } else if (pLow.includes("asociado")) {
-            colorClass = "bg-socio"; // Usamos la clase púrpura que definiste en CSS
-        } else if (pLow.includes("autodidacta") || pLow.includes("alumno")) {
-            colorClass = "bg-alumno";
-        } else {
-            colorClass = "bg-secondary"; // Color neutro si no reconoce ninguno
-        }
-
-        tbody.innerHTML += `
-            <tr>
-                <td>
-                    <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
-                    <div class="small text-muted">${data.email}</div>
-                </td>
-                <td><span class="badge-perfil ${colorClass}">${perfilOriginal}</span></td>
-                <td class="small">${data.ubicacion || '---'}</td>
-                <td class="text-center">
-                    <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3">Revisar</button>
-                </td>
-            </tr>`;
-    });
-}
-
-
-    // Escuchar el cambio del selector y redibujar al instante
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
+                        <div class="small text-muted">${data.email}</div>
+                    </td>
+                    <td><span class="badge-perfil ${colorClass}">${perfilOriginal}</span></td>
+                    <td class="small">${data.ubicacion || '---'}</td>
+                    <td class="text-center">
+                        <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3">Revisar</button>
+                    </td>
+                </tr>`;
+        });
+    }
 
     selectorFiltro.addEventListener('change', renderizarTabla);
 
-
-
-    // FUNCIÓN PARA VER EL EXPEDIENTE (Mapeo de tu imagen de Firestore)
-
     window.verExpediente = async (id) => {
-
-    currentId = id;
-
-    const snap = await getDoc(doc(db, "postulaciones", id));
-
-    if (snap.exists()) {
-
-        currentData = snap.data();
-
-        const d = currentData;
-
-        
-
-        document.getElementById('contenidoModal').innerHTML = `
-
-            <div class="col-md-12 mb-4 border-bottom pb-2">
-
-                <label class="label-exp">Fecha de Solicitud</label>
-
-                <span class="val-exp text-primary fw-bold"><i class="bi bi-calendar3 me-2"></i>${d.fecha || 'N/A'}</span>
-
-            </div>
-
-
-
-            <div class="col-md-6">
-
-                <label class="label-exp">Entidad / Institución</label>
-
-                <span class="val-exp">${d.entidad || 'N/A'}</span>
-
-
-
-                <label class="label-exp">Responsable Legal</label>
-
-                <span class="val-exp">${d.nombreResponsable || 'N/A'}</span>
-
-
-
-                <label class="label-exp">Registro de Información Fiscal (RIF)</label>
-
-                <span class="val-exp">${d.rif || 'N/A'}</span>
-
-
-
-                <label class="label-exp">Email de Contacto</label>
-
-                <span class="val-exp text-lowercase">${d.email || 'N/A'}</span>
-
-
-
-                <label class="label-exp">WhatsApp / Teléfono</label>
-
-                <span class="val-exp">${d.whatsapp || 'N/A'}</span>
-
-            </div>
-
-
-
-            <div class="col-md-6" style="background: rgba(0,0,0,0.03); border-radius: 15px; padding: 15px;">
-
-                <label class="label-exp">Perfil / Tipo de Solicitante</label>
-
-                <span class="val-exp fw-bold text-success">${d.tipoSolicitante || d.perfil || 'N/A'}</span>
-
-
-
-                <label class="label-exp">Duración de la Licencia</label>
-
-                <span class="val-exp">${d.duracionLicencia || 'N/A'}</span>
-
-
-
-                <label class="label-exp">Cupos Solicitados</label>
-
-                <span class="val-exp">${d.cupos || '0'}</span>
-
-
-
-                <label class="label-exp">Ubicación</label>
-
-                <span class="val-exp">${d.ubicacion || 'N/A'}</span>
-
-
-
-                <label class="label-exp">Programas Seleccionados</label>
-
-                <div class="small p-2 bg-white border rounded" style="max-height: 100px; overflow-y: auto;">
-
-                    ${d.programas || 'No especificados'}
-
+        currentId = id;
+        const snap = await getDoc(doc(db, "postulaciones", id));
+        if (snap.exists()) {
+            currentData = snap.data();
+            const d = currentData;
+            document.getElementById('contenidoModal').innerHTML = `
+                <div class="col-md-12 mb-4 border-bottom pb-2">
+                    <label class="label-exp">Fecha de Solicitud</label>
+                    <span class="val-exp text-primary fw-bold"><i class="bi bi-calendar3 me-2"></i>${d.fecha || 'N/A'}</span>
                 </div>
+                <div class="col-md-6">
+                    <label class="label-exp">Entidad / Institución</label>
+                    <span class="val-exp">${d.entidad || 'N/A'}</span>
+                    <label class="label-exp">Responsable Legal</label>
+                    <span class="val-exp">${d.nombreResponsable || 'N/A'}</span>
+                    <label class="label-exp">Registro de Información Fiscal (RIF)</label>
+                    <span class="val-exp">${d.rif || 'N/A'}</span>
+                    <label class="label-exp">Email de Contacto</label>
+                    <span class="val-exp text-lowercase">${d.email || 'N/A'}</span>
+                    <label class="label-exp">WhatsApp / Teléfono</label>
+                    <span class="val-exp">${d.whatsapp || 'N/A'}</span>
+                </div>
+                <div class="col-md-6" style="background: rgba(0,0,0,0.03); border-radius: 15px; padding: 15px;">
+                    <label class="label-exp">Perfil / Tipo de Solicitante</label>
+                    <span class="val-exp fw-bold text-success">${d.tipoSolicitante || d.perfil || 'N/A'}</span>
+                    <label class="label-exp">Duración de la Licencia</label>
+                    <span class="val-exp">${d.duracionLicencia || 'N/A'}</span>
+                    <label class="label-exp">Cupos Solicitados</label>
+                    <span class="val-exp">${d.cupos || '0'}</span>
+                    <label class="label-exp">Ubicación</label>
+                    <span class="val-exp">${d.ubicacion || 'N/A'}</span>
+                    <label class="label-exp">Programas Seleccionados</label>
+                    <div class="small p-2 bg-white border rounded" style="max-height: 100px; overflow-y: auto;">
+                        ${d.programas || 'No especificados'}
+                    </div>
+                </div>`;
+            new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+        }
+    };
 
-            </div>
-
-        `;
-
-        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-
-    }
-
-};
-
-
-
-    // ACCIÓN: ACTIVAR (VERSIÓN CORREGIDA Y GARANTIZADA)
-
+    // ACCIÓN: ACTIVAR ACCESO
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
-
         if(!currentId || !currentData) return;
-
-        
-
         try {
-
-            // 1. Intentar crear el acceso en Auth
-
             try {
-
                 await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
-
             } catch (authError) {
-
-                // Si ya existe, seguimos adelante para actualizar la base de datos
-
                 if (authError.code !== 'auth/email-already-in-use') throw authError;
-
             }
-
-
-            // 2. Preparamos el objeto con las 14 variables que necesitas
 
             const dataFinal = {
                 cupos: currentData.cupos || "0",
@@ -606,179 +489,74 @@
                 fechaActivacion: new Date().toLocaleString()
             };
 
-            // 3. Guardar en "usuarios" (Usamos el EMAIL como ID de documento)
-
             await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
-
-
-            // 4. Guardar en "historial_postulaciones" (Usamos el mismo ID que tenía la postulación)
-
             await setDoc(doc(db, "historial_postulaciones", currentId), {
-
                 ...dataFinal,
-
                 decisionFinal: "ACEPTADO",
-
                 fechaProceso: new Date().toLocaleString()
-
             });
-
-
-
-            // 5. Borrar de la lista de pendientes
-
             await deleteDoc(doc(db, "postulaciones", currentId));
 
-            
-
             await Swal.fire({
-
                 title: "¡Acceso Activado!",
-
-                text: "Se replicaron todos los campos en Usuarios e Historial.",
-
+                text: "Se replicaron todos los campos y se abrirá WhatsApp.",
                 icon: "success",
-
                 confirmButtonColor: "#27ae60"
-
             });
 
-            
-
+            prepararMensajeWhatsApp(currentData, "ACEPTADO");
             location.reload();
-
-
-
         } catch (e) { 
-
-            console.error("Error completo:", e);
-
             Swal.fire("Error", "No se pudo procesar: " + e.message, "error"); 
-
         }
-
     };
 
-    // ACCIÓN: RECHAZAR Y ARCHIVAR
-
+    // ACCIÓN: RECHAZAR
     document.getElementById('btnEliminar').onclick = async () => {
-
         if(!currentId || !currentData) return;
-
-
-
         const confirmacion = await Swal.fire({
-
             title: '¿Estás seguro?',
-
-            text: `Se rechazará la solicitud de ${currentData.entidad !== "N/A" ? currentData.entidad : currentData.nombreResponsable} y se moverá al historial.`,
-
+            text: `Se rechazará la solicitud y se abrirá WhatsApp para notificar.`,
             icon: 'warning',
-
             showCancelButton: true,
-
             confirmButtonColor: '#d33',
-
-            cancelButtonColor: '#3085d6',
-
-            confirmButtonText: 'Sí, rechazar y archivar',
-
+            confirmButtonText: 'Sí, rechazar',
             cancelButtonText: 'Cancelar'
-
         });
-
-
 
         if (confirmacion.isConfirmed) {
-
             try {
-
-                // 1. Guardar copia en "historial_postulaciones" como RECHAZADO
-
                 await setDoc(doc(db, "historial_postulaciones", currentId), {
-
                     ...currentData,
-
                     decisionFinal: "RECHAZADO",
-
                     fechaProceso: new Date().toLocaleString()
-
                 });
-
-
-
-                // 2. Eliminar de la colección activa
-
                 await deleteDoc(doc(db, "postulaciones", currentId));
-
-
-
-                await Swal.fire('Procesado', 'La postulación se ha movido al historial de rechazados.', 'success');
-
+                
+                prepararMensajeWhatsApp(currentData, "RECHAZADO");
                 location.reload();
-
             } catch (e) {
-
-                Swal.fire("Error", "No se pudo procesar: " + e.message, "error");
-
+                Swal.fire("Error", e.message, "error");
             }
-
         }
-
     };
 
-    // LÓGICA DE CIERRE DE SESIÓN
-
+    // LOGOUT
     document.getElementById('btnLogout').onclick = async (e) => {
-
         e.preventDefault();
-
-        
-
         const result = await Swal.fire({
-
             title: '¿Cerrar sesión?',
-
-            text: "Se finalizará tu acceso al panel administrativo.",
-
             icon: 'question',
-
             showCancelButton: true,
-
             confirmButtonColor: '#e74c3c',
-
-            cancelButtonColor: '#3085d6',
-
-            confirmButtonText: 'Sí, salir',
-
-            cancelButtonText: 'Cancelar'
-
+            confirmButtonText: 'Sí, salir'
         });
-
-
-
         if (result.isConfirmed) {
-
-            try {
-
-                await signOut(auth); // Aquí es donde usamos el import que acabas de arreglar
-
-                window.location.href = "index.html"; 
-
-            } catch (error) {
-
-                console.error("Error:", error);
-
-                Swal.fire("Error", "No se pudo cerrar la sesión", "error");
-
-            }
-
+            await signOut(auth);
+            window.location.href = "index.html"; 
         }
-
     };
-
 </script>
-
 </body>
 
 </html>
