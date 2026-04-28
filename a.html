@@ -1,69 +1,150 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Módulos - UCMI</title>
+    <title>Postulación Oficial - UCMI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --dorado-ucmi: #c5a059; --azul-oscuro: #06090f; }
-        body { background-color: var(--azul-oscuro); color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        .card-gestion { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(197,160,89,0.3); border-radius: 20px; padding: 25px; margin-bottom: 30px; }
-        .table { color: white; border-color: rgba(255,255,255,0.1); }
-        .form-control { background: rgba(255,255,255,0.1); border: 1px solid rgba(197,160,89,0.2); color: white; }
-        .form-control:focus { background: rgba(255,255,255,0.2); color: white; border-color: var(--dorado-ucmi); }
-        .btn-ucmi { background: var(--dorado-ucmi); color: black; font-weight: bold; }
-        .form-switch .form-check-input:checked { background-color: var(--dorado-ucmi); border-color: var(--dorado-ucmi); }
-    </small></style>
+        :root { 
+            --azul-ucmi: #1a2a3a; 
+            --dorado-ucmi: #c5a059; 
+            --rojo-error: #ff4d4d;
+            --blanco-suave: rgba(255, 255, 255, 0.9);
+        }
+
+        body { 
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', sans-serif; 
+            padding: 40px 0; 
+            color: white;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.9) 100%);
+            z-index: -1;
+        }
+
+        .card-form { 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 30px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5); 
+            background: rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(20px);
+            max-width: 850px; 
+            margin: auto; 
+            overflow: hidden; 
+        }
+
+        .header-institucional {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+        }
+
+        .inst-logo { height: 120px; filter: drop-shadow(0 0 15px rgba(197, 160, 89, 0.2)); margin-bottom: 20px; }
+        .inst-nombre { font-family: 'Cinzel', serif; color: #f3f0df; font-size: 1.2rem; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 10px; }
+        .inst-titulo { color: var(--dorado-ucmi); font-weight: 800; font-size: 2.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .linea-decorativa { width: 70px; height: 4px; background: var(--dorado-ucmi); margin: 25px auto; border-radius: 2px; box-shadow: 0 0 10px var(--dorado-ucmi); }
+
+        .form-label { color: var(--dorado-ucmi); font-size: 0.9rem; letter-spacing: 0.5px; }
+        .form-control, .form-select { 
+            border-radius: 12px; padding: 14px; border: 1px solid rgba(255, 255, 255, 0.2); 
+            background: rgba(255, 255, 255, 0.08); color: white; transition: 0.3s;
+        }
+        .form-control:focus, .form-select:focus { background: rgba(255, 255, 255, 0.15); border-color: var(--dorado-ucmi); color: white; box-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
+        
+        .seccion-dinamica { display: none; animation: slideIn 0.4s ease-out; background: rgba(0, 0, 0, 0.2); padding: 25px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.2); margin-top: 15px; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .program-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; background: rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .check-all-container { background: rgba(197, 160, 89, 0.1); padding: 12px 20px; border-radius: 10px 10px 0 0; border: 1px solid rgba(197, 160, 89, 0.3); border-bottom: none; }
+        
+        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 18px; border-radius: 15px; border: none; width: 100%; margin-top: 25px; transition: 0.3s; letter-spacing: 1px; }
+        .btn-enviar:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(197, 160, 89, 0.4); filter: brightness(1.1); }
+        
+        select option { background: #1a1a1a; color: white; }
+    </style>
 </head>
 <body>
 
-<div class="container">
-    <h2 class="text-center mb-4" style="color: var(--dorado-ucmi); font-family: 'Cinzel', serif;">CONTROL DE MÓDULOS ACADÉMICOS</h2>
+<div class="overlay"></div>
 
-    <div class="card-gestion">
-        <h4><i class="bi bi-plus-circle me-2"></i>Crear Nuevo Módulo</h4>
-        <form id="formCrearModulo" class="row g-3 mt-2">
-            <div class="col-md-8">
-                <input type="text" id="nombreModulo" class="form-control" placeholder="Ej: Lógica Cuántica - Capítulo 16" required>
+<div class="container">
+    <div class="card-form shadow-lg">
+        <div class="header-institucional">
+            <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo UCMI" class="inst-logo">
+            <div class="inst-nombre">Universitario de Ciencias Matemáticas e Idiomas</div>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA</h1>
+            <div class="linea-decorativa"></div>
+        </div>
+
+        <form id="formUCMI" class="p-4 p-md-5 pt-4" novalidate>
+            <div class="mb-4">
+                <label class="form-label fw-bold"><i class="bi bi-person-badge me-2"></i>Tipo de Postulante:</label>
+                <select class="form-select form-select-lg" id="perfilPrincipal" required onchange="gestionarFlujo()">
+                    <option value="" selected disabled>Seleccione su perfil...</option>
+                    <option value="Academia">Academia / Institución</option>
+                    <option value="Independiente">Profesor Independiente</option>
+                    <option value="Estudiante autodidacta">Estudiante Autodidacta</option>
+                </select>
             </div>
-            <div class="col-md-4">
-                <button type="submit" class="btn btn-ucmi w-100">REGISTRAR EN INVENTARIO</button>
+
+            <div id="subSeccionProfesor" class="seccion-dinamica mb-4">
+                <label class="form-label fw-bold"><i class="bi bi-mortarboard me-2"></i>Modalidad de Profesor:</label>
+                <select class="form-select" id="subTipoProfesor">
+                    <option value="Profesor asociado" selected>Profesor Asociado (Gestión de Cupos)</option>
+                    <option value="Profesor embajador">Profesor Embajador (Marca Blanca)</option>
+                </select>
+            </div>
+
+            <div id="cuerpoFormulario" style="display: none;">
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label small fw-bold">Nombre Completo:</label><input type="text" id="nombreInput" class="form-control" required></div>
+                    <div class="col-md-6"><label class="form-label small fw-bold">Correo Institucional:</label><input type="email" id="emailInput" class="form-control" required></div>
+                    <div class="col-md-6"><label class="form-label small fw-bold">WhatsApp:</label><input type="text" id="whatsappInput" class="form-control" required></div>
+                    <div class="col-md-6"><label class="form-label small fw-bold">Ciudad y País:</label><input type="text" id="ubicacionInput" class="form-control" required></div>
+                </div>
+
+                <div id="camposAcademia" class="seccion-dinamica">
+                    <div class="row g-3">
+                        <div class="col-12"><label class="form-label small fw-bold" id="labelEntidad">Institución:</label><input type="text" id="entidadInput" class="form-control"></div>
+                        <div class="col-md-6"><label class="form-label small fw-bold">RIF/DNI:</label><input type="text" id="rifInput" class="form-control"></div>
+                        <div class="col-md-6"><label class="form-label small fw-bold">Cupos Solicitados:</label><input type="number" id="cuposInput" class="form-control"></div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <label class="form-label fw-bold text-uppercase small text-white-50">Programas Académicos a Vincular</label>
+                    <div class="check-all-container">
+                        <div class="form-check"><input class="form-check-input" type="checkbox" id="selectAll"><label class="form-check-label fw-bold" for="selectAll">Seleccionar Todo el Ecosistema</label></div>
+                    </div>
+                    <div class="program-grid mb-3" id="gridProgramas">
+                        <div class="text-center w-100 py-3"><div class="spinner-border spinner-border-sm text-warning"></div><br><small>Cargando programas...</small></div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold small">Duración de la Licencia (Meses):</label>
+                    <input type="number" id="mesesInput" class="form-control" required min="1">
+                </div>
+
+                <button type="submit" id="btnSubmit" class="btn btn-enviar">ENVIAR POSTULACIÓN OFICIAL</button>
             </div>
         </form>
-    </div>
-
-    <div class="card-gestion">
-        <h4 class="text-warning"><i class="bi bi-archive me-2"></i>Inventario de Módulos Creados</h4>
-        <p class="text-white-50 small">Estos módulos existen en tu sistema, pero solo se verán en las postulaciones si activas el check de "Ofertar".</p>
-        <div class="table-responsive">
-            <table class="table table-dark table-hover">
-                <thead>
-                    <tr>
-                        <th>Nombre del Módulo</th>
-                        <th>Estado de Contenido</th>
-                        <th class="text-center">¿Ofertar al Público?</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="listaInventario">
-                    </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="card-gestion" style="border-style: dashed;">
-        <h4 style="color: #00ffcc;"><i class="bi bi-eye me-2"></i>Módulos Ofertados Actualmente</h4>
-        <p class="text-white-50 small">Este es el listado exacto que aparece en el formulario de inscripción.</p>
-        <div id="vistaOfertados" class="d-flex flex-wrap gap-2">
-            </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -77,73 +158,139 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- 1. CREAR MÓDULO (Por defecto 'ofertado: false') ---
-    document.getElementById('formCrearModulo').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const nombre = document.getElementById('nombreModulo').value;
+    // --- CARGA DINÁMICA DE MÓDULOS ---
+    async function cargarOfertas() {
+        const grid = document.getElementById('gridProgramas');
         try {
-            await addDoc(collection(db, "ofertas"), {
-                modulo: nombre,
-                ofertado: false, // Se crea pero NO se oferta aún
-                fechaCreacion: new Date()
+            const q = query(collection(db, "ofertas"), orderBy("modulo", "asc"));
+            const snap = await getDocs(q);
+            grid.innerHTML = ""; 
+            snap.forEach(doc => {
+                const mod = doc.data().modulo;
+                grid.innerHTML += `<div class="form-check"><input class="form-check-input prog-check" type="checkbox" value="${mod}" id="chk_${doc.id}"><label class="form-check-label small text-white" for="chk_${doc.id}">${mod}</label></div>`;
             });
-            document.getElementById('formCrearModulo').reset();
-        } catch (err) { alert("Error al crear"); }
+        } catch (e) { console.error(e); grid.innerHTML = "Error al conectar."; }
+    }
+    cargarOfertas();
+
+    document.getElementById('selectAll').addEventListener('change', function() {
+        document.querySelectorAll('.prog-check').forEach(cb => cb.checked = this.checked);
     });
 
-    // --- 2. GESTIÓN EN TIEMPO REAL ---
-    onSnapshot(query(collection(db, "ofertas"), orderBy("modulo", "asc")), (snap) => {
-        const listaInventario = document.getElementById('listaInventario');
-        const vistaOfertados = document.getElementById('vistaOfertados');
+    // --- LÓGICA DE INTERFAZ ---
+    window.gestionarFlujo = () => {
+        const principal = document.getElementById('perfilPrincipal').value;
+        const subTipo = document.getElementById('subTipoProfesor').value;
+        document.getElementById('cuerpoFormulario').style.display = 'block';
+        document.getElementById('subSeccionProfesor').style.display = (principal === 'Independiente') ? 'block' : 'none';
         
-        listaInventario.innerHTML = "";
-        vistaOfertados.innerHTML = "";
+        const camposAcademia = document.getElementById('camposAcademia');
+        if (principal === 'Academia' || principal === 'Independiente') {
+            camposAcademia.style.display = 'block';
+            const esAsociado = (principal === 'Academia' || subTipo === 'Profesor asociado');
+            document.getElementById('cuposInput').parentElement.style.display = esAsociado ? "block" : "none";
+        } else { camposAcademia.style.display = 'none'; }
+    };
+    document.getElementById('subTipoProfesor').onchange = window.gestionarFlujo;
 
-        snap.forEach(docSnap => {
-            const mod = docSnap.data();
-            const id = docSnap.id;
+    // --- ENVÍO Y PDF ---
+    document.getElementById('formUCMI').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const checks = document.querySelectorAll('.prog-check:checked');
+        if (checks.length === 0) return alert("Debe seleccionar al menos un programa.");
 
-            // Llenar Inventario
-            listaInventario.innerHTML += `
-                <tr>
-                    <td>${mod.modulo}</td>
-                    <td><span class="badge bg-secondary">Listo para contenido</span></td>
-                    <td class="text-center">
-                        <div class="form-check form-switch d-inline-block">
-                            <input class="form-check-input toggle-oferta" type="checkbox" 
-                                data-id="${id}" ${mod.ofertado ? 'checked' : ''}>
-                        </div>
-                    </td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-danger" onclick="eliminarModulo('${id}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = true; btn.innerText = "Procesando Postulación...";
 
-            // Llenar Vista de Ofertados (Solo si ofertado es true)
-            if(mod.ofertado) {
-                vistaOfertados.innerHTML += `<span class="badge rounded-pill bg-success p-2"><i class="bi bi-check-circle me-1"></i>${mod.modulo}</span>`;
-            }
-        });
+        const principal = document.getElementById('perfilPrincipal').value;
+        const subValor = document.getElementById('subTipoProfesor').value;
+        const tipoFinal = (principal === 'Independiente') ? subValor : principal;
 
-        // Asignar eventos a los switches
-        document.querySelectorAll('.toggle-oferta').forEach(sw => {
-            sw.addEventListener('change', async (e) => {
-                const docId = e.target.getAttribute('data-id');
-                const estado = e.target.checked;
-                await updateDoc(doc(db, "ofertas", docId), { ofertado: estado });
-            });
-        });
+        const datos = {
+            perfil: tipoFinal,
+            nombreResponsable: document.getElementById('nombreInput').value,
+            email: document.getElementById('emailInput').value,
+            whatsapp: document.getElementById('whatsappInput').value,
+            ubicacion: document.getElementById('ubicacionInput').value,
+            programas: Array.from(checks).map(c => c.value).join(", "),
+            duracionLicencia: document.getElementById('mesesInput').value + " meses",
+            cupos: (principal === "Academia" || (principal === "Independiente" && subValor === "Profesor asociado")) ? (document.getElementById('cuposInput').value || "1") : "1",
+            rif: (principal === 'Estudiante autodidacta') ? "Persona Natural" : document.getElementById('rifInput').value,
+            entidad: (principal === 'Estudiante autodidacta') ? document.getElementById('nombreInput').value : document.getElementById('entidadInput').value,
+            fecha: new Date().toLocaleString()
+        };
+
+        try {
+            await addDoc(collection(db, "postulaciones"), datos);
+            generarPDF(datos);
+            alert("¡Postulación registrada con éxito!");
+            setTimeout(() => location.reload(), 2000);
+        } catch (err) { alert("Error al enviar."); btn.disabled = false; }
     });
 
-    // Función global para eliminar
-    window.eliminarModulo = async (id) => {
-        if(confirm("¿Seguro que desea eliminar este módulo del sistema?")) {
-            await deleteDoc(doc(db, "ofertas", id));
-        }
-    };
+    function generarPDF(d) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // --- ENCABEZADO INSTITUCIONAL ---
+        doc.setFillColor(11, 27, 43); 
+        doc.rect(0, 0, 210, 55, 'F');
+        doc.addImage("https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png", 'PNG', 15, 8, 35, 35);
+        
+        doc.setTextColor(197, 160, 89); 
+        doc.setFont("times", "bold"); 
+        doc.setFontSize(20);
+        doc.text("U C M I", 120, 22, { align: "center" });
+        
+        doc.setFontSize(10); 
+        doc.setFont("times", "italic");
+        doc.text("Universitario de Ciencias Matemáticas e Idiomas", 120, 30, { align: "center" });
+        
+        doc.setFontSize(16); 
+        doc.setFont("helvetica", "bold");
+        doc.text("POSTULACIÓN ACADÉMICA", 120, 42, { align: "center" });
+        
+        // --- SECCIÓN DE DATOS DEL EXPEDIENTE ---
+        doc.setTextColor(40, 40, 40); 
+        doc.setFontSize(9);
+        doc.text(`ID Control: ${Math.floor(Math.random() * 1000000)}`, 20, 65);
+        doc.text(`Fecha: ${d.fecha}`, 140, 65);
+        doc.line(20, 68, 190, 68); 
+
+        let y = 80;
+        const drawRow = (label, value) => {
+            doc.setFillColor(248, 248, 248); 
+            doc.rect(20, y - 5, 170, 9, 'F'); 
+            doc.setFont("helvetica", "bold"); 
+            doc.setTextColor(150, 120, 60); 
+            doc.text(label, 25, y);
+            doc.setFont("helvetica", "normal"); 
+            doc.setTextColor(0, 0, 0);
+            
+            const splitVal = doc.splitTextToSize(String(value), 110);
+            doc.text(splitVal, 75, y);
+            y += (splitVal.length * 5) + 6; 
+        };
+
+        // --- LISTADO DE CAMPOS (CORREO INCLUIDO) ---
+        drawRow("PERFIL:", d.perfil.toUpperCase());
+        drawRow("RESPONSABLE:", d.nombreResponsable);
+        drawRow("EMAIL:", d.email); // <--- Campo añadido
+        drawRow("ENTIDAD:", d.entidad);
+        drawRow("ID FISCAL:", d.rif);
+        drawRow("WHATSAPP:", d.whatsapp);
+        drawRow("UBICACIÓN:", d.ubicacion);
+        drawRow("CUPOS:", d.cupos);
+        drawRow("LICENCIA:", d.duracionLicencia);
+        drawRow("PROGRAMAS:", d.programas);
+
+        // PIE DE PÁGINA
+        doc.setFontSize(8); 
+        doc.setTextColor(150, 150, 150);
+        doc.text("Documento Oficial - Protocolo Supralógico UCMI", 105, 285, { align: "center" });
+        
+        window.open(doc.output('bloburl'), '_blank');
+    }
 </script>
 </body>
 </html>
