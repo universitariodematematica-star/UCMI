@@ -31,8 +31,8 @@
             z-index: -1;
         }
 
-        /* ESTILO DE BOTONES PANEL MAESTRO (CRISTAL) */
-        .btn-panel-maestro {
+        /* --- BOTONES ESTILO PANEL MAESTRO --- */
+        .btn-maestro {
             background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.4) !important;
             color: white !important;
@@ -48,15 +48,15 @@
             display: inline-block;
         }
 
-        .btn-panel-maestro:hover {
+        .btn-maestro:hover {
             background: rgba(255, 255, 255, 0.1);
             border-color: #ffffff !important;
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
             transform: translateY(-2px);
         }
 
-        /* ESTILO BOTÓN CERRAR SESIÓN (ROJO TRASLÚCIDO) */
-        .btn-cerrar-sesion {
+        /* --- BOTÓN ESTILO CERRAR SESIÓN (ROJO) --- */
+        .btn-cerrar {
             background: transparent;
             border: 1px solid rgba(231, 76, 60, 0.4) !important;
             color: rgba(231, 76, 60, 0.9) !important;
@@ -65,12 +65,12 @@
             font-size: 0.7rem;
             letter-spacing: 1px;
             border-radius: 50px;
-            padding: 8px 20px;
+            padding: 8px 18px;
             transition: all 0.3s ease-in-out;
             cursor: pointer;
         }
 
-        .btn-cerrar-sesion:hover {
+        .btn-cerrar:hover {
             background: rgba(231, 76, 60, 0.1);
             border-color: #e74c3c !important;
             color: white !important;
@@ -115,7 +115,7 @@
                 <input type="text" id="nombreModulo" class="form-control p-2" placeholder="Ej: Lógica Cuántica - Capítulo 16" required>
             </div>
             <div class="col-md-4">
-                <button type="submit" class="btn-panel-maestro w-100">
+                <button type="submit" class="btn-maestro w-100">
                     REGISTRAR EN INVENTARIO
                 </button>
             </div>
@@ -155,6 +155,22 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // Registro de módulo (Sin reset de campo)
+    document.getElementById('formCrearModulo').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('nombreModulo');
+        const nombre = input.value;
+        try {
+            await addDoc(collection(db, "ofertas"), {
+                modulo: nombre,
+                ofertado: false,
+                fechaCreacion: new Date()
+            });
+            // Nota: Se ha quitado el .reset() para que el texto permanezca
+            console.log("Módulo registrado correctamente");
+        } catch (err) { console.error(err); }
+    });
+
     onSnapshot(query(collection(db, "ofertas"), orderBy("modulo", "asc")), (snap) => {
         const lista = document.getElementById('listaInventario');
         lista.innerHTML = "";
@@ -173,7 +189,7 @@
                         </div>
                     </td>
                     <td class="text-center">
-                        <button class="btn-cerrar-sesion" onclick="eliminarModulo('${id}')">
+                        <button class="btn-cerrar" onclick="eliminarModulo('${id}')">
                             <i class="bi bi-trash3 me-1"></i> BORRAR
                         </button>
                     </td>
@@ -181,7 +197,6 @@
             `;
         });
 
-        // Eventos para los switches
         document.querySelectorAll('.toggle-oferta').forEach(sw => {
             sw.onclick = async (e) => {
                 const docId = e.target.getAttribute('data-id');
@@ -189,18 +204,6 @@
                 await updateDoc(doc(db, "ofertas", docId), { ofertado: estado });
             };
         });
-    });
-
-    // Formulario crear
-    document.getElementById('formCrearModulo').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const nombre = document.getElementById('nombreModulo').value;
-        await addDoc(collection(db, "ofertas"), {
-            modulo: nombre,
-            ofertado: false,
-            fechaCreacion: new Date()
-        });
-        document.getElementById('formCrearModulo').reset();
     });
 
     window.eliminarModulo = async (id) => {
