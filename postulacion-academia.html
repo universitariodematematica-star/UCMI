@@ -60,16 +60,16 @@
             background: rgba(255, 255, 255, 0.08); color: white; transition: 0.3s;
         }
         .form-control:focus, .form-select:focus { background: rgba(255, 255, 255, 0.15); border-color: var(--dorado-ucmi); color: white; box-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
-
+        
         .seccion-dinamica { display: none; animation: slideIn 0.4s ease-out; background: rgba(0, 0, 0, 0.2); padding: 25px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.2); margin-top: 15px; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .program-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; background: rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
         .check-all-container { background: rgba(197, 160, 89, 0.1); padding: 12px 20px; border-radius: 10px 10px 0 0; border: 1px solid rgba(197, 160, 89, 0.3); border-bottom: none; }
-
+        
         .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 18px; border-radius: 15px; border: none; width: 100%; margin-top: 25px; transition: 0.3s; letter-spacing: 1px; }
         .btn-enviar:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(197, 160, 89, 0.4); filter: brightness(1.1); }
-
+        
         select option { background: #1a1a1a; color: white; }
     </style>
 </head>
@@ -130,7 +130,7 @@
                         <div class="text-center w-100 py-3"><div class="spinner-border spinner-border-sm text-warning"></div><br><small>Cargando programas...</small></div>
                     </div>
                 </div>
-
+                
                 <div class="mb-4">
                     <label class="form-label fw-bold small">Duración de la Licencia (Meses):</label>
                     <input type="number" id="mesesInput" class="form-control" required min="1">
@@ -144,7 +144,6 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     // CORRECCIÓN 1: Se añade 'where' a las importaciones de Firestore
     import { getFirestore, collection, addDoc, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -160,12 +159,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- CARGA DINÁMICA DE MÓDULOS ---
     // --- CARGA DINÁMICA DE MÓDULOS (CON FILTRO DE OFERTA) ---
     async function cargarOfertas() {
         const grid = document.getElementById('gridProgramas');
         try {
-            const q = query(collection(db, "ofertas"), orderBy("modulo", "asc"));
             // CORRECCIÓN 2: Se añade el filtro where("ofertado", "==", true)
             const q = query(
                 collection(db, "ofertas"), 
@@ -186,7 +183,6 @@
                 const mod = doc.data().modulo;
                 grid.innerHTML += `<div class="form-check"><input class="form-check-input prog-check" type="checkbox" value="${mod}" id="chk_${doc.id}"><label class="form-check-label small text-white" for="chk_${doc.id}">${mod}</label></div>`;
             });
-        } catch (e) { console.error(e); grid.innerHTML = "Error al conectar."; }
         } catch (e) { 
             console.error("Error en el acceso a la base de datos:", e); 
             grid.innerHTML = "<div class='text-danger p-3'>Error al conectar con el servidor de UCMI.</div>"; 
@@ -204,7 +200,7 @@
         const subTipo = document.getElementById('subTipoProfesor').value;
         document.getElementById('cuerpoFormulario').style.display = 'block';
         document.getElementById('subSeccionProfesor').style.display = (principal === 'Independiente') ? 'block' : 'none';
-
+        
         const camposAcademia = document.getElementById('camposAcademia');
         if (principal === 'Academia' || principal === 'Independiente') {
             camposAcademia.style.display = 'block';
@@ -252,20 +248,32 @@
     function generarPDF(d) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-
-        // --- ENCABEZADO INSTITUCIONAL ---
+        
         doc.setFillColor(11, 27, 43); 
         doc.rect(0, 0, 210, 55, 'F');
         doc.addImage("https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png", 'PNG', 15, 8, 35, 35);
-@@ -250,7 +266,6 @@
+        
+        doc.setTextColor(197, 160, 89); 
+        doc.setFont("times", "bold"); 
+        doc.setFontSize(20);
+        doc.text("U C M I", 120, 22, { align: "center" });
+        
+        doc.setFontSize(10); 
+        doc.setFont("times", "italic");
+        doc.text("Universitario de Ciencias Matemáticas e Idiomas", 120, 30, { align: "center" });
+        
+        doc.setFontSize(16); 
         doc.setFont("helvetica", "bold");
         doc.text("POSTULACIÓN ACADÉMICA", 120, 42, { align: "center" });
-
-        // --- SECCIÓN DE DATOS DEL EXPEDIENTE ---
+        
         doc.setTextColor(40, 40, 40); 
         doc.setFontSize(9);
         doc.text(`ID Control: ${Math.floor(Math.random() * 1000000)}`, 20, 65);
-@@ -262,35 +277,33 @@
+        doc.text(`Fecha: ${d.fecha}`, 140, 65);
+        doc.line(20, 68, 190, 68); 
+
+        let y = 80;
+        const drawRow = (label, value) => {
             doc.setFillColor(248, 248, 248); 
             doc.rect(20, y - 5, 170, 9, 'F'); 
             doc.setFont("helvetica", "bold"); 
@@ -273,16 +281,14 @@
             doc.text(label, 25, y);
             doc.setFont("helvetica", "normal"); 
             doc.setTextColor(0, 0, 0);
-
+            
             const splitVal = doc.splitTextToSize(String(value), 110);
             doc.text(splitVal, 75, y);
             y += (splitVal.length * 5) + 6; 
         };
 
-        // --- LISTADO DE CAMPOS (CORREO INCLUIDO) ---
         drawRow("PERFIL:", d.perfil.toUpperCase());
         drawRow("RESPONSABLE:", d.nombreResponsable);
-        drawRow("EMAIL:", d.email); // <--- Campo añadido
         drawRow("EMAIL:", d.email);
         drawRow("ENTIDAD:", d.entidad);
         drawRow("ID FISCAL:", d.rif);
@@ -292,11 +298,10 @@
         drawRow("LICENCIA:", d.duracionLicencia);
         drawRow("PROGRAMAS:", d.programas);
 
-        // PIE DE PÁGINA
         doc.setFontSize(8); 
         doc.setTextColor(150, 150, 150);
         doc.text("Documento Oficial - Protocolo Supralógico UCMI", 105, 285, { align: "center" });
-
+        
         window.open(doc.output('bloburl'), '_blank');
     }
 </script>
