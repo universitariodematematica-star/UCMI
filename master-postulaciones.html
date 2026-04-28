@@ -1,567 +1,1133 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Control de Postulaciones</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-    :root {
-        --azul-ucmi: #06090f;
-        --azul-sidebar: #1a2a3a;
-        --verde-exito: #27ae60;
-        --dorado-ucmi: #c5a059;
-        --rojo-logout: #e74c3c;
-        --indigo-ucmi: #4b0082;
-    }
-    
-    body { 
-        background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-        background-size: cover; font-family: 'Segoe UI', sans-serif; margin: 0; color: white;
-    }
 
-    .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); min-height: 100vh; transition: filter 0.3s ease; }
-    
-    .sidebar { 
-        background: rgba(26, 42, 58, 0.95); backdrop-filter: blur(10px); min-height: 100vh; padding: 25px 15px; position: sticky; top: 0; border-right: 1px solid rgba(197, 160, 89, 0.3); display: flex; flex-direction: column;
-    }
+    <meta charset="UTF-8">
 
-    .logo-sidebar { height: 55px; border-radius: 12px; margin-bottom: 10px; }
-    
-    .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; margin-bottom: 5px; text-decoration: none; padding: 10px; display: block; }
-    .nav-link:hover { color: white; background: rgba(255,255,255,0.1); border-radius: 8px; }
-    .nav-link.active { color: var(--dorado-ucmi); font-weight: bold; background: rgba(197, 160, 89, 0.1); border-radius: 8px; }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    /* --- BOTONES LATERALES --- */
-    .btn-sidebar-action {
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.4) !important;
-        color: white !important;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.7rem;
-        border-radius: 50px;
-        padding: 10px;
-        text-decoration: none;
-        text-align: center;
-        transition: all 0.3s ease-in-out;
-        display: block;
-        margin-bottom: 10px;
-    }
+    <title>UCMI - Control de Postulaciones</title>
 
-    .btn-sidebar-action:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: #ffffff !important;
-        color: #ffffff !important;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        transform: translateY(-2px);
-    }
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    .btn-logout {
-        border-color: rgba(231, 76, 60, 0.4) !important;
-        color: rgba(231, 76, 60, 0.8) !important;
-    }
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
-    .btn-logout:hover {
-        background: rgba(231, 76, 60, 0.1) !important;
-        border-color: var(--rojo-logout) !important;
-        color: white !important;
-        box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
-    }
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    /* --- CONTENEDOR TRASLÚCIDO (TABLA) --- */
-    .table-container { 
-        background: rgba(255, 255, 255, 0.03) !important;
-        backdrop-filter: blur(15px) saturate(150%);
-        -webkit-backdrop-filter: blur(15px) saturate(150%);
-        border-radius: 28px; 
-        padding: 30px; 
-        color: white; 
-        box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    }
+    <style>
 
-    .table {
-        --bs-table-bg: transparent !important; 
-        --bs-table-color: white !important;
-        background-color: transparent !important;
-        color: white !important;
-        margin-bottom: 0;
-        border-collapse: separate;
-        border-spacing: 0 5px;
-    }
+    :root {
 
-    .table th, .table td {
-        background-color: transparent !important; 
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-        padding: 18px 12px;
-        vertical-align: middle;
-        transition: all 0.3s ease-in-out;
-    }
+        --azul-ucmi: #06090f;
 
-    .table thead th {
-        background-color: transparent !important;
-        color: rgba(255, 255, 255, 0.6) !important;
-        font-weight: 800;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 1px;
-        border: none;
-    }
+        --azul-sidebar: #1a2a3a;
 
-    .table td .fw-bold { color: #ffffff !important; font-size: 1rem; }
-    .table td .text-muted, .table td .small, .table td span { 
-        color: rgba(255, 255, 255, 0.5) !important; 
-        transition: all 0.3s ease-in-out;
-    }
+        --verde-exito: #27ae60;
 
-    .table-hover tbody tr:hover td {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-    }
+        --dorado-ucmi: #c5a059;
 
-    .table-hover tbody tr:hover td,
-    .table-hover tbody tr:hover td * { 
-        color: #ffffff !important;
-        opacity: 1 !important;
-        text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
-        filter: brightness(1.2);
-    }
+        --rojo-logout: #e74c3c;
 
-    .btn-dark.btn-sm {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255,255,255,0.2) !important;
-        color: white !important;
-        border-radius: 50px;
-        padding: 6px 15px;
-        transition: 0.3s;
-    }
+        --indigo-ucmi: #4b0082;
 
-    .btn-dark.btn-sm:hover {
-        background-color: white !important;
-        color: black !important;
-    }
+    }
 
-    /* --- MODAL EXPEDIENTE --- */
-    .modal-content { 
-        background: rgba(255, 255, 255, 0.03) !important;
-        backdrop-filter: blur(15px) saturate(150%) !important;
-        -webkit-backdrop-filter: blur(15px) saturate(150%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 32px; 
-        color: white !important;
-        box-shadow: 0 30px 60px rgba(0,0,0,0.7);
-    }
+    
 
-    .modal-header, .modal-footer { border: none !important; background: transparent !important; }
-    .modal-header .btn-close { filter: invert(1) grayscale(1) brightness(2); }
+    body { 
 
-    /* --- BOTÓN ACTIVAR ACCESO (TRASLÚCIDO) --- */
-    .btn-activar-acceso {
-        background: rgba(39, 174, 96, 0.2) !important; /* Verde muy transparente */
-        backdrop-filter: blur(10px) !important;
-        -webkit-backdrop-filter: blur(10px) !important;
-        border: 1px solid rgba(39, 174, 96, 0.5) !important; /* Borde verde claro */
-        color: #ffffff !important;
-        font-weight: 700;
-        text-transform: uppercase;
-        font-size: 0.85rem;
-        letter-spacing: 1px;
-        padding: 12px 25px;
-        border-radius: 50px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
+        background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
 
-    .btn-activar-acceso:hover {
-        background: rgba(39, 174, 96, 0.4) !important; /* Se vuelve un poco más sólido al pasar el mouse */
-        border-color: rgba(39, 174, 96, 0.8) !important;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
-    }
+        background-size: cover; font-family: 'Segoe UI', sans-serif; margin: 0; color: white;
 
-    /* Ajuste para el botón Rechazar (para que sea coherente) */
-    .btn-outline-danger {
-        background: rgba(231, 76, 60, 0.1) !important;
-        backdrop-filter: blur(5px);
-        border: 1px solid rgba(231, 76, 60, 0.4) !important;
-        color: #e74c3c !important;
-        border-radius: 50px;
-        padding: 12px 25px;
-    }
+    }
 
-    .btn-outline-danger:hover {
-        background: rgba(231, 76, 60, 0.3) !important;
-        color: white !important;
-    }
 
-    .label-exp { 
-        color: var(--dorado-ucmi) !important;
-        font-size: 0.7rem; 
-        text-transform: uppercase; 
-        font-weight: 800; 
-        margin-bottom: 2px; 
-        display: block;
-        opacity: 0.9;
-    }
 
-    .val-exp { 
-        color: #ffffff !important; 
-        font-size: 1rem; 
-        font-weight: 500; 
-        margin-bottom: 15px; 
-        display: block; 
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
-        padding-bottom: 5px; 
-    }
+    .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); min-height: 100vh; transition: filter 0.3s ease; }
 
-    .badge-perfil { font-size: 0.7rem; padding: 5px 10px; border-radius: 50px; color: white; font-weight: 700; }
-    
-    #contenidoModal .bg-white {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: rgba(255, 255, 255, 0.8) !important;
-        border-radius: 12px;
-    }
+    
 
-    /* --- CONFIGURACIÓN DE COLORES DE PERFIL --- */
-    .bg-academia  { background: #dc3545; } 
-    .bg-embajador { background: #0d6efd; } 
-    .bg-socio     { background: #6f42c1; } 
-    .bg-profesor  { background: var(--indigo-ucmi); } 
-    .bg-alumno    { background: var(--verde-exito); }
+    .sidebar { 
 
-    /* --- EFECTO DE ENFOQUE AL ABRIR MODAL --- */
-    body.modal-open .super-overlay { filter: blur(8px) brightness(0.7); }
-    .modal-backdrop.show { opacity: 0.4; backdrop-filter: blur(4px); }
-    .modal.fade .modal-dialog { transform: scale(0.95); transition: transform 0.3s ease-out; }
-    .modal.show .modal-dialog { transform: scale(1); }
+        background: rgba(26, 42, 58, 0.95); backdrop-filter: blur(10px); min-height: 100vh; padding: 25px 15px; position: sticky; top: 0; border-right: 1px solid rgba(197, 160, 89, 0.3); display: flex; flex-direction: column;
+
+    }
+
+
+
+    .logo-sidebar { height: 55px; border-radius: 12px; margin-bottom: 10px; }
+
+    
+
+    .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; margin-bottom: 5px; text-decoration: none; padding: 10px; display: block; }
+
+    .nav-link:hover { color: white; background: rgba(255,255,255,0.1); border-radius: 8px; }
+
+    .nav-link.active { color: var(--dorado-ucmi); font-weight: bold; background: rgba(197, 160, 89, 0.1); border-radius: 8px; }
+
+
+
+    /* --- BOTONES LATERALES --- */
+
+    .btn-sidebar-action {
+
+        background: transparent;
+
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+
+        color: white !important;
+
+        font-weight: 600;
+
+        text-transform: uppercase;
+
+        font-size: 0.7rem;
+
+        border-radius: 50px;
+
+        padding: 10px;
+
+        text-decoration: none;
+
+        text-align: center;
+
+        transition: all 0.3s ease-in-out;
+
+        display: block;
+
+        margin-bottom: 10px;
+
+    }
+
+
+
+    .btn-sidebar-action:hover {
+
+        background: rgba(255, 255, 255, 0.1);
+
+        border-color: #ffffff !important;
+
+        color: #ffffff !important;
+
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+
+        transform: translateY(-2px);
+
+    }
+
+
+
+    .btn-logout {
+
+        border-color: rgba(231, 76, 60, 0.4) !important;
+
+        color: rgba(231, 76, 60, 0.8) !important;
+
+    }
+
+
+
+    .btn-logout:hover {
+
+        background: rgba(231, 76, 60, 0.1) !important;
+
+        border-color: var(--rojo-logout) !important;
+
+        color: white !important;
+
+        box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+
+    }
+
+
+
+    /* --- CONTENEDOR TRASLÚCIDO (TABLA) --- */
+
+    .table-container { 
+
+        background: rgba(255, 255, 255, 0.03) !important;
+
+        backdrop-filter: blur(15px) saturate(150%);
+
+        -webkit-backdrop-filter: blur(15px) saturate(150%);
+
+        border-radius: 28px; 
+
+        padding: 30px; 
+
+        color: white; 
+
+        box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+    }
+
+
+
+    .table {
+
+        --bs-table-bg: transparent !important; 
+
+        --bs-table-color: white !important;
+
+        background-color: transparent !important;
+
+        color: white !important;
+
+        margin-bottom: 0;
+
+        border-collapse: separate;
+
+        border-spacing: 0 5px;
+
+    }
+
+
+
+    .table th, .table td {
+
+        background-color: transparent !important; 
+
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+
+        padding: 18px 12px;
+
+        vertical-align: middle;
+
+        transition: all 0.3s ease-in-out;
+
+    }
+
+
+
+    .table thead th {
+
+        background-color: transparent !important;
+
+        color: rgba(255, 255, 255, 0.6) !important;
+
+        font-weight: 800;
+
+        text-transform: uppercase;
+
+        font-size: 0.75rem;
+
+        letter-spacing: 1px;
+
+        border: none;
+
+    }
+
+
+
+    .table td .fw-bold { color: #ffffff !important; font-size: 1rem; }
+
+    .table td .text-muted, .table td .small, .table td span { 
+
+        color: rgba(255, 255, 255, 0.5) !important; 
+
+        transition: all 0.3s ease-in-out;
+
+    }
+
+
+
+    .table-hover tbody tr:hover td {
+
+        background-color: rgba(255, 255, 255, 0.05) !important;
+
+    }
+
+
+
+    .table-hover tbody tr:hover td,
+
+    .table-hover tbody tr:hover td * { 
+
+        color: #ffffff !important;
+
+        opacity: 1 !important;
+
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+
+        filter: brightness(1.2);
+
+    }
+
+
+
+    .btn-dark.btn-sm {
+
+        background-color: rgba(255, 255, 255, 0.05) !important;
+
+        border: 1px solid rgba(255,255,255,0.2) !important;
+
+        color: white !important;
+
+        border-radius: 50px;
+
+        padding: 6px 15px;
+
+        transition: 0.3s;
+
+    }
+
+
+
+    .btn-dark.btn-sm:hover {
+
+        background-color: white !important;
+
+        color: black !important;
+
+    }
+
+
+
+    /* --- MODAL EXPEDIENTE --- */
+
+    .modal-content { 
+
+        background: rgba(255, 255, 255, 0.03) !important;
+
+        backdrop-filter: blur(15px) saturate(150%) !important;
+
+        -webkit-backdrop-filter: blur(15px) saturate(150%) !important;
+
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+        border-radius: 32px; 
+
+        color: white !important;
+
+        box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+
+    }
+
+
+
+    .modal-header, .modal-footer { border: none !important; background: transparent !important; }
+
+    .modal-header .btn-close { filter: invert(1) grayscale(1) brightness(2); }
+
+
+
+    /* --- BOTÓN ACTIVAR ACCESO (TRASLÚCIDO) --- */
+
+    .btn-activar-acceso {
+
+        background: rgba(39, 174, 96, 0.2) !important; /* Verde muy transparente */
+
+        backdrop-filter: blur(10px) !important;
+
+        -webkit-backdrop-filter: blur(10px) !important;
+
+        border: 1px solid rgba(39, 174, 96, 0.5) !important; /* Borde verde claro */
+
+        color: #ffffff !important;
+
+        font-weight: 700;
+
+        text-transform: uppercase;
+
+        font-size: 0.85rem;
+
+        letter-spacing: 1px;
+
+        padding: 12px 25px;
+
+        border-radius: 50px;
+
+        transition: all 0.3s ease;
+
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+
+    }
+
+
+
+    .btn-activar-acceso:hover {
+
+        background: rgba(39, 174, 96, 0.4) !important; /* Se vuelve un poco más sólido al pasar el mouse */
+
+        border-color: rgba(39, 174, 96, 0.8) !important;
+
+        transform: translateY(-2px);
+
+        box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
+
+    }
+
+
+
+    /* Ajuste para el botón Rechazar (para que sea coherente) */
+
+    .btn-outline-danger {
+
+        background: rgba(231, 76, 60, 0.1) !important;
+
+        backdrop-filter: blur(5px);
+
+        border: 1px solid rgba(231, 76, 60, 0.4) !important;
+
+        color: #e74c3c !important;
+
+        border-radius: 50px;
+
+        padding: 12px 25px;
+
+    }
+
+
+
+    .btn-outline-danger:hover {
+
+        background: rgba(231, 76, 60, 0.3) !important;
+
+        color: white !important;
+
+    }
+
+
+
+    .label-exp { 
+
+        color: var(--dorado-ucmi) !important;
+
+        font-size: 0.7rem; 
+
+        text-transform: uppercase; 
+
+        font-weight: 800; 
+
+        margin-bottom: 2px; 
+
+        display: block;
+
+        opacity: 0.9;
+
+    }
+
+
+
+    .val-exp { 
+
+        color: #ffffff !important; 
+
+        font-size: 1rem; 
+
+        font-weight: 500; 
+
+        margin-bottom: 15px; 
+
+        display: block; 
+
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+
+        padding-bottom: 5px; 
+
+    }
+
+
+
+    .badge-perfil { font-size: 0.7rem; padding: 5px 10px; border-radius: 50px; color: white; font-weight: 700; }
+
+    
+
+    #contenidoModal .bg-white {
+
+        background: rgba(255, 255, 255, 0.05) !important;
+
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+        color: rgba(255, 255, 255, 0.8) !important;
+
+        border-radius: 12px;
+
+    }
+
+
+
+    /* --- CONFIGURACIÓN DE COLORES DE PERFIL --- */
+
+    .bg-academia  { background: #dc3545; } 
+
+    .bg-embajador { background: #0d6efd; } 
+
+    .bg-socio     { background: #6f42c1; } 
+
+    .bg-profesor  { background: var(--indigo-ucmi); } 
+
+    .bg-alumno    { background: var(--verde-exito); }
+
+
+
+    /* --- EFECTO DE ENFOQUE AL ABRIR MODAL --- */
+
+    body.modal-open .super-overlay { filter: blur(8px) brightness(0.7); }
+
+    .modal-backdrop.show { opacity: 0.4; backdrop-filter: blur(4px); }
+
+    .modal.fade .modal-dialog { transform: scale(0.95); transition: transform 0.3s ease-out; }
+
+    .modal.show .modal-dialog { transform: scale(1); }
+
 </style>
+
 </head>
+
 <body>
 
-<div class="super-overlay">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-2 sidebar d-none d-md-flex">
-                <div class="text-center mb-4">
-                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" class="logo-sidebar">
-                    <h5 class="fw-bold mt-2 text-white">UCMI ADMIN</h5>
-                </div>
-                <nav class="nav flex-column mb-auto">
-                    <a class="nav-link active" href="#"><i class="bi bi-inbox me-2"></i> Solicitudes</a>
-                    <a class="nav-link" href="master-vigencia.html"><i class="bi bi-people me-2"></i> Vigencia</a>
-                    <a class="nav-link" href="master-usuarios.html"><i class="bi bi-people me-2"></i> Usuarios</a>
-                    <a class="nav-link" href="historial-postulaciones.html"><i class="bi bi-people me-2"></i> Historial</a>
-                </nav>
-                <div class="mt-4 pt-4 border-top border-secondary">
-    <a href="super-admin.html" class="btn-sidebar-action w-100">
-        <i class="bi bi-arrow-left me-2"></i> Panel Maestro
-    </a>
-    <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100">
-        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
-    </a>
-</div>
-            </div>
 
-            <div class="col-md-10 p-4">
-                <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
-                <div class="row mt-4">
-    <div class="col-md-4">
-        <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
-            <label class="small text-muted fw-bold mb-2 d-block text-uppercase" style="letter-spacing: 1px;">Filtrar por Perfil</label>
-            <select id="filtroPerfil" class="form-select bg-dark text-white border-0 rounded-pill px-3 shadow-sm">
-                <option value="todos">Mostrar todos</option>
-                <option value="academia">Academias</option>
-                <option value="embajador">Profesor Embajador</option>
-                <option value="asociado">Profesor Asociado</option>
-                <option value="alumno">Estudiante Autodidacta</option>
-            </select>
-        </div>
-    </div>
+
+<div class="super-overlay">
+
+    <div class="container-fluid">
+
+        <div class="row">
+
+            <div class="col-md-2 sidebar d-none d-md-flex">
+
+                <div class="text-center mb-4">
+
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" class="logo-sidebar">
+
+                    <h5 class="fw-bold mt-2 text-white">UCMI ADMIN</h5>
+
+                </div>
+
+                <nav class="nav flex-column mb-auto">
+
+                    <a class="nav-link active" href="#"><i class="bi bi-inbox me-2"></i> Solicitudes</a>
+
+                    <a class="nav-link" href="master-vigencia.html"><i class="bi bi-people me-2"></i> Vigencia</a>
+
+                    <a class="nav-link" href="master-usuarios.html"><i class="bi bi-people me-2"></i> Usuarios</a>
+
+                    <a class="nav-link" href="historial-postulaciones.html"><i class="bi bi-people me-2"></i> Historial</a>
+
+                </nav>
+
+                <div class="mt-4 pt-4 border-top border-secondary">
+
+    <a href="super-admin.html" class="btn-sidebar-action w-100">
+
+        <i class="bi bi-arrow-left me-2"></i> Panel Maestro
+
+    </a>
+
+    <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100">
+
+        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+
+    </a>
+
 </div>
-                <div class="table-container mt-4">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead>
-                                <tr class="text-muted small">
-                                    <th>IDENTIDAD</th>
-                                    <th>PERFIL</th>
-                                    <th>LOCALIZACIÓN</th>
-                                    <th class="text-center">ACCIÓN</th>
-                                </tr>
-                            </thead>
-                            <tbody id="listaMaestra"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
+            </div>
+
+
+
+            <div class="col-md-10 p-4">
+
+                <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
+
+                <div class="row mt-4">
+
+    <div class="col-md-4">
+
+        <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
+
+            <label class="small text-muted fw-bold mb-2 d-block text-uppercase" style="letter-spacing: 1px;">Filtrar por Perfil</label>
+
+            <select id="filtroPerfil" class="form-select bg-dark text-white border-0 rounded-pill px-3 shadow-sm">
+
+                <option value="todos">Mostrar todos</option>
+
+                <option value="academia">Academias</option>
+
+                <option value="embajador">Profesor Embajador</option>
+
+                <option value="asociado">Profesor Asociado</option>
+
+                <option value="alumno">Estudiante Autodidacta</option>
+
+            </select>
+
+        </div>
+
+    </div>
+
 </div>
+
+                <div class="table-container mt-4">
+
+                    <div class="table-responsive">
+
+                        <table class="table table-hover align-middle">
+
+                            <thead>
+
+                                <tr class="text-muted small">
+
+                                    <th>IDENTIDAD</th>
+
+                                    <th>PERFIL</th>
+
+                                    <th>LOCALIZACIÓN</th>
+
+                                    <th class="text-center">ACCIÓN</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="listaMaestra"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 
 <div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h4 class="fw-bold"><i class="bi bi-file-earmark-person me-2"></i>Expediente del Aspirante</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body py-4">
-                <div class="row" id="contenidoModal">
-                    </div>
-            </div>
-            <div class="modal-footer border-0">
-                <button class="btn btn-outline-danger rounded-pill px-4" id="btnEliminar">Rechazar</button>
-                <button class="btn btn-success rounded-pill px-4 fw-bold" id="btnConfirmarAcceso">Activar Acceso</button>
-            </div>
-        </div>
-    </div>
+
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+
+        <div class="modal-content">
+
+            <div class="modal-header border-0 pb-0">
+
+                <h4 class="fw-bold"><i class="bi bi-file-earmark-person me-2"></i>Expediente del Aspirante</h4>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+            </div>
+
+            <div class="modal-body py-4">
+
+                <div class="row" id="contenidoModal">
+
+                    </div>
+
+            </div>
+
+            <div class="modal-footer border-0">
+
+                <button class="btn btn-outline-danger rounded-pill px-4" id="btnEliminar">Rechazar</button>
+
+                <button class="btn btn-success rounded-pill px-4 fw-bold" id="btnConfirmarAcceso">Activar Acceso</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-        authDomain: "ucmi-13796634.firebaseapp.com",
-        projectId: "ucmi-13796634",
-        storageBucket: "ucmi-13796634.firebasestorage.app",
-        messagingSenderId: "1090719609536",
-        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-    };
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    let currentId = null;
-    let currentData = null;
+    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // --- LÓGICA DE FILTRADO PROFESIONAL (SIN RECARGA) ---
-    const selectorFiltro = document.getElementById('filtroPerfil');
-    let registrosLocales = []; // Almacén para filtrar en tiempo real
+    import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Escucha activa de Firebase
-    onSnapshot(collection(db, "postulaciones"), (snapshot) => {
-        registrosLocales = snapshot.docs; 
-        renderizarTabla(); 
-    });
 
-    // Función que dibuja la tabla según el filtro
-    function renderizarTabla() {
-        const tbody = document.getElementById('listaMaestra');
-        const valorFiltro = selectorFiltro.value; 
-        tbody.innerHTML = '';
 
-        registrosLocales.forEach((d) => {
-            const data = d.data();
-            const id = d.id;
-            const perfil = data.tipoSolicitante || "Alumno";
-            const pLow = perfil.toLowerCase();
+    const firebaseConfig = {
 
-            // Aplicar Filtro: Si no coincide con la selección, ignorar registro
-            if (valorFiltro !== "todos" && !pLow.includes(valorFiltro)) return;
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
 
-            // Definir Color del Badge
-            let colorClass = "";
-            if (pLow.includes("academia")) colorClass = "bg-academia";
-            else if (pLow.includes("embajador")) colorClass = "bg-embajador";
-            else if (pLow.includes("asociado") || pLow.includes("profesor")) colorClass = "bg-profesor";
-            else colorClass = "bg-alumno";
+        authDomain: "ucmi-13796634.firebaseapp.com",
 
-            tbody.innerHTML += `
-                <tr>
-                    <td>
-                        <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
-                        <div class="small text-muted">${data.email}</div>
-                    </td>
-                    <td><span class="badge-perfil ${colorClass}">${perfil}</span></td>
-                    <td class="small">${data.ubicacion || '---'}</td>
-                    <td class="text-center">
-                        <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3">Revisar</button>
-                    </td>
-                </tr>`;
-        });
-    }
+        projectId: "ucmi-13796634",
 
-    // Escuchar el cambio del selector y redibujar al instante
-    selectorFiltro.addEventListener('change', renderizarTabla);
+        storageBucket: "ucmi-13796634.firebasestorage.app",
 
-    // FUNCIÓN PARA VER EL EXPEDIENTE (Mapeo de tu imagen de Firestore)
-    window.verExpediente = async (id) => {
-    currentId = id;
-    const snap = await getDoc(doc(db, "postulaciones", id));
-    if (snap.exists()) {
-        currentData = snap.data();
-        const d = currentData;
-        
-        document.getElementById('contenidoModal').innerHTML = `
-            <div class="col-md-12 mb-4 border-bottom pb-2">
-                <label class="label-exp">Fecha de Solicitud</label>
-                <span class="val-exp text-primary fw-bold"><i class="bi bi-calendar3 me-2"></i>${d.fecha || 'N/A'}</span>
-            </div>
+        messagingSenderId: "1090719609536",
 
-            <div class="col-md-6">
-                <label class="label-exp">Entidad / Institución</label>
-                <span class="val-exp">${d.entidad || 'N/A'}</span>
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
 
-                <label class="label-exp">Responsable Legal</label>
-                <span class="val-exp">${d.nombreResponsable || 'N/A'}</span>
+    };
 
-                <label class="label-exp">Registro de Información Fiscal (RIF)</label>
-                <span class="val-exp">${d.rif || 'N/A'}</span>
 
-                <label class="label-exp">Email de Contacto</label>
-                <span class="val-exp text-lowercase">${d.email || 'N/A'}</span>
 
-                <label class="label-exp">WhatsApp / Teléfono</label>
-                <span class="val-exp">${d.whatsapp || 'N/A'}</span>
-            </div>
+    const app = initializeApp(firebaseConfig);
 
-            <div class="col-md-6" style="background: rgba(0,0,0,0.03); border-radius: 15px; padding: 15px;">
-                <label class="label-exp">Perfil / Tipo de Solicitante</label>
-                <span class="val-exp fw-bold text-success">${d.tipoSolicitante || d.perfil || 'N/A'}</span>
+    const db = getFirestore(app);
 
-                <label class="label-exp">Duración de la Licencia</label>
-                <span class="val-exp">${d.duracionLicencia || 'N/A'}</span>
+    const auth = getAuth(app);
 
-                <label class="label-exp">Cupos Solicitados</label>
-                <span class="val-exp">${d.cupos || '0'}</span>
+    let currentId = null;
 
-                <label class="label-exp">Ubicación</label>
-                <span class="val-exp">${d.ubicacion || 'N/A'}</span>
+    let currentData = null;
 
-                <label class="label-exp">Programas Seleccionados</label>
-                <div class="small p-2 bg-white border rounded" style="max-height: 100px; overflow-y: auto;">
-                    ${d.programas || 'No especificados'}
-                </div>
-            </div>
-        `;
-        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-    }
+
+
+    // --- LÓGICA DE FILTRADO PROFESIONAL (SIN RECARGA) ---
+
+    const selectorFiltro = document.getElementById('filtroPerfil');
+
+    let registrosLocales = []; // Almacén para filtrar en tiempo real
+
+
+
+    // Escucha activa de Firebase
+
+    onSnapshot(collection(db, "postulaciones"), (snapshot) => {
+
+        registrosLocales = snapshot.docs; 
+
+        renderizarTabla(); 
+
+    });
+
+
+
+    // Función que dibuja la tabla según el filtro
+
+    function renderizarTabla() {
+
+        const tbody = document.getElementById('listaMaestra');
+
+        const valorFiltro = selectorFiltro.value; 
+
+        tbody.innerHTML = '';
+
+
+
+        registrosLocales.forEach((d) => {
+
+            const data = d.data();
+
+            const id = d.id;
+
+            const perfil = data.tipoSolicitante || "Alumno";
+
+            const pLow = perfil.toLowerCase();
+
+
+
+            // Aplicar Filtro: Si no coincide con la selección, ignorar registro
+
+            if (valorFiltro !== "todos" && !pLow.includes(valorFiltro)) return;
+
+
+
+            // Definir Color del Badge
+
+            let colorClass = "";
+
+            if (pLow.includes("academia")) colorClass = "bg-academia";
+
+            else if (pLow.includes("embajador")) colorClass = "bg-embajador";
+
+            else if (pLow.includes("asociado") || pLow.includes("profesor")) colorClass = "bg-profesor";
+
+            else colorClass = "bg-alumno";
+
+
+
+            tbody.innerHTML += `
+
+                <tr>
+
+                    <td>
+
+                        <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
+
+                        <div class="small text-muted">${data.email}</div>
+
+                    </td>
+
+                    <td><span class="badge-perfil ${colorClass}">${perfil}</span></td>
+
+                    <td class="small">${data.ubicacion || '---'}</td>
+
+                    <td class="text-center">
+
+                        <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3">Revisar</button>
+
+                    </td>
+
+                </tr>`;
+
+        });
+
+    }
+
+
+
+    // Escuchar el cambio del selector y redibujar al instante
+
+    selectorFiltro.addEventListener('change', renderizarTabla);
+
+
+
+    // FUNCIÓN PARA VER EL EXPEDIENTE (Mapeo de tu imagen de Firestore)
+
+    window.verExpediente = async (id) => {
+
+    currentId = id;
+
+    const snap = await getDoc(doc(db, "postulaciones", id));
+
+    if (snap.exists()) {
+
+        currentData = snap.data();
+
+        const d = currentData;
+
+        
+
+        document.getElementById('contenidoModal').innerHTML = `
+
+            <div class="col-md-12 mb-4 border-bottom pb-2">
+
+                <label class="label-exp">Fecha de Solicitud</label>
+
+                <span class="val-exp text-primary fw-bold"><i class="bi bi-calendar3 me-2"></i>${d.fecha || 'N/A'}</span>
+
+            </div>
+
+
+
+            <div class="col-md-6">
+
+                <label class="label-exp">Entidad / Institución</label>
+
+                <span class="val-exp">${d.entidad || 'N/A'}</span>
+
+
+
+                <label class="label-exp">Responsable Legal</label>
+
+                <span class="val-exp">${d.nombreResponsable || 'N/A'}</span>
+
+
+
+                <label class="label-exp">Registro de Información Fiscal (RIF)</label>
+
+                <span class="val-exp">${d.rif || 'N/A'}</span>
+
+
+
+                <label class="label-exp">Email de Contacto</label>
+
+                <span class="val-exp text-lowercase">${d.email || 'N/A'}</span>
+
+
+
+                <label class="label-exp">WhatsApp / Teléfono</label>
+
+                <span class="val-exp">${d.whatsapp || 'N/A'}</span>
+
+            </div>
+
+
+
+            <div class="col-md-6" style="background: rgba(0,0,0,0.03); border-radius: 15px; padding: 15px;">
+
+                <label class="label-exp">Perfil / Tipo de Solicitante</label>
+
+                <span class="val-exp fw-bold text-success">${d.tipoSolicitante || d.perfil || 'N/A'}</span>
+
+
+
+                <label class="label-exp">Duración de la Licencia</label>
+
+                <span class="val-exp">${d.duracionLicencia || 'N/A'}</span>
+
+
+
+                <label class="label-exp">Cupos Solicitados</label>
+
+                <span class="val-exp">${d.cupos || '0'}</span>
+
+
+
+                <label class="label-exp">Ubicación</label>
+
+                <span class="val-exp">${d.ubicacion || 'N/A'}</span>
+
+
+
+                <label class="label-exp">Programas Seleccionados</label>
+
+                <div class="small p-2 bg-white border rounded" style="max-height: 100px; overflow-y: auto;">
+
+                    ${d.programas || 'No especificados'}
+
+                </div>
+
+            </div>
+
+        `;
+
+        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+
+    }
+
 };
 
-    // ACCIÓN: ACTIVAR (VERSIÓN CORREGIDA Y GARANTIZADA)
-    document.getElementById('btnConfirmarAcceso').onclick = async () => {
-        if(!currentId || !currentData) return;
-        
-        try {
-            // 1. Intentar crear el acceso en Auth
-            try {
-                await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
-            } catch (authError) {
-                // Si ya existe, seguimos adelante para actualizar la base de datos
-                if (authError.code !== 'auth/email-already-in-use') throw authError;
-            }
 
-            // 2. Preparamos el objeto con las 14 variables que necesitas
-            const dataFinal = {
-                cupos: currentData.cupos || "0",
-                duracionLicencia: currentData.duracionLicencia || "N/A",
-                email: currentData.email,
-                entidad: currentData.entidad || "N/A",
-                fecha: currentData.fecha || "N/A",
-                nombreResponsable: currentData.nombreResponsable || "N/A",
-                perfil: currentData.perfil || currentData.tipoSolicitante || "N/A",
-                programas: currentData.programas || "No especificados",
-                rif: currentData.rif || "N/A",
-                tipoSolicitante: currentData.tipoSolicitante || "N/A",
-                ubicacion: currentData.ubicacion || "N/A",
-                whatsapp: currentData.whatsapp || "N/A",
-                estado: "activo",
-                fechaActivacion: new Date().toLocaleString()
-            };
 
-            // 3. Guardar en "usuarios" (Usamos el EMAIL como ID de documento)
-            await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
+    // ACCIÓN: ACTIVAR (VERSIÓN CORREGIDA Y GARANTIZADA)
 
-            // 4. Guardar en "historial_postulaciones" (Usamos el mismo ID que tenía la postulación)
-            await setDoc(doc(db, "historial_postulaciones", currentId), {
-                ...dataFinal,
-                decisionFinal: "ACEPTADO",
-                fechaProceso: new Date().toLocaleString()
-            });
+    document.getElementById('btnConfirmarAcceso').onclick = async () => {
 
-            // 5. Borrar de la lista de pendientes
-            await deleteDoc(doc(db, "postulaciones", currentId));
-            
-            await Swal.fire({
-                title: "¡Acceso Activado!",
-                text: "Se replicaron todos los campos en Usuarios e Historial.",
-                icon: "success",
-                confirmButtonColor: "#27ae60"
-            });
-            
-            location.reload();
+        if(!currentId || !currentData) return;
 
-        } catch (e) { 
-            console.error("Error completo:", e);
-            Swal.fire("Error", "No se pudo procesar: " + e.message, "error"); 
-        }
-    };
-    // ACCIÓN: RECHAZAR Y ARCHIVAR
-    document.getElementById('btnEliminar').onclick = async () => {
-        if(!currentId || !currentData) return;
+        
 
-        const confirmacion = await Swal.fire({
-            title: '¿Estás seguro?',
-            text: `Se rechazará la solicitud de ${currentData.entidad !== "N/A" ? currentData.entidad : currentData.nombreResponsable} y se moverá al historial.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, rechazar y archivar',
-            cancelButtonText: 'Cancelar'
-        });
+        try {
 
-        if (confirmacion.isConfirmed) {
-            try {
-                // 1. Guardar copia en "historial_postulaciones" como RECHAZADO
-                await setDoc(doc(db, "historial_postulaciones", currentId), {
-                    ...currentData,
-                    decisionFinal: "RECHAZADO",
-                    fechaProceso: new Date().toLocaleString()
-                });
+            // 1. Intentar crear el acceso en Auth
 
-                // 2. Eliminar de la colección activa
-                await deleteDoc(doc(db, "postulaciones", currentId));
+            try {
 
-                await Swal.fire('Procesado', 'La postulación se ha movido al historial de rechazados.', 'success');
-                location.reload();
-            } catch (e) {
-                Swal.fire("Error", "No se pudo procesar: " + e.message, "error");
-            }
-        }
-    };
-    // LÓGICA DE CIERRE DE SESIÓN
-    document.getElementById('btnLogout').onclick = async (e) => {
-        e.preventDefault();
-        
-        const result = await Swal.fire({
-            title: '¿Cerrar sesión?',
-            text: "Se finalizará tu acceso al panel administrativo.",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#e74c3c',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, salir',
-            cancelButtonText: 'Cancelar'
-        });
+                await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
 
-        if (result.isConfirmed) {
-            try {
-                await signOut(auth); // Aquí es donde usamos el import que acabas de arreglar
-                window.location.href = "index.html"; 
-            } catch (error) {
-                console.error("Error:", error);
-                Swal.fire("Error", "No se pudo cerrar la sesión", "error");
-            }
-        }
-    };
+            } catch (authError) {
+
+                // Si ya existe, seguimos adelante para actualizar la base de datos
+
+                if (authError.code !== 'auth/email-already-in-use') throw authError;
+
+            }
+
+
+
+            // 2. Preparamos el objeto con las 14 variables que necesitas
+
+            const dataFinal = {
+
+                cupos: currentData.cupos || "0",
+
+                duracionLicencia: currentData.duracionLicencia || "N/A",
+
+                email: currentData.email,
+
+                entidad: currentData.entidad || "N/A",
+
+                fecha: currentData.fecha || "N/A",
+
+                nombreResponsable: currentData.nombreResponsable || "N/A",
+
+                perfil: currentData.perfil || currentData.tipoSolicitante || "N/A",
+
+                programas: currentData.programas || "No especificados",
+
+                rif: currentData.rif || "N/A",
+
+                tipoSolicitante: currentData.tipoSolicitante || "N/A",
+
+                ubicacion: currentData.ubicacion || "N/A",
+
+                whatsapp: currentData.whatsapp || "N/A",
+
+                estado: "activo",
+
+                fechaActivacion: new Date().toLocaleString()
+
+            };
+
+
+
+            // 3. Guardar en "usuarios" (Usamos el EMAIL como ID de documento)
+
+            await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
+
+
+
+            // 4. Guardar en "historial_postulaciones" (Usamos el mismo ID que tenía la postulación)
+
+            await setDoc(doc(db, "historial_postulaciones", currentId), {
+
+                ...dataFinal,
+
+                decisionFinal: "ACEPTADO",
+
+                fechaProceso: new Date().toLocaleString()
+
+            });
+
+
+
+            // 5. Borrar de la lista de pendientes
+
+            await deleteDoc(doc(db, "postulaciones", currentId));
+
+            
+
+            await Swal.fire({
+
+                title: "¡Acceso Activado!",
+
+                text: "Se replicaron todos los campos en Usuarios e Historial.",
+
+                icon: "success",
+
+                confirmButtonColor: "#27ae60"
+
+            });
+
+            
+
+            location.reload();
+
+
+
+        } catch (e) { 
+
+            console.error("Error completo:", e);
+
+            Swal.fire("Error", "No se pudo procesar: " + e.message, "error"); 
+
+        }
+
+    };
+
+    // ACCIÓN: RECHAZAR Y ARCHIVAR
+
+    document.getElementById('btnEliminar').onclick = async () => {
+
+        if(!currentId || !currentData) return;
+
+
+
+        const confirmacion = await Swal.fire({
+
+            title: '¿Estás seguro?',
+
+            text: `Se rechazará la solicitud de ${currentData.entidad !== "N/A" ? currentData.entidad : currentData.nombreResponsable} y se moverá al historial.`,
+
+            icon: 'warning',
+
+            showCancelButton: true,
+
+            confirmButtonColor: '#d33',
+
+            cancelButtonColor: '#3085d6',
+
+            confirmButtonText: 'Sí, rechazar y archivar',
+
+            cancelButtonText: 'Cancelar'
+
+        });
+
+
+
+        if (confirmacion.isConfirmed) {
+
+            try {
+
+                // 1. Guardar copia en "historial_postulaciones" como RECHAZADO
+
+                await setDoc(doc(db, "historial_postulaciones", currentId), {
+
+                    ...currentData,
+
+                    decisionFinal: "RECHAZADO",
+
+                    fechaProceso: new Date().toLocaleString()
+
+                });
+
+
+
+                // 2. Eliminar de la colección activa
+
+                await deleteDoc(doc(db, "postulaciones", currentId));
+
+
+
+                await Swal.fire('Procesado', 'La postulación se ha movido al historial de rechazados.', 'success');
+
+                location.reload();
+
+            } catch (e) {
+
+                Swal.fire("Error", "No se pudo procesar: " + e.message, "error");
+
+            }
+
+        }
+
+    };
+
+    // LÓGICA DE CIERRE DE SESIÓN
+
+    document.getElementById('btnLogout').onclick = async (e) => {
+
+        e.preventDefault();
+
+        
+
+        const result = await Swal.fire({
+
+            title: '¿Cerrar sesión?',
+
+            text: "Se finalizará tu acceso al panel administrativo.",
+
+            icon: 'question',
+
+            showCancelButton: true,
+
+            confirmButtonColor: '#e74c3c',
+
+            cancelButtonColor: '#3085d6',
+
+            confirmButtonText: 'Sí, salir',
+
+            cancelButtonText: 'Cancelar'
+
+        });
+
+
+
+        if (result.isConfirmed) {
+
+            try {
+
+                await signOut(auth); // Aquí es donde usamos el import que acabas de arreglar
+
+                window.location.href = "index.html"; 
+
+            } catch (error) {
+
+                console.error("Error:", error);
+
+                Swal.fire("Error", "No se pudo cerrar la sesión", "error");
+
+            }
+
+        }
+
+    };
+
 </script>
+
 </body>
+
 </html>
