@@ -329,17 +329,11 @@
             <label class="small text-muted fw-bold mb-2 d-block text-uppercase" style="letter-spacing: 1px;">Filtrar por Perfil</label>
 
             <select id="filtroPerfil" class="form-select bg-dark text-white border-0 rounded-pill px-3 shadow-sm">
-
                 <option value="todos">Mostrar todos</option>
-
                 <option value="academia">Academias</option>
-
                 <option value="embajador">Profesor Embajador</option>
-
                 <option value="asociado">Profesor Asociado</option>
-
                 <option value="alumno">Estudiante Autodidacta</option>
-
             </select>
 
         </div>
@@ -491,75 +485,51 @@
     // Función que dibuja la tabla según el filtro
 
     function renderizarTabla() {
+    const tbody = document.getElementById('listaMaestra');
+    const valorFiltro = selectorFiltro.value; 
+    tbody.innerHTML = '';
 
-        const tbody = document.getElementById('listaMaestra');
+    registrosLocales.forEach((d) => {
+        const data = d.data();
+        const id = d.id;
+        
+        // Obtenemos el perfil y lo normalizamos
+        const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
+        const pLow = perfilOriginal.toLowerCase().trim();
 
-        const valorFiltro = selectorFiltro.value; 
+        // Aplicar Filtro
+        if (valorFiltro !== "todos" && !pLow.includes(valorFiltro)) return;
 
-        tbody.innerHTML = '';
+        // --- LÓGICA DE COLORES CORREGIDA ---
+        let colorClass = "";
+        let textoMostrar = perfilOriginal;
 
+        if (pLow.includes("academia")) {
+            colorClass = "bg-academia";
+        } else if (pLow.includes("embajador")) {
+            colorClass = "bg-embajador";
+        } else if (pLow.includes("asociado")) {
+            colorClass = "bg-socio"; // Usamos la clase púrpura que definiste en CSS
+        } else if (pLow.includes("autodidacta") || pLow.includes("alumno")) {
+            colorClass = "bg-alumno";
+        } else {
+            colorClass = "bg-secondary"; // Color neutro si no reconoce ninguno
+        }
 
-
-        registrosLocales.forEach((d) => {
-
-            const data = d.data();
-
-            const id = d.id;
-
-            const perfil = data.tipoSolicitante || "Alumno";
-
-            const pLow = perfil.toLowerCase();
-
-
-
-            // Aplicar Filtro: Si no coincide con la selección, ignorar registro
-
-            if (valorFiltro !== "todos" && !pLow.includes(valorFiltro)) return;
-
-
-
-            // Definir Color del Badge
-
-            let colorClass = "";
-
-            if (pLow.includes("academia")) colorClass = "bg-academia";
-
-            else if (pLow.includes("embajador")) colorClass = "bg-embajador";
-
-            else if (pLow.includes("asociado") || pLow.includes("profesor")) colorClass = "bg-profesor";
-
-            else colorClass = "bg-alumno";
-
-
-
-            tbody.innerHTML += `
-
-                <tr>
-
-                    <td>
-
-                        <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
-
-                        <div class="small text-muted">${data.email}</div>
-
-                    </td>
-
-                    <td><span class="badge-perfil ${colorClass}">${perfil}</span></td>
-
-                    <td class="small">${data.ubicacion || '---'}</td>
-
-                    <td class="text-center">
-
-                        <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3">Revisar</button>
-
-                    </td>
-
-                </tr>`;
-
-        });
-
-    }
-
+        tbody.innerHTML += `
+            <tr>
+                <td>
+                    <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
+                    <div class="small text-muted">${data.email}</div>
+                </td>
+                <td><span class="badge-perfil ${colorClass}">${perfilOriginal}</span></td>
+                <td class="small">${data.ubicacion || '---'}</td>
+                <td class="text-center">
+                    <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3">Revisar</button>
+                </td>
+            </tr>`;
+    });
+}
 
 
     // Escuchar el cambio del selector y redibujar al instante
@@ -701,47 +671,28 @@
             }
 
 
-
             // 2. Preparamos el objeto con las 14 variables que necesitas
 
             const dataFinal = {
-
                 cupos: currentData.cupos || "0",
-
                 duracionLicencia: currentData.duracionLicencia || "N/A",
-
                 email: currentData.email,
-
                 entidad: currentData.entidad || "N/A",
-
                 fecha: currentData.fecha || "N/A",
-
                 nombreResponsable: currentData.nombreResponsable || "N/A",
-
                 perfil: currentData.perfil || currentData.tipoSolicitante || "N/A",
-
                 programas: currentData.programas || "No especificados",
-
                 rif: currentData.rif || "N/A",
-
                 tipoSolicitante: currentData.tipoSolicitante || "N/A",
-
                 ubicacion: currentData.ubicacion || "N/A",
-
                 whatsapp: currentData.whatsapp || "N/A",
-
                 estado: "activo",
-
                 fechaActivacion: new Date().toLocaleString()
-
             };
-
-
 
             // 3. Guardar en "usuarios" (Usamos el EMAIL como ID de documento)
 
             await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
-
 
 
             // 4. Guardar en "historial_postulaciones" (Usamos el mismo ID que tenía la postulación)
