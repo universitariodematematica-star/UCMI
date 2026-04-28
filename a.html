@@ -159,7 +159,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -173,11 +173,19 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    
     let registrosLocales = [];
     let currentId = null;
     let currentData = null;
 
-    // CARGA DE DATOS
+    // --- SEGURIDAD: VERIFICAR SESIÓN ACTIVA ---
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.replace("index.html");
+        }
+    });
+
+    // --- CARGA DE DATOS EN TIEMPO REAL ---
     onSnapshot(collection(db, "postulaciones"), (snapshot) => {
         registrosLocales = snapshot.docs;
         renderizarTabla();
@@ -215,6 +223,29 @@
         });
     }
 
+    // --- LÓGICA DE NOTIFICACIONES (WHATSAPP) ---
+    const enviarNotificacion = (data, estado) => {
+        const nombre = data.nombreResponsable || "Postulante";
+        const email = data.email;
+        const telefono = data.whatsapp || data.telefono || ""; 
+        
+        const msjAceptado = `¡Hola ${nombre}! Te saluda el equipo de UCMI. Nos complace informarte que tu solicitud ha sido ACEPTADA. Pronto recibirás tus credenciales por este medio.`;
+        const msjRechazado = `Hola ${nombre}, gracias por tu interés en UCMI. Lamentamos informarte que tras revisar tu expediente, tu solicitud no ha sido aprobada en esta ocasión.`;
+
+        const mensajeFinal = (estado === 'aceptado') ? msjAceptado : msjRechazado;
+
+        // Abrir WhatsApp si hay teléfono disponible
+        if (telefono) {
+            const telLimpio = telefono.toString().replace(/\D/g, ''); 
+            const urlWA = `https://wa.me/${telLimpio}?text=${encodeURIComponent(mensajeFinal)}`;
+            window.open(urlWA, '_blank');
+        }
+        
+        // Aquí podrías integrar el envío de email (EmailJS) en el futuro
+        console.log(`Notificación lógica para ${email} ejecutada.`);
+    };
+
+    // --- VER EXPEDIENTE ---
     window.verExpediente = async (id) => {
         currentId = id;
         const snap = await getDoc(doc(db, "postulaciones", id));
@@ -233,7 +264,63 @@
         }
     };
 
-    // BOTÓN CERRAR SESIÓN
+    // --- BOTÓN: ACTIVAR ACCESO (ACEPTAR) ---
+    document.getElementById('btnConfirmarAcceso').onclick = async () => {
+        if (!currentId || !currentData) return;
+        
+        try {
+            // 1. Mover a la colección de usuarios activos
+            await setDoc(doc(db, "usuarios", currentId), {
+                ...currentData,
+                estado: "activo",
+                fechaActivacion: new Date()
+            });
+
+            // 2. Notificar al usuario
+            enviarNotificacion(currentData, 'aceptado');
+
+            // 3. Borrar de postulaciones pendientes
+            await deleteDoc(doc(db, "postulaciones", currentId));
+
+            Swal.fire('¡Activado!', 'El acceso ha sido concedido y se ha generado la notificación.', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
+            
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Error', 'No se pudo procesar la activación.', 'error');
+        }
+    };
+
+    // --- BOTÓN: RECHAZAR SOLICITUD ---
+    document.getElementById('btnEliminar').onclick = async () => {
+        if (!currentId || !currentData) return;
+
+        const res = await Swal.fire({
+            title: '¿Rechazar solicitud?',
+            text: "Se notificará al usuario y se eliminará el registro.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e74c3c',
+            confirmButtonText: 'Sí, rechazar'
+        });
+
+        if (res.isConfirmed) {
+            try {
+                // 1. Notificar rechazo
+                enviarNotificacion(currentData, 'rechazado');
+
+                // 2. Eliminar registro
+                await deleteDoc(doc(db, "postulaciones", currentId));
+
+                Swal.fire('Eliminado', 'La solicitud ha sido rechazada.', 'info');
+                bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
+            } catch (error) {
+                Swal.fire('Error', 'No se pudo eliminar el registro.', 'error');
+            }
+        }
+    };
+
+    // --- CERRAR SESIÓN (CON LIMPIEZA TOTAL) ---
     document.getElementById('btnLogout').onclick = async (e) => {
         e.preventDefault();
         const res = await Swal.fire({
@@ -243,9 +330,16 @@
             confirmButtonColor: '#e74c3c',
             confirmButtonText: 'Sí, salir'
         });
+        
         if (res.isConfirmed) {
-            await signOut(auth);
-            window.location.href = "index.html";
+            try {
+                await signOut(auth);
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.replace("index.html");
+            } catch (error) {
+                console.error("Error al salir:", error);
+            }
         }
     };
 
