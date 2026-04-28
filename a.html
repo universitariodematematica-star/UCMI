@@ -422,25 +422,35 @@
             .catch((err) => console.error("Error Email:", err));
     };
 
-    // --- FUNCIÓN DE WHATSAPP ACTUALIZADA ---
+   // --- FUNCIÓN DE WHATSAPP DEFINITIVA (REPLAZA LÍNEAS 426-445) ---
     const prepararMensajeWhatsApp = (data, decision) => {
         const nombre = data.nombreResponsable || "Postulante";
         const telefono = data.whatsapp || "";
         if (!telefono || telefono === "N/A") return;
 
-        // Extraemos los datos de vigencia que guardamos en dataFinal
-        const meses = data.mesesAprobados || "1";
-        const expiracion = data.expiracionLicencia || "Consultar panel";
+        let textoMensaje = "";
 
-        const msjAceptado = `¡Hola ${nombre}! Te saluda UCMI. %0A%0ATu solicitud ha sido *ACEPTADA*. ✅%0A%0A*Detalles de acceso:*%0A📧 Usuario: ${data.email}%0A🔑 Clave: UCMI2026%0A%0A*Vigencia:*%0A📅 Duración: ${meses} meses%0A⏳ Expira el: ${expiracion}%0A%0A¡Bienvenido!`;
-        
-        const msjRechazado = `Hola ${nombre}. Gracias por tu interés en UCMI. Tu solicitud no ha sido aprobada en esta ocasión.`;
+        if (decision === "ACEPTADO") {
+            // Extraemos los datos calculados en dataFinal
+            const meses = data.mesesAprobados || "1";
+            const expiracion = data.expiracionLicencia || "Ver panel";
 
-        const texto = (decision === "ACEPTADO") ? msjAceptado : msjRechazado;
+            textoMensaje = `¡Hola *${nombre}*! Te saluda UCMI. %0A%0A` +
+                           `Tu solicitud ha sido *ACEPTADA*. ✅%0A%0A` +
+                           `*Detalles de acceso:*%0A` +
+                           `📧 Usuario: ${data.email}%0A` +
+                           `🔑 Clave: UCMI2026%0A%0A` +
+                           `*Vigencia:*%0A` +
+                           `📅 Duración: ${meses} mes(es)%0A` +
+                           `⏳ Expira el: ${expiracion}%0A%0A` +
+                           `¡Bienvenido!`;
+        } else {
+            textoMensaje = `Hola *${nombre}*. Gracias por tu interés en UCMI. %0A%0ALamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión.`;
+        }
+
         const telLimpio = telefono.toString().replace(/\D/g, '');
+        const url = `https://api.whatsapp.com/send?phone=${telLimpio}&text=${textoMensaje}`;
         
-        // Usamos api.whatsapp.com para mejor compatibilidad
-        const url = `https://api.whatsapp.com/send?phone=${telLimpio}&text=${texto}`;
         window.open(url, '_blank');
     };
     // --- LÓGICA DE FILTRADO Y TABLA (SIN CAMBIOS) ---
