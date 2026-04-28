@@ -336,12 +336,16 @@
     </div>
 </div>
 
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // Inicializar EmailJS (REEMPLAZA CON TU PUBLIC KEY)
+    emailjs.init("TU_PUBLIC_KEY_AQUÍ");
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -358,24 +362,39 @@
     let currentId = null;
     let currentData = null;
 
-    // --- FUNCIÓN DE MENSAJERÍA AUTOMÁTICA ---
+    // --- FUNCIÓN DE CORREO ELECTRÓNICO (AUTOMÁTICA) ---
+    const enviarEmailAutomatico = (data, decision) => {
+        const templateParams = {
+            to_name: data.nombreResponsable,
+            to_email: data.email,
+            status: decision,
+            message: decision === "ACEPTADO" 
+                ? "Tu solicitud en UCMI ha sido aprobada. Tus credenciales de acceso son tu correo y la clave UCMI2026." 
+                : "Lamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión."
+        };
+
+        // REEMPLAZA 'YOUR_SERVICE_ID' y 'YOUR_TEMPLATE_ID'
+        emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+            .then(() => console.log("Email enviado correctamente"))
+            .catch((err) => console.error("Error Email:", err));
+    };
+
+    // --- FUNCIÓN DE WHATSAPP (ABRE PESTAÑA) ---
     const prepararMensajeWhatsApp = (data, decision) => {
         const nombre = data.nombreResponsable || "Postulante";
         const telefono = data.whatsapp || "";
-        
         if (!telefono || telefono === "N/A") return;
 
-        const msjAceptado = `¡Hola ${nombre}! Te saluda UCMI. Nos complace informarte que tu solicitud ha sido ACEPTADA. Puedes acceder con tu correo: ${data.email} y la clave: UCMI2026.`;
-        const msjRechazado = `Hola ${nombre}. Gracias por tu interés en UCMI. Te informamos que en esta ocasión tu solicitud no ha sido aprobada. Saludos cordiales.`;
+        const msjAceptado = `¡Hola ${nombre}! Te saluda UCMI. Tu solicitud ha sido ACEPTADA. Acceso: ${data.email} | Clave: UCMI2026.`;
+        const msjRechazado = `Hola ${nombre}. Gracias por tu interés en UCMI. Tu solicitud no ha sido aprobada.`;
 
         const texto = (decision === "ACEPTADO") ? msjAceptado : msjRechazado;
         const telLimpio = telefono.toString().replace(/\D/g, '');
         const url = `https://wa.me/${telLimpio}?text=${encodeURIComponent(texto)}`;
-        
         window.open(url, '_blank');
     };
 
-    // --- LÓGICA DE FILTRADO ---
+    // --- LÓGICA DE FILTRADO Y TABLA (SIN CAMBIOS) ---
     const selectorFiltro = document.getElementById('filtroPerfil');
     let registrosLocales = [];
 
@@ -433,36 +452,25 @@
                     <span class="val-exp text-primary fw-bold"><i class="bi bi-calendar3 me-2"></i>${d.fecha || 'N/A'}</span>
                 </div>
                 <div class="col-md-6">
-                    <label class="label-exp">Entidad / Institución</label>
-                    <span class="val-exp">${d.entidad || 'N/A'}</span>
-                    <label class="label-exp">Responsable Legal</label>
-                    <span class="val-exp">${d.nombreResponsable || 'N/A'}</span>
-                    <label class="label-exp">Registro de Información Fiscal (RIF)</label>
-                    <span class="val-exp">${d.rif || 'N/A'}</span>
-                    <label class="label-exp">Email de Contacto</label>
-                    <span class="val-exp text-lowercase">${d.email || 'N/A'}</span>
-                    <label class="label-exp">WhatsApp / Teléfono</label>
-                    <span class="val-exp">${d.whatsapp || 'N/A'}</span>
+                    <label class="label-exp">Entidad / Institución</label><span class="val-exp">${d.entidad || 'N/A'}</span>
+                    <label class="label-exp">Responsable Legal</label><span class="val-exp">${d.nombreResponsable || 'N/A'}</span>
+                    <label class="label-exp">RIF</label><span class="val-exp">${d.rif || 'N/A'}</span>
+                    <label class="label-exp">Email</label><span class="val-exp text-lowercase">${d.email || 'N/A'}</span>
+                    <label class="label-exp">WhatsApp</label><span class="val-exp">${d.whatsapp || 'N/A'}</span>
                 </div>
                 <div class="col-md-6" style="background: rgba(0,0,0,0.03); border-radius: 15px; padding: 15px;">
-                    <label class="label-exp">Perfil / Tipo de Solicitante</label>
-                    <span class="val-exp fw-bold text-success">${d.tipoSolicitante || d.perfil || 'N/A'}</span>
-                    <label class="label-exp">Duración de la Licencia</label>
-                    <span class="val-exp">${d.duracionLicencia || 'N/A'}</span>
-                    <label class="label-exp">Cupos Solicitados</label>
-                    <span class="val-exp">${d.cupos || '0'}</span>
-                    <label class="label-exp">Ubicación</label>
-                    <span class="val-exp">${d.ubicacion || 'N/A'}</span>
-                    <label class="label-exp">Programas Seleccionados</label>
-                    <div class="small p-2 bg-white border rounded" style="max-height: 100px; overflow-y: auto;">
-                        ${d.programas || 'No especificados'}
-                    </div>
+                    <label class="label-exp">Perfil</label><span class="val-exp fw-bold text-success">${d.tipoSolicitante || d.perfil || 'N/A'}</span>
+                    <label class="label-exp">Licencia</label><span class="val-exp">${d.duracionLicencia || 'N/A'}</span>
+                    <label class="label-exp">Cupos</label><span class="val-exp">${d.cupos || '0'}</span>
+                    <label class="label-exp">Ubicación</label><span class="val-exp">${d.ubicacion || 'N/A'}</span>
+                    <label class="label-exp">Programas</label>
+                    <div class="small p-2 bg-white border rounded" style="max-height: 100px; overflow-y: auto;">${d.programas || 'No especificados'}</div>
                 </div>`;
             new bootstrap.Modal(document.getElementById('modalDetalles')).show();
         }
     };
 
-    // ACCIÓN: ACTIVAR ACCESO
+    // --- ACCIÓN: ACTIVAR ACCESO ---
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
         if(!currentId || !currentData) return;
         try {
@@ -472,68 +480,44 @@
                 if (authError.code !== 'auth/email-already-in-use') throw authError;
             }
 
-            const dataFinal = {
-                cupos: currentData.cupos || "0",
-                duracionLicencia: currentData.duracionLicencia || "N/A",
-                email: currentData.email,
-                entidad: currentData.entidad || "N/A",
-                fecha: currentData.fecha || "N/A",
-                nombreResponsable: currentData.nombreResponsable || "N/A",
-                perfil: currentData.perfil || currentData.tipoSolicitante || "N/A",
-                programas: currentData.programas || "No especificados",
-                rif: currentData.rif || "N/A",
-                tipoSolicitante: currentData.tipoSolicitante || "N/A",
-                ubicacion: currentData.ubicacion || "N/A",
-                whatsapp: currentData.whatsapp || "N/A",
-                estado: "activo",
-                fechaActivacion: new Date().toLocaleString()
-            };
+            const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date().toLocaleString() };
 
             await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
-            await setDoc(doc(db, "historial_postulaciones", currentId), {
-                ...dataFinal,
-                decisionFinal: "ACEPTADO",
-                fechaProceso: new Date().toLocaleString()
-            });
+            await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO", fechaProceso: new Date().toLocaleString() });
             await deleteDoc(doc(db, "postulaciones", currentId));
 
-            await Swal.fire({
-                title: "¡Acceso Activado!",
-                text: "Se replicaron todos los campos y se abrirá WhatsApp.",
-                icon: "success",
-                confirmButtonColor: "#27ae60"
-            });
+            // ACCIONES DE COMUNICACIÓN
+            enviarEmailAutomatico(currentData, "ACEPTADO"); // El email sale solo
+            
+            await Swal.fire({ title: "¡Acceso Activado!", text: "Email enviado y abriendo WhatsApp...", icon: "success" });
 
-            prepararMensajeWhatsApp(currentData, "ACEPTADO");
+            prepararMensajeWhatsApp(currentData, "ACEPTADO"); // Se abre la pestaña
             location.reload();
         } catch (e) { 
-            Swal.fire("Error", "No se pudo procesar: " + e.message, "error"); 
+            Swal.fire("Error", e.message, "error"); 
         }
     };
 
-    // ACCIÓN: RECHAZAR
+    // --- ACCIÓN: RECHAZAR ---
     document.getElementById('btnEliminar').onclick = async () => {
         if(!currentId || !currentData) return;
         const confirmacion = await Swal.fire({
-            title: '¿Estás seguro?',
-            text: `Se rechazará la solicitud y se abrirá WhatsApp para notificar.`,
+            title: '¿Rechazar solicitud?',
+            text: "Se notificará por Email y WhatsApp.",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
-            confirmButtonText: 'Sí, rechazar',
-            cancelButtonText: 'Cancelar'
+            confirmButtonText: 'Sí, rechazar'
         });
 
         if (confirmacion.isConfirmed) {
             try {
-                await setDoc(doc(db, "historial_postulaciones", currentId), {
-                    ...currentData,
-                    decisionFinal: "RECHAZADO",
-                    fechaProceso: new Date().toLocaleString()
-                });
+                await setDoc(doc(db, "historial_postulaciones", currentId), { ...currentData, decisionFinal: "RECHAZADO", fechaProceso: new Date().toLocaleString() });
                 await deleteDoc(doc(db, "postulaciones", currentId));
                 
-                prepararMensajeWhatsApp(currentData, "RECHAZADO");
+                enviarEmailAutomatico(currentData, "RECHAZADO"); // Email automático
+                prepararMensajeWhatsApp(currentData, "RECHAZADO"); // WhatsApp manual
+                
                 location.reload();
             } catch (e) {
                 Swal.fire("Error", e.message, "error");
@@ -541,16 +525,10 @@
         }
     };
 
-    // LOGOUT
+    // --- LOGOUT ---
     document.getElementById('btnLogout').onclick = async (e) => {
         e.preventDefault();
-        const result = await Swal.fire({
-            title: '¿Cerrar sesión?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#e74c3c',
-            confirmButtonText: 'Sí, salir'
-        });
+        const result = await Swal.fire({ title: '¿Cerrar sesión?', icon: 'question', showCancelButton: true });
         if (result.isConfirmed) {
             await signOut(auth);
             window.location.href = "index.html"; 
