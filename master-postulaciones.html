@@ -422,21 +422,37 @@
             .catch((err) => console.error("Error Email:", err));
     };
 
-    // --- FUNCIÓN DE WHATSAPP (ABRE PESTAÑA) ---
+   // --- FUNCIÓN DE WHATSAPP DEFINITIVA (REPLAZA LÍNEAS 426-445) ---
     const prepararMensajeWhatsApp = (data, decision) => {
         const nombre = data.nombreResponsable || "Postulante";
         const telefono = data.whatsapp || "";
         if (!telefono || telefono === "N/A") return;
 
-        const msjAceptado = `¡Hola ${nombre}! Te saluda UCMI. Tu solicitud ha sido ACEPTADA. Acceso: ${data.email} | Clave: UCMI2026.`;
-        const msjRechazado = `Hola ${nombre}. Gracias por tu interés en UCMI. Tu solicitud no ha sido aprobada.`;
+        let textoMensaje = "";
 
-        const texto = (decision === "ACEPTADO") ? msjAceptado : msjRechazado;
+        if (decision === "ACEPTADO") {
+            // Extraemos los datos calculados en dataFinal
+            const meses = data.mesesAprobados || "1";
+            const expiracion = data.expiracionLicencia || "Ver panel";
+
+            textoMensaje = `¡Hola *${nombre}*! Te saluda UCMI. %0A%0A` +
+               `Tu solicitud ha sido *ACEPTADA*. ✅%0A%0A` +
+               `*Detalles de acceso:*%0A` +
+               `📧 *Usuario:* ${data.email}%0A` + // Añadí espacio y negrita
+               `🔑 *Clave:* UCMI2026%0A%0A` +
+               `*Vigencia:*%0A` +
+               `📅 *Duración:* ${data.duracionLicencia || data.mesesAprobados + ' mes(es)'}%0A` + 
+               `⏳ *Expira el:* ${expiracion}%0A%0A` +
+               `¡Bienvenido!`;
+        } else {
+            textoMensaje = `Hola *${nombre}*. Gracias por tu interés en UCMI. %0A%0ALamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión.`;
+        }
+
         const telLimpio = telefono.toString().replace(/\D/g, '');
-        const url = `https://wa.me/${telLimpio}?text=${encodeURIComponent(texto)}`;
+        const url = `https://api.whatsapp.com/send?phone=${telLimpio}&text=${textoMensaje}`;
+        
         window.open(url, '_blank');
     };
-
     // --- LÓGICA DE FILTRADO Y TABLA (SIN CAMBIOS) ---
     const selectorFiltro = document.getElementById('filtroPerfil');
     let registrosLocales = [];
@@ -513,31 +529,67 @@
         }
     };
 
-    // --- ACCIÓN: ACTIVAR ACCESO ---
+    // --- ACCIÓN: ACTIVAR ACCESO (CON CÁLCULO DE EXPIRACIÓN REAL) ---
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
         if(!currentId || !currentData) return;
+        
         try {
+            // 1. Intentar crear el usuario en Firebase Auth
             try {
                 await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
             } catch (authError) {
                 if (authError.code !== 'auth/email-already-in-use') throw authError;
             }
 
-            const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date().toLocaleString() };
+            // 2. LÓGICA DE FECHAS (CORREGIDA)
+            const fechaAceptacion = new Date();
+            
+            // Usamos una expresión regular para extraer SOLO los números. 
+            // Esto convierte "12 meses" o "6 meses" en el número puro.
+            const duracionTexto = currentData.duracionLicencia ? String(currentData.duracionLicencia) : "1";
+            const mesesSolicitados = parseInt(duracionTexto.replace(/\D/g, '')) || 1;
+            
+            // Creamos el objeto de expiración sumando los meses
+            const fechaExpiracion = new Date();
+            fechaExpiracion.setMonth(fechaAceptacion.getMonth() + mesesSolicitados);
 
+            // 3. Preparamos el objeto final (Asegurando nombres de campos exactos)
+            const dataFinal = { 
+                ...currentData, 
+                estado: "activo", 
+                fechaActivacion: fechaAceptacion.toLocaleString(),
+                expiracionLicencia: fechaExpiracion.toLocaleString(), // Esta es la que necesitas ver
+                expiracionTimestamp: fechaExpiracion.getTime(), // Guardamos milisegundos para ordenar/filtrar luego
+                mesesAprobados: mesesSolicitados
+            };
+
+            // 4. Guardar en la colección de usuarios activos y en el historial
             await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
-            await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO", fechaProceso: new Date().toLocaleString() });
+            await setDoc(doc(db, "historial_postulaciones", currentId), { 
+                ...dataFinal, 
+                decisionFinal: "ACEPTADO", 
+                fechaProceso: fechaAceptacion.toLocaleString() 
+            });
+
+            // 5. Borrar la postulación pendiente
             await deleteDoc(doc(db, "postulaciones", currentId));
 
             // ACCIONES DE COMUNICACIÓN
-            enviarEmailAutomatico(currentData, "ACEPTADO"); // El email sale solo
+            enviarEmailAutomatico(currentData, "ACEPTADO"); 
             
-            await Swal.fire({ title: "¡Acceso Activado!", text: "Email enviado y abriendo WhatsApp...", icon: "success" });
+            await Swal.fire({ 
+                title: "¡Acceso Activado!", 
+                text: `Licencia válida hasta: ${fechaExpiracion.toLocaleDateString()}`, 
+                icon: "success",
+                confirmButtonColor: "#27ae60"
+            });
 
-            prepararMensajeWhatsApp(currentData, "ACEPTADO"); // Se abre la pestaña
+            prepararMensajeWhatsApp(dataFinal, "ACEPTADO"); 
             location.reload();
+
         } catch (e) { 
-            Swal.fire("Error", e.message, "error"); 
+            console.error(e);
+            Swal.fire("Error", "No se pudo procesar la activación: " + e.message, "error"); 
         }
     };
 
