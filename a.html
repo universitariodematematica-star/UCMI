@@ -144,7 +144,8 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    // CORRECCIÓN 1: Se añade 'where' a las importaciones de Firestore
+    import { getFirestore, collection, addDoc, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -158,18 +159,34 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- CARGA DINÁMICA DE MÓDULOS ---
+    // --- CARGA DINÁMICA DE MÓDULOS (CON FILTRO DE OFERTA) ---
     async function cargarOfertas() {
         const grid = document.getElementById('gridProgramas');
         try {
-            const q = query(collection(db, "ofertas"), orderBy("modulo", "asc"));
+            // CORRECCIÓN 2: Se añade el filtro where("ofertado", "==", true)
+            const q = query(
+                collection(db, "ofertas"), 
+                where("ofertado", "==", true), 
+                orderBy("modulo", "asc")
+            );
+            
             const snap = await getDocs(q);
             grid.innerHTML = ""; 
+
+            // Si no hay nada ofertado, informamos al usuario
+            if (snap.empty) {
+                grid.innerHTML = "<div class='text-center w-100 py-3 text-white-50 small'>No hay programas disponibles para oferta en este momento.</div>";
+                return;
+            }
+
             snap.forEach(doc => {
                 const mod = doc.data().modulo;
                 grid.innerHTML += `<div class="form-check"><input class="form-check-input prog-check" type="checkbox" value="${mod}" id="chk_${doc.id}"><label class="form-check-label small text-white" for="chk_${doc.id}">${mod}</label></div>`;
             });
-        } catch (e) { console.error(e); grid.innerHTML = "Error al conectar."; }
+        } catch (e) { 
+            console.error("Error en el acceso a la base de datos:", e); 
+            grid.innerHTML = "<div class='text-danger p-3'>Error al conectar con el servidor de UCMI.</div>"; 
+        }
     }
     cargarOfertas();
 
@@ -232,7 +249,6 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        // --- ENCABEZADO INSTITUCIONAL ---
         doc.setFillColor(11, 27, 43); 
         doc.rect(0, 0, 210, 55, 'F');
         doc.addImage("https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png", 'PNG', 15, 8, 35, 35);
@@ -250,7 +266,6 @@
         doc.setFont("helvetica", "bold");
         doc.text("POSTULACIÓN ACADÉMICA", 120, 42, { align: "center" });
         
-        // --- SECCIÓN DE DATOS DEL EXPEDIENTE ---
         doc.setTextColor(40, 40, 40); 
         doc.setFontSize(9);
         doc.text(`ID Control: ${Math.floor(Math.random() * 1000000)}`, 20, 65);
@@ -272,10 +287,9 @@
             y += (splitVal.length * 5) + 6; 
         };
 
-        // --- LISTADO DE CAMPOS (CORREO INCLUIDO) ---
         drawRow("PERFIL:", d.perfil.toUpperCase());
         drawRow("RESPONSABLE:", d.nombreResponsable);
-        drawRow("EMAIL:", d.email); // <--- Campo añadido
+        drawRow("EMAIL:", d.email);
         drawRow("ENTIDAD:", d.entidad);
         drawRow("ID FISCAL:", d.rif);
         drawRow("WHATSAPP:", d.whatsapp);
@@ -284,7 +298,6 @@
         drawRow("LICENCIA:", d.duracionLicencia);
         drawRow("PROGRAMAS:", d.programas);
 
-        // PIE DE PÁGINA
         doc.setFontSize(8); 
         doc.setTextColor(150, 150, 150);
         doc.text("Documento Oficial - Protocolo Supralógico UCMI", 105, 285, { align: "center" });
