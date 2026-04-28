@@ -422,21 +422,27 @@
             .catch((err) => console.error("Error Email:", err));
     };
 
-    // --- FUNCIÓN DE WHATSAPP (ABRE PESTAÑA) ---
+    // --- FUNCIÓN DE WHATSAPP ACTUALIZADA ---
     const prepararMensajeWhatsApp = (data, decision) => {
         const nombre = data.nombreResponsable || "Postulante";
         const telefono = data.whatsapp || "";
         if (!telefono || telefono === "N/A") return;
 
-        const msjAceptado = `¡Hola ${nombre}! Te saluda UCMI. Tu solicitud ha sido ACEPTADA. Acceso: ${data.email} | Clave: UCMI2026.`;
-        const msjRechazado = `Hola ${nombre}. Gracias por tu interés en UCMI. Tu solicitud no ha sido aprobada.`;
+        // Extraemos los datos de vigencia que guardamos en dataFinal
+        const meses = data.mesesAprobados || "1";
+        const expiracion = data.expiracionLicencia || "Consultar panel";
+
+        const msjAceptado = `¡Hola ${nombre}! Te saluda UCMI. %0A%0ATu solicitud ha sido *ACEPTADA*. ✅%0A%0A*Detalles de acceso:*%0A📧 Usuario: ${data.email}%0A🔑 Clave: UCMI2026%0A%0A*Vigencia:*%0A📅 Duración: ${meses} meses%0A⏳ Expira el: ${expiracion}%0A%0A¡Bienvenido!`;
+        
+        const msjRechazado = `Hola ${nombre}. Gracias por tu interés en UCMI. Tu solicitud no ha sido aprobada en esta ocasión.`;
 
         const texto = (decision === "ACEPTADO") ? msjAceptado : msjRechazado;
         const telLimpio = telefono.toString().replace(/\D/g, '');
-        const url = `https://wa.me/${telLimpio}?text=${encodeURIComponent(texto)}`;
+        
+        // Usamos api.whatsapp.com para mejor compatibilidad
+        const url = `https://api.whatsapp.com/send?phone=${telLimpio}&text=${texto}`;
         window.open(url, '_blank');
     };
-
     // --- LÓGICA DE FILTRADO Y TABLA (SIN CAMBIOS) ---
     const selectorFiltro = document.getElementById('filtroPerfil');
     let registrosLocales = [];
