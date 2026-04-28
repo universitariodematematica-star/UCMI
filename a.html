@@ -525,24 +525,25 @@
                 if (authError.code !== 'auth/email-already-in-use') throw authError;
             }
 
-            // 2. LÓGICA DE FECHAS (AQUÍ EMPIEZA TU SOLICITUD)
+            // 2. LÓGICA DE FECHAS (CORREGIDA)
             const fechaAceptacion = new Date();
+            
+            // Usamos una expresión regular para extraer SOLO los números. 
+            // Esto convierte "12 meses" o "6 meses" en el número puro.
+            const duracionTexto = currentData.duracionLicencia ? String(currentData.duracionLicencia) : "1";
+            const mesesSolicitados = parseInt(duracionTexto.replace(/\D/g, '')) || 1;
+            
+            // Creamos el objeto de expiración sumando los meses
             const fechaExpiracion = new Date();
-            
-            // Extraemos solo el número de la cadena "X meses"
-            // Si por alguna razón no hay número, por defecto ponemos 1 mes
-            const mesesSolicitados = parseInt(currentData.duracionLicencia) || 1;
-            
-            // Sumamos los meses a partir de HOY
             fechaExpiracion.setMonth(fechaAceptacion.getMonth() + mesesSolicitados);
 
-            // 3. Preparamos el objeto final con las fechas de vigencia
+            // 3. Preparamos el objeto final (Asegurando nombres de campos exactos)
             const dataFinal = { 
                 ...currentData, 
                 estado: "activo", 
                 fechaActivacion: fechaAceptacion.toLocaleString(),
-                expiracionLicencia: fechaExpiracion.toLocaleString(),
-                expiracionTimestamp: fechaExpiracion, // Guardamos el objeto Date para filtros futuros
+                expiracionLicencia: fechaExpiracion.toLocaleString(), // Esta es la que necesitas ver
+                expiracionTimestamp: fechaExpiracion.getTime(), // Guardamos milisegundos para ordenar/filtrar luego
                 mesesAprobados: mesesSolicitados
             };
 
