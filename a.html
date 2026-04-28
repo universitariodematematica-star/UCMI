@@ -28,7 +28,6 @@
             padding: 50px 20px;
         }
 
-        /* CONTENEDOR TRASLÚCIDO (GLASSMORPHISM) */
         .glass-panel {
             background: rgba(255, 255, 255, 0.03) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -59,7 +58,6 @@
         .table tbody tr {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 15px;
-            transition: transform 0.3s ease;
         }
 
         .table tbody td {
@@ -69,11 +67,10 @@
             vertical-align: middle;
         }
 
-        /* BARRA DE PROGRESO NEÓN */
-        .progress { background-color: rgba(255, 255, 255, 0.1); height: 5px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .progress { background-color: rgba(255, 255, 255, 0.1); height: 5px; border-radius: 10px; }
         .progress-bar-neon { background: linear-gradient(90deg, var(--purpura-neon), var(--cian-tech)); box-shadow: 0 0 12px rgba(0, 242, 255, 0.5); }
         
-        .status-badge { font-size: 0.65rem; padding: 6px 14px; border-radius: 8px; font-weight: 800; border: 1px solid #00ff8844; color: #00ff88; background: #00ff8811; box-shadow: 0 0 10px #00ff8822; }
+        .status-badge { font-size: 0.65rem; padding: 6px 14px; border-radius: 8px; font-weight: 800; border: 1px solid #00ff8844; color: #00ff88; background: #00ff8811; }
         .email-badge { font-family: 'Courier New', monospace; color: var(--cian-tech); background: rgba(0, 242, 255, 0.1); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; border: 1px solid rgba(0, 242, 255, 0.2); }
         
         .btn-revocar {
@@ -85,7 +82,7 @@
             padding: 8px 20px;
             transition: 0.3s;
         }
-        .btn-revocar:hover { background: #ff4d4d; color: white; border-color: #ff4d4d; box-shadow: 0 0 15px rgba(255, 77, 77, 0.4); }
+        .btn-revocar:hover { background: #ff4d4d; color: white; }
     </style>
 </head>
 <body>
@@ -109,8 +106,7 @@
                         <th class="text-end">Operaciones</th>
                     </tr>
                 </thead>
-                <tbody id="listaVigencia">
-                    </tbody>
+                <tbody id="listaVigencia"></tbody>
             </table>
         </div>
     </div>
@@ -132,15 +128,32 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // FUNCIÓN CLAVE: Convierte "28/4/2026, 15:25:11" a Objeto Date real
-    function limpiarFecha(str) {
-        if (!str || typeof str !== 'string') return new Date();
+    // FUNCIÓN DE LIMPIEZA ROBUSTA PARA FECHA DE INICIO
+    function formatearFechaInicio(str) {
+        if (!str) return "Sin fecha";
         try {
-            const [parteFecha, parteHora] = str.split(', ');
-            const [dia, mes, anio] = parteFecha.split('/');
-            return new Date(`${anio}-${mes}-${dia}T${parteHora}`);
+            // Si el string viene como "28/4/2026, 15:25:11"
+            const partes = str.split(',')[0].split('/');
+            if (partes.length === 3) {
+                // Forzamos el orden día/mes/año
+                const dia = partes[0].padStart(2, '0');
+                const mes = partes[1].padStart(2, '0');
+                const anio = partes[2];
+                return `${dia}/${mes}/${anio}`;
+            }
+            return str;
         } catch (e) {
-            console.error("Error procesando fecha:", str);
+            return "Error formato";
+        }
+    }
+
+    // FUNCIÓN PARA CÁLCULOS (Internal use)
+    function obtenerDateValido(str) {
+        try {
+            const [fecha, hora] = str.split(', ');
+            const [d, m, a] = fecha.split('/');
+            return new Date(`${a}-${m.padStart(2,'0')}-${d.padStart(2,'0')}T${hora}`);
+        } catch(e) {
             return new Date();
         }
     }
@@ -153,22 +166,22 @@
             const data = docSnap.data();
             const id = docSnap.id;
 
-            // Procesamos los datos exactos de tu imagen
-            const fechaInicio = limpiarFecha(data.fechaActivacion);
-            const fechaFin = new Date(data.expiracionTimestamp); // Timestamp numérico
+            // 1. Obtener la fecha para mostrar (Texto limpio)
+            const fechaInicioTexto = formatearFechaInicio(data.fechaActivacion);
+
+            // 2. Obtener fechas para cálculos matemáticos
+            const dateInicio = obtenerDateValido(data.fechaActivacion);
+            const dateFin = new Date(data.expiracionTimestamp);
             const ahora = new Date();
 
-            // Cálculo de porcentajes
-            const totalMs = fechaFin - fechaInicio;
-            const transcurridoMs = ahora - fechaInicio;
+            // 3. Cálculos
+            const totalMs = dateFin - dateInicio;
+            const transcurridoMs = ahora - dateInicio;
             let porcentaje = Math.floor((transcurridoMs / totalMs) * 100);
-            
-            // Seguridad ante errores de cálculo (Invalid Date o NaN)
-            if (isNaN(porcentaje)) porcentaje = 0;
             porcentaje = Math.min(Math.max(porcentaje, 0), 100);
+            if(isNaN(porcentaje)) porcentaje = 0;
 
-            // Días restantes
-            const diasRestantes = Math.ceil((fechaFin - ahora) / (1000 * 60 * 60 * 24));
+            const diasRestantes = Math.ceil((dateFin - ahora) / (1000 * 60 * 60 * 24));
 
             contenedor.innerHTML += `
                 <tr>
@@ -178,14 +191,14 @@
                                 <i class="bi bi-person-badge-fill text-info fs-5"></i>
                             </div>
                             <div>
-                                <div class="fw-bold text-white mb-1">${data.entidad || 'Entidad Desconocida'}</div>
+                                <div class="fw-bold text-white mb-1">${data.entidad || 'Entidad'}</div>
                                 <div class="email-badge">${data.email || id}</div>
                             </div>
                         </div>
                     </td>
                     <td>
-                        <div class="text-white-50 x-small mb-1" style="font-size: 0.6rem;">FECHA INICIO:</div>
-                        <div class="fw-bold small">${fechaInicio.toLocaleDateString()}</div>
+                        <div class="text-white-50 mb-1" style="font-size: 0.6rem;">FECHA INICIO:</div>
+                        <div class="fw-bold small text-white">${fechaInicioTexto}</div>
                     </td>
                     <td>
                         <div class="progress mb-2">
@@ -197,8 +210,8 @@
                         </div>
                     </td>
                     <td>
-                        <div class="text-white-50 x-small mb-1" style="font-size: 0.6rem;">VENCE EN:</div>
-                        <div class="fw-bold text-info small">${fechaFin.toLocaleDateString()}</div>
+                        <div class="text-white-50 mb-1" style="font-size: 0.6rem;">VENCE EN:</div>
+                        <div class="fw-bold text-info small">${dateFin.toLocaleDateString()}</div>
                     </td>
                     <td>
                         <span class="status-badge">${diasRestantes > 0 ? diasRestantes + ' DÍAS' : 'EXPIRADO'}</span>
@@ -216,7 +229,7 @@
     window.borrarUsuario = async (id) => {
         const confirm = await Swal.fire({
             title: '¿Revocar Licencia?',
-            text: "El usuario perderá el acceso inmediato a la plataforma.",
+            text: "Se cortará el acceso inmediato.",
             icon: 'warning',
             background: '#06090f',
             color: '#fff',
@@ -226,7 +239,6 @@
         });
         if (confirm.isConfirmed) {
             await deleteDoc(doc(db, "usuarios", id));
-            Swal.fire({ title: 'Hecho', icon: 'success', background: '#06090f', color: '#fff' });
         }
     };
 </script>
