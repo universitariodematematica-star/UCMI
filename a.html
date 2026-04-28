@@ -22,7 +22,7 @@
 
         .super-overlay { background: rgba(6, 9, 15, 0.94); min-height: 100vh; padding-bottom: 50px; }
 
-        /* NAVBAR SUPERIOR MEJORADA */
+        /* NAVBAR SUPERIOR */
         .nav-ucmi {
             background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(20px);
@@ -61,6 +61,7 @@
         .btn-logout {
             color: var(--rojo-error) !important;
             border: 1px solid rgba(255, 77, 77, 0.2);
+            cursor: pointer;
         }
 
         .btn-logout:hover {
@@ -68,7 +69,7 @@
             border-color: var(--rojo-error);
         }
 
-        /* TABLA Y CONTENIDOS */
+        /* CONTENEDOR DE TABLA */
         .list-container {
             background: var(--glass);
             backdrop-filter: blur(25px);
@@ -85,6 +86,7 @@
             font-size: 0.65rem;
             letter-spacing: 1.2px;
             border-bottom: 1px solid rgba(197, 160, 89, 0.3);
+            padding-bottom: 15px;
         }
 
         .search-box {
@@ -101,8 +103,9 @@
         .status-ACEPTADO { color: #2ecc71; border: 1px solid #27ae60; }
         .status-RECHAZADO { color: #e74c3c; border: 1px solid #e74c3c; }
 
-        .contact-link { color: white; text-decoration: none; }
+        .contact-link { color: white; text-decoration: none; transition: 0.2s; }
         .contact-link:hover { color: var(--dorado-ucmi); text-decoration: underline; }
+        .text-personal { font-style: italic; color: rgba(255,255,255,0.3); font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -110,34 +113,34 @@
 <div class="super-overlay">
     
     <nav class="nav-ucmi">
-    <div class="container-fluid d-flex justify-content-between align-items-center px-4">
-        <div class="d-flex align-items-center">
-            <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="UCMI" style="height: 35px;" class="me-4">
-            <div class="d-flex gap-1">
-                <a href="super-admin.html" class="nav-btn"><i class="bi bi-cpu me-1"></i> PANEL MAESTRO</a>
-                <a href="master-postulaciones.html" class="nav-btn">SOLICITUDES</a>
-                <a href="master-vigencia.html" class="nav-btn">VIGENCIA</a>
-                <a href="master-usuarios.html" class="nav-btn">USUARIOS</a>
-                <a href="historial-postulaciones.html" class="nav-btn">HISTORIAL</a>
-                <a href="directorio.html" class="nav-btn active">DIRECTORIO</a>
-                <a href="ofertas-academicas.html" class="nav-btn text-warning">OFERTAS</a>
+        <div class="container-fluid d-flex justify-content-between align-items-center px-4">
+            <div class="d-flex align-items-center">
+                <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="UCMI" style="height: 35px;" class="me-4">
+                <div class="d-flex gap-1">
+                    <a href="super-admin.html" class="nav-btn"><i class="bi bi-cpu me-1"></i> PANEL MAESTRO</a>
+                    <a href="master-postulaciones.html" class="nav-btn">SOLICITUDES</a>
+                    <a href="master-vigencia.html" class="nav-btn">VIGENCIA</a>
+                    <a href="master-usuarios.html" class="nav-btn">USUARIOS</a>
+                    <a href="historial-postulaciones.html" class="nav-btn">HISTORIAL</a>
+                    <a href="directorio.html" class="nav-btn active">DIRECTORIO</a>
+                    <a href="ofertas-academicas.html" class="nav-btn text-warning">OFERTAS</a>
+                </div>
             </div>
+            <button onclick="cerrarSesionUCMI()" class="nav-btn btn-logout bg-transparent">
+                <i class="bi bi-box-arrow-right me-1"></i> CERRAR SESIÓN
+            </button>
         </div>
-        <button onclick="cerrarSesionUCMI()" class="nav-btn btn-logout border-0 bg-transparent">
-            <i class="bi bi-box-arrow-right me-1"></i> CERRAR SESIÓN
-        </button>
-    </div>
-</nav>
+    </nav>
 
     <div class="container-fluid px-5">
         
         <div class="d-flex justify-content-between align-items-center mt-5 mb-4">
             <div>
-                <h2 class="fw-bold mb-0">Directorio de Contactos</h2>
-                <p class="text-muted small">Registros históricos de UCMI</p>
+                <h2 class="fw-bold mb-0">Directorio Maestro</h2>
+                <p class="text-muted small">Registros históricos ordenados alfabéticamente por entidad</p>
             </div>
             <div style="min-width: 400px;">
-                <input type="text" id="inputBusqueda" class="form-control search-box" placeholder="Buscar institución, nombre o correo...">
+                <input type="text" id="inputBusqueda" class="form-control search-box" placeholder="Buscar institución, responsable o email...">
             </div>
         </div>
 
@@ -146,16 +149,19 @@
                 <table class="table align-middle">
                     <thead>
                         <tr>
-                            <th>Entidad / Institución</th>
-                            <th>Responsable</th>
-                            <th>Perfil</th>
-                            <th>WhatsApp</th>
-                            <th>Email</th>
-                            <th class="text-center">Estado</th>
+                            <th style="width: 25%;">Entidad / Institución</th>
+                            <th style="width: 20%;">Responsable</th>
+                            <th style="width: 15%;">Perfil</th>
+                            <th style="width: 15%;">WhatsApp</th>
+                            <th style="width: 15%;">Email</th>
+                            <th style="width: 10%;" class="text-center">Estado</th>
                         </tr>
                     </thead>
                     <tbody id="tablaCuerpo">
-                        </tbody>
+                        <tr>
+                            <td colspan="6" class="text-center p-5 opacity-50">Sincronizando con Firebase...</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -165,41 +171,62 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    
-    // 1. IMPORTAR AUTH
     import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // ... (Tu config de firebase) ...
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    
-    // 2. INICIALIZAR AUTH
     const auth = getAuth(app);
+    let registrosMaster = [];
 
-    // 3. FUNCIÓN DE CIERRE DE SESIÓN
+    // --- FUNCIÓN GLOBAL DE CIERRE DE SESIÓN ---
     window.cerrarSesionUCMI = function() {
         signOut(auth).then(() => {
             window.location.href = "index.html";
         }).catch((error) => {
-            console.error("Error al cerrar sesión:", error);
+            console.error("Error al salir:", error);
         });
     };
 
+    // --- LIMPIEZA DE NÚMEROS WHATSAPP (Evita 404) ---
+    function limpiarNumero(num) {
+        if(!num) return "";
+        return num.replace(/\D/g, ''); 
+    }
+
+    // --- ESCUCHA DE DATOS EN TIEMPO REAL ---
     onSnapshot(collection(db, "historial_postulaciones"), (snapshot) => {
         registrosMaster = snapshot.docs.map(doc => doc.data());
+        
+        // ORDEN ALFABÉTICO
         registrosMaster.sort((a, b) => {
             const nA = (a.entidad && a.entidad !== "N/A" ? a.entidad : a.nombreResponsable || "").toLowerCase();
             const nB = (b.entidad && b.entidad !== "N/A" ? b.entidad : b.nombreResponsable || "").toLowerCase();
             return nA.localeCompare(nB);
         });
+
         renderizar(registrosMaster);
     });
 
     function renderizar(lista) {
         const tbody = document.getElementById('tablaCuerpo');
         tbody.innerHTML = '';
+
+        if(lista.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 opacity-50">No hay registros disponibles.</td></tr>';
+            return;
+        }
+
         lista.forEach(reg => {
-            const entidad = reg.entidad && reg.entidad !== "N/A" ? reg.entidad : '<span class="opacity-25 italic">Personal</span>';
+            const entidad = reg.entidad && reg.entidad !== "N/A" ? reg.entidad : '<span class="text-personal">Individual</span>';
             const numLimpio = limpiarNumero(reg.whatsapp);
             const status = reg.decisionFinal || "PROCESADO";
 
@@ -207,7 +234,7 @@
                 <tr>
                     <td class="fw-bold">${entidad}</td>
                     <td>${reg.nombreResponsable || "---"}</td>
-                    <td><span class="small text-warning">${reg.perfil || reg.tipoSolicitante || '---'}</span></td>
+                    <td><span class="small text-warning">${reg.perfil || reg.tipoSolicitante || 'Estudiante'}</span></td>
                     <td>
                         <a href="https://wa.me/${numLimpio}" target="_blank" class="contact-link">
                             <i class="bi bi-whatsapp text-success me-1"></i> ${reg.whatsapp || '---'}
@@ -222,6 +249,7 @@
         });
     }
 
+    // --- BUSCADOR ---
     document.getElementById('inputBusqueda').addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
         const filtrados = registrosMaster.filter(r => 
