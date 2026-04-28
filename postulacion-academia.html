@@ -158,37 +158,18 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- CARGA DINÁMICA DE MÓDULOS (CON FILTRO DE SEGURIDAD) ---
+    // --- CARGA DINÁMICA DE MÓDULOS ---
     async function cargarOfertas() {
         const grid = document.getElementById('gridProgramas');
         try {
-            // AQUÍ LA CORRECCIÓN: Añadimos where("ofertado", "==", true)
-            const q = query(
-                collection(db, "ofertas"), 
-                where("ofertado", "==", true), 
-                orderBy("modulo", "asc")
-            );
-            
+            const q = query(collection(db, "ofertas"), orderBy("modulo", "asc"));
             const snap = await getDocs(q);
             grid.innerHTML = ""; 
-
-            // Si no hay nada activado en tu panel de ofertas, mostrará un aviso
-            if (snap.empty) {
-                grid.innerHTML = "<p class='text-white-50 small'>No hay programas ofertados actualmente.</p>";
-                return;
-            }
-
             snap.forEach(doc => {
                 const mod = doc.data().modulo;
-                grid.innerHTML += `<div class="form-check">
-                    <input class="form-check-input prog-check" type="checkbox" value="${mod}" id="chk_${doc.id}">
-                    <label class="form-check-label small text-white" for="chk_${doc.id}">${mod}</label>
-                </div>`;
+                grid.innerHTML += `<div class="form-check"><input class="form-check-input prog-check" type="checkbox" value="${mod}" id="chk_${doc.id}"><label class="form-check-label small text-white" for="chk_${doc.id}">${mod}</label></div>`;
             });
-        } catch (e) { 
-            console.error("Error en Supralógica:", e); 
-            grid.innerHTML = "Error al conectar con el servidor."; 
-        }
+        } catch (e) { console.error(e); grid.innerHTML = "Error al conectar."; }
     }
     cargarOfertas();
 
