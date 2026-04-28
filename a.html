@@ -1,223 +1,165 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Módulos - UCMI</title>
+    <title>UCMI - Control de Postulaciones</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-    :root { 
-        --dorado-ucmi: #c5a059; 
-        --cristal-claro: rgba(255, 255, 255, 0.05);
-        --sidebar-width: 260px;
-        --rojo-peligro: #e74c3c;
-    }
+        :root {
+            --azul-ucmi: #06090f;
+            --azul-sidebar: #1a2a3a;
+            --verde-exito: #27ae60;
+            --dorado-ucmi: #c5a059;
+            --rojo-logout: #e74c3c;
+            --indigo-ucmi: #4b0082;
+        }
+        
+        body { 
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover; font-family: 'Segoe UI', sans-serif; margin: 0; color: white;
+        }
 
-    body, html {
-        height: 100%; margin: 0;
-        font-family: 'Segoe UI', sans-serif;
-        color: white;
-        background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-        background-size: cover;
-        overflow: hidden;
-    }
+        .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); min-height: 100vh; }
+        
+        /* SIDEBAR ESTILIZADA */
+        .sidebar { 
+            background: rgba(26, 42, 58, 0.95); backdrop-filter: blur(10px); min-height: 100vh; padding: 25px 15px; position: sticky; top: 0; border-right: 1px solid rgba(197, 160, 89, 0.3); display: flex; flex-direction: column;
+        }
 
-    .overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: radial-gradient(circle, rgba(6, 9, 15, 0.7) 0%, rgba(6, 9, 15, 0.9) 100%);
-        z-index: -1;
-    }
+        .logo-sidebar { height: 55px; border-radius: 12px; margin-bottom: 10px; }
+        
+        .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; margin-bottom: 5px; text-decoration: none; padding: 10px; display: block; border-radius: 8px; }
+        .nav-link:hover { color: white; background: rgba(255,255,255,0.1); }
+        .nav-link.active { color: var(--dorado-ucmi); font-weight: bold; background: rgba(197, 160, 89, 0.1); }
 
-    .wrapper { display: flex; height: 100vh; width: 100vw; }
+        .btn-sidebar-action {
+            background: transparent; border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            color: white !important; font-weight: 600; text-transform: uppercase; font-size: 0.7rem;
+            border-radius: 50px; padding: 10px; text-decoration: none; text-align: center;
+            transition: all 0.3s ease-in-out; display: block; margin-bottom: 10px;
+        }
 
-    /* --- SIDEBAR --- */
-    .sidebar {
-        width: var(--sidebar-width);
-        min-width: var(--sidebar-width);
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(25px);
-        border-right: 1px solid rgba(197, 160, 89, 0.2);
-        display: flex;
-        flex-direction: column;
-        padding: 25px 15px;
-    }
+        .btn-sidebar-action:hover {
+            background: rgba(255, 255, 255, 0.1); border-color: #ffffff !important;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); transform: translateY(-2px);
+        }
 
-    .sidebar-logo { width: 100px; margin: 0 auto 30px; display: block; }
-    .sidebar-nav { flex-grow: 1; }
+        .btn-logout { border-color: rgba(231, 76, 60, 0.4) !important; color: rgba(231, 76, 60, 0.8) !important; }
+        .btn-logout:hover { background: rgba(231, 76, 60, 0.1) !important; border-color: var(--rojo-logout) !important; color: white !important; }
 
-    .nav-item-ucmi {
-        display: flex; align-items: center;
-        color: rgba(255,255,255,0.6);
-        text-decoration: none;
-        padding: 10px 15px;
-        margin-bottom: 5px;
-        border-radius: 10px;
-        transition: 0.3s all ease;
-        font-size: 0.85rem;
-    }
+        /* TABLA CRISTAL */
+        .table-container { 
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px);
+            border-radius: 28px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-    .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
-    
-    .nav-item-ucmi:hover { 
-        color: white; 
-        background: rgba(255,255,255,0.1);
-        transform: translateX(5px);
-    }
+        .table { --bs-table-bg: transparent; --bs-table-color: white; }
+        .badge-perfil { font-size: 0.7rem; padding: 5px 10px; border-radius: 50px; color: white; font-weight: 700; }
+        
+        .bg-academia  { background: #dc3545; } 
+        .bg-embajador { background: #0d6efd; } 
+        .bg-socio     { background: #6f42c1; } 
+        .bg-alumno    { background: var(--verde-exito); }
 
-    .nav-item-ucmi.active {
-        background: rgba(197, 160, 89, 0.15);
-        color: var(--dorado-ucmi);
-        font-weight: 600;
-        box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1);
-    }
-
-    .btn-maestro {
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
-        color: white !important;
-        font-weight: 600; text-transform: uppercase;
-        font-size: 0.65rem; letter-spacing: 1.5px;
-        border-radius: 50px; padding: 10px;
-        text-decoration: none; display: block; text-align: center; 
-        margin-bottom: 10px;
-        transition: 0.3s all ease;
-    }
-
-    .btn-maestro:hover {
-        background: rgba(197, 160, 89, 0.2) !important;
-        border-color: var(--dorado-ucmi) !important;
-        color: var(--dorado-ucmi) !important;
-    }
-
-    .btn-cerrar {
-        background: transparent;
-        border: 1px solid rgba(231, 76, 60, 0.4) !important;
-        color: rgba(231, 76, 60, 0.9) !important;
-        font-weight: 600; text-transform: uppercase;
-        font-size: 0.65rem; letter-spacing: 1.5px;
-        border-radius: 50px; padding: 8px;
-        text-decoration: none; display: block; text-align: center;
-        transition: 0.3s all ease;
-    }
-
-    .btn-cerrar:hover {
-        background: rgba(231, 76, 60, 0.2) !important;
-        border-color: var(--rojo-peligro) !important;
-        color: white !important;
-    }
-
-    /* --- CONTENIDO --- */
-    .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; }
-
-    .card-gestion { 
-        background: var(--cristal-claro); 
-        backdrop-filter: blur(15px); 
-        border: 1px solid rgba(197, 160, 89, 0.2); 
-        border-radius: 25px; padding: 30px; margin-bottom: 30px; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-
-    .form-control { 
-        background: rgba(0, 0, 0, 0.4) !important; 
-        border: 1px solid rgba(197, 160, 89, 0.3); 
-        color: white !important; border-radius: 12px;
-    }
-
-    h2, h4 { font-family: 'Cinzel', serif; letter-spacing: 2px; }
-    .header-main { color: var(--dorado-ucmi); text-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
-
-    .table { color: white !important; --bs-table-bg: transparent !important; }
-    .table thead th { color: var(--dorado-ucmi) !important; border-bottom: 2px solid var(--dorado-ucmi); }
-    
-    .form-switch .form-check-input:checked { background-color: var(--dorado-ucmi); border-color: var(--dorado-ucmi); }
-</style>
+        .label-exp { color: var(--dorado-ucmi); font-size: 0.7rem; text-transform: uppercase; font-weight: 800; display: block; }
+        .val-exp { color: #ffffff; font-size: 1rem; margin-bottom: 15px; display: block; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
 </head>
 <body>
 
-<div class="overlay"></div>
-
-<div class="wrapper">
-    <aside class="sidebar">
-        <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" class="sidebar-logo">
-        
-        <nav class="sidebar-nav">
-            <a href="master-postulaciones.html" class="nav-item-ucmi">
-                <i class="bi bi-person-badge"></i> SOLICITUDES
-            </a>
-            <a href="master-vigencia.html" class="nav-item-ucmi">
-                <i class="bi bi-shield-check"></i> VIGENCIA
-            </a>
-            <a href="master-usuarios.html" class="nav-item-ucmi">
-                <i class="bi bi-people"></i> USUARIOS
-            </a>
-            <a href="historial-postulaciones.html" class="nav-item-ucmi">
-                <i class="bi bi-clock-history"></i> HISTORIAL
-            </a>
-            <a href="directorio.html" class="nav-item-ucmi">
-                <i class="bi bi-person-vcard"></i> DIRECTORIO
-            </a>
-            <a href="#" class="nav-item-ucmi active">
-                <i class="bi bi-tags"></i> OFERTAS
-            </a>
-        </nav>
-
-        <div class="mt-auto pt-4 border-top border-secondary">
-            <a href="super-admin.html" class="btn-maestro">
-                <i class="bi bi-cpu me-2"></i> PANEL MAESTRO
-            </a>
-            
-            <a href="#" id="btnLogout" class="btn-cerrar">
-                <i class="bi bi-power me-2"></i> CERRAR SESIÓN
-            </a>
-        </div>
-    </aside>
-
-    <main class="main-content">
-        <div class="container-fluid">
-            <div class="text-center mb-5">
-                <h2 class="header-main">CONTROL DE MÓDULOS ACADÉMICOS</h2>
+<div class="super-overlay">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 sidebar d-none d-md-flex">
+                <div class="text-center mb-4">
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" class="logo-sidebar">
+                    <h5 class="fw-bold mt-2 text-white">UCMI ADMIN</h5>
+                </div>
+                <nav class="nav flex-column mb-auto">
+                    <a class="nav-link active" href="#"><i class="bi bi-file-earmark-text me-2"></i> Solicitudes</a>
+                    <a class="nav-link" href="master-vigencia.html"><i class="bi bi-calendar-check me-2"></i> Vigencia</a>
+                    <a class="nav-link" href="master-usuarios.html"><i class="bi bi-people me-2"></i> Usuarios</a>
+                    <a class="nav-link" href="historial-postulaciones.html"><i class="bi bi-clock-history me-2"></i> Historial</a>
+                    <a class="nav-link" href="directorio.html"><i class="bi bi-person-vcard me-2"></i> Directorio</a>
+                    <a class="nav-link" href="ofertas-academicas.html"><i class="bi bi-mortarboard me-2"></i> Ofertas</a>
+                </nav>
+                <div class="mt-4 pt-4 border-top border-secondary">
+                    <a href="super-admin.html" class="btn-sidebar-action w-100">
+                        <i class="bi bi-arrow-left me-2"></i> Panel Maestro
+                    </a>
+                    <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100">
+                        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+                    </a>
+                </div>
             </div>
 
-            <div class="card-gestion">
-                <h4 class="mb-4 text-warning"><i class="bi bi-plus-circle me-2"></i>Crear Nuevo Módulo</h4>
-                <form id="formCrearModulo" class="row g-3 align-items-center">
-                    <div class="col-md-9">
-                        <input type="text" id="nombreModulo" class="form-control p-2" placeholder="Nombre del módulo..." required autocomplete="off">
+            <div class="col-md-10 p-4">
+                <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
+                
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05);">
+                            <label class="small text-muted fw-bold mb-2 d-block text-uppercase">Filtrar por Perfil</label>
+                            <select id="filtroPerfil" class="form-select bg-dark text-white border-0 rounded-pill shadow-sm">
+                                <option value="todos">Mostrar todos</option>
+                                <option value="academia">Academias</option>
+                                <option value="embajador">Profesor Embajador</option>
+                                <option value="asociado">Profesor Asociado</option>
+                                <option value="autodidacta">Estudiante Autodidacta</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn-maestro w-100 m-0">REGISTRAR</button>
-                    </div>
-                </form>
-            </div>
+                </div>
 
-            <div class="card-gestion">
-                <h4 class="text-warning mb-4"><i class="bi bi-archive me-2"></i>Inventario</h4>
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead>
-                            <tr>
-                                <th>Nombre del Módulo</th>
-                                <th class="text-center">Ofertar al Público</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="listaInventario"></tbody>
-                    </table>
+                <div class="table-container mt-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>IDENTIDAD</th>
+                                    <th>PERFIL</th>
+                                    <th>LOCALIZACIÓN</th>
+                                    <th class="text-center">ACCIÓN</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaMaestra">
+                                </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 </div>
+
+<div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="fw-bold"><i class="bi bi-file-earmark-person me-2"></i>Expediente</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="contenidoModal"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-danger rounded-pill" id="btnEliminar">Rechazar</button>
+                <button class="btn btn-success rounded-pill" id="btnConfirmarAcceso">Activar Acceso</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    
-    // IMPORTACIÓN DE AUTH
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -230,70 +172,84 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app); // INICIALIZAR AUTH
+    const auth = getAuth(app);
+    let registrosLocales = [];
+    let currentId = null;
+    let currentData = null;
 
-    // --- LÓGICA DE CIERRE DE SESIÓN ---
-    document.getElementById('btnLogout').onclick = async (e) => {
-        e.preventDefault();
-        if(confirm("¿Estás seguro de que deseas cerrar sesión?")) {
-            try {
-                await signOut(auth);
-                window.location.href = "index.html";
-            } catch (error) {
-                console.error("Error al cerrar sesión:", error);
-            }
+    // CARGA DE DATOS
+    onSnapshot(collection(db, "postulaciones"), (snapshot) => {
+        registrosLocales = snapshot.docs;
+        renderizarTabla();
+    });
+
+    function renderizarTabla() {
+        const tbody = document.getElementById('listaMaestra');
+        const filtro = document.getElementById('filtroPerfil').value;
+        tbody.innerHTML = '';
+
+        registrosLocales.forEach(docSnap => {
+            const data = docSnap.data();
+            const id = docSnap.id;
+            const perfil = data.tipoSolicitante || data.perfil || "Alumno";
+            const pLow = perfil.toLowerCase();
+
+            if (filtro !== "todos" && !pLow.includes(filtro)) return;
+
+            let colorClass = pLow.includes("academia") ? "bg-academia" : 
+                             pLow.includes("embajador") ? "bg-embajador" :
+                             pLow.includes("asociado") ? "bg-socio" : "bg-alumno";
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : data.nombreResponsable}</div>
+                        <div class="small opacity-50">${data.email}</div>
+                    </td>
+                    <td><span class="badge-perfil ${colorClass}">${perfil}</span></td>
+                    <td class="small">${data.ubicacion || '---'}</td>
+                    <td class="text-center">
+                        <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill">Revisar</button>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    window.verExpediente = async (id) => {
+        currentId = id;
+        const snap = await getDoc(doc(db, "postulaciones", id));
+        if (snap.exists()) {
+            currentData = snap.data();
+            document.getElementById('contenidoModal').innerHTML = `
+                <div class="col-md-6">
+                    <label class="label-exp">Institución</label><span class="val-exp">${currentData.entidad}</span>
+                    <label class="label-exp">Responsable</label><span class="val-exp">${currentData.nombreResponsable}</span>
+                </div>
+                <div class="col-md-6">
+                    <label class="label-exp">Email</label><span class="val-exp">${currentData.email}</span>
+                    <label class="label-exp">Perfil</label><span class="val-exp text-success">${currentData.tipoSolicitante}</span>
+                </div>`;
+            new bootstrap.Modal(document.getElementById('modalDetalles')).show();
         }
     };
 
-    // --- LÓGICA DE MÓDULOS ---
-    document.getElementById('formCrearModulo').addEventListener('submit', async (e) => {
-        e.preventDefault(); 
-        const input = document.getElementById('nombreModulo');
-        try {
-            await addDoc(collection(db, "ofertas"), {
-                modulo: input.value,
-                ofertado: false,
-                fechaCreacion: new Date()
-            });
-            input.value = "";
-        } catch (err) { console.error(err); }
-    });
-
-    onSnapshot(query(collection(db, "ofertas"), orderBy("modulo", "asc")), (snap) => {
-        const lista = document.getElementById('listaInventario');
-        lista.innerHTML = "";
-        snap.forEach(docSnap => {
-            const mod = docSnap.data();
-            const id = docSnap.id;
-            lista.innerHTML += `
-                <tr>
-                    <td class="fw-bold text-white">${mod.modulo}</td>
-                    <td class="text-center">
-                        <div class="form-check form-switch d-inline-block">
-                            <input class="form-check-input toggle-oferta" type="checkbox" 
-                                data-id="${id}" ${mod.ofertado ? 'checked' : ''}>
-                        </div>
-                    </td>
-                    <td class="text-center">
-                        <button class="btn-cerrar" style="font-size: 0.6rem; padding: 5px 12px;" onclick="eliminarModulo('${id}')">
-                            <i class="bi bi-trash3"></i> BORRAR
-                        </button>
-                    </td>
-                </tr>
-            `;
+    // BOTÓN CERRAR SESIÓN
+    document.getElementById('btnLogout').onclick = async (e) => {
+        e.preventDefault();
+        const res = await Swal.fire({
+            title: '¿Cerrar sesión?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#e74c3c',
+            confirmButtonText: 'Sí, salir'
         });
-
-        document.querySelectorAll('.toggle-oferta').forEach(sw => {
-            sw.onclick = async (e) => {
-                const docId = e.target.getAttribute('data-id');
-                await updateDoc(doc(db, "ofertas", docId), { ofertado: e.target.checked });
-            };
-        });
-    });
-
-    window.eliminarModulo = async (id) => {
-        if(confirm("¿Eliminar módulo?")) await deleteDoc(doc(db, "ofertas", id));
+        if (res.isConfirmed) {
+            await signOut(auth);
+            window.location.href = "index.html";
+        }
     };
+
+    document.getElementById('filtroPerfil').onchange = renderizarTabla;
 </script>
 </body>
 </html>
