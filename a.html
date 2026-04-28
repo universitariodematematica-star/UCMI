@@ -1,49 +1,159 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Módulos - UCMI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        :root { --dorado-ucmi: #c5a059; --azul-oscuro: #06090f; }
-        body { background-color: var(--azul-oscuro); color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        .card-gestion { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(197,160,89,0.3); border-radius: 20px; padding: 25px; margin-bottom: 30px; }
-        .table { color: white; border-color: rgba(255,255,255,0.1); }
-        .form-control { background: rgba(255,255,255,0.1); border: 1px solid rgba(197,160,89,0.2); color: white; }
-        .form-control:focus { background: rgba(255,255,255,0.2); color: white; border-color: var(--dorado-ucmi); }
-        .btn-ucmi { background: var(--dorado-ucmi); color: black; font-weight: bold; }
-        .form-switch .form-check-input:checked { background-color: var(--dorado-ucmi); border-color: var(--dorado-ucmi); }
-    </small></style>
+        :root { 
+            --dorado-ucmi: #c5a059; 
+            --azul-oscuro: #06090f; 
+            --cristal: rgba(255, 255, 255, 0.05);
+        }
+
+        body { 
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover;
+            color: white; 
+            font-family: 'Segoe UI', sans-serif; 
+            padding: 40px 0; 
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.7) 0%, rgba(6, 9, 15, 0.9) 100%);
+            z-index: -1;
+        }
+
+        .card-gestion { 
+            background: var(--cristal); 
+            backdrop-filter: blur(15px); 
+            border: 1px solid rgba(197, 160, 89, 0.2); 
+            border-radius: 25px; 
+            padding: 30px; 
+            margin-bottom: 30px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+
+        h2, h4 { 
+            font-family: 'Cinzel', serif; 
+            letter-spacing: 2px;
+        }
+
+        .header-main {
+            color: var(--dorado-ucmi);
+            text-shadow: 0 0 15px rgba(197, 160, 89, 0.3);
+            font-weight: 700;
+        }
+
+        .table { 
+            color: white !important; 
+            border-color: rgba(255, 255, 255, 0.1); 
+            vertical-align: middle;
+        }
+
+        .table thead th {
+            color: var(--dorado-ucmi);
+            border-bottom: 2px solid var(--dorado-ucmi);
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .form-control { 
+            background: rgba(255,255,255,0.08); 
+            border: 1px solid rgba(197,160,89,0.3); 
+            color: white; 
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .form-control:focus { 
+            background: rgba(255,255,255,0.12); 
+            color: white; 
+            border-color: var(--dorado-ucmi); 
+            box-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+        }
+
+        .btn-ucmi { 
+            background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); 
+            color: black; 
+            font-weight: 800; 
+            border: none;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+        .btn-ucmi:hover { 
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 5px 15px rgba(197, 160, 89, 0.4);
+        }
+
+        .form-switch .form-check-input:checked { 
+            background-color: var(--dorado-ucmi); 
+            border-color: var(--dorado-ucmi); 
+        }
+
+        .badge-ofertado {
+            background: rgba(0, 255, 204, 0.15);
+            color: #00ffcc;
+            border: 1px solid rgba(0, 255, 204, 0.3);
+        }
+
+        .badge-status {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .btn-delete {
+            color: rgba(255, 77, 77, 0.6);
+            transition: 0.3s;
+        }
+
+        .btn-delete:hover {
+            color: #ff4d4d;
+            transform: scale(1.2);
+        }
+    </style>
 </head>
 <body>
 
+<div class="overlay"></div>
+
 <div class="container">
-    <h2 class="text-center mb-4" style="color: var(--dorado-ucmi); font-family: 'Cinzel', serif;">CONTROL DE MÓDULOS ACADÉMICOS</h2>
+    <div class="text-center mb-5">
+        <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 80px;" class="mb-3">
+        <h2 class="header-main">CONTROL DE MÓDULOS ACADÉMICOS</h2>
+        <div style="width: 60px; height: 3px; background: var(--dorado-ucmi); margin: 10px auto; border-radius: 2px;"></div>
+    </div>
 
     <div class="card-gestion">
-        <h4><i class="bi bi-plus-circle me-2"></i>Crear Nuevo Módulo</h4>
-        <form id="formCrearModulo" class="row g-3 mt-2">
+        <h4 class="mb-4 text-warning"><i class="bi bi-plus-circle me-2"></i>Crear Nuevo Módulo</h4>
+        <form id="formCrearModulo" class="row g-3">
             <div class="col-md-8">
                 <input type="text" id="nombreModulo" class="form-control" placeholder="Ej: Lógica Cuántica - Capítulo 16" required>
             </div>
             <div class="col-md-4">
-                <button type="submit" class="btn btn-ucmi w-100">REGISTRAR EN INVENTARIO</button>
+                <button type="submit" class="btn btn-ucmi w-100 p-2">REGISTRAR EN INVENTARIO</button>
             </div>
         </form>
     </div>
 
     <div class="card-gestion">
-        <h4 class="text-warning"><i class="bi bi-archive me-2"></i>Inventario de Módulos Creados</h4>
-        <p class="text-white-50 small">Estos módulos existen en tu sistema, pero solo se verán en las postulaciones si activas el check de "Ofertar".</p>
+        <h4 class="text-warning mb-2"><i class="bi bi-archive me-2"></i>Inventario de Módulos</h4>
+        <p class="text-white-50 small mb-4">Módulos registrados en el sistema central UCMI.</p>
         <div class="table-responsive">
-            <table class="table table-dark table-hover">
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Nombre del Módulo</th>
-                        <th>Estado de Contenido</th>
-                        <th class="text-center">¿Ofertar al Público?</th>
+                        <th>Estado</th>
+                        <th class="text-center">¿Ofertar Público?</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -53,9 +163,9 @@
         </div>
     </div>
 
-    <div class="card-gestion" style="border-style: dashed;">
-        <h4 style="color: #00ffcc;"><i class="bi bi-eye me-2"></i>Módulos Ofertados Actualmente</h4>
-        <p class="text-white-50 small">Este es el listado exacto que aparece en el formulario de inscripción.</p>
+    <div class="card-gestion" style="border-style: dashed; background: rgba(0, 255, 204, 0.02);">
+        <h4 style="color: #00ffcc;"><i class="bi bi-eye me-2"></i>Vista Previa de Postulaciones</h4>
+        <p class="text-white-50 small">Así se verán actualmente en el formulario de inscripción.</p>
         <div id="vistaOfertados" class="d-flex flex-wrap gap-2">
             </div>
     </div>
@@ -77,18 +187,18 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- 1. CREAR MÓDULO (Por defecto 'ofertado: false') ---
+    // --- 1. CREAR MÓDULO ---
     document.getElementById('formCrearModulo').addEventListener('submit', async (e) => {
         e.preventDefault();
         const nombre = document.getElementById('nombreModulo').value;
         try {
             await addDoc(collection(db, "ofertas"), {
                 modulo: nombre,
-                ofertado: false, // Se crea pero NO se oferta aún
+                ofertado: false,
                 fechaCreacion: new Date()
             });
             document.getElementById('formCrearModulo').reset();
-        } catch (err) { alert("Error al crear"); }
+        } catch (err) { alert("Error al crear módulo"); }
     });
 
     // --- 2. GESTIÓN EN TIEMPO REAL ---
@@ -99,15 +209,18 @@
         listaInventario.innerHTML = "";
         vistaOfertados.innerHTML = "";
 
+        if (snap.empty) {
+            listaInventario.innerHTML = "<tr><td colspan='4' class='text-center text-white-50'>No hay módulos registrados.</td></tr>";
+        }
+
         snap.forEach(docSnap => {
             const mod = docSnap.data();
             const id = docSnap.id;
 
-            // Llenar Inventario
             listaInventario.innerHTML += `
                 <tr>
-                    <td>${mod.modulo}</td>
-                    <td><span class="badge bg-secondary">Listo para contenido</span></td>
+                    <td class="fw-bold">${mod.modulo}</td>
+                    <td><span class="badge badge-status">Listo</span></td>
                     <td class="text-center">
                         <div class="form-check form-switch d-inline-block">
                             <input class="form-check-input toggle-oferta" type="checkbox" 
@@ -115,32 +228,31 @@
                         </div>
                     </td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-danger" onclick="eliminarModulo('${id}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        <i class="bi bi-trash3 btn-delete" style="cursor: pointer;" onclick="eliminarModulo('${id}')"></i>
                     </td>
                 </tr>
             `;
 
-            // Llenar Vista de Ofertados (Solo si ofertado es true)
             if(mod.ofertado) {
-                vistaOfertados.innerHTML += `<span class="badge rounded-pill bg-success p-2"><i class="bi bi-check-circle me-1"></i>${mod.modulo}</span>`;
+                vistaOfertados.innerHTML += `
+                    <span class="badge badge-ofertado p-2 px-3 rounded-pill">
+                        <i class="bi bi-check2-circle me-1"></i>${mod.modulo}
+                    </span>`;
             }
         });
 
-        // Asignar eventos a los switches
+        // Eventos para los switches
         document.querySelectorAll('.toggle-oferta').forEach(sw => {
-            sw.addEventListener('change', async (e) => {
+            sw.onclick = async (e) => {
                 const docId = e.target.getAttribute('data-id');
                 const estado = e.target.checked;
                 await updateDoc(doc(db, "ofertas", docId), { ofertado: estado });
-            });
+            };
         });
     });
 
-    // Función global para eliminar
     window.eliminarModulo = async (id) => {
-        if(confirm("¿Seguro que desea eliminar este módulo del sistema?")) {
+        if(confirm("¿Seguro que desea eliminar este módulo del sistema permanentemente?")) {
             await deleteDoc(doc(db, "ofertas", id));
         }
     };
