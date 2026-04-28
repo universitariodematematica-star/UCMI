@@ -233,33 +233,49 @@
         const doc = new jsPDF();
         
         // --- ENCABEZADO INSTITUCIONAL ---
-        doc.setFillColor(11, 27, 43); doc.rect(0, 0, 210, 55, 'F');
+        doc.setFillColor(11, 27, 43); 
+        doc.rect(0, 0, 210, 55, 'F');
         doc.addImage("https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png", 'PNG', 15, 8, 35, 35);
-        doc.setTextColor(197, 160, 89); doc.setFont("times", "bold"); doc.setFontSize(20);
+        
+        doc.setTextColor(197, 160, 89); 
+        doc.setFont("times", "bold"); 
+        doc.setFontSize(20);
         doc.text("U C M I", 120, 22, { align: "center" });
-        doc.setFontSize(10); doc.setFont("times", "italic");
+        
+        doc.setFontSize(10); 
+        doc.setFont("times", "italic");
         doc.text("Universitario de Ciencias Matemáticas e Idiomas", 120, 30, { align: "center" });
-        doc.setFontSize(16); doc.setFont("helvetica", "bold");
+        
+        doc.setFontSize(16); 
+        doc.setFont("helvetica", "bold");
         doc.text("POSTULACIÓN ACADÉMICA", 120, 42, { align: "center" });
         
-        // --- DATOS ---
-        doc.setTextColor(40, 40, 40); doc.setFontSize(9);
+        // --- SECCIÓN DE DATOS DEL EXPEDIENTE ---
+        doc.setTextColor(40, 40, 40); 
+        doc.setFontSize(9);
         doc.text(`ID Control: ${Math.floor(Math.random() * 1000000)}`, 20, 65);
         doc.text(`Fecha: ${d.fecha}`, 140, 65);
         doc.line(20, 68, 190, 68); 
 
         let y = 80;
         const drawRow = (label, value) => {
-            doc.setFillColor(248, 248, 248); doc.rect(20, y - 5, 170, 9, 'F'); 
-            doc.setFont("helvetica", "bold"); doc.setTextColor(150, 120, 60); doc.text(label, 25, y);
-            doc.setFont("helvetica", "normal"); doc.setTextColor(0, 0, 0);
+            doc.setFillColor(248, 248, 248); 
+            doc.rect(20, y - 5, 170, 9, 'F'); 
+            doc.setFont("helvetica", "bold"); 
+            doc.setTextColor(150, 120, 60); 
+            doc.text(label, 25, y);
+            doc.setFont("helvetica", "normal"); 
+            doc.setTextColor(0, 0, 0);
+            
             const splitVal = doc.splitTextToSize(String(value), 110);
             doc.text(splitVal, 75, y);
             y += (splitVal.length * 5) + 6; 
         };
 
+        // --- LISTADO DE CAMPOS (CORREO INCLUIDO) ---
         drawRow("PERFIL:", d.perfil.toUpperCase());
         drawRow("RESPONSABLE:", d.nombreResponsable);
+        drawRow("EMAIL:", d.email); // <--- Campo añadido
         drawRow("ENTIDAD:", d.entidad);
         drawRow("ID FISCAL:", d.rif);
         drawRow("WHATSAPP:", d.whatsapp);
@@ -268,8 +284,11 @@
         drawRow("LICENCIA:", d.duracionLicencia);
         drawRow("PROGRAMAS:", d.programas);
 
-        doc.setFontSize(8); doc.setTextColor(150, 150, 150);
+        // PIE DE PÁGINA
+        doc.setFontSize(8); 
+        doc.setTextColor(150, 150, 150);
         doc.text("Documento Oficial - Protocolo Supralógico UCMI", 105, 285, { align: "center" });
+        
         window.open(doc.output('bloburl'), '_blank');
     }
 </script>
