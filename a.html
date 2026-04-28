@@ -513,31 +513,66 @@
         }
     };
 
-    // --- ACCIÓN: ACTIVAR ACCESO ---
+    // --- ACCIÓN: ACTIVAR ACCESO (CON CÁLCULO DE EXPIRACIÓN REAL) ---
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
         if(!currentId || !currentData) return;
+        
         try {
+            // 1. Intentar crear el usuario en Firebase Auth
             try {
                 await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
             } catch (authError) {
                 if (authError.code !== 'auth/email-already-in-use') throw authError;
             }
 
-            const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date().toLocaleString() };
+            // 2. LÓGICA DE FECHAS (AQUÍ EMPIEZA TU SOLICITUD)
+            const fechaAceptacion = new Date();
+            const fechaExpiracion = new Date();
+            
+            // Extraemos solo el número de la cadena "X meses"
+            // Si por alguna razón no hay número, por defecto ponemos 1 mes
+            const mesesSolicitados = parseInt(currentData.duracionLicencia) || 1;
+            
+            // Sumamos los meses a partir de HOY
+            fechaExpiracion.setMonth(fechaAceptacion.getMonth() + mesesSolicitados);
 
+            // 3. Preparamos el objeto final con las fechas de vigencia
+            const dataFinal = { 
+                ...currentData, 
+                estado: "activo", 
+                fechaActivacion: fechaAceptacion.toLocaleString(),
+                expiracionLicencia: fechaExpiracion.toLocaleString(),
+                expiracionTimestamp: fechaExpiracion, // Guardamos el objeto Date para filtros futuros
+                mesesAprobados: mesesSolicitados
+            };
+
+            // 4. Guardar en la colección de usuarios activos y en el historial
             await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
-            await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO", fechaProceso: new Date().toLocaleString() });
+            await setDoc(doc(db, "historial_postulaciones", currentId), { 
+                ...dataFinal, 
+                decisionFinal: "ACEPTADO", 
+                fechaProceso: fechaAceptacion.toLocaleString() 
+            });
+
+            // 5. Borrar la postulación pendiente
             await deleteDoc(doc(db, "postulaciones", currentId));
 
             // ACCIONES DE COMUNICACIÓN
-            enviarEmailAutomatico(currentData, "ACEPTADO"); // El email sale solo
+            enviarEmailAutomatico(currentData, "ACEPTADO"); 
             
-            await Swal.fire({ title: "¡Acceso Activado!", text: "Email enviado y abriendo WhatsApp...", icon: "success" });
+            await Swal.fire({ 
+                title: "¡Acceso Activado!", 
+                text: `Licencia válida hasta: ${fechaExpiracion.toLocaleDateString()}`, 
+                icon: "success",
+                confirmButtonColor: "#27ae60"
+            });
 
-            prepararMensajeWhatsApp(currentData, "ACEPTADO"); // Se abre la pestaña
+            prepararMensajeWhatsApp(currentData, "ACEPTADO"); 
             location.reload();
+
         } catch (e) { 
-            Swal.fire("Error", e.message, "error"); 
+            console.error(e);
+            Swal.fire("Error", "No se pudo procesar la activación: " + e.message, "error"); 
         }
     };
 
