@@ -64,7 +64,6 @@
             transform: translateY(-2px);
         }
 
-        /* --- BOTÓN ESTILO CERRAR SESIÓN (ROJO) --- */
         .btn-cerrar {
             background: transparent;
             border: 1px solid rgba(231, 76, 60, 0.4) !important;
@@ -88,6 +87,28 @@
             transform: translateY(-2px);
         }
 
+        /* --- INPUTS (CORRECCIÓN COLOR BLANCO) --- */
+        .form-control { 
+            background: rgba(0, 0, 0, 0.4) !important; /* Fondo oscuro traslúcido forzado */
+            border: 1px solid rgba(197, 160, 89, 0.3); 
+            color: white !important; 
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        /* Evita que se ponga blanco al hacer clic o al autocompletar */
+        .form-control:focus, 
+        .form-control:active,
+        .form-control:autofill,
+        .form-control:-webkit-autofill { 
+            background: rgba(0, 0, 0, 0.6) !important; 
+            border-color: var(--dorado-ucmi) !important; 
+            box-shadow: 0 0 10px rgba(197, 160, 89, 0.3) !important;
+            color: white !important;
+            -webkit-text-fill-color: white !important;
+            transition: background-color 5000s ease-in-out 0s; /* Truco para evitar color blanco de autocompletado */
+        }
+
         .card-gestion { 
             background: var(--cristal-claro); 
             backdrop-filter: blur(15px); 
@@ -103,8 +124,6 @@
 
         .table { color: white !important; --bs-table-bg: transparent !important; vertical-align: middle; }
         .table thead th { color: var(--dorado-ucmi) !important; border-bottom: 2px solid var(--dorado-ucmi); font-family: 'Cinzel', serif; text-transform: uppercase; font-size: 0.85rem; }
-        
-        .form-control { background: rgba(255,255,255,0.08); border: 1px solid rgba(197,160,89,0.3); color: white !important; border-radius: 12px; }
         .form-switch .form-check-input:checked { background-color: var(--dorado-ucmi); border-color: var(--dorado-ucmi); }
     </style>
 </head>
@@ -131,7 +150,7 @@
         <h4 class="mb-4 text-warning"><i class="bi bi-plus-circle me-2"></i>Crear Nuevo Módulo</h4>
         <form id="formCrearModulo" class="row g-3 align-items-center">
             <div class="col-md-8">
-                <input type="text" id="nombreModulo" class="form-control p-2" placeholder="Ej: Lógica Cuántica - Capítulo 16" required>
+                <input type="text" id="nombreModulo" class="form-control p-2" placeholder="Ej: Lógica Cuántica - Capítulo 16" required autocomplete="off">
             </div>
             <div class="col-md-4">
                 <button type="submit" class="btn-maestro w-100">
@@ -174,30 +193,28 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Registro de módulo (MANTENIENDO EL CONTENIDO DEL CAMPO)
     document.getElementById('formCrearModulo').addEventListener('submit', async (e) => {
-        e.preventDefault();
+        e.preventDefault(); 
         const input = document.getElementById('nombreModulo');
         const nombre = input.value;
+
         try {
             await addDoc(collection(db, "ofertas"), {
                 modulo: nombre,
                 ofertado: false,
                 fechaCreacion: new Date()
             });
-            // EL CAMPO NO SE BORRA: Permite correcciones rápidas o registrar series.
-            console.log("Módulo registrado correctamente: " + nombre);
+            // El campo NO se pone blanco ni se limpia
+            console.log("Módulo guardado");
         } catch (err) { console.error(err); }
     });
 
     onSnapshot(query(collection(db, "ofertas"), orderBy("modulo", "asc")), (snap) => {
         const lista = document.getElementById('listaInventario');
         lista.innerHTML = "";
-
         snap.forEach(docSnap => {
             const mod = docSnap.data();
             const id = docSnap.id;
-
             lista.innerHTML += `
                 <tr>
                     <td class="fw-bold text-white">${mod.modulo}</td>
@@ -226,7 +243,7 @@
     });
 
     window.eliminarModulo = async (id) => {
-        if(confirm("¿Eliminar módulo permanentemente?")) {
+        if(confirm("¿Eliminar módulo?")) {
             await deleteDoc(doc(db, "ofertas", id));
         }
     };
