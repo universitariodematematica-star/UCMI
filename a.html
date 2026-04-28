@@ -194,9 +194,9 @@
         <i class="bi bi-cpu me-2"></i> PANEL MAESTRO
     </a>
     
-    <a href="index.html" class="btn-cerrar">
-        <i class="bi bi-power me-2"></i> CERRAR SESIÓN
-    </a>
+    <a href="#" onclick="cerrarSesion()" class="btn-cerrar">
+    <i class="bi bi-power me-2"></i> CERRAR SESIÓN
+</a>
 </div>
     </aside>
 
@@ -239,6 +239,8 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    // IMPORTANTE: Añadir getAuth y signOut aquí
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -252,19 +254,18 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app); // Inicializamos la autenticación
 
-    document.getElementById('formCrearModulo').addEventListener('submit', async (e) => {
-        e.preventDefault(); 
-        const input = document.getElementById('nombreModulo');
+    // FUNCIÓN PARA CERRAR SESIÓN REALMENTE
+    window.cerrarSesion = async () => {
         try {
-            await addDoc(collection(db, "ofertas"), {
-                modulo: input.value,
-                ofertado: false,
-                fechaCreacion: new Date()
-            });
-            input.value = "";
-        } catch (err) { console.error(err); }
-    });
+            await signOut(auth); // Esto mata la sesión en Firebase
+            console.log("Sesión cerrada");
+            window.location.href = "index.html"; // Ahora sí te manda fuera sin que vuelvas a entrar
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+        }
+    };
 
     onSnapshot(query(collection(db, "ofertas"), orderBy("modulo", "asc")), (snap) => {
         const lista = document.getElementById('listaInventario');
