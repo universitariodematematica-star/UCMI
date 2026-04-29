@@ -38,12 +38,27 @@
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
         }
 
-        /* --- EFECTO NEÓN EN TEXTOS --- */
+        /* --- ESTILO DE FILAS DINÁMICAS --- */
+        #user-table-body tr {
+            display: table-row;
+            border-radius: 15px; /* Esquinas redondeadas */
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* --- EFECTO HOVER --- */
+        #user-table-body tr:hover {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+            transform: scale(1.01) translateX(8px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        /* --- TEXTOS NEÓN --- */
         .neon-text-gold {
             color: var(--dorado-neon);
-            text-shadow: 0 0 8px rgba(255, 204, 102, 0.6), 0 0 15px rgba(255, 204, 102, 0.2);
+            text-shadow: 0 0 8px rgba(255, 204, 102, 0.6);
             font-weight: bold;
-            letter-spacing: 1px;
         }
 
         .neon-text-blue {
@@ -52,41 +67,27 @@
             font-family: monospace;
         }
 
-        /* --- ELIMINAR FONDOS DE TABLA --- */
+        /* --- BOTÓN BASURA --- */
+        .btn-trash {
+            background: rgba(255, 77, 77, 0.1);
+            border: 1px solid rgba(255, 77, 77, 0.3);
+            color: #ff4d4d;
+            border-radius: 10px;
+            padding: 8px 12px;
+            transition: all 0.3s;
+        }
+
+        .btn-trash:hover {
+            background: #ff4d4d;
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 77, 77, 0.5);
+            transform: rotate(5deg);
+        }
+
         .table {
             --bs-table-bg: transparent !important;
-            background-color: transparent !important;
-        }
-
-        .table tr {
-            background-color: transparent !important;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
-        }
-
-        /* --- EFECTO HOVER: SALTO Y ACLARADO --- */
-        .table tbody tr:hover {
-            background-color: rgba(255, 255, 255, 0.08) !important;
-            transform: scale(1.02) translateX(10px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-        }
-
-        .role-badge {
-            padding: 4px 15px;
-            border-radius: 50px;
-            font-size: 0.65rem;
-            background: rgba(197, 160, 89, 0.1);
-            color: var(--dorado-ucmi);
-            border: 1px solid var(--dorado-ucmi);
-            box-shadow: 0 0 10px rgba(197, 160, 89, 0.2);
-        }
-
-        .sidebar {
-            background: rgba(6, 9, 15, 0.6);
-            backdrop-filter: blur(15px);
-            min-height: 100vh;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            border-collapse: separate;
+            border-spacing: 0 10px; /* Espaciado para que se vean las esquinas redondeadas */
         }
     </style>
 </head>
@@ -95,27 +96,27 @@
 <div class="super-overlay">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-2 sidebar d-none d-md-flex flex-column p-4">
+            <div class="col-md-2 sidebar d-none d-md-flex flex-column p-4" style="background: rgba(6, 9, 15, 0.6); backdrop-filter: blur(15px); min-height: 100vh;">
                 <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" class="mb-4" style="height: 50px; object-fit: contain;">
                 <nav class="nav flex-column mb-auto">
-                    <a class="nav-link text-white active" href="#"><i class="bi bi-cpu-fill me-2"></i> Terminal Usuarios</a>
+                    <a class="nav-link text-white active" href="#"><i class="bi bi-cpu-fill me-2"></i> Usuarios</a>
                 </nav>
                 <button id="btnLogoutSidebar" class="btn btn-outline-danger btn-sm rounded-pill">Desconexión</button>
             </div>
 
             <div class="col-md-10 p-5">
-                <h2 class="neon-text-gold text-uppercase mb-5"><i class="bi bi-shield-shaded me-3"></i>Núcleo de Datos Supralógicos</h2>
+                <h2 class="neon-text-gold text-uppercase mb-5"><i class="bi bi-shield-shaded me-3"></i>Directorio Supralógico</h2>
 
                 <div class="glass-panel">
                     <div class="table-responsive">
                         <table class="table align-middle">
                             <thead>
-                                <tr class="text-white-50 small border-bottom border-white border-opacity-10">
-                                    <th>ENTIDAD / RESPONSABLE</th>
-                                    <th>NOMBRE DEL RESPONSABLE</th>
+                                <tr class="text-white-50 small">
+                                    <th class="ps-4">ENTIDAD</th>
+                                    <th>RESPONSABLE</th>
                                     <th>EMAIL</th>
                                     <th>PERFIL</th>
-                                    <th class="text-end">ACCIÓN</th>
+                                    <th class="text-end pe-4">OPERACIONES</th>
                                 </tr>
                             </thead>
                             <tbody id="user-table-body">
@@ -146,10 +147,6 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    onAuthStateChanged(auth, (user) => {
-        if (!user) window.location.href = "index.html";
-    });
-
     const tableBody = document.getElementById('user-table-body');
 
     onSnapshot(collection(db, "usuarios"), (snapshot) => {
@@ -159,37 +156,55 @@
             const id = docSnap.id;
 
             tableBody.innerHTML += `
-                <tr class="border-bottom border-white border-opacity-5">
-                    <td class="py-4">
-                        <div>
-                            <span class="neon-text-gold d-block mb-1">${data.entidad || 'Individual'}</span>
-                            <span class="text-white-50 small">ID: ${data.responsable || 'N/A'}</span>
-                        </div>
+                <tr>
+                    <td class="ps-4 py-3">
+                        <span class="neon-text-gold d-block">${data.entidad || 'N/A'}</span>
                     </td>
                     <td>
-                        <span class="text-white fw-semibold">${data.nombreResponsable || '---'}</span>
+                        <div class="d-flex flex-column">
+                            <span class="text-white fw-bold">${data.nombreResponsable || 'Sin nombre'}</span>
+                            <span class="text-white-50 small" style="font-size:0.7rem;">ID: ${data.responsable || 'N/A'}</span>
+                        </div>
                     </td>
-                    <td><span class="neon-text-blue small">${data.email || id}</span></td>
-                    <td><span class="role-badge">${(data.perfil || 'Usuario').toUpperCase()}</span></td>
-                    <td class="text-end">
-                        <button onclick="borrarUsuario('${id}')" class="btn btn-sm btn-outline-danger">
-                            <i class="bi bi-x-circle"></i>
+                    <td><span class="neon-text-blue small">${data.email || 'N/A'}</span></td>
+                    <td><span class="badge" style="border: 1px solid var(--dorado-ucmi); color: var(--dorado-ucmi);">${(data.perfil || 'Usuario').toUpperCase()}</span></td>
+                    <td class="text-end pe-4">
+                        <button onclick="borrarUsuario('${id}', '${data.entidad || id}')" class="btn btn-trash">
+                            <i class="bi bi-trash3-fill"></i>
                         </button>
                     </td>
                 </tr>`;
         });
     });
 
-    window.borrarUsuario = async (id) => {
-        const confirm = await Swal.fire({
-            title: '¿Revocar?',
-            text: "Se desconectará la entidad del servidor.",
+    window.borrarUsuario = async (id, nombre) => {
+        const result = await Swal.fire({
+            title: '¿ELIMINAR USUARIO?',
+            text: `Estás a punto de borrar a: ${nombre}. Esta acción revocará todos los permisos en el sistema.`,
             icon: 'warning',
-            background: '#06090f',
+            showCancelButton: true,
+            background: '#0a0e14',
             color: '#fff',
-            confirmButtonColor: '#ff4d4d'
+            confirmButtonColor: '#ff4d4d',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
         });
-        if (confirm.isConfirmed) await deleteDoc(doc(db, "usuarios", id));
+
+        if (result.isConfirmed) {
+            try {
+                await deleteDoc(doc(db, "usuarios", id));
+                Swal.fire({
+                    title: 'Eliminado',
+                    text: 'El usuario ha sido removido con éxito.',
+                    icon: 'success',
+                    background: '#0a0e14',
+                    color: '#fff'
+                });
+            } catch (error) {
+                console.error("Error al borrar:", error);
+            }
+        }
     };
 
     document.getElementById('btnLogoutSidebar').addEventListener('click', () => {
