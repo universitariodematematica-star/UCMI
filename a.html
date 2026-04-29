@@ -1,227 +1,193 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Módulos - UCMI</title>
+    <title>UCMI - Gestión de Usuarios Oficiales</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-    :root { 
-        --dorado-ucmi: #c5a059; 
-        --cristal-claro: rgba(255, 255, 255, 0.05);
-        --sidebar-width: 260px;
-        --rojo-peligro: #e74c3c;
-    }
+        :root {
+            --dorado-ucmi: #c5a059;
+            --azul-sidebar: #1a2a3a;
+        }
 
-    body, html {
-        height: 100%; margin: 0;
-        font-family: 'Segoe UI', sans-serif;
-        color: white;
-        background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-        background-size: cover;
-        overflow: hidden;
-    }
+        body {
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            color: white;
+            margin: 0;
+        }
 
-    .overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: radial-gradient(circle, rgba(6, 9, 15, 0.7) 0%, rgba(6, 9, 15, 0.9) 100%);
-        z-index: -1;
-    }
+        .super-overlay {
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.9) 100%);
+            min-height: 100vh;
+        }
 
-    .wrapper { display: flex; height: 100vh; width: 100vw; }
+        .sidebar { 
+            background: rgba(26, 42, 58, 0.8); 
+            backdrop-filter: blur(15px);
+            min-height: 100vh; 
+            padding: 25px 15px; 
+            border-right: 1px solid rgba(197, 160, 89, 0.3);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+        }
 
-    /* --- SIDEBAR --- */
-    .sidebar {
-        width: var(--sidebar-width);
-        min-width: var(--sidebar-width);
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(25px);
-        border-right: 1px solid rgba(197, 160, 89, 0.2);
-        display: flex;
-        flex-direction: column;
-        padding: 25px 15px;
-    }
+        .logo-sidebar { height: 50px; margin-bottom: 15px; }
 
-    .sidebar-logo { width: 100px; margin: 0 auto 30px; display: block; }
-    .sidebar-nav { flex-grow: 1; }
+        .btn-panel-principal {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.6) !important;
+            color: white !important;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 0.7rem;
+            border-radius: 50px;
+            padding: 12px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 12px;
+        }
 
-    .nav-item-ucmi {
-        display: flex; align-items: center;
-        color: rgba(255,255,255,0.6);
-        text-decoration: none;
-        padding: 10px 15px;
-        margin-bottom: 5px;
-        border-radius: 10px;
-        transition: 0.3s all ease;
-        font-size: 0.85rem;
-    }
+        .btn-panel-principal:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white !important;
+        }
 
-    .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
-    
-    .nav-item-ucmi:hover { 
-        color: white; 
-        background: rgba(255,255,255,0.1);
-        transform: translateX(5px);
-    }
+        .btn-cerrar-sesion {
+            background: rgba(255, 0, 0, 0.05);
+            border: 1px solid rgba(255, 0, 0, 0.4) !important;
+            color: #ff4d4d !important;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 0.7rem;
+            border-radius: 50px;
+            padding: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            cursor: pointer;
+        }
 
-    .nav-item-ucmi.active {
-        background: rgba(197, 160, 89, 0.15);
-        color: var(--dorado-ucmi);
-        font-weight: 600;
-        box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1);
-    }
+        .btn-cerrar-sesion:hover {
+            background: rgba(255, 0, 0, 0.15);
+            border-color: #ff4d4d !important;
+        }
 
-    .btn-maestro {
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
-        color: white !important;
-        font-weight: 600; text-transform: uppercase;
-        font-size: 0.65rem; letter-spacing: 1.5px;
-        border-radius: 50px; padding: 10px;
-        text-decoration: none; display: block; text-align: center; 
-        margin-bottom: 10px;
-        transition: 0.3s all ease;
-    }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03); /* Más translúcido */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px); /* Mayor desenfoque */
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
 
-    .btn-maestro:hover {
-        background: rgba(197, 160, 89, 0.2) !important;
-        border-color: var(--dorado-ucmi) !important;
-        color: var(--dorado-ucmi) !important;
-    }
+        .table { color: rgba(255, 255, 255, 0.85); }
+        
+        .role-badge {
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            background: rgba(197, 160, 89, 0.15);
+            color: var(--dorado-ucmi);
+            border: 1px solid var(--dorado-ucmi);
+            letter-spacing: 0.5px;
+        }
 
-    .btn-cerrar {
-        background: transparent;
-        border: 1px solid rgba(231, 76, 60, 0.4) !important;
-        color: rgba(231, 76, 60, 0.9) !important;
-        font-weight: 600; text-transform: uppercase;
-        font-size: 0.65rem; letter-spacing: 1.5px;
-        border-radius: 50px; padding: 8px;
-        text-decoration: none; display: block; text-align: center;
-        transition: 0.3s all ease;
-    }
+        .text-glow-gold {
+            color: var(--dorado-ucmi);
+            text-shadow: 0 0 15px rgba(197, 160, 89, 0.5);
+        }
 
-    .btn-cerrar:hover {
-        background: rgba(231, 76, 60, 0.2) !important;
-        border-color: var(--rojo-peligro) !important;
-        color: white !important;
-    }
-
-    /* --- CONTENIDO --- */
-    .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; }
-
-    .card-gestion { 
-        background: var(--cristal-claro); 
-        backdrop-filter: blur(15px); 
-        border: 1px solid rgba(197, 160, 89, 0.2); 
-        border-radius: 25px; padding: 30px; margin-bottom: 30px; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-
-    .form-control { 
-        background: rgba(0, 0, 0, 0.4) !important; 
-        border: 1px solid rgba(197, 160, 89, 0.3); 
-        color: white !important; border-radius: 12px;
-    }
-
-    h2, h4 { font-family: 'Cinzel', serif; letter-spacing: 2px; }
-    .header-main { color: var(--dorado-ucmi); text-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
-
-    .table { color: white !important; --bs-table-bg: transparent !important; }
-    .table thead th { color: var(--dorado-ucmi) !important; border-bottom: 2px solid var(--dorado-ucmi); }
-    
-    .form-switch .form-check-input:checked { background-color: var(--dorado-ucmi); border-color: var(--dorado-ucmi); }
-</style>
+        .nav-link { transition: 0.3s; margin-bottom: 5px; }
+        .nav-link:hover { color: var(--dorado-ucmi) !important; transform: translateX(5px); }
+    </style>
 </head>
 <body>
 
-<div class="overlay"></div>
+<div class="super-overlay">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 sidebar d-none d-md-flex">
+                <div class="text-center mb-4">
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" class="logo-sidebar" alt="Logo">
+                    <h5 class="fw-bold text-white small">UCMI ADMIN</h5>
+                </div>
+                <hr class="border-secondary opacity-25">
+                
+                <nav class="nav flex-column mb-auto">
+                    <p class="small text-uppercase fw-bold text-muted mb-3">Navegación</p>
+                    <a class="nav-link text-white-50" href="master-postulaciones.html"><i class="bi bi-inbox me-2"></i> Postulaciones</a>
+                    <a class="nav-link text-white active" href="#"><i class="bi bi-people me-2 text-glow-gold"></i> Usuarios</a>
+                    <a class="nav-link text-white-50" href="https://universitariodematematica-star.github.io/UCMI/master-repositorio.html"><i class="bi bi-journal-bookmark me-2"></i> Repositorio</a>
+                </nav>
 
-<div class="wrapper">
-    <aside class="sidebar">
-        <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" class="sidebar-logo">
-        
-        <nav class="sidebar-nav">
-            <a href="master-postulaciones.html" class="nav-item-ucmi">
-                <i class="bi bi-person-badge"></i> SOLICITUDES
-            </a>
-            <a href="master-vigencia.html" class="nav-item-ucmi">
-                <i class="bi bi-shield-check"></i> VIGENCIA
-            </a>
-            <a href="master-usuarios.html" class="nav-item-ucmi">
-                <i class="bi bi-people"></i> USUARIOS
-            </a>
-            <a href="historial-postulaciones.html" class="nav-item-ucmi">
-                <i class="bi bi-clock-history"></i> HISTORIAL
-            </a>
-            <a href="directorio.html" class="nav-item-ucmi">
-                <i class="bi bi-person-vcard"></i> DIRECTORIO
-            </a>
-            <a href="#" class="nav-item-ucmi active">
-                <i class="bi bi-tags"></i> OFERTAS
-            </a>
-
-            <a href="#" class="nav-item-ucmi">
-                <i class="bi bi-grid-1x2"></i> MÓDULOS
-            </a>
-        </nav>
-
-        <div class="mt-auto pt-4 border-top border-secondary">
-            <a href="super-admin.html" class="btn-maestro">
-                <i class="bi bi-cpu me-2"></i> PANEL MAESTRO
-            </a>
-            
-            <a href="#" id="btnLogout" class="btn-cerrar">
-                <i class="bi bi-power me-2"></i> CERRAR SESIÓN
-            </a>
-        </div>
-    </aside>
-
-    <main class="main-content">
-        <div class="container-fluid">
-            <div class="text-center mb-5">
-                <h2 class="header-main">CONTROL DE MÓDULOS ACADÉMICOS</h2>
-            </div>
-
-            <div class="card-gestion">
-                <h4 class="mb-4 text-warning"><i class="bi bi-plus-circle me-2"></i>Crear Nuevo Módulo</h4>
-                <form id="formCrearModulo" class="row g-3 align-items-center">
-                    <div class="col-md-9">
-                        <input type="text" id="nombreModulo" class="form-control p-2" placeholder="Nombre del módulo..." required autocomplete="off">
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn-maestro w-100 m-0">REGISTRAR</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="card-gestion">
-                <h4 class="text-warning mb-4"><i class="bi bi-archive me-2"></i>Inventario</h4>
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead>
-                            <tr>
-                                <th>Nombre del Módulo</th>
-                                <th class="text-center">Ofertar al Público</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="listaInventario"></tbody>
-                    </table>
+                <div class="mt-4 pt-4 border-top border-secondary border-opacity-25">
+                    <a href="super-admin.html" class="btn-panel-principal">
+                        <i class="bi bi-grid-3x3-gap-fill me-2"></i> Panel Principal
+                    </a>
+                    <button id="btnLogoutSidebar" class="btn btn-cerrar-sesion">
+                        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+                    </button>
                 </div>
             </div>
+
+            <div class="col-md-10 p-4">
+                <div class="row mb-4 align-items-end">
+                    <div class="col-md-8">
+                        <h2 class="fw-bold text-uppercase"><i class="bi bi-shield-lock-fill me-3 text-glow-gold"></i>Directorio de Usuarios</h2>
+                        <p class="text-white-50 mb-0">Base de datos oficial de identidades validadas bajo el Protocolo Supralógico.</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <span class="badge bg-dark border border-secondary p-2">Sesión: Administrador Maestro</span>
+                    </div>
+                </div>
+
+                <div class="glass-panel">
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle">
+                            <thead class="border-bottom border-secondary">
+                                <tr class="text-glow-gold small fw-bold">
+                                    <th>IDENTIDAD IDENTIFICADA</th>
+                                    <th>CORREO INSTITUCIONAL</th>
+                                    <th>JERARQUÍA</th>
+                                    <th>PROTOCOLO ORIGEN</th>
+                                    <th class="text-end">OPERACIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <footer class="mt-5 text-center text-white-25 small">
+                    UCMI — Desarrollo Humano y Excelencia Académica © 2026
+                </footer>
+            </div>
         </div>
-    </main>
+    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    
-    // IMPORTACIÓN DE AUTH
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -234,70 +200,74 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app); // INICIALIZAR AUTH
+    const auth = getAuth(app);
+    const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
 
-    // --- LÓGICA DE CIERRE DE SESIÓN ---
-    document.getElementById('btnLogout').onclick = async (e) => {
-        e.preventDefault();
-        if(confirm("¿Estás seguro de que deseas cerrar sesión?")) {
-            try {
-                await signOut(auth);
-                window.location.href = "index.html";
-            } catch (error) {
-                console.error("Error al cerrar sesión:", error);
-            }
+    // --- PROTECCIÓN DE RUTA ---
+    onAuthStateChanged(auth, (user) => {
+        if (!user || user.uid !== MI_UID_MAESTRO) {
+            window.location.href = "index.html";
+        }
+    });
+
+    // --- CARGA DINÁMICA DE USUARIOS ---
+    const tableBody = document.getElementById('user-table-body');
+
+    onSnapshot(collection(db, "usuarios"), (snapshot) => {
+        tableBody.innerHTML = '';
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const id = docSnap.id;
+
+            tableBody.innerHTML += `
+                <tr class="border-bottom border-white border-opacity-10">
+                    <td class="py-4">
+                        <div class="d-flex align-items-center">
+                            <div class="p-2 rounded-circle bg-opacity-10 bg-info me-3" style="border: 1px solid #00f2ff55">
+                                <i class="bi bi-person-check-fill text-info fs-5"></i>
+                            </div>
+                            <div>
+                                <span class="fw-bold d-block text-white">${data.entidad || 'Individual'}</span>
+                                <span class="text-success small fw-bold text-uppercase" style="font-size: 0.65rem;">
+                                    <i class="bi bi-patch-check-fill"></i> Acceso Validado
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+                    <td><code class="text-info">${data.email || id}</code></td>
+                    <td><span class="role-badge">${(data.rol || 'USUARIO').toUpperCase()}</span></td>
+                    <td><small class="text-white-50 italic">${data.protocolo || 'Postulación Web'}</small></td>
+                    <td class="text-end">
+                        <button onclick="borrarUsuario('${id}')" class="btn btn-sm btn-outline-danger border-opacity-25 ms-1" title="Revocar">
+                            <i class="bi bi-person-x-fill"></i>
+                        </button>
+                    </td>
+                </tr>`;
+        });
+    });
+
+    // --- ACCIÓN DE BORRADO ---
+    window.borrarUsuario = async (id) => {
+        const confirm = await Swal.fire({
+            title: '¿Revocar acceso?',
+            text: "Esta acción es irreversible en el protocolo actual.",
+            icon: 'warning',
+            background: '#06090f',
+            color: '#fff',
+            showCancelButton: true,
+            confirmButtonColor: '#ff4d4d',
+            confirmButtonText: 'Confirmar Revocación'
+        });
+
+        if (confirm.isConfirmed) {
+            await deleteDoc(doc(db, "usuarios", id));
         }
     };
 
-    // --- LÓGICA DE MÓDULOS ---
-    document.getElementById('formCrearModulo').addEventListener('submit', async (e) => {
-        e.preventDefault(); 
-        const input = document.getElementById('nombreModulo');
-        try {
-            await addDoc(collection(db, "ofertas"), {
-                modulo: input.value,
-                ofertado: false,
-                fechaCreacion: new Date()
-            });
-            input.value = "";
-        } catch (err) { console.error(err); }
+    // --- CERRAR SESIÓN ---
+    document.getElementById('btnLogoutSidebar').addEventListener('click', () => {
+        signOut(auth).then(() => { window.location.href = "index.html"; });
     });
-
-    onSnapshot(query(collection(db, "ofertas"), orderBy("modulo", "asc")), (snap) => {
-        const lista = document.getElementById('listaInventario');
-        lista.innerHTML = "";
-        snap.forEach(docSnap => {
-            const mod = docSnap.data();
-            const id = docSnap.id;
-            lista.innerHTML += `
-                <tr>
-                    <td class="fw-bold text-white">${mod.modulo}</td>
-                    <td class="text-center">
-                        <div class="form-check form-switch d-inline-block">
-                            <input class="form-check-input toggle-oferta" type="checkbox" 
-                                data-id="${id}" ${mod.ofertado ? 'checked' : ''}>
-                        </div>
-                    </td>
-                    <td class="text-center">
-                        <button class="btn-cerrar" style="font-size: 0.6rem; padding: 5px 12px;" onclick="eliminarModulo('${id}')">
-                            <i class="bi bi-trash3"></i> BORRAR
-                        </button>
-                    </td>
-                </tr>
-            `;
-        });
-
-        document.querySelectorAll('.toggle-oferta').forEach(sw => {
-            sw.onclick = async (e) => {
-                const docId = e.target.getAttribute('data-id');
-                await updateDoc(doc(db, "ofertas", docId), { ofertado: e.target.checked });
-            };
-        });
-    });
-
-    window.eliminarModulo = async (id) => {
-        if(confirm("¿Eliminar módulo?")) await deleteDoc(doc(db, "ofertas", id));
-    };
 </script>
 </body>
 </html>
