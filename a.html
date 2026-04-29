@@ -24,53 +24,53 @@
             min-height: 100vh;
         }
 
-        /* --- SIDEBAR TRASLÚCIDO --- */
+        /* SIDEBAR GLASS */
         .sidebar { 
             background: rgba(26, 42, 58, 0.4); 
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(15px);
             min-height: 100vh; 
             padding: 25px 15px; 
             border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* --- CONTENEDOR GLASS ULTRA-TRASLÚCIDO --- */
+        /* CONTENEDOR TRASLÚCIDO REAL */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.02); /* Opacidad mínima para máxima transparencia */
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(25px); /* Desenfoque fuerte */
-            -webkit-backdrop-filter: blur(25px);
-            border-radius: 30px;
-            padding: 40px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            background: rgba(255, 255, 255, 0.05) !important; /* Opacidad muy baja */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-radius: 25px;
+            padding: 35px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        /* ELIMINAR BLANCO DE BOOTSTRAP */
+        .table {
+            --bs-table-bg: transparent !important;
+            --bs-table-color: white !important;
+            background-color: transparent !important;
+        }
+
+        .table td, .table th {
+            background-color: transparent !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
         }
 
         .role-badge {
-            padding: 4px 12px;
-            border-radius: 8px;
+            padding: 5px 14px;
+            border-radius: 50px;
             font-size: 0.65rem;
             font-weight: bold;
             background: rgba(197, 160, 89, 0.1);
             color: var(--dorado-ucmi);
-            border: 1px solid rgba(197, 160, 89, 0.3);
-            text-transform: uppercase;
+            border: 1px solid var(--dorado-ucmi);
+            letter-spacing: 1px;
         }
 
         .text-glow-gold {
             color: var(--dorado-ucmi);
             text-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
-        }
-
-        .btn-revocar {
-            background: rgba(255, 77, 77, 0.1);
-            border: 1px solid rgba(255, 77, 77, 0.3);
-            color: #ff4d4d;
-            transition: 0.3s;
-        }
-
-        .btn-revocar:hover {
-            background: #ff4d4d;
-            color: white;
         }
     </style>
 </head>
@@ -84,23 +84,19 @@
                     <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 50px;" alt="Logo">
                 </div>
                 <nav class="nav flex-column mb-auto">
-                    <a class="nav-link text-white-50 mb-2" href="master-postulaciones.html"><i class="bi bi-inbox me-2"></i> Postulaciones</a>
-                    <a class="nav-link text-white active mb-2" href="#"><i class="bi bi-people me-2 text-glow-gold"></i> Usuarios</a>
+                    <a class="nav-link text-white active" href="#"><i class="bi bi-people me-2 text-glow-gold"></i> Usuarios</a>
                 </nav>
                 <button id="btnLogoutSidebar" class="btn btn-outline-danger btn-sm rounded-pill mt-4">Cerrar Sesión</button>
             </div>
 
             <div class="col-md-10 p-5">
-                <div class="mb-5">
-                    <h2 class="fw-bold text-uppercase"><i class="bi bi-shield-lock-fill me-3 text-glow-gold"></i>Directorio</h2>
-                    <p class="text-white-50">Gestión de identidades bajo variables de Firebase.</p>
-                </div>
-
+                <h2 class="fw-bold text-uppercase mb-4">Directorio de Identidades</h2>
+                
                 <div class="glass-panel">
                     <div class="table-responsive">
-                        <table class="table table-borderless align-middle text-white">
+                        <table class="table table-borderless align-middle">
                             <thead>
-                                <tr class="text-white-50 small fw-bold border-bottom border-white border-opacity-10">
+                                <tr class="small fw-bold text-white-50 border-bottom border-white border-opacity-10">
                                     <th>ENTIDAD / RESPONSABLE</th>
                                     <th>EMAIL INSTITUCIONAL</th>
                                     <th>PERFIL / ROL</th>
@@ -135,37 +131,37 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // --- PROTECCIÓN ---
     onAuthStateChanged(auth, (user) => {
         if (!user) window.location.href = "index.html";
     });
 
-    // --- CARGA DINÁMICA CON TUS VARIABLES ---
     const tableBody = document.getElementById('user-table-body');
 
+    // ESCUCHA EN TIEMPO REAL
     onSnapshot(collection(db, "usuarios"), (snapshot) => {
         tableBody.innerHTML = '';
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
             const id = docSnap.id;
 
+            // Mapeo exacto de tus variables: entidad, responsable, email, perfil
             tableBody.innerHTML += `
                 <tr class="border-bottom border-white border-opacity-5">
                     <td class="py-4">
                         <div class="d-flex align-items-center">
                             <div class="p-2 rounded bg-info bg-opacity-10 me-3 border border-info border-opacity-20">
-                                <i class="bi bi-person-vcard text-info"></i>
+                                <i class="bi bi-person-vcard text-info fs-5"></i>
                             </div>
                             <div>
-                                <span class="fw-bold d-block text-white">${data.entidad || 'Sin Entidad'}</span>
-                                <span class="text-white-50 small">Resp: ${data.responsable || 'No asignado'}</span>
+                                <span class="fw-bold d-block text-white">${data.entidad || 'N/A'}</span>
+                                <span class="text-white-50 small" style="font-size: 0.75rem;">${data.responsable || 'Sin responsable'}</span>
                             </div>
                         </div>
                     </td>
-                    <td><code class="text-info" style="background:transparent;">${data.email || 'n/a'}</code></td>
+                    <td><code class="text-info" style="background: transparent;">${data.email || 'No asignado'}</code></td>
                     <td><span class="role-badge">${(data.perfil || 'Usuario').toUpperCase()}</span></td>
                     <td class="text-end">
-                        <button onclick="borrarUsuario('${id}')" class="btn btn-sm btn-revocar">
+                        <button onclick="borrarUsuario('${id}')" class="btn btn-sm btn-outline-danger border-opacity-50">
                             <i class="bi bi-trash3"></i>
                         </button>
                     </td>
@@ -175,13 +171,13 @@
 
     window.borrarUsuario = async (id) => {
         const confirm = await Swal.fire({
-            title: '¿Revocar?',
-            text: "Se eliminará el registro de Firebase.",
+            title: '¿Revocar acceso?',
             icon: 'warning',
             background: '#06090f',
             color: '#fff',
             showCancelButton: true,
-            confirmButtonColor: '#ff4d4d'
+            confirmButtonColor: '#ff4d4d',
+            confirmButtonText: 'Eliminar'
         });
         if (confirm.isConfirmed) await deleteDoc(doc(db, "usuarios", id));
     };
