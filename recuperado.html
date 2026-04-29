@@ -82,7 +82,7 @@
         text-shadow: 0 0 8px rgba(188, 19, 254, 0.6);
     }
 
-    /* --- BOTÓN SEGURIDAD (ESTILO BLANCO) --- */
+    /* --- BOTÓN PANEL MAESTRO (ESTILO BLANCO) --- */
     .btn-system-white {
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -223,7 +223,7 @@
 
         <p class="nav-section-title mt-4">Sistema</p>
         <a href="super-admin.html" class="btn-system-white">
-            <i class="bi bi-shield-lock"></i> Seguridad
+            <i class="bi bi-shield-lock"></i> Panel Maestro
         </a>
     </nav>
 
@@ -236,10 +236,18 @@
 
             <div class="col-md-10 p-5">
                 <div class="glass-panel">
-                    <div class="d-flex align-items-center mb-5">
-                        <div class="bg-info rounded-3 p-2 me-3 shadow-lg"><i class="bi bi-cpu-fill text-dark fs-4"></i></div>
-                        <h3 class="fw-bold m-0 text-uppercase" style="letter-spacing: 4px;">Panel de Vigencia Operativa</h3>
-                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-5">
+    <div class="d-flex align-items-center">
+        <div class="bg-info rounded-3 p-2 me-3 shadow-lg"><i class="bi bi-cpu-fill text-dark fs-4"></i></div>
+        <h3 class="fw-bold m-0 text-uppercase" style="letter-spacing: 4px;">Panel de Vigencia Operativa</h3>
+    </div>
+    <div style="min-width: 350px;">
+        <div class="input-group">
+            <span class="input-group-text bg-transparent border-secondary text-info"><i class="bi bi-search"></i></span>
+            <input type="text" id="inputBusqueda" class="form-control bg-transparent text-white border-secondary" placeholder="Buscar entidad, email o responsable..." style="border-radius: 0 12px 12px 0;">
+        </div>
+    </div>
+</div>
                     
                     <div class="table-responsive">
                         <table class="table">
@@ -281,8 +289,11 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    let usuariosMaster = []; // Almacén para búsqueda en tiempo real
+
+    // --- UTILIDADES DE FECHA ---
     function formatearFechaInicio(str) {
-        if (!str) return "Sin fecha";
+        if (!str || typeof str !== 'string') return "Sin fecha";
         try {
             const partes = str.split(',')[0].split('/');
             if (partes.length === 3) {
@@ -296,23 +307,25 @@
     }
 
     function obtenerDateValido(str) {
+        if (!str || typeof str !== 'string' || !str.includes('/')) return new Date();
         try {
             const [fecha, hora] = str.split(', ');
             const [d, m, a] = fecha.split('/');
-            return new Date(`${a}-${m.padStart(2,'0')}-${d.padStart(2,'0')}T${hora}`);
+            return new Date(`${a}-${m.padStart(2,'0')}-${d.padStart(2,'0')}T${hora || '00:00:00'}`);
         } catch(e) { return new Date(); }
     }
 
-    onSnapshot(collection(db, "usuarios"), (snapshot) => {
+    // --- FUNCIÓN RENDERIZAR (DIBUJO DE TABLA) ---
+    function renderizar(lista) {
         const contenedor = document.getElementById('listaVigencia');
         contenedor.innerHTML = '';
 
-        snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            const id = docSnap.id;
+        lista.forEach((data) => {
+            const id = data.id;
             const fechaInicioTexto = formatearFechaInicio(data.fechaActivacion);
             const dateInicio = obtenerDateValido(data.fechaActivacion);
-            const dateFin = new Date(data.expiracionTimestamp);
+            // Validamos que exista expiracionTimestamp, si no, usamos la fecha actual
+            const dateFin = data.expiracionTimestamp ? new Date(data.expiracionTimestamp) : new Date();
             const ahora = new Date();
 
             const totalMs = dateFin - dateInicio;
@@ -362,8 +375,26 @@
                     </td>
                 </tr>`;
         });
+    }
+
+    // --- ESCUCHA DE FIREBASE ---
+    onSnapshot(collection(db, "usuarios"), (snapshot) => {
+        usuariosMaster = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderizar(usuariosMaster);
     });
 
+    // --- MOTOR DE BÚSQUEDA ---
+    document.getElementById('inputBusqueda').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        const filtrados = usuariosMaster.filter(u => 
+            (u.entidad || "").toLowerCase().includes(term) ||
+            (u.email || "").toLowerCase().includes(term) ||
+            (u.id || "").toLowerCase().includes(term)
+        );
+        renderizar(filtrados);
+    });
+
+    // --- ACCIONES DE SISTEMA ---
     window.borrarUsuario = async (id) => {
         const confirm = await Swal.fire({
             title: '¿Revocar Licencia?',
@@ -378,7 +409,6 @@
         if (confirm.isConfirmed) { await deleteDoc(doc(db, "usuarios", id)); }
     };
 
-    // Lógica del botón Cerrar Sesión
     document.getElementById('btnLogout').addEventListener('click', () => {
         signOut(auth).then(() => { 
             window.location.href = "index.html"; 
