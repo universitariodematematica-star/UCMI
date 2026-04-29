@@ -9,6 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
+            --dorado-neon: #ffcc66;
+            --azul-neon: #00f2ff;
             --dorado-ucmi: #c5a059;
         }
 
@@ -17,60 +19,74 @@
             background-size: cover;
             font-family: 'Segoe UI', sans-serif;
             color: white;
+            overflow-x: hidden;
         }
 
         .super-overlay {
-            background: radial-gradient(circle, rgba(6, 9, 15, 0.2) 0%, rgba(6, 9, 15, 0.85) 100%);
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.3) 0%, rgba(6, 9, 15, 0.9) 100%);
             min-height: 100vh;
         }
 
-        /* SIDEBAR GLASS */
-        .sidebar { 
-            background: rgba(26, 42, 58, 0.4); 
-            backdrop-filter: blur(15px);
-            min-height: 100vh; 
-            padding: 25px 15px; 
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* CONTENEDOR TRASLÚCIDO REAL */
+        /* --- CONTENEDOR GLASS --- */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.05) !important; /* Opacidad muy baja */
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
-            border-radius: 25px;
-            padding: 35px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px) saturate(150%);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
         }
 
-        /* ELIMINAR BLANCO DE BOOTSTRAP */
-        .table {
-            --bs-table-bg: transparent !important;
-            --bs-table-color: white !important;
-            background-color: transparent !important;
-        }
-
-        .table td, .table th {
-            background-color: transparent !important;
-            border-color: rgba(255, 255, 255, 0.1) !important;
-            color: white !important;
-        }
-
-        .role-badge {
-            padding: 5px 14px;
-            border-radius: 50px;
-            font-size: 0.65rem;
+        /* --- EFECTO NEÓN EN TEXTOS --- */
+        .neon-text-gold {
+            color: var(--dorado-neon);
+            text-shadow: 0 0 8px rgba(255, 204, 102, 0.6), 0 0 15px rgba(255, 204, 102, 0.2);
             font-weight: bold;
-            background: rgba(197, 160, 89, 0.1);
-            color: var(--dorado-ucmi);
-            border: 1px solid var(--dorado-ucmi);
             letter-spacing: 1px;
         }
 
-        .text-glow-gold {
+        .neon-text-blue {
+            color: var(--azul-neon);
+            text-shadow: 0 0 8px rgba(0, 242, 255, 0.5);
+            font-family: monospace;
+        }
+
+        /* --- ELIMINAR FONDOS DE TABLA --- */
+        .table {
+            --bs-table-bg: transparent !important;
+            background-color: transparent !important;
+        }
+
+        .table tr {
+            background-color: transparent !important;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        /* --- EFECTO HOVER: SALTO Y ACLARADO --- */
+        .table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+            transform: scale(1.02) translateX(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+        }
+
+        .role-badge {
+            padding: 4px 15px;
+            border-radius: 50px;
+            font-size: 0.65rem;
+            background: rgba(197, 160, 89, 0.1);
             color: var(--dorado-ucmi);
-            text-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+            border: 1px solid var(--dorado-ucmi);
+            box-shadow: 0 0 10px rgba(197, 160, 89, 0.2);
+        }
+
+        .sidebar {
+            background: rgba(6, 9, 15, 0.6);
+            backdrop-filter: blur(15px);
+            min-height: 100vh;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
@@ -79,28 +95,27 @@
 <div class="super-overlay">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-2 sidebar d-none d-md-flex flex-column">
-                <div class="text-center mb-4">
-                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 50px;" alt="Logo">
-                </div>
+            <div class="col-md-2 sidebar d-none d-md-flex flex-column p-4">
+                <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" class="mb-4" style="height: 50px; object-fit: contain;">
                 <nav class="nav flex-column mb-auto">
-                    <a class="nav-link text-white active" href="#"><i class="bi bi-people me-2 text-glow-gold"></i> Usuarios</a>
+                    <a class="nav-link text-white active" href="#"><i class="bi bi-cpu-fill me-2"></i> Terminal Usuarios</a>
                 </nav>
-                <button id="btnLogoutSidebar" class="btn btn-outline-danger btn-sm rounded-pill mt-4">Cerrar Sesión</button>
+                <button id="btnLogoutSidebar" class="btn btn-outline-danger btn-sm rounded-pill">Desconexión</button>
             </div>
 
             <div class="col-md-10 p-5">
-                <h2 class="fw-bold text-uppercase mb-4">Directorio de Identidades</h2>
-                
+                <h2 class="neon-text-gold text-uppercase mb-5"><i class="bi bi-shield-shaded me-3"></i>Núcleo de Datos Supralógicos</h2>
+
                 <div class="glass-panel">
                     <div class="table-responsive">
-                        <table class="table table-borderless align-middle">
+                        <table class="table align-middle">
                             <thead>
-                                <tr class="small fw-bold text-white-50 border-bottom border-white border-opacity-10">
+                                <tr class="text-white-50 small border-bottom border-white border-opacity-10">
                                     <th>ENTIDAD / RESPONSABLE</th>
-                                    <th>EMAIL INSTITUCIONAL</th>
-                                    <th>PERFIL / ROL</th>
-                                    <th class="text-end">OPERACIONES</th>
+                                    <th>NOMBRE DEL RESPONSABLE</th>
+                                    <th>EMAIL</th>
+                                    <th>PERFIL</th>
+                                    <th class="text-end">ACCIÓN</th>
                                 </tr>
                             </thead>
                             <tbody id="user-table-body">
@@ -137,32 +152,28 @@
 
     const tableBody = document.getElementById('user-table-body');
 
-    // ESCUCHA EN TIEMPO REAL
     onSnapshot(collection(db, "usuarios"), (snapshot) => {
         tableBody.innerHTML = '';
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
             const id = docSnap.id;
 
-            // Mapeo exacto de tus variables: entidad, responsable, email, perfil
             tableBody.innerHTML += `
                 <tr class="border-bottom border-white border-opacity-5">
                     <td class="py-4">
-                        <div class="d-flex align-items-center">
-                            <div class="p-2 rounded bg-info bg-opacity-10 me-3 border border-info border-opacity-20">
-                                <i class="bi bi-person-vcard text-info fs-5"></i>
-                            </div>
-                            <div>
-                                <span class="fw-bold d-block text-white">${data.entidad || 'N/A'}</span>
-                                <span class="text-white-50 small" style="font-size: 0.75rem;">${data.responsable || 'Sin responsable'}</span>
-                            </div>
+                        <div>
+                            <span class="neon-text-gold d-block mb-1">${data.entidad || 'Individual'}</span>
+                            <span class="text-white-50 small">ID: ${data.responsable || 'N/A'}</span>
                         </div>
                     </td>
-                    <td><code class="text-info" style="background: transparent;">${data.email || 'No asignado'}</code></td>
+                    <td>
+                        <span class="text-white fw-semibold">${data.nombreResponsable || '---'}</span>
+                    </td>
+                    <td><span class="neon-text-blue small">${data.email || id}</span></td>
                     <td><span class="role-badge">${(data.perfil || 'Usuario').toUpperCase()}</span></td>
                     <td class="text-end">
-                        <button onclick="borrarUsuario('${id}')" class="btn btn-sm btn-outline-danger border-opacity-50">
-                            <i class="bi bi-trash3"></i>
+                        <button onclick="borrarUsuario('${id}')" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-x-circle"></i>
                         </button>
                     </td>
                 </tr>`;
@@ -171,13 +182,12 @@
 
     window.borrarUsuario = async (id) => {
         const confirm = await Swal.fire({
-            title: '¿Revocar acceso?',
+            title: '¿Revocar?',
+            text: "Se desconectará la entidad del servidor.",
             icon: 'warning',
             background: '#06090f',
             color: '#fff',
-            showCancelButton: true,
-            confirmButtonColor: '#ff4d4d',
-            confirmButtonText: 'Eliminar'
+            confirmButtonColor: '#ff4d4d'
         });
         if (confirm.isConfirmed) await deleteDoc(doc(db, "usuarios", id));
     };
