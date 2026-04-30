@@ -12,6 +12,7 @@
             --dorado-neon: #ffcc66;
             --azul-neon: #00f2ff;
             --dorado-ucmi: #c5a059;
+            --glow-hover: rgba(197, 160, 89, 0.25); /* Color del resplandor al pasar el mouse */
         }
 
         body {
@@ -27,7 +28,7 @@
             min-height: 100vh;
         }
 
-        /* --- SIDEBAR TRASLÚCIDO --- */
+        /* --- SIDEBAR TRASLÚCIDO (Innegociable) --- */
         .sidebar { 
             background: rgba(26, 42, 58, 0.5); 
             backdrop-filter: blur(15px);
@@ -46,7 +47,7 @@
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
         }
 
-        /* --- TABLA CON FILAS REDONDEADAS --- */
+        /* --- TABLA CON FILAS REDONDEADAS COMO CÁPSULAS --- */
         .table-custom {
             width: 100%;
             border-collapse: separate;
@@ -55,22 +56,31 @@
 
         #user-table-body tr {
             background: rgba(255, 255, 255, 0.05);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Mantenemos la transición suave, pero solo para color y box-shadow */
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
             cursor: pointer;
+            border: 1px solid transparent; /* Para el glow del borde */
         }
 
-        /* Redondeo de las celdas exteriores */
+        /* Redondeo de las cápsulas (Innegociable) */
         #user-table-body tr td:first-child { border-top-left-radius: 15px; border-bottom-left-radius: 15px; padding-left: 20px; }
         #user-table-body tr td:last-child { border-top-right-radius: 15px; border-bottom-right-radius: 15px; padding-right: 20px; }
 
-        /* Hover de salto */
+        /* --- EFECTO HOVER REFINADO: ACLARADO Y LUZ NEÓN (NUEVO) --- */
         #user-table-body tr:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: scale(1.01) translateX(10px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            /* 1. Aclarar el fondo de la celda */
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            
+            /* 2. Emitir luz de neón (resplandor exterior) */
+            box-shadow: 0 0 15px var(--glow-hover), 0 0 30px rgba(197, 160, 89, 0.1);
+            
+            /* Opcional: Un ligero borde dorado neón para definir la cápsula */
+            border-color: rgba(197, 160, 89, 0.4) !important;
+
+            /* NO hay transform: scale() ni translateX() - Estabilidad total */
         }
 
-        /* --- ESTILOS NEÓN --- */
+        /* --- ESTILOS NEÓN ESTÁTICOS --- */
         .neon-gold {
             color: var(--dorado-neon);
             text-shadow: 0 0 10px rgba(255, 204, 102, 0.4);
@@ -83,6 +93,7 @@
             font-family: monospace;
         }
 
+        /* --- BOTÓN BASURA FUNCIONAL (Innegociable) --- */
         .btn-trash {
             background: rgba(255, 77, 77, 0.1);
             border: 1px solid rgba(255, 77, 77, 0.3);
@@ -139,11 +150,11 @@
                             <thead>
                                 <tr class="text-white-50 small text-uppercase">
                                     <th class="pb-3 ps-4">Entidad</th>
-                                    <th class="pb-3">Responsable</th>
+                                    <th class="pb-3">Responsable (Clave)</th>
                                     <th class="pb-3">Email Institucional</th>
                                     <th class="pb-3">Perfil</th>
                                     <th class="pb-3 text-end pe-4">Operaciones</th>
-                                </tr>
+                                }
                             </thead>
                             <tbody id="user-table-body">
                                 </tbody>
@@ -185,6 +196,7 @@
             const data = docSnap.data();
             const id = docSnap.id;
 
+            // Mapeo preciso: nombreResponsable (arriba, negrita), responsable (abajo, ID)
             tableBody.innerHTML += `
                 <tr>
                     <td class="py-4">
@@ -192,8 +204,8 @@
                     </td>
                     <td>
                         <div class="d-flex flex-column">
-                            <span class="fw-bold">${data.nombreResponsable || 'Sin Nombre'}</span>
-                            <span class="text-white-50 small" style="font-size:0.7rem">ID: ${data.responsable || 'N/A'}</span>
+                            <span class="text-white fw-bold">${data.nombreResponsable || 'Sin Nombre'}</span>
+                            <span class="text-white-50 small" style="font-size:0.7rem">Clave: ${data.responsable || 'N/A'}</span>
                         </div>
                     </td>
                     <td><span class="neon-blue small">${data.email || id}</span></td>
@@ -214,7 +226,7 @@
     window.borrarUsuario = async (id, nombre) => {
         const result = await Swal.fire({
             title: '¿REVOCAR ACCESO?',
-            text: `Confirmar eliminación de: ${nombre}`,
+            text: `Confirmar eliminación definitiva de: ${nombre}`,
             icon: 'warning',
             showCancelButton: true,
             background: '#0a0e14',
@@ -222,7 +234,7 @@
             confirmButtonColor: '#ff4d4d',
             cancelButtonColor: '#333',
             confirmButtonText: 'Sí, borrar',
-            cancelButtonText: 'Abortar'
+            cancelButtonText: 'Abortar Protocolo'
         });
 
         if (result.isConfirmed) {
