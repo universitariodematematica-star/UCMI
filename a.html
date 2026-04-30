@@ -138,6 +138,7 @@
         }
 
         .status-aprobado { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid #00ff8844; }
+        .status-rechazado { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d44; }
         .status-pendiente { background: rgba(255, 204, 0, 0.1); color: #ffcc00; border: 1px solid #ffcc0044; }
         
         .date-chip {
@@ -188,7 +189,7 @@
                         <h2 class="neon-gold text-uppercase mb-1" style="letter-spacing: 3px;">
                             <i class="bi bi-journal-text me-3"></i>Historial de Solicitudes
                         </h2>
-                        <p class="text-white-50 small">Registro cronológico de ingresos y solicitudes a la plataforma UCMI.</p>
+                        <p class="text-white-50 small">Registro cronológico de ingresos y solicitudes procesadas.</p>
                     </div>
                     <div style="min-width: 350px;">
                         <div class="input-group">
@@ -204,14 +205,14 @@
                             <thead>
                                 <tr class="text-white-50 small text-uppercase" style="letter-spacing: 1.5px;">
                                     <th class="ps-4 pb-3">Entidad / Responsable</th>
-                                    <th class="pb-3">Ubicación</th>
-                                    <th class="pb-3">Programas / Licencia</th>
-                                    <th class="pb-3">Fecha Solicitud</th>
+                                    <th class="pb-3">Fecha</th>
+                                    <th class="pb-3">Paquete / Plan</th>
+                                    <th class="pb-3">Resultado</th>
                                     <th class="text-end pe-4 pb-3">Registro ID</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaCuerpo">
-                                <!-- Los datos se inyectarán aquí dinámicamente -->
+                                <!-- Datos inyectados desde historial_postulaciones -->
                             </tbody>
                         </table>
                     </div>
@@ -226,7 +227,6 @@
     import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Configuración de Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
         authDomain: "ucmi-13796634.firebaseapp.com",
@@ -243,7 +243,7 @@
     const tablaCuerpo = document.getElementById('tablaCuerpo');
     let todasLasPostulaciones = [];
 
-    // --- LÓGICA DE CIERRE DE SESIÓN ---
+    // --- LOGOUT ---
     document.getElementById('btnLogoutSidebar').addEventListener('click', async () => {
         const confirmacion = await Swal.fire({
             title: '¿Cerrar sesión?',
@@ -264,38 +264,46 @@
         }
     });
 
-    // --- CARGA DE DATOS DESDE FIRESTORE ---
-    const q = query(collection(db, "postulaciones"), orderBy("fechaSolicitud", "desc"));
+    // --- CARGA DE DATOS DESDE LA COLECCIÓN "historial_postulaciones" ---
+    const q = query(collection(db, "historial_postulaciones"), orderBy("fechaSolicitud", "desc"));
 
     onSnapshot(q, (snapshot) => {
         todasLasPostulaciones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderizar(todasLasPostulaciones);
+    }, (error) => {
+        console.error("Error al leer historial_postulaciones:", error);
+        tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-danger">Error de permisos o conexión al historial.</td></tr>`;
     });
 
     function renderizar(datos) {
         tablaCuerpo.innerHTML = '';
         if (datos.length === 0) {
-            tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros de solicitudes disponibles.</td></tr>`;
+            tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros en el historial de postulaciones.</td></tr>`;
             return;
         }
 
         datos.forEach(p => {
             const fechaRaw = p.fechaSolicitud?.toDate ? p.fechaSolicitud.toDate().toLocaleDateString() : (p.fechaSolicitud || '---');
             
+            // Lógica de color de badge según el estado
+            let statusClass = 'status-pendiente';
+            if (p.status === 'aprobado' || p.status === 'admitido') statusClass = 'status-aprobado';
+            if (p.status === 'rechazado') statusClass = 'status-rechazado';
+
             tablaCuerpo.innerHTML += `
                 <tr>
                     <td class="ps-4">
                         <div class="neon-gold">${p.entidad || 'Entidad no registrada'}</div>
                         <div class="text-white-50 small">${p.nombreResponsable || ''}</div>
-                    </td>
-                    <td>
-                        <div class="small text-white-50"><i class="bi bi-geo-alt me-1"></i>${p.ubicacion || 'Sin ubicación'}</div>
-                    </td>
-                    <td>
-                        <div class="small fw-bold text-uppercase" style="color: var(--dorado-ucmi);">${p.programas || 'General'}</div>
-                        <div class="text-white-50 small" style="font-size: 0.75rem;">Duración: ${p.duracionLicencia || 'N/A'}</div>
+                        <div class="text-white-50 small" style="font-size: 0.7rem;">${p.email || 'Sin correo'}</div>
                     </td>
                     <td><span class="date-chip"><i class="bi bi-calendar3 me-2"></i>${fechaRaw}</span></td>
+                    <td><span class="small text-uppercase fw-bold">${p.paquete || 'Básico'}</span></td>
+                    <td>
+                        <span class="badge-status ${statusClass}">
+                            ${p.status || 'Procesado'}
+                        </span>
+                    </td>
                     <td class="text-end pe-4">
                         <code class="text-info small" style="background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 4px;">
                             ${p.id.substring(0, 10)}
@@ -306,13 +314,14 @@
         });
     }
 
-    // --- FILTRO DE BÚSQUEDA ---
+    // --- FILTRO ---
     document.getElementById('busquedaHistorial').addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
         const filtrados = todasLasPostulaciones.filter(p => 
             p.entidad?.toLowerCase().includes(term) || 
             p.nombreResponsable?.toLowerCase().includes(term) ||
-            p.ubicacion?.toLowerCase().includes(term)
+            p.email?.toLowerCase().includes(term) ||
+            p.status?.toLowerCase().includes(term)
         );
         renderizar(filtrados);
     });
