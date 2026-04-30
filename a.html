@@ -61,12 +61,12 @@
         }
 
         .contenedor-logo-derecho img {
-    width: 150px;
-    height: auto;
-    display: block;
-    border-radius: 20px; /* Aquí ajustas el redondeo (20px es un valor elegante) */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Opcional: le da un toque de profundidad */
-}
+            width: 150px;
+            height: auto;
+            display: block;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
 
         .texto-universitario {
             font-size: 1.50rem;
@@ -171,15 +171,16 @@
 
                 <h2>Iniciar Sesión</h2>
                 
+                <!-- Formulario Protegido -->
                 <form id="form-login">
                     <div class="input-group">
                         <label>Correo Electrónico</label>
-                        <input type="email" id="email" placeholder="usuario@ucmi.edu" required>
+                        <input type="email" id="email" placeholder="usuario@ucmi.edu" autocomplete="off" required>
                     </div>
                     
                     <div class="input-group">
                         <label>Contraseña</label>
-                        <input type="password" id="password" placeholder="••••••••" required>
+                        <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" required>
                     </div>
 
                     <button type="submit" id="btn-submit" class="btn-entrar">Entrar a UCMI</button>
@@ -237,33 +238,39 @@
         const auth = getAuth(app);
         const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
 
-        // VIGILANTE DE REDIRECCIÓN AUTOMÁTICA
+        // REDIRECCIÓN AUTOMÁTICA SI YA HAY SESIÓN
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 if (user.uid === MI_UID_MAESTRO) {
-                    console.log("Super Administrador Detectado");
                     window.location.href = "https://universitariodematematica-star.github.io/UCMI/super-admin.html";
                 } else {
-                    // Si alguien logueado no eres tú, se cierra la sesión
                     signOut(auth);
                 }
             }
         });
 
-        // MANEJO DEL FORMULARIO
+        // MANEJO DEL FORMULARIO CON LIMPIEZA DE CAMPOS
         const loginForm = document.getElementById('form-login');
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
+            const emailField = document.getElementById('email');
+            const passField = document.getElementById('password');
             const btn = document.getElementById('btn-submit');
+
+            const email = emailField.value;
+            const pass = passField.value;
 
             btn.disabled = true;
             btn.innerText = "VERIFICANDO IDENTIDAD...";
 
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+                
+                // LIMPIEZA INMEDIATA TRAS ÉXITO
+                emailField.value = "";
+                passField.value = "";
+
                 if (userCredential.user.uid !== MI_UID_MAESTRO) {
                     alert("ACCESO DENEGADO: No tiene perfil de Super Administrador.");
                     await signOut(auth);
@@ -272,6 +279,10 @@
             } catch (error) {
                 console.error("Error:", error);
                 alert("DATOS DE ACCESO INCORRECTOS");
+                
+                // LIMPIEZA DE CONTRASEÑA EN FALLO
+                passField.value = ""; 
+                
                 btn.disabled = false;
                 btn.innerText = "Entrar a UCMI";
             }
