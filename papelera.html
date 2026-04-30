@@ -1,1 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Papelera de Reciclaje</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --dorado-neon: #ffcc66;
+            --azul-neon: #00f2ff;
+            --glow-hover: rgba(197, 160, 89, 0.25);
+            --dorado-ucmi: #c5a059;
+        }
 
+        body {
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+        }
+
+        .super-overlay {
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.95) 100%);
+            min-height: 100vh;
+        }
+
+        .sidebar { 
+            background: rgba(26, 42, 58, 0.5); 
+            backdrop-filter: blur(15px);
+            min-height: 100vh; 
+            padding: 25px 15px; 
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px);
+            border-radius: 30px;
+            padding: 30px;
+        }
+
+        .table-custom {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+        }
+
+        #trash-table-body tr {
+            background: rgba(255, 255, 255, 0.03);
+            transition: 0.3s;
+        }
+
+        .neon-gold { color: var(--dorado-neon); font-weight: bold; }
+
+        .btn-restore {
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            color: var(--azul-neon);
+            border-radius: 10px;
+            padding: 8px 15px;
+            transition: 0.3s;
+        }
+
+        .btn-restore:hover {
+            background: var(--azul-neon);
+            color: #000;
+            transform: scale(1.05);
+        }
+
+        .nav-item-ucmi {
+            display: flex; align-items: center;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            padding: 10px 15px;
+            margin-bottom: 5px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+        }
+
+        .nav-item-ucmi.active {
+            background: rgba(197, 160, 89, 0.15);
+            color: var(--dorado-ucmi);
+        }
+    </style>
+</head>
+<body>
+
+<div class="super-overlay">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 sidebar d-none d-md-flex flex-column">
+                <div class="text-center mb-4">
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 50px;" alt="Logo">
+                    <p class="small mt-2 neon-gold">SISTEMA UCMI</p>
+                </div>
+                <nav class="sidebar-nav flex-grow-1">
+                    <a href="master-usuarios.html" class="nav-item-ucmi">
+                        <i class="bi bi-arrow-left-circle me-2"></i> VOLVER A USUARIOS
+                    </a>
+                    <a href="papelera.html" class="nav-item-ucmi active">
+                        <i class="bi bi-trash3 me-2"></i> PAPELERA
+                    </a>
+                </nav>
+            </div>
+
+            <div class="col-md-10 p-5">
+                <div class="mb-5">
+                    <h2 class="neon-gold text-uppercase mb-1"><i class="bi bi-trash3 me-2"></i>Papelera de Reciclaje</h2>
+                    <p class="text-white-50 small">Los usuarios aquí listados serán eliminados permanentemente tras 30 días.</p>
+                </div>
+
+                <div class="glass-panel">
+                    <div class="table-responsive">
+                        <table class="table-custom">
+                            <thead>
+                                <tr class="text-white-50 small text-uppercase">
+                                    <th class="pb-3 ps-4">Usuario / Entidad</th>
+                                    <th class="pb-3">Fecha de Eliminación</th>
+                                    <th class="pb-3">Días Restantes</th>
+                                    <th class="pb-3 text-end pe-4">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trash-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const trashBody = document.getElementById('trash-table-body');
+
+    onSnapshot(collection(db, "usuarios"), (snapshot) => {
+        trashBody.innerHTML = '';
+        const ahora = new Date().getTime();
+
+        snapshot.forEach(async (docSnap) => {
+            const data = docSnap.data();
+            const id = docSnap.id;
+
+            if (data.status === "eliminado") {
+                const fechaElim = data.fechaEliminacion ? data.fechaEliminacion.toDate() : new Date();
+                const diffTiempo = ahora - fechaElim.getTime();
+                const diffDias = Math.floor(diffTiempo / (1000 * 60 * 60 * 24));
+                const diasRestantes = 30 - diffDias;
+
+                // Lógica de Purga Automática (Si pasó un mes)
+                if (diasRestantes <= 0) {
+                    await deleteDoc(doc(db, "usuarios", id));
+                    return; 
+                }
+
+                trashBody.innerHTML += `
+                    <tr>
+                        <td class="py-4 ps-4">
+                            <span class="neon-gold d-block">${data.nombreResponsable || data.entidad}</span>
+                            <span class="text-white-50 small">${data.email || 'Sin email'}</span>
+                        </td>
+                        <td>${fechaElim.toLocaleDateString()}</td>
+                        <td>
+                            <span class="badge ${diasRestantes < 5 ? 'bg-danger' : 'bg-secondary'}">
+                                ${diasRestantes} días
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <button onclick="restituirUsuario('${id}', '${data.nombreResponsable}')" class="btn btn-restore">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> RESTITUIR
+                            </button>
+                        </td>
+                    </tr>`;
+            }
+        });
+    });
+
+    // Función para devolver al usuario a la vida
+    window.restituirUsuario = async (id, nombre) => {
+        const result = await Swal.fire({
+            title: '¿RESTITUIR USUARIO?',
+            text: `El usuario "${nombre}" volverá a estar activo en la plataforma.`,
+            icon: 'question',
+            showCancelButton: true,
+            background: '#0a0e14',
+            color: '#fff',
+            confirmButtonColor: '#00f2ff',
+            confirmButtonText: 'Sí, restituir',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            const userRef = doc(db, "usuarios", id);
+            // Eliminamos los campos de rastro de eliminación para que vuelva a su estado original
+            await updateDoc(userRef, {
+                status: deleteField(),
+                fechaEliminacion: deleteField()
+            });
+            Swal.fire({ title: 'Usuario restituido', icon: 'success', background: '#0a0e14', color: '#fff' });
+        }
+    };
+</script>
+</body>
+</html>
