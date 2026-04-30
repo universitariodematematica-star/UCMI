@@ -11,8 +11,10 @@
         :root {
             --dorado-neon: #ffcc66;
             --azul-neon: #00f2ff;
-            --glow-hover: rgba(197, 160, 89, 0.25);
             --dorado-ucmi: #c5a059;
+            --cian-tech: #00f2ff;
+            --rojo-neon: #ff3131;
+            --blanco-neon: #ffffff;
         }
 
         body {
@@ -20,6 +22,7 @@
             background-size: cover;
             font-family: 'Segoe UI', sans-serif;
             color: white;
+            overflow-x: hidden;
         }
 
         .super-overlay {
@@ -27,14 +30,63 @@
             min-height: 100vh;
         }
 
+        /* --- SIDEBAR --- */
         .sidebar { 
-            background: rgba(26, 42, 58, 0.5); 
-            backdrop-filter: blur(15px);
+            background: rgba(26, 42, 58, 0.95); 
+            backdrop-filter: blur(10px);
             min-height: 100vh; 
             padding: 25px 15px; 
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(197, 160, 89, 0.3);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
         }
 
+        .nav-section-title {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            padding-left: 10px;
+        }
+
+        .nav-link-custom {
+            display: flex; align-items: center; width: 100%;
+            background: transparent; border: none; padding: 12px 15px;
+            color: rgba(255, 255, 255, 0.6); text-align: left;
+            border-radius: 12px; font-size: 0.85rem;
+            transition: all 0.3s ease; margin-bottom: 5px; cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-link-custom i { font-size: 1.1rem; margin-right: 12px; width: 20px; text-align: center; }
+        .nav-link-custom:hover { background: rgba(255, 255, 255, 0.05); color: var(--cian-tech); transform: translateX(5px); }
+        .nav-link-custom.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); border: 1px solid rgba(197, 160, 89, 0.2); }
+
+        /* --- BOTONES SISTEMA --- */
+        .btn-super-admin {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--blanco-neon);
+            color: var(--blanco-neon); padding: 12px; border-radius: 12px; width: 100%;
+            text-align: center; font-weight: bold; text-transform: uppercase;
+            font-size: 0.75rem; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); margin-bottom: 10px;
+        }
+
+        .btn-super-admin:hover { background: var(--blanco-neon); color: black; box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); }
+
+        .btn-logout {
+            background: rgba(255, 49, 49, 0.05); border: 1px solid var(--rojo-neon);
+            color: var(--rojo-neon); padding: 10px; border-radius: 12px; width: 100%;
+            text-align: center; font-weight: bold; text-transform: uppercase;
+            font-size: 0.75rem; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 49, 49, 0.2);
+        }
+
+        .btn-logout:hover { background: var(--rojo-neon); color: white; box-shadow: 0 0 20px rgba(255, 49, 49, 0.8); }
+
+        /* --- CONTENIDO --- */
         .glass-panel {
             background: rgba(255, 255, 255, 0.02) !important;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -43,48 +95,17 @@
             padding: 30px;
         }
 
-        .table-custom {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 12px;
-        }
-
-        #trash-table-body tr {
-            background: rgba(255, 255, 255, 0.03);
-            transition: 0.3s;
-        }
-
+        .table-custom { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+        #trash-table-body tr { background: rgba(255, 255, 255, 0.03); border-radius: 15px; }
         .neon-gold { color: var(--dorado-neon); font-weight: bold; }
 
         .btn-restore {
-            background: rgba(0, 242, 255, 0.1);
-            border: 1px solid rgba(0, 242, 255, 0.3);
-            color: var(--azul-neon);
-            border-radius: 10px;
-            padding: 8px 15px;
-            transition: 0.3s;
+            background: rgba(0, 242, 255, 0.1); border: 1px solid rgba(0, 242, 255, 0.3);
+            color: var(--azul-neon); border-radius: 10px; padding: 8px 15px; transition: 0.3s;
         }
 
-        .btn-restore:hover {
-            background: var(--azul-neon);
-            color: #000;
-            transform: scale(1.05);
-        }
+        .btn-restore:hover { background: var(--azul-neon); color: #000; transform: scale(1.05); }
 
-        .nav-item-ucmi {
-            display: flex; align-items: center;
-            color: rgba(255,255,255,0.6);
-            text-decoration: none;
-            padding: 10px 15px;
-            margin-bottom: 5px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-        }
-
-        .nav-item-ucmi.active {
-            background: rgba(197, 160, 89, 0.15);
-            color: var(--dorado-ucmi);
-        }
     </style>
 </head>
 <body>
@@ -92,21 +113,53 @@
 <div class="super-overlay">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-2 sidebar d-none d-md-flex flex-column">
+            <!-- SIDEBAR INTEGRADO -->
+            <div class="col-md-2 sidebar d-none d-md-flex">
                 <div class="text-center mb-4">
                     <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 50px;" alt="Logo">
                     <p class="small mt-2 neon-gold">SISTEMA UCMI</p>
                 </div>
-                <nav class="sidebar-nav flex-grow-1">
-                    <a href="master-usuarios.html" class="nav-item-ucmi">
-                        <i class="bi bi-arrow-left-circle me-2"></i> VOLVER A USUARIOS
+                
+                <nav class="nav flex-column mb-auto">
+                    <p class="nav-section-title">Protocolos</p>
+                    <a href="master-postulaciones.html" class="nav-link-custom">
+                        <i class="bi bi-person-badge"></i> Solicitudes
                     </a>
-                    <a href="papelera.html" class="nav-item-ucmi active">
-                        <i class="bi bi-trash3 me-2"></i> PAPELERA
+                    <a href="master-vigencia.html" class="nav-link-custom">
+                        <i class="bi bi-clock-history"></i> Vigencia
+                    </a>
+                    <a href="master-usuarios.html" class="nav-link-custom">
+                        <i class="bi bi-people"></i> Usuarios
+                    </a>
+                    <a href="historial-postulaciones.html" class="nav-link-custom">
+                        <i class="bi bi-archive"></i> Historial
+                    </a>
+                    <a href="directorio.html" class="nav-link-custom">
+                        <i class="bi bi-journal-text"></i> Directorio
+                    </a>
+                    <a href="ofertas-academicas.html" class="nav-link-custom">
+                        <i class="bi bi-mortarboard"></i> Ofertas
+                    </a>
+                    <a href="master-repositorio.html" class="nav-link-custom">
+                        <i class="bi bi-grid-1x2"></i> Módulos
+                    </a>
+                    <a href="papelera.html" class="nav-link-custom active">
+                        <i class="bi bi-trash3"></i> Papelera
                     </a>
                 </nav>
+
+                <div class="mt-4">
+                    <p class="nav-section-title">Sistema</p>
+                    <button onclick="location.href='super-admin.html'" class="btn-super-admin">
+                        <i class="bi bi-shield-lock me-2"></i> Panel Maestro
+                    </button>
+                    <button id="btnCerrarSesion" class="btn-logout">
+                        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+                    </button>
+                </div>
             </div>
 
+            <!-- CONTENIDO PRINCIPAL -->
             <div class="col-md-10 p-5">
                 <div class="mb-5">
                     <h2 class="neon-gold text-uppercase mb-1"><i class="bi bi-trash3 me-2"></i>Papelera de Reciclaje</h2>
@@ -124,8 +177,7 @@
                                     <th class="pb-3 text-end pe-4">Acción</th>
                                 </tr>
                             </thead>
-                            <tbody id="trash-table-body">
-                                </tbody>
+                            <tbody id="trash-table-body"></tbody>
                         </table>
                     </div>
                 </div>
@@ -137,6 +189,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -149,9 +202,28 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
     const trashBody = document.getElementById('trash-table-body');
 
+    // --- Cierre de Sesión ---
+    document.getElementById('btnCerrarSesion').addEventListener('click', () => {
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ff3131',
+            confirmButtonText: 'Sí, Salir',
+            background: '#1a2a3a',
+            color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                signOut(auth).then(() => { window.location.href = 'index.html'; });
+            }
+        });
+    });
+
+    // --- Carga de Papelera ---
     onSnapshot(collection(db, "usuarios"), (snapshot) => {
         trashBody.innerHTML = '';
         const ahora = new Date().getTime();
@@ -166,7 +238,6 @@
                 const diffDias = Math.floor(diffTiempo / (1000 * 60 * 60 * 24));
                 const diasRestantes = 30 - diffDias;
 
-                // Lógica de Purga Automática (Si pasó un mes)
                 if (diasRestantes <= 0) {
                     await deleteDoc(doc(db, "usuarios", id));
                     return; 
@@ -185,7 +256,7 @@
                             </span>
                         </td>
                         <td class="text-end pe-4">
-                            <button onclick="restituirUsuario('${id}', '${data.nombreResponsable}')" class="btn btn-restore">
+                            <button onclick="restituirUsuario('${id}', '${data.nombreResponsable || data.entidad}')" class="btn btn-restore">
                                 <i class="bi bi-arrow-counterclockwise me-1"></i> RESTITUIR
                             </button>
                         </td>
@@ -194,24 +265,20 @@
         });
     });
 
-    // Función para devolver al usuario a la vida
     window.restituirUsuario = async (id, nombre) => {
         const result = await Swal.fire({
             title: '¿RESTITUIR USUARIO?',
-            text: `El usuario "${nombre}" volverá a estar activo en la plataforma.`,
+            text: `El usuario "${nombre}" volverá a estar activo.`,
             icon: 'question',
             showCancelButton: true,
             background: '#0a0e14',
             color: '#fff',
             confirmButtonColor: '#00f2ff',
-            confirmButtonText: 'Sí, restituir',
-            cancelButtonText: 'Cancelar'
+            confirmButtonText: 'Sí, restituir'
         });
 
         if (result.isConfirmed) {
-            const userRef = doc(db, "usuarios", id);
-            // Eliminamos los campos de rastro de eliminación para que vuelva a su estado original
-            await updateDoc(userRef, {
+            await updateDoc(doc(db, "usuarios", id), {
                 status: deleteField(),
                 fechaEliminacion: deleteField()
             });
