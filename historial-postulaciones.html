@@ -86,7 +86,7 @@
             text-shadow: 0 0 8px rgba(188, 19, 254, 0.6);
         }
 
-        /* --- BOTONES ESPECIALES SISTEMA --- */
+        /* --- BOTONES NEÓN --- */
         .btn-super-admin {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--blanco-neon);
@@ -201,13 +201,14 @@
                     <button onclick="location.href='super-admin.html'" class="btn-super-admin">
                         <i class="bi bi-shield-lock me-2"></i> Panel Maestro
                     </button>
-                    <button onclick="cerrarSesion()" class="btn-logout">
+                    <!-- ID añadido para controlar el evento desde el script module -->
+                    <button id="btnCerrarSesion" class="btn-logout">
                         <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
                     </button>
                 </div>
             </div>
 
-            <!-- CONTENIDO PRINCIPAL -->
+            <!-- CONTENIDO -->
             <div class="col-md-10 p-5">
                 <h2 class="neon-gold text-uppercase mb-4">Historial de Solicitudes</h2>
                 <div class="glass-panel">
@@ -223,7 +224,7 @@
                                 </tr>
                             </thead>
                             <tbody id="tablaCuerpo">
-                                <!-- Datos inyectados por Firebase -->
+                                <!-- Inyección de datos -->
                             </tbody>
                         </table>
                     </div>
@@ -233,30 +234,10 @@
     </div>
 </div>
 
-<script>
-    function cerrarSesion() {
-        Swal.fire({
-            title: '¿Cerrar sesión?',
-            text: "Finalizarás tu sesión administrativa actual.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ff3131',
-            cancelButtonColor: '#1a2a3a',
-            confirmButtonText: 'Sí, Salir',
-            cancelButtonText: 'Cancelar',
-            background: '#1a2a3a',
-            color: '#ffffff'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                location.href = 'index.html';
-            }
-        })
-    }
-</script>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -269,22 +250,48 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
     const tablaCuerpo = document.getElementById('tablaCuerpo');
 
-    // Escucha en tiempo real la colección "historial_postulaciones"
+    // --- LÓGICA DE CIERRE DE SESIÓN ---
+    document.getElementById('btnCerrarSesion').addEventListener('click', () => {
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: "Se finalizará tu acceso administrativo actual.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ff3131',
+            cancelButtonColor: '#1a2a3a',
+            confirmButtonText: 'Sí, Salir',
+            cancelButtonText: 'Cancelar',
+            background: '#1a2a3a',
+            color: '#ffffff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                signOut(auth).then(() => {
+                    // Redirigir al login o index después de cerrar sesión en Firebase
+                    window.location.href = 'index.html';
+                }).catch((error) => {
+                    console.error("Error al cerrar sesión:", error);
+                    // Incluso si hay error, redirigimos por seguridad
+                    window.location.href = 'index.html';
+                });
+            }
+        });
+    });
+
+    // --- CARGA DE DATOS ---
     const q = query(collection(db, "historial_postulaciones"), orderBy("fecha", "desc"));
 
     onSnapshot(q, (snapshot) => {
         tablaCuerpo.innerHTML = '';
-        
         if (snapshot.empty) {
-            tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros en el historial.</td></tr>`;
+            tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros.</td></tr>`;
             return;
         }
 
         snapshot.forEach((doc) => {
             const p = doc.data();
-            
             const estado = p.decisionFinal || "PENDIENTE";
             let statusClass = 'status-pendiente';
             if(estado === 'ACEPTADO') statusClass = 'status-aprobado';
@@ -307,8 +314,6 @@
                 </tr>
             `;
         });
-    }, (error) => {
-        console.error("Error al conectar con Firestore:", error);
     });
 </script>
 </body>
