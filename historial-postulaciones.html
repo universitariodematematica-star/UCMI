@@ -1,1 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Historial de Solicitudes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --dorado-ucmi: #c5a059;
+            --azul-sidebar: #1a2a3a;
+            --cian-tech: #00f2ff;
+            --purpura-neon: #bc13fe;
+        }
 
+        body {
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+        }
+
+        .super-overlay {
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.95) 100%);
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR (Estilo Botones Cápsula) */
+        .sidebar { 
+            background: rgba(26, 42, 58, 0.95); 
+            backdrop-filter: blur(10px);
+            min-height: 100vh; 
+            padding: 25px 15px; 
+            border-right: 1px solid rgba(197, 160, 89, 0.3);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+        }
+
+        .btn-sidebar-custom {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.7rem;
+            border-radius: 50px;
+            padding: 10px 15px;
+            transition: 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .btn-sidebar-custom:hover {
+            border-color: var(--cian-tech) !important;
+            color: var(--cian-tech) !important;
+            transform: translateX(5px);
+        }
+
+        .btn-sidebar-custom.active {
+            background: rgba(188, 19, 254, 0.1);
+            color: #d880ff !important;
+            border: 1px solid rgba(188, 19, 254, 0.5) !important;
+        }
+
+        /* TABLA Y PANELES */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px);
+            border-radius: 30px;
+            padding: 40px;
+        }
+
+        .table-historial {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        .table-historial tr {
+            background: rgba(255, 255, 255, 0.03);
+            transition: 0.3s;
+        }
+
+        .table-historial td {
+            padding: 20px;
+            vertical-align: middle;
+            border: none;
+        }
+
+        .table-historial tr:hover {
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .status-aprobado { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid #00ff8844; }
+        .status-pendiente { background: rgba(255, 204, 0, 0.1); color: #ffcc00; border: 1px solid #ffcc0044; }
+        
+        .date-chip {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--cian-tech);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(0, 242, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="super-overlay">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 sidebar d-none d-md-flex">
+                <div class="text-center mb-4">
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 50px;" alt="Logo">
+                    <h6 class="fw-bold text-white mt-2 small">SISTEMA MAESTRO</h6>
+                </div>
+                <nav class="nav flex-column mb-auto">
+                    <a class="btn-sidebar-custom" href="master-postulaciones.html"><i class="bi bi-person-badge"></i> Solicitudes</a>
+                    <a class="btn-sidebar-custom" href="master-vigencia.html"><i class="bi bi-clock-history"></i> Vigencia</a>
+                    <a class="btn-sidebar-custom" href="master-usuarios.html"><i class="bi bi-people"></i> Usuarios</a>
+                    <a class="btn-sidebar-custom active" href="historial-postulaciones.html"><i class="bi bi-archive"></i> Historial</a>
+                    <a class="btn-sidebar-custom" href="master-repositorio.html"><i class="bi bi-grid-1x2"></i> Módulos</a>
+                    <a class="btn-sidebar-custom" href="papelera.html"><i class="bi bi-trash3"></i> Papelera</a>
+                    
+                    <p class="text-white-25 small mt-4 ps-3" style="letter-spacing: 2px;">SISTEMA</p>
+                    <a href="super-admin.html" class="btn-sidebar-custom border-white text-white">
+                        <i class="bi bi-shield-lock"></i> Panel Maestro
+                    </a>
+                </nav>
+            </div>
+
+            <div class="col-md-10 p-5">
+                <div class="d-flex justify-content-between align-items-end mb-5">
+                    <div>
+                        <h2 class="fw-bold text-uppercase" style="letter-spacing: 3px;">
+                            <i class="bi bi-journal-text me-3 text-info"></i>Historial de Solicitudes
+                        </h2>
+                        <p class="text-white-50">Registro cronológico de ingresos a la plataforma UCMI</p>
+                    </div>
+                    <div style="min-width: 300px;">
+                        <input type="text" id="busquedaHistorial" class="form-control bg-transparent text-white border-secondary" placeholder="Buscar por entidad o email..." style="border-radius: 50px; padding: 10px 20px;">
+                    </div>
+                </div>
+
+                <div class="glass-panel">
+                    <div class="table-responsive">
+                        <table class="table-historial text-white">
+                            <thead>
+                                <tr class="text-white-50 small text-uppercase" style="letter-spacing: 1.5px;">
+                                    <th class="ps-4">Entidad / Responsable</th>
+                                    <th>Fecha de Solicitud</th>
+                                    <th>Paquete / Plan</th>
+                                    <th>Estado Final</th>
+                                    <th class="text-end pe-4">ID de Registro</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaCuerpo">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const tablaCuerpo = document.getElementById('tablaCuerpo');
+    let todasLasPostulaciones = [];
+
+    // Escuchar cambios en la colección de solicitudes/postulaciones
+    // Nota: Ajusta "postulaciones" al nombre real de tu colección
+    const q = query(collection(db, "postulaciones"), orderBy("fechaSolicitud", "desc"));
+
+    onSnapshot(q, (snapshot) => {
+        todasLasPostulaciones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderizar(todasLasPostulaciones);
+    });
+
+    function renderizar(datos) {
+        tablaCuerpo.innerHTML = '';
+        datos.forEach(p => {
+            // Formatear fecha
+            const fecha = p.fechaSolicitud ? p.fechaSolicitud : "No registrada";
+            
+            tablaCuerpo.innerHTML += `
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-bold">${p.entidad || 'Entidad Desconocida'}</div>
+                        <div class="text-white-50 small">${p.email || 'sin-email@ucmi.com'}</div>
+                    </td>
+                    <td><span class="date-chip">${fecha}</span></td>
+                    <td><span class="small text-uppercase">${p.paquete || 'Estándar'}</span></td>
+                    <td>
+                        <span class="badge-status ${p.status === 'aprobado' ? 'status-aprobado' : 'status-pendiente'}">
+                            ${p.status || 'En Proceso'}
+                        </span>
+                    </td>
+                    <td class="text-end pe-4">
+                        <code class="text-info small">${p.id.substring(0, 8)}...</code>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    // Buscador
+    document.getElementById('busquedaHistorial').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtrados = todasLasPostulaciones.filter(p => 
+            p.entidad?.toLowerCase().includes(term) || 
+            p.email?.toLowerCase().includes(term)
+        );
+        renderizar(filtrados);
+    });
+</script>
+</body>
+</html>
