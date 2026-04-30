@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Historial de Solicitudes</title>
+    <title>UCMI - Historial Permanente de Solicitudes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -11,9 +11,7 @@
         :root {
             --dorado-ucmi: #c5a059;
             --dorado-neon: #ffcc66;
-            --azul-sidebar: #1a2a3a;
             --cian-tech: #00f2ff;
-            --purpura-neon: #bc13fe;
         }
 
         body {
@@ -37,8 +35,6 @@
             border-right: 1px solid rgba(197, 160, 89, 0.3);
             display: flex;
             flex-direction: column;
-            position: sticky;
-            top: 0;
         }
 
         .nav-section-title {
@@ -55,99 +51,56 @@
             color: rgba(255, 255, 255, 0.7) !important;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1px;
             font-size: 0.7rem;
             border-radius: 50px;
             padding: 10px 15px;
-            transition: 0.3s;
+            margin-bottom: 8px;
             text-decoration: none;
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            width: 100%;
-            text-align: left;
+            transition: 0.3s;
         }
 
-        .btn-sidebar-custom:hover {
+        .btn-sidebar-custom:hover, .btn-sidebar-custom.active {
             border-color: var(--cian-tech) !important;
             color: var(--cian-tech) !important;
-            transform: translateX(5px);
-        }
-
-        .btn-sidebar-custom.active {
-            background: rgba(188, 19, 254, 0.1);
-            color: #d880ff !important;
-            border: 1px solid rgba(188, 19, 254, 0.5) !important;
-        }
-
-        .btn-panel-principal {
-            border: 1px solid white !important;
-            color: white !important;
+            background: rgba(0, 242, 255, 0.05);
         }
 
         .btn-cerrar-sesion {
-            background: rgba(255, 0, 0, 0.05);
-            border: 1px solid rgba(255, 0, 0, 0.4) !important;
+            border: 1px solid rgba(255, 77, 77, 0.4) !important;
             color: #ff4d4d !important;
-            margin-top: 10px;
         }
 
-        .btn-cerrar-sesion:hover {
-            background: #ff4d4d !important;
-            color: white !important;
-        }
-
-        /* --- PANEL CENTRAL --- */
+        /* --- PANEL DE DATOS --- */
         .glass-panel {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(25px);
-            border-radius: 30px;
-            padding: 40px;
-        }
-
-        .table-historial {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 10px;
+            border-radius: 25px;
+            padding: 30px;
         }
 
         .table-historial tr {
             background: rgba(255, 255, 255, 0.03);
-            transition: 0.3s;
+            border-bottom: 8px solid transparent; /* Espaciado entre filas */
         }
 
-        .table-historial td {
-            padding: 20px;
-            vertical-align: middle;
-            border: none;
-        }
-
-        .table-historial tr:hover {
-            background: rgba(255, 255, 255, 0.07);
-        }
-
-        .neon-gold { color: var(--dorado-neon); font-weight: bold; }
-
-        .badge-status {
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
-
-        .status-aprobado { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid #00ff8844; }
-        .status-pendiente { background: rgba(255, 204, 0, 0.1); color: #ffcc00; border: 1px solid #ffcc0044; }
-        
-        .date-chip {
-            font-family: 'Courier New', monospace;
-            background: rgba(0, 242, 255, 0.1);
-            color: var(--cian-tech);
-            padding: 4px 10px;
+        .status-tag {
+            padding: 4px 12px;
             border-radius: 6px;
-            font-size: 0.8rem;
-            border: 1px solid rgba(0, 242, 255, 0.2);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .status-nuevo { background: rgba(0, 242, 255, 0.2); color: var(--cian-tech); }
+        .status-procesado { background: rgba(197, 160, 89, 0.2); color: var(--dorado-ucmi); }
+
+        .date-badge {
+            color: var(--dorado-neon);
+            font-family: monospace;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -156,62 +109,52 @@
 <div class="super-overlay">
     <div class="container-fluid">
         <div class="row">
-            <!-- SIDEBAR -->
             <div class="col-md-2 sidebar d-none d-md-flex">
                 <div class="text-center mb-4">
-                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 50px;" alt="Logo">
-                    <p class="small mt-2 neon-gold">SISTEMA UCMI</p>
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 45px;" alt="Logo">
+                    <p class="small mt-2 fw-bold text-uppercase" style="color: var(--dorado-ucmi);">Maestro</p>
                 </div>
+                
                 <nav class="nav flex-column mb-auto">
-                    <p class="nav-section-title">Protocolos</p>
-                    <a class="btn-sidebar-custom" href="master-postulaciones.html"><i class="bi bi-person-badge me-2"></i> Solicitudes</a>
-                    <a class="btn-sidebar-custom" href="master-vigencia.html"><i class="bi bi-clock-history me-2"></i> Vigencia</a>
+                    <p class="nav-section-title">Registros</p>
+                    <a class="btn-sidebar-custom" href="master-postulaciones.html"><i class="bi bi-send me-2"></i> Postulaciones</a>
+                    <a class="btn-sidebar-custom active" href="historial-postulaciones.html"><i class="bi bi-archive me-2"></i> Historial Inmortal</a>
                     <a class="btn-sidebar-custom" href="master-usuarios.html"><i class="bi bi-people me-2"></i> Usuarios</a>
-                    <a class="btn-sidebar-custom active" href="historial-postulaciones.html"><i class="bi bi-archive me-2"></i> Historial</a>
-                    <a class="btn-sidebar-custom" href="master-repositorio.html"><i class="bi bi-grid-1x2 me-2"></i> Módulos</a>
-                    <a class="btn-sidebar-custom" href="papelera.html"><i class="bi bi-trash3 me-2"></i> Papelera</a>
                     
-                    <p class="nav-section-title">Sistema</p>
-                    <a href="super-admin.html" class="btn-sidebar-custom btn-panel-principal">
-                        <i class="bi bi-grid-3x3-gap-fill me-2"></i> Panel Maestro
-                    </a>
-                    <button id="btnLogoutSidebar" class="btn-sidebar-custom btn-cerrar-sesion">
-                        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+                    <p class="nav-section-title">Control</p>
+                    <a class="btn-sidebar-custom" href="master-vigencia.html"><i class="bi bi-shield-check me-2"></i> Vigencia</a>
+                    <a class="btn-sidebar-custom" href="papelera.html"><i class="bi bi-trash3 me-2"></i> Papelera</a>
+                    <button id="btnSignOut" class="btn-sidebar-custom btn-cerrar-sesion mt-3">
+                        <i class="bi bi-box-arrow-right me-2"></i> Salir
                     </button>
                 </nav>
             </div>
 
-            <!-- CONTENIDO PRINCIPAL -->
             <div class="col-md-10 p-5">
-                <div class="d-flex justify-content-between align-items-end mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h2 class="neon-gold text-uppercase mb-1" style="letter-spacing: 3px;">
-                            <i class="bi bi-journal-text me-3"></i>Historial de Solicitudes
-                        </h2>
-                        <p class="text-white-50 small">Registro cronológico de ingresos y solicitudes a la plataforma UCMI.</p>
+                        <h2 style="color: var(--dorado-neon); letter-spacing: 2px;">HISTORIAL DE ENTRADA</h2>
+                        <p class="text-white-50">Registro permanente de toda solicitud enviada a la plataforma.</p>
                     </div>
-                    <div style="min-width: 350px;">
-                        <div class="input-group">
-                            <span class="input-group-text bg-transparent border-secondary text-white-50"><i class="bi bi-search"></i></span>
-                            <input type="text" id="busquedaHistorial" class="form-control bg-transparent text-white border-secondary" placeholder="Buscar entidad, responsable o email...">
-                        </div>
+                    <div class="text-end">
+                        <input type="text" id="filterInput" class="form-control bg-dark text-white border-secondary" placeholder="Filtrar por entidad...">
                     </div>
                 </div>
 
                 <div class="glass-panel">
                     <div class="table-responsive">
-                        <table class="table-historial text-white">
+                        <table class="table table-borderless text-white table-historial">
                             <thead>
-                                <tr class="text-white-50 small text-uppercase" style="letter-spacing: 1.5px;">
-                                    <th class="ps-4 pb-3">Entidad / Responsable</th>
-                                    <th class="pb-3">Fecha de Solicitud</th>
-                                    <th class="pb-3">Paquete / Plan</th>
-                                    <th class="pb-3">Estado</th>
-                                    <th class="text-end pe-4 pb-3">Registro ID</th>
+                                <tr class="text-white-50 small">
+                                    <th>FECHA DE ENVÍO</th>
+                                    <th>ENTIDAD / SOLICITANTE</th>
+                                    <th>CORREO ELECTRÓNICO</th>
+                                    <th>ESTADO</th>
+                                    <th class="text-end">ID UNICO</th>
                                 </tr>
                             </thead>
-                            <tbody id="tablaCuerpo">
-                                <!-- Los datos se inyectarán aquí dinámicamente -->
+                            <tbody id="historialBody">
+                                <!-- Datos inyectados -->
                             </tbody>
                         </table>
                     </div>
@@ -226,7 +169,6 @@
     import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Configuración de Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
         authDomain: "ucmi-13796634.firebaseapp.com",
@@ -240,83 +182,39 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    const tablaCuerpo = document.getElementById('tablaCuerpo');
-    let todasLasPostulaciones = [];
+    const historialBody = document.getElementById('historialBody');
 
-    // --- LÓGICA DE CIERRE DE SESIÓN ---
-    document.getElementById('btnLogoutSidebar').addEventListener('click', async () => {
-        const confirmacion = await Swal.fire({
-            title: '¿Cerrar sesión?',
-            text: "Se finalizará tu acceso al panel maestro.",
-            icon: 'warning',
-            showCancelButton: true,
-            background: '#0a0e14',
-            color: '#fff',
-            confirmButtonColor: '#ff4d4d',
-            confirmButtonText: 'Sí, salir',
-            cancelButtonText: 'Cancelar'
-        });
-
-        if (confirmacion.isConfirmed) {
-            signOut(auth).then(() => {
-                window.location.href = "index.html";
-            }).catch((error) => console.error("Error al cerrar sesión:", error));
-        }
-    });
-
-    // --- CARGA DE DATOS DESDE FIRESTORE ---
-    // Se asume que existe la colección "postulaciones"
+    // Escucha en tiempo real: registra apenas alguien envía una solicitud
     const q = query(collection(db, "postulaciones"), orderBy("fechaSolicitud", "desc"));
 
     onSnapshot(q, (snapshot) => {
-        todasLasPostulaciones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderizar(todasLasPostulaciones);
-    });
-
-    function renderizar(datos) {
-        tablaCuerpo.innerHTML = '';
-        if (datos.length === 0) {
-            tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros de solicitudes disponibles.</td></tr>`;
-            return;
-        }
-
-        datos.forEach(p => {
-            // Manejo de fecha (Firestore Timestamp a String)
-            const fechaRaw = p.fechaSolicitud?.toDate ? p.fechaSolicitud.toDate().toLocaleDateString() : (p.fechaSolicitud || '---');
+        historialBody.innerHTML = '';
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const fecha = data.fechaSolicitud?.toDate ? data.fechaSolicitud.toDate().toLocaleString() : 'Fecha pendiente';
             
-            tablaCuerpo.innerHTML += `
+            historialBody.innerHTML += `
                 <tr>
-                    <td class="ps-4">
-                        <div class="neon-gold">${p.entidad || 'Entidad no registrada'}</div>
-                        <div class="text-white-50 small">${p.nombreResponsable || ''}</div>
-                        <div class="text-white-50 small" style="font-size: 0.7rem;">${p.email || 'Sin correo'}</div>
-                    </td>
-                    <td><span class="date-chip"><i class="bi bi-calendar3 me-2"></i>${fechaRaw}</span></td>
-                    <td><span class="small text-uppercase fw-bold">${p.paquete || 'Básico'}</span></td>
+                    <td class="date-badge">${fecha}</td>
                     <td>
-                        <span class="badge-status ${p.status === 'aprobado' ? 'status-aprobado' : 'status-pendiente'}">
-                            ${p.status || 'Pendiente'}
+                        <div class="fw-bold text-white">${data.entidad || 'N/A'}</div>
+                        <div class="small text-white-50">${data.nombreResponsable || ''}</div>
+                    </td>
+                    <td class="text-info">${data.email || '---'}</td>
+                    <td>
+                        <span class="status-tag ${data.procesado ? 'status-procesado' : 'status-nuevo'}">
+                            ${data.procesado ? 'PROCESADO' : 'SOLICITUD NUEVA'}
                         </span>
                     </td>
-                    <td class="text-end pe-4">
-                        <code class="text-info small" style="background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 4px;">
-                            ${p.id.substring(0, 10)}
-                        </code>
-                    </td>
+                    <td class="text-end"><small class="text-white-25">${doc.id.substring(0,8)}</small></td>
                 </tr>
             `;
         });
-    }
+    });
 
-    // --- FILTRO DE BÚSQUEDA ---
-    document.getElementById('busquedaHistorial').addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase();
-        const filtrados = todasLasPostulaciones.filter(p => 
-            p.entidad?.toLowerCase().includes(term) || 
-            p.nombreResponsable?.toLowerCase().includes(term) ||
-            p.email?.toLowerCase().includes(term)
-        );
-        renderizar(filtrados);
+    // Cerrar Sesión
+    document.getElementById('btnSignOut').addEventListener('click', () => {
+        signOut(auth).then(() => window.location.href = "index.html");
     });
 </script>
 </body>
