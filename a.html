@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Panel de Gestión de Licencias</title>
+    <title>UCMI - Historial de Solicitudes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -13,7 +13,6 @@
             --dorado-neon: #ffcc66;
             --azul-sidebar: #1a2a3a;
             --cian-tech: #00f2ff;
-            --purpura-neon: #bc13fe;
         }
 
         body {
@@ -28,6 +27,7 @@
             min-height: 100vh;
         }
 
+        /* --- SIDEBAR --- */
         .sidebar { 
             background: rgba(26, 42, 58, 0.95); 
             backdrop-filter: blur(10px);
@@ -38,6 +38,14 @@
             flex-direction: column;
             position: sticky;
             top: 0;
+        }
+
+        .nav-section-title {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 20px 0 10px 10px;
         }
 
         .btn-sidebar-custom {
@@ -55,7 +63,6 @@
             display: flex;
             align-items: center;
             margin-bottom: 8px;
-            width: 100%;
         }
 
         .btn-sidebar-custom:hover, .btn-sidebar-custom.active {
@@ -64,44 +71,57 @@
             background: rgba(0, 242, 255, 0.05);
         }
 
+        .btn-cerrar-sesion {
+            border-color: #ff4d4d !important;
+            color: #ff4d4d !important;
+        }
+
+        /* --- PANEL CENTRAL --- */
         .glass-panel {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(25px);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
+            border-radius: 30px;
+            padding: 40px;
         }
 
-        .form-control, .form-select {
-            background: rgba(0, 0, 0, 0.2) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: white !important;
+        .table-historial {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
         }
 
         .table-historial tr {
             background: rgba(255, 255, 255, 0.03);
-            border-bottom: 8px solid transparent;
+            transition: 0.3s;
+            border-radius: 15px;
+        }
+
+        .table-historial td {
+            padding: 20px;
+            vertical-align: middle;
         }
 
         .neon-gold { color: var(--dorado-neon); font-weight: bold; }
+        
         .date-chip {
+            font-family: 'Courier New', monospace;
             background: rgba(0, 242, 255, 0.1);
             color: var(--cian-tech);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.75rem;
+            padding: 5px 12px;
+            border-radius: 8px;
             border: 1px solid rgba(0, 242, 255, 0.2);
         }
 
-        .badge-status {
-            padding: 5px 10px;
+        .badge-licencia {
+            background: rgba(197, 160, 89, 0.15);
+            color: var(--dorado-ucmi);
+            padding: 4px 10px;
             border-radius: 6px;
-            font-size: 0.65rem;
-            text-transform: uppercase;
+            font-size: 0.7rem;
             font-weight: bold;
+            border: 1px solid rgba(197, 160, 89, 0.3);
         }
-        .status-pendiente { background: rgba(255, 193, 7, 0.1); color: #ffc107; border: 1px solid #ffc10744; }
     </style>
 </head>
 <body>
@@ -116,76 +136,48 @@
                     <p class="small mt-2 neon-gold">SISTEMA UCMI</p>
                 </div>
                 <nav class="nav flex-column mb-auto">
-                    <a class="btn-sidebar-custom active" href="#"><i class="bi bi-plus-circle me-2"></i> Nueva Solicitud</a>
-                    <a class="btn-sidebar-custom" href="#"><i class="bi bi-archive me-2"></i> Historial</a>
-                    <button id="btnLogoutSidebar" class="btn-sidebar-custom mt-4 text-danger border-danger">
-                        <i class="bi bi-box-arrow-right me-2"></i> Salir
+                    <p class="nav-section-title">Protocolos</p>
+                    <a class="btn-sidebar-custom" href="master-postulaciones.html"><i class="bi bi-person-badge me-2"></i> Solicitudes</a>
+                    <a class="btn-sidebar-custom active" href="historial-postulaciones.html"><i class="bi bi-archive me-2"></i> Historial</a>
+                    
+                    <p class="nav-section-title">Sistema</p>
+                    <button id="btnLogoutSidebar" class="btn-sidebar-custom btn-cerrar-sesion">
+                        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
                     </button>
                 </nav>
             </div>
 
-            <!-- CONTENIDO -->
+            <!-- CONTENIDO PRINCIPAL -->
             <div class="col-md-10 p-5">
-                <h2 class="neon-gold mb-4 text-uppercase" style="letter-spacing: 2px;">Gestión de Solicitudes UCMI</h2>
-
-                <!-- FORMULARIO DE REGISTRO -->
-                <div class="glass-panel">
-                    <h5 class="text-white-50 mb-4 small"><i class="bi bi-pencil-square me-2"></i>REGISTRAR NUEVA ENTIDAD</h5>
-                    <form id="formSolicitud">
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="small text-white-50">Institución (Entidad)</label>
-                                <input type="text" id="entidad" class="form-control" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="small text-white-50">Responsable (nombreResponsable)</label>
-                                <input type="text" id="nombreResponsable" class="form-control" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="small text-white-50">Ubicación (ubicacion)</label>
-                                <input type="text" id="ubicacion" class="form-control" placeholder="Ciudad, País" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="small text-white-50">Programas (programas)</label>
-                                <input type="text" id="programas" class="form-control" placeholder="Ej: Cálculo, Física" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="small text-white-50">Duración (duracionLicencia)</label>
-                                <select id="duracionLicencia" class="form-select">
-                                    <option value="6 meses">6 Meses</option>
-                                    <option value="1 año">1 Año</option>
-                                    <option value="Permanente">Permanente</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <button type="submit" class="btn btn-sidebar-custom w-100 m-0 py-2" style="background: rgba(0,242,255,0.1);">
-                                    <i class="bi bi-cloud-arrow-up me-2"></i>PROCESAR SOLICITUD
-                                </button>
-                            </div>
+                <div class="d-flex justify-content-between align-items-end mb-5">
+                    <div>
+                        <h2 class="neon-gold text-uppercase mb-1" style="letter-spacing: 3px;">
+                            <i class="bi bi-journal-text me-3"></i>Historial Maestro
+                        </h2>
+                        <p class="text-white-50 small">Registro histórico de solicitudes procesadas en Firebase.</p>
+                    </div>
+                    <div style="min-width: 400px;">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-secondary text-white-50"><i class="bi bi-search"></i></span>
+                            <input type="text" id="busquedaHistorial" class="form-control bg-transparent text-white border-secondary" placeholder="Buscar por entidad, responsable o ubicación...">
                         </div>
-                    </form>
+                    </div>
                 </div>
 
-                <!-- TABLA HISTORIAL -->
                 <div class="glass-panel">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h5 class="text-white-50 m-0 small"><i class="bi bi-journal-text me-2"></i>REGISTROS EN FIRESTORE</h5>
-                        <input type="text" id="busquedaHistorial" class="form-control w-25 bg-transparent" placeholder="Filtrar historial...">
-                    </div>
                     <div class="table-responsive">
-                        <table class="table table-borderless text-white table-historial">
+                        <table class="table-historial text-white">
                             <thead>
-                                <tr class="text-white-50 small">
-                                    <th>ENTIDAD</th>
-                                    <th>RESPONSABLE</th>
-                                    <th>FECHA</th>
-                                    <th>PROGRAMAS</th>
-                                    <th>VIGENCIA</th>
-                                    <th>ESTADO</th>
+                                <tr class="text-white-50 small text-uppercase" style="letter-spacing: 1.5px;">
+                                    <th class="ps-4 pb-3">Entidad / Responsable</th>
+                                    <th class="pb-3">Ubicación</th>
+                                    <th class="pb-3">Programas / Vigencia</th>
+                                    <th class="pb-3 text-center">Fecha Solicitud</th>
+                                    <th class="text-end pe-4 pb-3">Firebase ID</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaCuerpo">
-                                <!-- Datos dinámicos -->
+                                <!-- Datos inyectados -->
                             </tbody>
                         </table>
                     </div>
@@ -197,7 +189,8 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -210,56 +203,73 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    // --- LÓGICA DE REGISTRO (ESCRITURA) ---
-    document.getElementById('formSolicitud').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const btn = e.target.querySelector('button');
-        btn.disabled = true;
+    let todasLasPostulaciones = [];
 
-        try {
-            await addDoc(collection(db, "postulaciones"), {
-                entidad: document.getElementById('entidad').value,
-                nombreResponsable: document.getElementById('nombreResponsable').value,
-                ubicacion: document.getElementById('ubicacion').value,
-                programas: document.getElementById('programas').value,
-                duracionLicencia: document.getElementById('duracionLicencia').value,
-                fechaSolicitud: serverTimestamp(),
-                status: "pendiente"
-            });
+    // --- ESCUCHA EN TIEMPO REAL ---
+    const q = query(collection(db, "postulaciones"), orderBy("fechaSolicitud", "desc"));
 
-            Swal.fire({ icon: 'success', title: 'Solicitud Registrada', background: '#0a0e14', color: '#fff' });
-            e.target.reset();
-        } catch (error) {
-            Swal.fire('Error', 'No se pudo conectar con Firebase', 'error');
-        } finally {
-            btn.disabled = false;
-        }
+    onSnapshot(q, (snapshot) => {
+        todasLasPostulaciones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderizar(todasLasPostulaciones);
     });
 
-    // --- LÓGICA DE HISTORIAL (LECTURA EN TIEMPO REAL) ---
-    const q = query(collection(db, "postulaciones"), orderBy("fechaSolicitud", "desc"));
-    
-    onSnapshot(q, (snapshot) => {
+    function renderizar(datos) {
         const tabla = document.getElementById('tablaCuerpo');
         tabla.innerHTML = '';
-        
-        snapshot.forEach(doc => {
-            const p = doc.data();
-            const fecha = p.fechaSolicitud?.toDate ? p.fechaSolicitud.toDate().toLocaleDateString() : 'Pendiente...';
-            
+
+        if (datos.length === 0) {
+            tabla.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">Sin registros encontrados.</td></tr>`;
+            return;
+        }
+
+        datos.forEach(p => {
+            // Formateo de Fecha
+            const fecha = p.fechaSolicitud?.toDate ? 
+                p.fechaSolicitud.toDate().toLocaleDateString('es-ES') : 
+                (p.fechaSolicitud || 'N/A');
+
             tabla.innerHTML += `
                 <tr>
-                    <td><div class="neon-gold">${p.entidad}</div><div class="small text-white-50">${p.ubicacion}</div></td>
-                    <td class="small">${p.nombreResponsable}</td>
-                    <td><span class="date-chip">${fecha}</span></td>
-                    <td class="small text-info">${p.programas}</td>
-                    <td class="small">${p.duracionLicencia}</td>
-                    <td><span class="badge-status status-pendiente">${p.status}</span></td>
+                    <td class="ps-4">
+                        <div class="neon-gold">${p.entidad || 'Entidad no registrada'}</div>
+                        <div class="text-white-50 small"><i class="bi bi-person me-1"></i>${p.nombreResponsable || 'Sin nombre'}</div>
+                    </td>
+                    <td>
+                        <div class="small"><i class="bi bi-geo-alt me-2 text-info"></i>${p.ubicacion || 'No definida'}</div>
+                    </td>
+                    <td>
+                        <div class="small mb-1">${p.programas || 'General'}</div>
+                        <span class="badge-licencia">${p.duracionLicencia || 'Pendiente'}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="date-chip"><i class="bi bi-calendar3 me-2"></i>${fecha}</span>
+                    </td>
+                    <td class="text-end pe-4">
+                        <code class="text-info small" style="background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 4px;">
+                            ${p.id.substring(0, 10)}
+                        </code>
+                    </td>
                 </tr>
             `;
         });
+    }
+
+    // --- BUSCADOR ---
+    document.getElementById('busquedaHistorial').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtrados = todasLasPostulaciones.filter(p => 
+            p.entidad?.toLowerCase().includes(term) || 
+            p.nombreResponsable?.toLowerCase().includes(term) ||
+            p.ubicacion?.toLowerCase().includes(term)
+        );
+        renderizar(filtrados);
+    });
+
+    // --- LOGOUT ---
+    document.getElementById('btnLogoutSidebar').addEventListener('click', () => {
+        signOut(auth).then(() => window.location.href = "index.html");
     });
 </script>
 </body>
