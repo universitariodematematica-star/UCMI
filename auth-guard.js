@@ -24,7 +24,7 @@ const db = getFirestore(app);
 const MASTER_ID = "m56REyF19sOsC6BE5sJdJG6eR863";
 
 // CONFIGURACIÓN DE INACTIVIDAD (30 minutos)
-const TIEMPO_INACTIVIDAD = 30 * 60 * 1000; 
+const TIEMPO_INACTIVIDAD = 20 * 1000; 
 let timer;
 
 // 1. BLOQUEO VISUAL INMEDIATO
