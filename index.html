@@ -7,60 +7,19 @@
     <link rel="icon" type="image/png" href="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --azul-ucmi: #004dc0;
-            --oscuro-fondo: #0a192f;
-            --gris-suave: #8892b0;
-            --texto-universitario: #333333;
-        }
-
-        body, html {
-            margin: 0; padding: 0; height: 100%;
-            font-family: 'Poppins', sans-serif;
-            background-color: #ffffff; overflow: hidden;
-        }
-
+        :root { --azul-ucmi: #004dc0; --oscuro-fondo: #0a192f; --gris-suave: #8892b0; --texto-universitario: #333333; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Poppins', sans-serif; background-color: #ffffff; overflow: hidden; }
         .contenedor-principal { display: flex; height: 100vh; width: 100%; }
-
-        .seccion-visual {
-            flex: 1.2;
-            background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png');
-            background-size: cover; background-position: center;
-        }
-
-        .seccion-login {
-            flex: 0.8; background-color: #ffffff;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center; padding: 60px;
-        }
-
+        .seccion-visual { flex: 1.2; background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png'); background-size: cover; background-position: center; }
+        .seccion-login { flex: 0.8; background-color: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px; }
         .login-card { width: 100%; max-width: 400px; text-align: center; }
-
-        .contenedor-logo-derecho img {
-            width: 150px; height: auto; border-radius: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); margin-bottom: 10px;
-        }
-
-        .texto-universitario {
-            font-size: 1.50rem; color: var(--texto-universitario);
-            text-transform: uppercase; margin-bottom: 40px; letter-spacing: 2px;
-        }
-
+        .contenedor-logo-derecho img { width: 150px; height: auto; border-radius: 20px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); margin-bottom: 10px; }
+        .texto-universitario { font-size: 1.2rem; color: var(--texto-universitario); text-transform: uppercase; margin-bottom: 40px; letter-spacing: 2px; }
         .input-group { margin-bottom: 20px; text-align: left; }
         .input-group label { display: block; font-size: 0.85rem; color: var(--gris-suave); margin-bottom: 8px; }
-        .input-group input {
-            width: 100%; padding: 14px 16px; border-radius: 12px;
-            border: 1.5px solid #eeeeee; font-size: 1.2rem;
-        }
-
-        .btn-entrar {
-            width: 100%; padding: 15px; background-color: var(--azul-ucmi);
-            color: white; border: none; border-radius: 12px;
-            font-weight: 600; cursor: pointer;
-        }
-
+        .input-group input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid #eeeeee; font-size: 1rem; }
+        .btn-entrar { width: 100%; padding: 15px; background-color: var(--azul-ucmi); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .btn-entrar:disabled { background-color: #ccc; cursor: not-allowed; }
-
         @media (max-width: 1024px) { .seccion-visual { display: none; } .seccion-login { flex: 1; } }
     </style>
 </head>
@@ -74,11 +33,11 @@
                     <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo">
                 </div>
                 <div class="texto-universitario">Universitario de Ciencias Matemáticas e Idiomas</div>
-                <h2>Iniciar Sesión</h2>
+                <h2 id="status-text">Iniciar Sesión</h2>
                 <form id="form-login">
                     <div class="input-group">
                         <label>Correo Electrónico</label>
-                        <input type="email" id="email" placeholder="usuario@ucmi.edu" required>
+                        <input type="email" id="email" placeholder="usuario@hotmail.com" required>
                     </div>
                     <div class="input-group">
                         <label>Contraseña</label>
@@ -109,71 +68,76 @@
         const db = getFirestore(app);
         const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
 
-        let procesandoRedireccion = false; // BANDERILLA PARA EVITAR BUCLE
+        let estaRedirigiendo = false;
 
-        async function redirigirUsuario(user) {
-            if (procesandoRedireccion) return;
-            procesandoRedireccion = true;
+        async function ejecutarRedireccion(user) {
+            if (estaRedirigiendo) return;
+            estaRedirigiendo = true;
 
             const btn = document.getElementById('btn-submit');
-            if(btn) { btn.disabled = true; btn.innerText = "VERIFICANDO..."; }
+            const status = document.getElementById('status-text');
+            
+            if(btn) { btn.disabled = true; btn.innerText = "ACCEDIENDO..."; }
+            if(status) { status.innerText = "Verificando Perfil..."; }
 
-            // 1. Caso SuperAdmin inmediato
+            // Caso SuperAdmin
             if (user.uid === MI_UID_MAESTRO) {
                 window.location.href = "https://universitariodematematica-star.github.io/UCMI/super-admin.html";
                 return;
             }
 
             try {
-                // Buscamos en "usuarios" usando el email como ID
+                // Buscamos el documento yaracuymat@hotmail.com en usuarios
                 const docRef = doc(db, "usuarios", user.email);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    const perfil = data.perfil ? data.perfil.toLowerCase() : "";
-                    
+                    const perfil = (docSnap.data().perfil || "").toLowerCase();
                     console.log("Perfil:", perfil);
 
-                    switch(perfil) {
-                        case "academia": window.location.href = "admin-academia.html"; break;
-                        case "profesor_asociado": window.location.href = "admin-profesor-asociado.html"; break;
-                        case "profesor_embajador": window.location.href = "admin-profesor-embajador.html"; break;
-                        default: window.location.href = "dashboard.html";
-                    }
+                    const rutas = {
+                        "academia": "admin-academia.html",
+                        "profesor_asociado": "admin-profesor-asociado.html",
+                        "profesor_embajador": "admin-profesor-embajador.html"
+                    };
+
+                    window.location.href = rutas[perfil] || "dashboard.html";
                 } else {
-                    alert("No se encontró perfil para: " + user.email);
+                    // SI NO EXISTE EL DOCUMENTO: Forzamos salida para romper el bucle
+                    console.error("Documento no encontrado en 'usuarios'");
+                    alert("Error: No tienes un perfil asignado en la colección 'usuarios'. Contacta al administrador.");
                     await signOut(auth);
-                    location.reload(); // Recarga limpia para salir del estado
+                    window.location.reload(); 
                 }
             } catch (error) {
-                console.error("Error crítico:", error);
-                if (error.code === 'permission-denied') {
-                    alert("Error de permisos en Firebase. Revisa las reglas.");
-                }
-                procesandoRedireccion = false;
+                console.error("Error en Firestore:", error);
+                // Si hay error de permisos (image_83a5c2.png), también cerramos sesión
+                await signOut(auth);
+                alert("Error de permisos: Asegúrate de estar registrado correctamente.");
+                estaRedirigiendo = false;
+                if(btn) { btn.disabled = false; btn.innerText = "Entrar a UCMI"; }
             }
         }
 
         onAuthStateChanged(auth, (user) => {
-            if (user && !procesandoRedireccion) {
-                redirigirUsuario(user);
+            if (user && !estaRedirigiendo) {
+                ejecutarRedireccion(user);
             }
         });
 
         document.getElementById('form-login').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('password').value;
             const btn = document.getElementById('btn-submit');
 
             btn.disabled = true;
-            btn.innerText = "INICIANDO SESIÓN...";
+            btn.innerText = "VALIDANDO...";
 
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
-                alert("DATOS INCORRECTOS");
+                alert("Correo o contraseña incorrectos.");
                 btn.disabled = false;
                 btn.innerText = "Entrar a UCMI";
             }
