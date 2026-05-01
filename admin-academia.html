@@ -2,155 +2,100 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <style>html { display: none; }</style>
-    <script type="module" src="auth-guard.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academia - Gestión de Solicitudes</title>
+    <title>UCMI - Panel de Academia</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
     <style>
-        :root {
-            --azul-ucmi: #06090f;
-            --azul-sidebar: #1a2a3a;
-            --verde-exito: #27ae60;
-            --dorado-ucmi: #c5a059;
-            --rojo-logout: #e74c3c;
-            --indigo-ucmi: #4b0082;
-        }
-        
-        body { 
+        :root { --dorado-ucmi: #c5a059; }
+        body {
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-            background-size: cover; font-family: 'Segoe UI', sans-serif; margin: 0; color: white;
+            background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; min-height: 100vh;
         }
-
-        .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); min-height: 100vh; }
-        
-        .sidebar { 
-            background: rgba(26, 42, 58, 0.95); backdrop-filter: blur(10px); min-height: 100vh; padding: 25px 15px; position: sticky; top: 0; border-right: 1px solid rgba(197, 160, 89, 0.3); display: flex; flex-direction: column;
-        }
-
-        .logo-sidebar { height: 60px; object-fit: contain; margin-bottom: 10px; border-radius: 8px; }
-        
-        /* Estilo Nueva Tarjeta */
-        .card-link-ucmi {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(197, 160, 89, 0.3);
-            border-radius: 20px;
-            padding: 20px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: white;
-            display: flex;
-            align-items: center;
-            backdrop-filter: blur(10px);
-            margin-bottom: 25px;
-            max-width: 350px;
-        }
-
-        .card-link-ucmi:hover {
-            background: rgba(197, 160, 89, 0.1);
-            border-color: var(--dorado-ucmi);
-            transform: translateY(-5px);
-            color: var(--dorado-ucmi);
-        }
-
-        .card-icon {
-            font-size: 2.5rem;
-            margin-right: 20px;
-            color: var(--dorado-ucmi);
-        }
-
-        .nav-item-ucmi {
-            display: flex; align-items: center; color: rgba(255,255,255,0.6);
-            text-decoration: none; padding: 10px 15px; margin-bottom: 5px; border-radius: 10px; transition: 0.3s all ease; font-size: 0.85rem;
-        }
-
-        .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
-        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; }   
-
-        .btn-sidebar-action {
-            background: transparent; border: 1px solid rgba(255, 255, 255, 0.4) !important; color: white !important;
-            font-weight: 600; text-transform: uppercase; font-size: 0.7rem; border-radius: 50px; padding: 10px;
-            text-decoration: none; text-align: center; transition: all 0.3s ease-in-out; display: block; margin-bottom: 10px;
-        }
-
-        .btn-sidebar-action:hover { background: rgba(255, 255, 255, 0.1); border-color: #ffffff !important; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
-        .btn-logout { border-color: rgba(231, 76, 60, 0.4) !important; color: rgba(231, 76, 60, 0.8) !important; }
-        .btn-logout:hover { background: rgba(231, 76, 60, 0.1) !important; border-color: var(--rojo-logout) !important; color: white !important; }
-
-        .table-container { 
-            background: rgba(255, 255, 255, 0.03) !important; backdrop-filter: blur(15px);
-            border-radius: 28px; padding: 30px; border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        }
-
-        .table { --bs-table-bg: transparent !important; --bs-table-color: white !important; }
-        .badge-perfil { font-size: 0.7rem; padding: 5px 12px; border-radius: 50px; color: white; font-weight: 700; text-transform: uppercase; }
-        .bg-alumno { background: var(--verde-exito); }
+        .overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.5) 0%, rgba(6, 9, 15, 0.9) 100%); min-height: 100vh; }
+        .navbar-master { background: rgba(6, 9, 15, 0.85); border-bottom: 1px solid var(--dorado-ucmi); backdrop-filter: blur(10px); padding: 0.8rem 2rem; }
+        .logo-nav { height: 50px; object-fit: contain; border-radius: 5px; opacity: 0; transition: opacity 0.4s ease; }
+        .offcanvas { background: rgba(6, 9, 15, 0.98) !important; border-right: 1px solid var(--dorado-ucmi); color: white; }
+        .profile-img-container { width: 110px; height: 110px; margin: 20px auto; border-radius: 50%; border: 2px solid var(--dorado-ucmi); overflow: hidden; background: #000; }
+        #logoPreview { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.4s ease; }
+        .admin-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 30px; transition: 0.3s; text-align: center; cursor: pointer; text-decoration: none; color: white; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .admin-card:hover { background: rgba(197, 160, 89, 0.1); border-color: var(--dorado-ucmi); transform: translateY(-5px); }
+        .icon-box { font-size: 2.5rem; color: var(--dorado-ucmi); margin-bottom: 15px; }
+        .text-gold { color: var(--dorado-ucmi); text-shadow: 0 0 10px rgba(197, 160, 89, 0.3); }
     </style>
 </head>
-
 <body>
-<div class="super-overlay">
-    <div class="container-fluid">
-        <div class="row">
-            <!-- SIDEBAR -->
-            <div class="col-md-2 sidebar d-none d-md-flex">
-                <div class="text-center mb-4">
-                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" class="logo-sidebar" alt="Logo Academia">
-                    <h5 class="fw-bold mt-2 text-white">ACADEMIA ADMIN</h5>
-                </div>
 
-                <nav class="sidebar-nav">
-                    <a href="#" class="nav-item-ucmi active"><i class="bi bi-envelope-paper"></i> SOLICITUDES</a>
-                    <a href="alumnos.html" class="nav-item-ucmi"><i class="bi bi-mortarboard"></i> MIS ALUMNOS</a>
-                    <a href="cursos.html" class="nav-item-ucmi"><i class="bi bi-journal-bookmark"></i> CURSOS</a>
-                </nav>
+<div class="overlay">
+    <nav class="navbar navbar-master sticky-top">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-outline-warning me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu"><i class="bi bi-list"></i></button>
+                <img src="" id="navLogo" class="logo-nav">
+            </div>
+            <div class="text-end">
+                <small class="d-block opacity-75">Panel de Gestión</small>
+                <span id="navEntidad" class="fw-bold text-gold">Cargando...</span>
+            </div>
+        </div>
+    </nav>
 
-                <div class="mt-4 pt-4 border-top border-secondary">
-                    <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Salir</a>
+    <div class="offcanvas offcanvas-start" id="sidebarMenu">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <h5 class="offcanvas-title text-warning">CONFIGURACIÓN</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column">
+            <div class="text-center mb-4">
+                <div class="profile-img-container"><img id="logoPreview" src=""></div>
+                <h5 id="sideNombreEntidad" class="fw-bold">Cargando...</h5>
+                <p class="small text-secondary">Sede Oficial</p>
+            </div>
+            <div class="bg-dark p-3 rounded-4 border border-secondary mb-4">
+                <label class="form-label small fw-bold">CAMBIAR LOGO</label>
+                <input type="file" id="inputLogo" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" accept="image/*">
+                <button id="btnSaveLogo" class="btn btn-warning btn-sm w-100 fw-bold">GUARDAR LOGO</button>
+            </div>
+            <button id="btnLogout" class="btn btn-outline-danger mt-auto rounded-pill">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <div class="row g-4">
+            <!-- TARJETA 1: CAPTACIÓN -->
+            <div class="col-md-6 col-lg-3">
+                <div class="admin-card" onclick="window.abrirFormulario()">
+                    <div class="icon-box"><i class="bi bi-person-plus"></i></div>
+                    <h4>Captación</h4>
+                    <p class="small opacity-75">Registro de prospectos.</p>
+                    <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="event.stopPropagation(); window.copiarLink();">Copiar Link</button>
                 </div>
             </div>
 
-            <!-- CONTENIDO PRINCIPAL -->
-            <div class="col-md-10 p-4">
-                <h1 class="display-6 fw-bold">Panel de Gestión</h1>
-                <p class="text-white-50">Bienvenido al centro de control de la academia.</p>
+            <!-- TARJETA 2: ALUMNOS -->
+            <div class="col-md-6 col-lg-3">
+                <a href="lista-alumnos.html" class="admin-card">
+                    <div class="icon-box"><i class="bi bi-people"></i></div>
+                    <h4>Alumnos</h4>
+                    <p class="small opacity-75">Base de datos local.</p>
+                </a>
+            </div>
 
-                <!-- NUEVA TARJETA DE LINK -->
-                <div class="row mt-4">
-                    <div class="col-md-4">
-                        <a href="solicitudes-academia.html" class="card-link-ucmi">
-                            <div class="card-icon">
-                                <i class="bi bi-person-plus-fill"></i>
-                            </div>
-                            <div>
-                                <h5 class="mb-1 fw-bold">Nuevas Solicitudes</h5>
-                                <p class="mb-0 small opacity-75">Ver aspirantes y procesar inscripciones</p>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- TABLA DE VISTA PREVIA / RECIENTES -->
-                <div class="table-container">
-                    <h5 class="mb-4 fw-bold text-dorado-ucmi">Últimas Interacciones</h5>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead>
-                                <tr>
-                                    <th>ASPIRANTE</th>
-                                    <th>CURSO</th>
-                                    <th>ESTADO</th>
-                                    <th class="text-center">ACCIÓN</th>
-                                </tr>
-                            </thead>
-                            <tbody id="listaSolicitudesAcademia">
-                                <!-- Datos dinámicos -->
-                            </tbody>
-                        </table>
-                    </div>
+            <!-- TARJETA 3: SOLICITUDES (NUEVA) -->
+            <div class="col-md-6 col-lg-3">
+                <a href="solicitudes-academia.html" class="admin-card">
+                    <div class="icon-box"><i class="bi bi-envelope-check"></i></div>
+                    <h4>Solicitudes</h4>
+                    <p class="small opacity-75">Revisar nuevos registros.</p>
+                </a>
+            </div>
+
+            <!-- TARJETA 4: COBRANZA -->
+            <div class="col-md-6 col-lg-3">
+                <div class="admin-card">
+                    <div class="icon-box"><i class="bi bi-wallet2"></i></div>
+                    <h4>Cobranza</h4>
+                    <p class="small opacity-75">Mensualidades y pagos.</p>
                 </div>
             </div>
         </div>
@@ -159,8 +104,8 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -172,31 +117,92 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
     const auth = getAuth(app);
+    const db = getFirestore(app);
+    let entidadActual = "";
 
-    onSnapshot(collection(db, "solicitudes_academia"), (snapshot) => {
-        const tbody = document.getElementById('listaSolicitudesAcademia');
-        tbody.innerHTML = '';
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            tbody.innerHTML += `
-                <tr>
-                    <td><div class="fw-bold">${data.nombre}</div></td>
-                    <td><span class="badge-perfil bg-alumno">${data.curso || 'General'}</span></td>
-                    <td><span class="small opacity-75">Pendiente</span></td>
-                    <td class="text-center">
-                        <a href="solicitudes-academia.html" class="btn btn-dark btn-sm rounded-pill px-3">Ir a Gestión</a>
-                    </td>
-                </tr>`;
-        });
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = "index.html"; return; }
+        try {
+            const userRef = doc(db, "usuarios", user.email);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const data = userSnap.data();
+                entidadActual = data.entidad || "Sede";
+                document.getElementById('navEntidad').innerText = entidadActual;
+                document.getElementById('sideNombreEntidad').innerText = entidadActual;
+                
+                const finalLogo = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+                
+                const navLogo = document.getElementById('navLogo');
+                const logoPrev = document.getElementById('logoPreview');
+                navLogo.src = finalLogo;
+                logoPrev.src = finalLogo;
+                navLogo.onload = () => navLogo.style.opacity = "1";
+                logoPrev.onload = () => logoPrev.style.opacity = "1";
+            }
+        } catch (e) { console.error("Error al cargar perfil:", e); }
     });
 
-    document.getElementById('btnLogout').onclick = async (e) => {
-        e.preventDefault();
-        await signOut(auth);
-        window.location.href = "index.html"; 
+    // Lógica de procesamiento de imagen original
+    const processImage = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 400; 
+                    const scale = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scale;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+                img.onerror = reject;
+            };
+            reader.onerror = reject;
+        });
     };
+
+    document.getElementById('btnSaveLogo').onclick = async () => {
+        const fileInput = document.getElementById('inputLogo');
+        if (!fileInput.files[0]) return alert("Selecciona una imagen.");
+        const btn = document.getElementById('btnSaveLogo');
+        btn.disabled = true;
+        btn.innerText = "PROCESANDO...";
+        try {
+            const processedBase64 = await processImage(fileInput.files[0]);
+            btn.innerText = "SUBIENDO...";
+            const userRef = doc(db, "usuarios", auth.currentUser.email);
+            await updateDoc(userRef, { logoCustom: processedBase64 });
+            document.getElementById('navLogo').src = processedBase64;
+            document.getElementById('logoPreview').src = processedBase64;
+            alert("¡Identidad visual actualizada!");
+            fileInput.value = "";
+        } catch (e) {
+            console.error("Error:", e);
+            alert("Error al guardar.");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "GUARDAR LOGO";
+        }
+    };
+
+    window.copiarLink = () => {
+        const url = `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`;
+        navigator.clipboard.writeText(url).then(() => alert("Copiado"));
+    };
+
+    window.abrirFormulario = () => {
+        window.open(`https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`, '_blank');
+    };
+
+    document.getElementById('btnLogout').onclick = () => signOut(auth).then(() => window.location.href = "index.html");
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
