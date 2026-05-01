@@ -30,6 +30,16 @@
         .input-group label { display: block; font-size: 0.85rem; color: var(--gris-suave); margin-bottom: 8px; }
         .input-group input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid #eeeeee; font-size: 1rem; box-sizing: border-box; }
         
+        /* Cartel de sesión activa */
+        #card-sesion-activa {
+            display: none;
+            background: #f4f7ff;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px dashed var(--azul-ucmi);
+            margin-top: 20px;
+        }
+
         .caps-indicator {
             display: none;
             align-items: center;
@@ -65,24 +75,36 @@
                     <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo UCMI">
                 </div>
                 <div class="texto-universitario">Universitario de Ciencias Matemáticas e Idiomas</div>
-                <h2>Iniciar Sesión</h2>
                 
-                <form id="form-login" autocomplete="off">
-                    <div class="input-group">
-                        <label>Correo Electrónico</label>
-                        <input type="email" id="email" name="ucmi_user_email" placeholder="usuario@ejemplo.com" required>
-                    </div>
-
-                    <div class="input-group">
-                        <label>Contraseña</label>
-                        <input type="password" id="password" name="ucmi_user_pass" placeholder="••••••••" required>
-                        <div id="caps-warning" class="caps-indicator">
-                            <span class="dot"></span> MAYÚSCULAS ACTIVADAS
+                <!-- SECCIÓN DE LOGIN -->
+                <div id="seccion-login-inputs">
+                    <h2>Iniciar Sesión</h2>
+                    <form id="form-login" autocomplete="off">
+                        <div class="input-group">
+                            <label>Correo Electrónico</label>
+                            <input type="email" id="email" name="ucmi_user_email" placeholder="usuario@ejemplo.com" required>
                         </div>
-                    </div>
 
-                    <button type="submit" id="btn-submit" class="btn-entrar">Entrar a UCMI</button>
-                </form>
+                        <div class="input-group">
+                            <label>Contraseña</label>
+                            <input type="password" id="password" name="ucmi_user_pass" placeholder="••••••••" required>
+                            <div id="caps-warning" class="caps-indicator">
+                                <span class="dot"></span> MAYÚSCULAS ACTIVADAS
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-submit" class="btn-entrar">Entrar a UCMI</button>
+                    </form>
+                </div>
+
+                <!-- SECCIÓN DE SESIÓN DETECTADA -->
+                <div id="card-sesion-activa">
+                    <p style="font-size: 0.9rem; color: #555;">Sesión activa detectada:</p>
+                    <b id="email-activo" style="color: var(--azul-ucmi); display: block; margin-bottom: 15px;"></b>
+                    <button onclick="irAlPanel()" class="btn-entrar">Continuar al Panel</button>
+                    <button onclick="forzarCierre()" style="background:none; border:none; color:red; cursor:pointer; text-decoration:underline; margin-top:15px; font-size:0.8rem;">Cerrar sesión para cambiar de cuenta</button>
+                </div>
+
             </div>
         </div>
     </div>
@@ -108,80 +130,84 @@
         const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
         let navegando = false;
 
+        // --- FUNCIONES DE LIMPIEZA Y UI ---
+        function limpiarCampos() {
+            document.getElementById('email').value = "";
+            document.getElementById('password').value = "";
+        }
+
+        window.irAlPanel = () => {
+            const user = auth.currentUser;
+            if (user) procesarSesion(user);
+        };
+
+        window.forzarCierre = async () => {
+            limpiarCampos();
+            await signOut(auth);
+            window.location.reload();
+        };
+
         // Aviso de mayúsculas
         document.getElementById('password').addEventListener('keyup', (e) => {
             document.getElementById('caps-warning').style.display = e.getModifierState("CapsLock") ? 'flex' : 'none';
         });
 
-        // --- LÓGICA DE DIRECCIONAMIENTO POR PERFIL ---
+        // --- LÓGICA DE DIRECCIONAMIENTO ---
         async function procesarSesion(user) {
             if (navegando) return;
             navegando = true;
 
-            const btn = document.getElementById('btn-submit');
-            if(btn) { btn.disabled = true; btn.innerText = "REDIRECCIONANDO..."; }
-
-            // 1. Verificación prioritaria de SuperAdmin por UID
             if (user.uid === MI_UID_MAESTRO) {
                 window.location.replace("super-admin.html");
                 return;
             }
 
             try {
-                // Normalizamos el email para buscar el documento (siempre en minúsculas)
                 const docRef = doc(db, "usuarios", user.email.toLowerCase().trim());
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    // Limpieza del perfil: minúsculas y cambiamos espacios por guiones bajos para comparar
-                    const perfil = (data.perfil || "").toLowerCase().trim().replace(/\s+/g, '_');
+                    const perfil = (docSnap.data().perfil || "").toLowerCase().trim().replace(/\s+/g, '_');
+                    const rutas = {
+                        "academia": "admin-academia.html",
+                        "profesor_asociado": "admin-profesor-asociado.html",
+                        "profesor_embajador": "admin-profesor-embajador.html",
+                        "estudiante_autodidacta": "aula-autodidacta.html",
+                        "estudiante_de_academia": "aula-academia.html",
+                        "estudiante_de_profesor_asociado": "aula-asociado.html",
+                        "estudiante_de_profesor_embajador": "aula-embajador.html"
+                    };
 
-                    switch (perfil) {
-                        case "academia":
-                            window.location.replace("admin-academia.html");
-                            break;
-                        case "profesor_asociado":
-                            window.location.replace("admin-profesor-asociado.html");
-                            break;
-                        case "profesor_embajador":
-                            window.location.replace("admin-profesor-embajador.html");
-                            break;
-                        case "estudiante_autodidacta":
-                            window.location.replace("aula-autodidacta.html");
-                            break;
-                        case "estudiante_de_academia":
-                            window.location.replace("aula-academia.html");
-                            break;
-                        case "estudiante_de_profesor_asociado":
-                            window.location.replace("aula-asociado.html");
-                            break;
-                        case "estudiante_de_profesor_embajador":
-                            window.location.replace("aula-embajador.html");
-                            break;
-                        default:
-                            alert("Tu perfil '" + perfil + "' no tiene un panel asignado. Contacta a soporte.");
-                            await signOut(auth);
-                            window.location.reload();
+                    if (rutas[perfil]) {
+                        window.location.replace(rutas[perfil]);
+                    } else {
+                        alert("Perfil no asignado.");
+                        forzarCierre();
                     }
-                } else {
-                    alert("No existe un perfil configurado para este correo en nuestra base de datos.");
-                    await signOut(auth);
-                    window.location.reload();
                 }
             } catch (error) {
-                console.error("Error en flujo:", error);
-                alert("Error de conexión con el servidor de perfiles.");
-                await signOut(auth);
+                console.error(error);
                 navegando = false;
-                if(btn) { btn.disabled = false; btn.innerText = "Entrar a UCMI"; }
             }
         }
 
+        // --- OBSERVADOR DE ESTADO (CAMBIO DE CUENTA) ---
         onAuthStateChanged(auth, (user) => {
-            if (user && !navegando) procesarSesion(user);
+            if (user) {
+                // Si hay sesión, ocultamos formulario y mostramos cartel
+                document.getElementById('seccion-login-inputs').style.display = 'none';
+                document.getElementById('card-sesion-activa').style.display = 'block';
+                document.getElementById('email-activo').innerText = user.email;
+                limpiarCampos(); // Borra campos por seguridad
+            } else {
+                // Si no hay sesión, formulario limpio y visible
+                document.getElementById('seccion-login-inputs').style.display = 'block';
+                document.getElementById('card-sesion-activa').style.display = 'none';
+                limpiarCampos();
+            }
         });
 
+        // --- LOGIN MANUAL ---
         document.getElementById('form-login').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
@@ -192,9 +218,12 @@
             btn.innerText = "VERIFICANDO...";
 
             try {
-                await signInWithEmailAndPassword(auth, email, pass);
+                const userCred = await signInWithEmailAndPassword(auth, email, pass);
+                limpiarCampos(); // Limpiar justo antes de entrar
+                procesarSesion(userCred.user);
             } catch (error) {
-                alert("Credenciales incorrectas o usuario no autorizado.");
+                alert("Credenciales incorrectas.");
+                limpiarCampos(); // Limpiar si falla
                 btn.disabled = false;
                 btn.innerText = "Entrar a UCMI";
             }
