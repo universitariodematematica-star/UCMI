@@ -14,7 +14,7 @@
         .seccion-login { flex: 0.8; background-color: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px; }
         .login-card { width: 100%; max-width: 400px; text-align: center; }
         .contenedor-logo-derecho img { width: 150px; height: auto; border-radius: 20px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); margin-bottom: 10px; }
-        .texto-universitario { font-size: 1.1rem; color: var(--texto-universitario); text-transform: uppercase; margin-bottom: 40px; letter-spacing: 2px; line-height: 1.4; }
+        .texto-universitario { font-size: 1.1rem; color: var(--texto-universitario); text-transform: uppercase; margin-bottom: 40px; letter-spacing: 2px; }
         .input-group { margin-bottom: 20px; text-align: left; }
         .input-group label { display: block; font-size: 0.85rem; color: var(--gris-suave); margin-bottom: 8px; }
         .input-group input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid #eeeeee; font-size: 1rem; box-sizing: border-box; }
@@ -34,14 +34,20 @@
                 </div>
                 <div class="texto-universitario">Universitario de Ciencias Matemáticas e Idiomas</div>
                 <h2>Iniciar Sesión</h2>
-                <form id="form-login">
+                
+                <!-- AUTOCOMPLETE OFF ACTIVADO -->
+                <form id="form-login" autocomplete="off">
+                    <!-- Campo oculto para engañar a los gestores de contraseñas de Chrome/Edge -->
+                    <input type="text" style="display:none" aria-hidden="true">
+                    <input type="password" style="display:none" aria-hidden="true">
+
                     <div class="input-group">
                         <label>Correo Electrónico</label>
-                        <input type="email" id="email" placeholder="usuario@ejemplo.com" required>
+                        <input type="email" id="email" name="ucmi_user_email" placeholder="usuario@ejemplo.com" required autocomplete="one-time-code">
                     </div>
                     <div class="input-group">
                         <label>Contraseña</label>
-                        <input type="password" id="password" placeholder="••••••••" required>
+                        <input type="password" id="password" name="ucmi_user_pass" placeholder="••••••••" required autocomplete="new-password">
                     </div>
                     <button type="submit" id="btn-submit" class="btn-entrar">Entrar a UCMI</button>
                 </form>
@@ -67,33 +73,31 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         
-        // Identificador único para el Super Administrador
         const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
+        let navegando = false;
 
-        let procesandoNavegacion = false;
-
-        async function manejarAcceso(user) {
-            if (procesandoNavegacion) return;
-            procesandoNavegacion = true;
+        async function procesarSesion(user) {
+            if (navegando) return;
+            navegando = true;
 
             const btn = document.getElementById('btn-submit');
-            if(btn) { btn.disabled = true; btn.innerText = "REDIRECCIONANDO..."; }
+            if(btn) { btn.disabled = true; btn.innerText = "ACCEDIENDO..."; }
 
-            // PRIORIDAD 1: Super Administrador por UID (Sin consultar base de datos)
+            // 1. PRIORIDAD: SUPERADMIN
             if (user.uid === MI_UID_MAESTRO) {
-                console.log("Acceso de Super Administrador verificado.");
                 window.location.replace("https://universitariodematematica-star.github.io/UCMI/super-admin.html");
                 return;
             }
 
-            // PRIORIDAD 2: Usuarios regulares por Colección "usuarios" e ID de Email
+            // 2. USUARIOS REGULARES
             try {
                 const docRef = doc(db, "usuarios", user.email);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     const perfil = (docSnap.data().perfil || "").toLowerCase().trim();
-                    
+                    console.log("Perfil detectado:", perfil);
+
                     if (perfil === "academia") {
                         window.location.replace("admin-academia.html");
                     } else if (perfil === "profesor_asociado") {
@@ -102,24 +106,21 @@
                         window.location.replace("dashboard.html");
                     }
                 } else {
-                    console.error("No se encontró perfil para este correo.");
-                    alert("Error: No tienes un perfil asignado. Cerrando sesión...");
+                    alert("No se encontró perfil para este usuario.");
                     await signOut(auth);
                     window.location.replace("index.html");
                 }
             } catch (error) {
-                console.error("Error al leer perfil:", error);
-                // Si hay un error de permisos (reglas), cerramos sesión para evitar el bucle infinito
+                console.error("Error de Firestore:", error);
                 await signOut(auth);
-                alert("Error de acceso: Revisa las reglas de seguridad de Firebase.");
-                procesandoNavegacion = false;
+                navegando = false;
                 if(btn) { btn.disabled = false; btn.innerText = "Entrar a UCMI"; }
             }
         }
 
         onAuthStateChanged(auth, (user) => {
-            if (user && !procesandoNavegacion) {
-                manejarAcceso(user);
+            if (user && !navegando) {
+                procesarSesion(user);
             }
         });
 
@@ -130,12 +131,12 @@
             const btn = document.getElementById('btn-submit');
 
             btn.disabled = true;
-            btn.innerText = "VALIDANDO...";
+            btn.innerText = "VERIFICANDO...";
 
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
-                alert("Credenciales no válidas.");
+                alert("Credenciales incorrectas.");
                 btn.disabled = false;
                 btn.innerText = "Entrar a UCMI";
             }
