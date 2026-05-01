@@ -107,7 +107,6 @@
     const db = getFirestore(app);
     let entidadActual = "";
 
-    // LÓGICA DE CARGA CON DESVANECIMIENTO
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "index.html"; return; }
         try {
@@ -123,19 +122,17 @@
                 
                 const navLogo = document.getElementById('navLogo');
                 const logoPrev = document.getElementById('logoPreview');
-                
                 navLogo.src = finalLogo;
                 logoPrev.src = finalLogo;
-                
                 navLogo.onload = () => navLogo.style.opacity = "1";
                 logoPrev.onload = () => logoPrev.style.opacity = "1";
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Error al cargar perfil:", e); }
     });
 
-    // REDUCTOR DE TAMAÑO (RESIZING)
+    // REDUCTOR DE TAMAÑO ANTES DE SUBIR
     const processImage = (file) => {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = (event) => {
@@ -143,23 +140,20 @@
                 img.src = event.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 400; // Tamaño ideal para logos
+                    const MAX_WIDTH = 400; 
                     const scale = MAX_WIDTH / img.width;
-                    
                     canvas.width = MAX_WIDTH;
                     canvas.height = img.height * scale;
-                    
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    // Convertimos a JPEG con calidad media para reducir el peso drásticamente
                     resolve(canvas.toDataURL('image/jpeg', 0.7));
                 };
+                img.onerror = reject;
             };
+            reader.onerror = reject;
         });
     };
 
-    // BOTÓN GUARDAR LOGO
     document.getElementById('btnSaveLogo').onclick = async () => {
         const fileInput = document.getElementById('inputLogo');
         if (!fileInput.files[0]) return alert("Selecciona una imagen.");
@@ -177,19 +171,21 @@
 
             document.getElementById('navLogo').src = processedBase64;
             document.getElementById('logoPreview').src = processedBase64;
-            
-            alert("¡Logo actualizado!");
+            alert("¡Identidad visual actualizada!");
             fileInput.value = "";
         } catch (e) {
-            alert("Error al guardar en la nube. Verifica tu conexión.");
-            console.error(e);
+            console.error("Error completo:", e);
+            if (e.code === 'permission-denied') {
+                alert("Error de permisos en Firebase. Debes actualizar las reglas de Firestore.");
+            } else {
+                alert("Error al guardar en la nube. Verifica tu conexión.");
+            }
         } finally {
             btn.disabled = false;
             btn.innerText = "GUARDAR LOGO";
         }
     };
 
-    // FUNCIONES GLOBALES
     window.copiarLink = () => {
         const url = `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`;
         navigator.clipboard.writeText(url).then(() => alert("Copiado"));
