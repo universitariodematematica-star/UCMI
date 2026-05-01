@@ -7,18 +7,56 @@
     <link rel="icon" type="image/png" href="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --azul-ucmi: #004dc0; --oscuro-fondo: #0a192f; --gris-suave: #8892b0; --texto-universitario: #333333; }
+        :root { 
+            --azul-ucmi: #004dc0; 
+            --oscuro-fondo: #0a192f; 
+            --gris-suave: #8892b0; 
+            --texto-universitario: #333333; 
+            --verde-neon: #00ff00;
+        }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Poppins', sans-serif; background-color: #ffffff; overflow: hidden; }
         .contenedor-principal { display: flex; height: 100vh; width: 100%; }
-        .seccion-visual { flex: 1.2; background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png'); background-size: cover; background-position: center; }
+        .seccion-visual { 
+            flex: 1.2; 
+            background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png'); 
+            background-size: cover; 
+            background-position: center; 
+        }
         .seccion-login { flex: 0.8; background-color: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px; }
         .login-card { width: 100%; max-width: 400px; text-align: center; }
         .contenedor-logo-derecho img { width: 150px; height: auto; border-radius: 20px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); margin-bottom: 10px; }
         .texto-universitario { font-size: 1.1rem; color: var(--texto-universitario); text-transform: uppercase; margin-bottom: 40px; letter-spacing: 2px; }
-        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group { margin-bottom: 20px; text-align: left; position: relative; }
         .input-group label { display: block; font-size: 0.85rem; color: var(--gris-suave); margin-bottom: 8px; }
         .input-group input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid #eeeeee; font-size: 1rem; box-sizing: border-box; }
-        .btn-entrar { width: 100%; padding: 15px; background-color: var(--azul-ucmi); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        
+        /* ESTILOS DEL INDICADOR DE MAYÚSCULAS */
+        .caps-indicator {
+            display: none;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: #2c3e50;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .dot {
+            height: 10px;
+            width: 10px;
+            background-color: var(--verde-neon);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            box-shadow: 0 0 8px var(--verde-neon);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        .btn-entrar { width: 100%; padding: 15px; background-color: var(--azul-ucmi); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         .btn-entrar:disabled { background-color: #ccc; cursor: not-allowed; }
         @media (max-width: 1024px) { .seccion-visual { display: none; } .seccion-login { flex: 1; padding: 30px; } }
     </style>
@@ -35,9 +73,8 @@
                 <div class="texto-universitario">Universitario de Ciencias Matemáticas e Idiomas</div>
                 <h2>Iniciar Sesión</h2>
                 
-                <!-- AUTOCOMPLETE OFF ACTIVADO -->
                 <form id="form-login" autocomplete="off">
-                    <!-- Campo oculto para engañar a los gestores de contraseñas de Chrome/Edge -->
+                    <!-- Trampa para autocompletado -->
                     <input type="text" style="display:none" aria-hidden="true">
                     <input type="password" style="display:none" aria-hidden="true">
 
@@ -45,10 +82,17 @@
                         <label>Correo Electrónico</label>
                         <input type="email" id="email" name="ucmi_user_email" placeholder="usuario@ejemplo.com" required autocomplete="one-time-code">
                     </div>
+
                     <div class="input-group">
                         <label>Contraseña</label>
                         <input type="password" id="password" name="ucmi_user_pass" placeholder="••••••••" required autocomplete="new-password">
+                        
+                        <!-- LUZ DE AVISO DE MAYÚSCULAS -->
+                        <div id="caps-warning" class="caps-indicator">
+                            <span class="dot"></span> MAYÚSCULAS ACTIVADAS
+                        </div>
                     </div>
+
                     <button type="submit" id="btn-submit" class="btn-entrar">Entrar a UCMI</button>
                 </form>
             </div>
@@ -76,6 +120,19 @@
         const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
         let navegando = false;
 
+        // --- LÓGICA DE DETECCIÓN DE MAYÚSCULAS ---
+        const passwordInput = document.getElementById('password');
+        const capsWarning = document.getElementById('caps-warning');
+
+        passwordInput.addEventListener('keyup', (e) => {
+            if (e.getModifierState("CapsLock")) {
+                capsWarning.style.display = 'flex';
+            } else {
+                capsWarning.style.display = 'none';
+            }
+        });
+
+        // --- MANEJO DE SESIÓN ---
         async function procesarSesion(user) {
             if (navegando) return;
             navegando = true;
@@ -83,35 +140,27 @@
             const btn = document.getElementById('btn-submit');
             if(btn) { btn.disabled = true; btn.innerText = "ACCEDIENDO..."; }
 
-            // 1. PRIORIDAD: SUPERADMIN
             if (user.uid === MI_UID_MAESTRO) {
                 window.location.replace("https://universitariodematematica-star.github.io/UCMI/super-admin.html");
                 return;
             }
 
-            // 2. USUARIOS REGULARES
             try {
                 const docRef = doc(db, "usuarios", user.email);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     const perfil = (docSnap.data().perfil || "").toLowerCase().trim();
-                    console.log("Perfil detectado:", perfil);
-
-                    if (perfil === "academia") {
-                        window.location.replace("admin-academia.html");
-                    } else if (perfil === "profesor_asociado") {
-                        window.location.replace("admin-profesor-asociado.html");
-                    } else {
-                        window.location.replace("dashboard.html");
-                    }
+                    if (perfil === "academia") window.location.replace("admin-academia.html");
+                    else if (perfil === "profesor_asociado") window.location.replace("admin-profesor-asociado.html");
+                    else window.location.replace("dashboard.html");
                 } else {
-                    alert("No se encontró perfil para este usuario.");
+                    alert("Usuario no registrado en el sistema.");
                     await signOut(auth);
-                    window.location.replace("index.html");
+                    window.location.reload();
                 }
             } catch (error) {
-                console.error("Error de Firestore:", error);
+                console.error("Error:", error);
                 await signOut(auth);
                 navegando = false;
                 if(btn) { btn.disabled = false; btn.innerText = "Entrar a UCMI"; }
@@ -119,9 +168,7 @@
         }
 
         onAuthStateChanged(auth, (user) => {
-            if (user && !navegando) {
-                procesarSesion(user);
-            }
+            if (user && !navegando) procesarSesion(user);
         });
 
         document.getElementById('form-login').addEventListener('submit', async (e) => {
@@ -136,7 +183,7 @@
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
-                alert("Credenciales incorrectas.");
+                alert("Correo o contraseña incorrectos.");
                 btn.disabled = false;
                 btn.innerText = "Entrar a UCMI";
             }
