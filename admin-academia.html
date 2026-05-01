@@ -38,7 +38,11 @@
             padding: 0.8rem 2rem;
         }
 
-        .logo-nav { height: 50px; filter: drop-shadow(0 0 5px rgba(197, 160, 89, 0.3)); }
+        .logo-nav { 
+            height: 50px; 
+            filter: drop-shadow(0 0 5px rgba(197, 160, 89, 0.3)); 
+            object-fit: contain;
+        }
 
         /* SIDEBAR DESLIZABLE (OFFCANVAS) */
         .offcanvas {
@@ -50,13 +54,16 @@
         }
 
         .profile-img-container {
-            width: 120px; height: 120px;
+            width: 120px; 
+            height: 120px;
             margin: 20px auto;
             border-radius: 50%;
             border: 2px solid var(--dorado-ucmi);
             overflow: hidden;
             box-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
+            background: #000;
         }
+        
         #logoPreview { width: 100%; height: 100%; object-fit: cover; }
 
         /* TARJETAS ESTILO CONTROL MAESTRO */
@@ -73,6 +80,8 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            text-decoration: none;
+            color: white;
         }
 
         .admin-card:hover {
@@ -80,6 +89,7 @@
             transform: translateY(-12px);
             border-color: var(--dorado-ucmi);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            color: white;
         }
 
         .icon-circle {
@@ -126,16 +136,18 @@
                 <button class="btn btn-menu me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarAdmin">
                     <i class="bi bi-list fs-4"></i>
                 </button>
-                <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="UCMI" class="logo-nav">
+                <a href="index.html">
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="UCMI" class="logo-nav" id="navLogo">
+                </a>
             </div>
             <div class="text-end">
-                <small class="d-block opacity-75">Panel Administrativo</small>
+                <small class="d-block opacity-75 text-white">Panel Administrativo</small>
                 <span id="navEntidad" class="fw-bold text-glow-gold">Cargando...</span>
             </div>
         </div>
     </nav>
 
-    <!-- SIDEBAR DESLIZABLE DE PERSONALIZACIÓN -->
+    <!-- SIDEBAR DESLIZABLE -->
     <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarAdmin">
         <div class="offcanvas-header border-bottom border-secondary">
             <h5 class="offcanvas-title fw-bold text-warning">CONFIGURACIÓN</h5>
@@ -146,16 +158,16 @@
                 <div class="profile-img-container">
                     <img id="logoPreview" src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png">
                 </div>
-                <h5 id="sideNombreSede" class="fw-bold">Cargando...</h5>
+                <h5 id="sideNombreSede" class="fw-bold text-white">Cargando...</h5>
                 <p class="small text-white-50">Sede Autorizada Local</p>
             </div>
 
             <div class="p-3 bg-white bg-opacity-10 rounded-4 border border-secondary mb-4">
-                <label class="form-label small fw-bold text-uppercase">Subir Logo de Sede</label>
-                <input type="file" id="inputLogo" class="form-control form-control-sm bg-dark text-white border-secondary mb-3">
+                <label class="form-label small fw-bold text-uppercase text-white">Personalizar Logo de Sede</label>
+                <input type="file" id="inputLogo" class="form-control form-control-sm bg-dark text-white border-secondary mb-3" accept="image/*">
                 <button id="btnGuardarLogo" class="btn btn-warning btn-sm w-100 fw-bold">ACTUALIZAR IDENTIDAD</button>
                 <p class="mt-2 mb-0" style="font-size: 0.65rem; color: var(--blanco-suave);">
-                    *Este logo se mostrará en tu plataforma personalizada.
+                    *Este logo sustituirá al de UCMI en tu consola.
                 </p>
             </div>
 
@@ -167,7 +179,7 @@
         </div>
     </div>
 
-    <!-- CUERPO DEL PANEL (ESTILO SUPERADMIN) -->
+    <!-- CUERPO DEL PANEL -->
     <div class="container py-5">
         <div class="row mb-5 text-center">
             <div class="col-12">
@@ -192,14 +204,14 @@
 
             <!-- Alumnos -->
             <div class="col-md-3">
-                <div class="admin-card" onclick="location.href='lista-alumnos.html'">
+                <a href="lista-alumnos.html" class="admin-card">
                     <div class="icon-circle"><i class="bi bi-people-fill"></i></div>
                     <h3 class="fw-bold">Alumnos</h3>
                     <p class="text-white-50 small">Base de datos y control académico.</p>
                     <div class="mt-3">
                         <span class="badge-custom badge-purple">Inscritos</span>
                     </div>
-                </div>
+                </a>
             </div>
 
             <!-- Finanzas -->
@@ -248,44 +260,63 @@
         if (!user) { window.location.href = "index.html"; return; }
         userEmail = user.email;
 
-        // 1. Obtener el nombre de la academia/entidad
-        const q = query(collection(db, "historial_postulaciones"), where("email", "==", user.email));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-            const entidad = snap.docs[0].data().entidad;
-            document.getElementById('navEntidad').innerText = entidad;
-            document.getElementById('sideNombreSede').innerText = entidad;
-            linkCaptacionGlobal = `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidad)}`;
-        }
+        // 1. CARGAR DATOS DE LA ENTIDAD
+        try {
+            const q = query(collection(db, "historial_postulaciones"), where("email", "==", user.email));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+                const entidad = snap.docs[0].data().entidad;
+                document.getElementById('navEntidad').innerText = entidad;
+                document.getElementById('sideNombreSede').innerText = entidad;
+                linkCaptacionGlobal = `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidad)}`;
+            } else {
+                document.getElementById('navEntidad').innerText = "Sede No Vinculada";
+                document.getElementById('sideNombreSede').innerText = "Sede No Vinculada";
+            }
+        } catch (e) { console.error("Error cargando entidad:", e); }
 
-        // 2. Cargar el logo personalizado si existe
-        const docRef = doc(db, "usuarios", user.email);
-        const userDoc = await getDoc(docRef);
-        if (userDoc.exists() && userDoc.data().logoCustom) {
-            document.getElementById('logoPreview').src = userDoc.data().logoCustom;
-        }
+        // 2. CARGAR LOGO PERSONALIZADO (Sustitución completa)
+        try {
+            const docRef = doc(db, "usuarios", user.email);
+            const userDoc = await getDoc(docRef);
+            if (userDoc.exists() && userDoc.data().logoCustom) {
+                const logoData = userDoc.data().logoCustom;
+                document.getElementById('logoPreview').src = logoData;
+                document.getElementById('navLogo').src = logoData;
+            }
+        } catch (e) { console.error("Error cargando logo:", e); }
     });
 
-    // Lógica para guardar el logo
+    // LÓGICA DE ACTUALIZACIÓN DE LOGO
     document.getElementById('btnGuardarLogo').addEventListener('click', async () => {
         const file = document.getElementById('inputLogo').files[0];
-        if (!file) return;
+        if (!file) return alert("Selecciona una imagen.");
+
         const reader = new FileReader();
         reader.onloadend = async () => {
             const base64String = reader.result;
-            await updateDoc(doc(db, "usuarios", userEmail), { logoCustom: base64String });
-            document.getElementById('logoPreview').src = base64String;
-            alert("Identidad visual actualizada correctamente.");
+            try {
+                await updateDoc(doc(db, "usuarios", userEmail), { logoCustom: base64String });
+                document.getElementById('logoPreview').src = base64String;
+                document.getElementById('navLogo').src = base64String;
+                alert("¡Identidad visual actualizada!");
+            } catch (error) {
+                console.error("Error al guardar:", error);
+                alert("No se pudo guardar la imagen.");
+            }
         };
         reader.readAsDataURL(file);
     });
 
     window.copiarEnlace = () => {
+        if (!linkCaptacionGlobal) return alert("Enlace no disponible aún.");
         navigator.clipboard.writeText(linkCaptacionGlobal);
         alert("¡Enlace de captación copiado!");
     };
 
-    window.abrirFormulario = () => { window.open(linkCaptacionGlobal, '_blank'); };
+    window.abrirFormulario = () => { 
+        if (linkCaptacionGlobal) window.open(linkCaptacionGlobal, '_blank'); 
+    };
 
     document.getElementById('btnLogout').addEventListener('click', () => {
         signOut(auth).then(() => window.location.href = "index.html");
