@@ -29,7 +29,6 @@
             width: 100%;
         }
 
-        /* LADO IZQUIERDO: IMAGEN SUPRALÓGICA */
         .seccion-visual {
             flex: 1.2;
             background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png');
@@ -38,7 +37,6 @@
             position: relative;
         }
 
-        /* LADO DERECHO: FORMULARIO */
         .seccion-login {
             flex: 0.8;
             background-color: #ffffff;
@@ -160,29 +158,21 @@
 
         <div class="seccion-login">
             <div class="login-card">
-                
                 <div class="contenedor-logo-derecho">
                     <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo UCMI">
                 </div>
-
-                <div class="texto-universitario">
-                    Universitario de Ciencias Matemáticas e Idiomas
-                </div>
-
+                <div class="texto-universitario">Universitario de Ciencias Matemáticas e Idiomas</div>
                 <h2>Iniciar Sesión</h2>
                 
-                <!-- Formulario Protegido -->
-               <form id="form-login">
+                <form id="form-login">
                    <div class="input-group">
                        <label>Correo Electrónico</label>
                        <input type="email" id="email" placeholder="usuario@ucmi.edu" autocomplete="off" required>
                    </div>
-                  
                    <div class="input-group">
                        <label>Contraseña</label>
                        <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" required>
                    </div>
-
                    <button type="submit" id="btn-submit" class="btn-entrar">Entrar a UCMI</button>
                </form>
 
@@ -240,8 +230,9 @@
         const db = getFirestore(app);
         const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
 
-        // FUNCIÓN DE REDIRECCIÓN BASADA EN PERFIL
         async function redirigirUsuario(user) {
+            const btn = document.getElementById('btn-submit');
+            
             if (user.uid === MI_UID_MAESTRO) {
                 window.location.href = "https://universitariodematematica-star.github.io/UCMI/super-admin.html";
                 return;
@@ -252,8 +243,12 @@
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    const perfil = docSnap.data().perfil;
+                    // Normalización: convertimos el perfil a minúsculas para evitar errores (Ej: "Academia" -> "academia")
+                    const perfilRaw = docSnap.data().perfil;
+                    const perfil = perfilRaw ? perfilRaw.toLowerCase() : "";
                     
+                    console.log("Perfil detectado:", perfil);
+
                     switch(perfil) {
                         case "academia":
                             window.location.href = "admin-academia.html";
@@ -277,25 +272,30 @@
                             window.location.href = "aula-embajador.html";
                             break;
                         default:
+                            console.warn("Perfil desconocido, enviando a dashboard genérico.");
                             window.location.href = "dashboard.html";
                     }
                 } else {
-                    console.error("No se encontró el documento de usuario.");
+                    alert("No se encontró información de perfil para este usuario.");
                     await signOut(auth);
                 }
             } catch (error) {
-                console.error("Error al obtener perfil:", error);
+                console.error("Error en la redirección:", error);
+                alert("Error de acceso: " + error.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "Entrar a UCMI";
+                }
             }
         }
 
-        // REDIRECCIÓN AUTOMÁTICA SI YA HAY SESIÓN
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 redirigirUsuario(user);
             }
         });
 
-        // MANEJO DEL FORMULARIO
         const loginForm = document.getElementById('form-login');
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -312,11 +312,10 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
-                // La redirección la maneja el onAuthStateChanged
                 emailField.value = "";
                 passField.value = "";
             } catch (error) {
-                console.error("Error:", error);
+                console.error("Error de login:", error);
                 alert("DATOS DE ACCESO INCORRECTOS");
                 passField.value = ""; 
                 btn.disabled = false;
