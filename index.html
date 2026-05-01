@@ -30,11 +30,10 @@
         .input-group label { display: block; font-size: 0.85rem; color: var(--gris-suave); margin-bottom: 8px; }
         .input-group input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid #eeeeee; font-size: 1rem; box-sizing: border-box; }
         
-        /* Cartel de sesión activa */
         #card-sesion-activa {
             display: none;
             background: #f4f7ff;
-            padding: 20px;
+            padding: 25px;
             border-radius: 15px;
             border: 2px dashed var(--azul-ucmi);
             margin-top: 20px;
@@ -76,18 +75,19 @@
                 </div>
                 <div class="texto-universitario">Universitario de Ciencias Matemáticas e Idiomas</div>
                 
-                <!-- SECCIÓN DE LOGIN -->
-                <div id="seccion-login-inputs">
+                <!-- Formulario de Login -->
+                <div id="seccion-inputs">
                     <h2>Iniciar Sesión</h2>
                     <form id="form-login" autocomplete="off">
                         <div class="input-group">
                             <label>Correo Electrónico</label>
-                            <input type="email" id="email" name="ucmi_user_email" placeholder="usuario@ejemplo.com" required>
+                            <!-- autocomplete="new-password" engaña al navegador para que no rellene campos -->
+                            <input type="email" id="email" name="ucmi_email_clean" placeholder="usuario@ejemplo.com" autocomplete="new-password" required>
                         </div>
 
                         <div class="input-group">
                             <label>Contraseña</label>
-                            <input type="password" id="password" name="ucmi_user_pass" placeholder="••••••••" required>
+                            <input type="password" id="password" name="ucmi_pass_clean" placeholder="••••••••" autocomplete="new-password" required>
                             <div id="caps-warning" class="caps-indicator">
                                 <span class="dot"></span> MAYÚSCULAS ACTIVADAS
                             </div>
@@ -97,12 +97,12 @@
                     </form>
                 </div>
 
-                <!-- SECCIÓN DE SESIÓN DETECTADA -->
+                <!-- Card de Sesión Activa -->
                 <div id="card-sesion-activa">
-                    <p style="font-size: 0.9rem; color: #555;">Sesión activa detectada:</p>
-                    <b id="email-activo" style="color: var(--azul-ucmi); display: block; margin-bottom: 15px;"></b>
-                    <button onclick="irAlPanel()" class="btn-entrar">Continuar al Panel</button>
-                    <button onclick="forzarCierre()" style="background:none; border:none; color:red; cursor:pointer; text-decoration:underline; margin-top:15px; font-size:0.8rem;">Cerrar sesión para cambiar de cuenta</button>
+                    <p style="color: #555; font-size: 0.9rem;">Bienvenido de nuevo:</p>
+                    <b id="user-logged-email" style="color: var(--azul-ucmi); font-size: 1.1rem; display: block; margin-bottom: 20px;"></b>
+                    <button onclick="continuarAlPanel()" class="btn-entrar">Ir a mi Panel</button>
+                    <button onclick="cerrarSesionLimpiar()" style="background:none; border:none; color:#ff4d4d; cursor:pointer; margin-top:15px; font-weight:600; font-size: 0.85rem; text-decoration: underline;">Usar otra cuenta</button>
                 </div>
 
             </div>
@@ -130,30 +130,26 @@
         const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
         let navegando = false;
 
-        // --- FUNCIONES DE LIMPIEZA Y UI ---
-        function limpiarCampos() {
-            document.getElementById('email').value = "";
-            document.getElementById('password').value = "";
+        // FUNCIÓN DE LIMPIEZA TOTAL
+        function limpiarTodo() {
+            const e = document.getElementById('email');
+            const p = document.getElementById('password');
+            if(e) e.value = "";
+            if(p) p.value = "";
+            const form = document.getElementById('form-login');
+            if(form) form.reset();
         }
 
-        window.irAlPanel = () => {
-            const user = auth.currentUser;
-            if (user) procesarSesion(user);
-        };
-
-        window.forzarCierre = async () => {
-            limpiarCampos();
-            await signOut(auth);
-            window.location.reload();
-        };
+        // Ejecutar limpieza al cargar por si el navegador recordó algo
+        window.onload = limpiarTodo;
 
         // Aviso de mayúsculas
         document.getElementById('password').addEventListener('keyup', (e) => {
             document.getElementById('caps-warning').style.display = e.getModifierState("CapsLock") ? 'flex' : 'none';
         });
 
-        // --- LÓGICA DE DIRECCIONAMIENTO ---
-        async function procesarSesion(user) {
+        // Lógica de redirección
+        async function procesarRedireccion(user) {
             if (navegando) return;
             navegando = true;
 
@@ -181,8 +177,8 @@
                     if (rutas[perfil]) {
                         window.location.replace(rutas[perfil]);
                     } else {
-                        alert("Perfil no asignado.");
-                        forzarCierre();
+                        alert("Perfil no encontrado.");
+                        cerrarSesionLimpiar();
                     }
                 }
             } catch (error) {
@@ -191,23 +187,31 @@
             }
         }
 
-        // --- OBSERVADOR DE ESTADO (CAMBIO DE CUENTA) ---
+        window.continuarAlPanel = () => {
+            const u = auth.currentUser;
+            if(u) procesarRedireccion(u);
+        };
+
+        window.cerrarSesionLimpiar = async () => {
+            limpiarTodo();
+            await signOut(auth);
+            window.location.reload();
+        };
+
+        // Observador de Sesión
         onAuthStateChanged(auth, (user) => {
+            limpiarTodo(); // Limpiamos cada vez que cambia el estado
             if (user) {
-                // Si hay sesión, ocultamos formulario y mostramos cartel
-                document.getElementById('seccion-login-inputs').style.display = 'none';
+                document.getElementById('seccion-inputs').style.display = 'none';
                 document.getElementById('card-sesion-activa').style.display = 'block';
-                document.getElementById('email-activo').innerText = user.email;
-                limpiarCampos(); // Borra campos por seguridad
+                document.getElementById('user-logged-email').innerText = user.email;
             } else {
-                // Si no hay sesión, formulario limpio y visible
-                document.getElementById('seccion-login-inputs').style.display = 'block';
+                document.getElementById('seccion-inputs').style.display = 'block';
                 document.getElementById('card-sesion-activa').style.display = 'none';
-                limpiarCampos();
             }
         });
 
-        // --- LOGIN MANUAL ---
+        // Submit del Formulario
         document.getElementById('form-login').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
@@ -218,12 +222,12 @@
             btn.innerText = "VERIFICANDO...";
 
             try {
-                const userCred = await signInWithEmailAndPassword(auth, email, pass);
-                limpiarCampos(); // Limpiar justo antes de entrar
-                procesarSesion(userCred.user);
+                const cred = await signInWithEmailAndPassword(auth, email, pass);
+                limpiarTodo(); // Limpiar al tener éxito
+                procesarRedireccion(cred.user);
             } catch (error) {
-                alert("Credenciales incorrectas.");
-                limpiarCampos(); // Limpiar si falla
+                alert("Correo o contraseña incorrectos.");
+                limpiarTodo(); // Limpiar si falla para mayor seguridad
                 btn.disabled = false;
                 btn.innerText = "Entrar a UCMI";
             }
