@@ -14,13 +14,13 @@
         .seccion-login { flex: 0.8; background-color: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px; }
         .login-card { width: 100%; max-width: 400px; text-align: center; }
         .contenedor-logo-derecho img { width: 150px; height: auto; border-radius: 20px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); margin-bottom: 10px; }
-        .texto-universitario { font-size: 1.2rem; color: var(--texto-universitario); text-transform: uppercase; margin-bottom: 40px; letter-spacing: 2px; }
+        .texto-universitario { font-size: 1.1rem; color: var(--texto-universitario); text-transform: uppercase; margin-bottom: 40px; letter-spacing: 2px; line-height: 1.4; }
         .input-group { margin-bottom: 20px; text-align: left; }
         .input-group label { display: block; font-size: 0.85rem; color: var(--gris-suave); margin-bottom: 8px; }
-        .input-group input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid #eeeeee; font-size: 1rem; }
+        .input-group input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid #eeeeee; font-size: 1rem; box-sizing: border-box; }
         .btn-entrar { width: 100%; padding: 15px; background-color: var(--azul-ucmi); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .btn-entrar:disabled { background-color: #ccc; cursor: not-allowed; }
-        @media (max-width: 1024px) { .seccion-visual { display: none; } .seccion-login { flex: 1; } }
+        @media (max-width: 1024px) { .seccion-visual { display: none; } .seccion-login { flex: 1; padding: 30px; } }
     </style>
 </head>
 <body>
@@ -30,14 +30,14 @@
         <div class="seccion-login">
             <div class="login-card">
                 <div class="contenedor-logo-derecho">
-                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo">
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo UCMI">
                 </div>
                 <div class="texto-universitario">Universitario de Ciencias Matemáticas e Idiomas</div>
-                <h2 id="status-text">Iniciar Sesión</h2>
+                <h2>Iniciar Sesión</h2>
                 <form id="form-login">
                     <div class="input-group">
                         <label>Correo Electrónico</label>
-                        <input type="email" id="email" placeholder="usuario@hotmail.com" required>
+                        <input type="email" id="email" placeholder="usuario@ejemplo.com" required>
                     </div>
                     <div class="input-group">
                         <label>Contraseña</label>
@@ -66,62 +66,60 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
+        // Identificador único para el Super Administrador
         const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
 
-        let estaRedirigiendo = false;
+        let procesandoNavegacion = false;
 
-        async function ejecutarRedireccion(user) {
-            if (estaRedirigiendo) return;
-            estaRedirigiendo = true;
+        async function manejarAcceso(user) {
+            if (procesandoNavegacion) return;
+            procesandoNavegacion = true;
 
             const btn = document.getElementById('btn-submit');
-            const status = document.getElementById('status-text');
-            
-            if(btn) { btn.disabled = true; btn.innerText = "ACCEDIENDO..."; }
-            if(status) { status.innerText = "Verificando Perfil..."; }
+            if(btn) { btn.disabled = true; btn.innerText = "REDIRECCIONANDO..."; }
 
-            // Caso SuperAdmin
+            // PRIORIDAD 1: Super Administrador por UID (Sin consultar base de datos)
             if (user.uid === MI_UID_MAESTRO) {
-                window.location.href = "https://universitariodematematica-star.github.io/UCMI/super-admin.html";
+                console.log("Acceso de Super Administrador verificado.");
+                window.location.replace("https://universitariodematematica-star.github.io/UCMI/super-admin.html");
                 return;
             }
 
+            // PRIORIDAD 2: Usuarios regulares por Colección "usuarios" e ID de Email
             try {
-                // Buscamos el documento yaracuymat@hotmail.com en usuarios
                 const docRef = doc(db, "usuarios", user.email);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    const perfil = (docSnap.data().perfil || "").toLowerCase();
-                    console.log("Perfil:", perfil);
-
-                    const rutas = {
-                        "academia": "admin-academia.html",
-                        "profesor_asociado": "admin-profesor-asociado.html",
-                        "profesor_embajador": "admin-profesor-embajador.html"
-                    };
-
-                    window.location.href = rutas[perfil] || "dashboard.html";
+                    const perfil = (docSnap.data().perfil || "").toLowerCase().trim();
+                    
+                    if (perfil === "academia") {
+                        window.location.replace("admin-academia.html");
+                    } else if (perfil === "profesor_asociado") {
+                        window.location.replace("admin-profesor-asociado.html");
+                    } else {
+                        window.location.replace("dashboard.html");
+                    }
                 } else {
-                    // SI NO EXISTE EL DOCUMENTO: Forzamos salida para romper el bucle
-                    console.error("Documento no encontrado en 'usuarios'");
-                    alert("Error: No tienes un perfil asignado en la colección 'usuarios'. Contacta al administrador.");
+                    console.error("No se encontró perfil para este correo.");
+                    alert("Error: No tienes un perfil asignado. Cerrando sesión...");
                     await signOut(auth);
-                    window.location.reload(); 
+                    window.location.replace("index.html");
                 }
             } catch (error) {
-                console.error("Error en Firestore:", error);
-                // Si hay error de permisos (image_83a5c2.png), también cerramos sesión
+                console.error("Error al leer perfil:", error);
+                // Si hay un error de permisos (reglas), cerramos sesión para evitar el bucle infinito
                 await signOut(auth);
-                alert("Error de permisos: Asegúrate de estar registrado correctamente.");
-                estaRedirigiendo = false;
+                alert("Error de acceso: Revisa las reglas de seguridad de Firebase.");
+                procesandoNavegacion = false;
                 if(btn) { btn.disabled = false; btn.innerText = "Entrar a UCMI"; }
             }
         }
 
         onAuthStateChanged(auth, (user) => {
-            if (user && !estaRedirigiendo) {
-                ejecutarRedireccion(user);
+            if (user && !procesandoNavegacion) {
+                manejarAcceso(user);
             }
         });
 
@@ -137,7 +135,7 @@
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
-                alert("Correo o contraseña incorrectos.");
+                alert("Credenciales no válidas.");
                 btn.disabled = false;
                 btn.innerText = "Entrar a UCMI";
             }
