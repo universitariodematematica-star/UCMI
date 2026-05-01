@@ -10,8 +10,6 @@
         :root {
             --azul-profundo: #06090f;
             --dorado-ucmi: #c5a059;
-            --cian-neon: #00f2ff;
-            --purpura-neon: #bc13fe;
         }
 
         body {
@@ -184,6 +182,7 @@
 
     let entidadActual = "";
 
+    // 1. CARGA INICIAL
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "index.html"; return; }
 
@@ -196,7 +195,7 @@
 
             if (userSnap.exists()) {
                 const data = userSnap.data();
-                entidadActual = data.entidad || "Sede sin nombre";
+                entidadActual = data.entidad || "Sede";
                 document.getElementById('navEntidad').innerText = entidadActual;
                 document.getElementById('sideNombreEntidad').innerText = entidadActual;
 
@@ -208,65 +207,72 @@
                 navLogo.onload = () => navLogo.style.opacity = "1";
                 logoPrev.onload = () => logoPrev.style.opacity = "1";
             }
-        } catch (error) {
-            console.error("Error cargando perfil:", error);
-        }
+        } catch (error) { console.error("Error:", error); }
     });
 
-    // CORRECCIÓN LÓGICA DE GUARDADO
-    document.getElementById('btnSaveLogo').addEventListener('click', async () => {
+    // 2. FUNCIÓN DE GUARDADO CORREGIDA
+    document.getElementById('btnSaveLogo').onclick = async () => {
         const fileInput = document.getElementById('inputLogo');
         const file = fileInput.files[0];
         
-        if (!file) return alert("Por favor, selecciona una imagen primero.");
-        if (!auth.currentUser) return alert("Sesión no válida.");
+        if (!file) {
+            alert("Selecciona una imagen primero.");
+            return;
+        }
 
         const btn = document.getElementById('btnSaveLogo');
-        btn.innerText = "GUARDANDO...";
         btn.disabled = true;
+        btn.innerText = "PROCESANDO...";
 
         const reader = new FileReader();
-        reader.onloadend = async () => {
-            const base64 = reader.result;
-            const userRef = doc(db, "usuarios", auth.currentUser.email);
+        
+        reader.onerror = () => {
+            alert("Error al leer el archivo.");
+            btn.disabled = false;
+            btn.innerText = "GUARDAR LOGO";
+        };
+
+        reader.onload = async (e) => {
+            const base64String = e.target.result;
             
             try {
-                await updateDoc(userRef, { logoCustom: base64 });
+                const userRef = doc(db, "usuarios", auth.currentUser.email);
+                await updateDoc(userRef, {
+                    logoCustom: base64String
+                });
+
+                // Actualizar vistas
+                document.getElementById('navLogo').src = base64String;
+                document.getElementById('logoPreview').src = base64String;
                 
-                document.getElementById('navLogo').src = base64;
-                document.getElementById('logoPreview').src = base64;
-                
-                alert("Identidad visual actualizada con éxito.");
-                fileInput.value = ""; // Limpiar input
-            } catch (e) { 
-                console.error(e);
-                alert("Error al guardar en la base de datos."); 
+                alert("Logo actualizado correctamente.");
+                fileInput.value = ""; 
+            } catch (error) {
+                console.error("Error Firebase:", error);
+                alert("Error al guardar en la nube. Verifica tu conexión.");
             } finally {
-                btn.innerText = "GUARDAR LOGO";
                 btn.disabled = false;
+                btn.innerText = "GUARDAR LOGO";
             }
         };
-        reader.readAsDataURL(file);
-    });
 
-    // EXPOSICIÓN GLOBAL DE FUNCIONES
+        reader.readAsDataURL(file);
+    };
+
+    // 3. FUNCIONES GLOBALES
     window.copiarLink = () => {
-        if (!entidadActual) return alert("Cargando datos de entidad...");
         const url = `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`;
-        navigator.clipboard.writeText(url).then(() => {
-            alert("¡Link de captación copiado!");
-        });
+        navigator.clipboard.writeText(url).then(() => alert("Link copiado."));
     };
 
     window.abrirFormulario = () => {
-        if (!entidadActual) return alert("Cargando datos de entidad...");
         const url = `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`;
         window.open(url, '_blank');
     };
 
-    document.getElementById('btnLogout').addEventListener('click', () => {
+    document.getElementById('btnLogout').onclick = () => {
         signOut(auth).then(() => window.location.href = "index.html");
-    });
+    };
 </script>
 </body>
 </html>
