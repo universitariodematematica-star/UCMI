@@ -239,11 +239,11 @@
             }
 
             try {
-                const docRef = doc(db, "users", user.uid);
+                // Buscamos en la colección "usuarios" usando el email como identificador
+                const docRef = doc(db, "usuarios", user.email); 
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    // Normalización: convertimos el perfil a minúsculas para evitar errores (Ej: "Academia" -> "academia")
                     const perfilRaw = docSnap.data().perfil;
                     const perfil = perfilRaw ? perfilRaw.toLowerCase() : "";
                     
@@ -272,11 +272,10 @@
                             window.location.href = "aula-embajador.html";
                             break;
                         default:
-                            console.warn("Perfil desconocido, enviando a dashboard genérico.");
                             window.location.href = "dashboard.html";
                     }
                 } else {
-                    alert("No se encontró información de perfil para este usuario.");
+                    alert("No se encontró el documento de perfil en 'usuarios' para: " + user.email);
                     await signOut(auth);
                 }
             } catch (error) {
