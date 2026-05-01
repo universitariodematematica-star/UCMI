@@ -30,7 +30,6 @@
         .input-group label { display: block; font-size: 0.85rem; color: var(--gris-suave); margin-bottom: 8px; }
         .input-group input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid #eeeeee; font-size: 1rem; box-sizing: border-box; }
         
-        /* ESTILOS DEL INDICADOR DE MAYÚSCULAS */
         .caps-indicator {
             display: none;
             align-items: center;
@@ -38,7 +37,6 @@
             font-size: 0.75rem;
             color: #2c3e50;
             font-weight: 600;
-            transition: 0.3s;
         }
         .dot {
             height: 10px;
@@ -50,11 +48,7 @@
             box-shadow: 0 0 8px var(--verde-neon);
             animation: pulse 1.5s infinite;
         }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.4; }
-            100% { opacity: 1; }
-        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
         .btn-entrar { width: 100%; padding: 15px; background-color: var(--azul-ucmi); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         .btn-entrar:disabled { background-color: #ccc; cursor: not-allowed; }
@@ -74,20 +68,14 @@
                 <h2>Iniciar Sesión</h2>
                 
                 <form id="form-login" autocomplete="off">
-                    <!-- Trampa para autocompletado -->
-                    <input type="text" style="display:none" aria-hidden="true">
-                    <input type="password" style="display:none" aria-hidden="true">
-
                     <div class="input-group">
                         <label>Correo Electrónico</label>
-                        <input type="email" id="email" name="ucmi_user_email" placeholder="usuario@ejemplo.com" required autocomplete="one-time-code">
+                        <input type="email" id="email" name="ucmi_user_email" placeholder="usuario@ejemplo.com" required>
                     </div>
 
                     <div class="input-group">
                         <label>Contraseña</label>
-                        <input type="password" id="password" name="ucmi_user_pass" placeholder="••••••••" required autocomplete="new-password">
-                        
-                        <!-- LUZ DE AVISO DE MAYÚSCULAS -->
+                        <input type="password" id="password" name="ucmi_user_pass" placeholder="••••••••" required>
                         <div id="caps-warning" class="caps-indicator">
                             <span class="dot"></span> MAYÚSCULAS ACTIVADAS
                         </div>
@@ -120,47 +108,70 @@
         const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
         let navegando = false;
 
-        // --- LÓGICA DE DETECCIÓN DE MAYÚSCULAS ---
-        const passwordInput = document.getElementById('password');
-        const capsWarning = document.getElementById('caps-warning');
-
-        passwordInput.addEventListener('keyup', (e) => {
-            if (e.getModifierState("CapsLock")) {
-                capsWarning.style.display = 'flex';
-            } else {
-                capsWarning.style.display = 'none';
-            }
+        // Aviso de mayúsculas
+        document.getElementById('password').addEventListener('keyup', (e) => {
+            document.getElementById('caps-warning').style.display = e.getModifierState("CapsLock") ? 'flex' : 'none';
         });
 
-        // --- MANEJO DE SESIÓN ---
+        // --- LÓGICA DE DIRECCIONAMIENTO POR PERFIL ---
         async function procesarSesion(user) {
             if (navegando) return;
             navegando = true;
 
             const btn = document.getElementById('btn-submit');
-            if(btn) { btn.disabled = true; btn.innerText = "ACCEDIENDO..."; }
+            if(btn) { btn.disabled = true; btn.innerText = "REDIRECCIONANDO..."; }
 
+            // 1. Verificación prioritaria de SuperAdmin por UID
             if (user.uid === MI_UID_MAESTRO) {
-                window.location.replace("https://universitariodematematica-star.github.io/UCMI/super-admin.html");
+                window.location.replace("super-admin.html");
                 return;
             }
 
             try {
-                const docRef = doc(db, "usuarios", user.email);
+                // Normalizamos el email para buscar el documento (siempre en minúsculas)
+                const docRef = doc(db, "usuarios", user.email.toLowerCase().trim());
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    const perfil = (docSnap.data().perfil || "").toLowerCase().trim();
-                    if (perfil === "academia") window.location.replace("admin-academia.html");
-                    else if (perfil === "profesor_asociado") window.location.replace("admin-profesor-asociado.html");
-                    else window.location.replace("dashboard.html");
+                    const data = docSnap.data();
+                    // Limpieza del perfil: minúsculas y cambiamos espacios por guiones bajos para comparar
+                    const perfil = (data.perfil || "").toLowerCase().trim().replace(/\s+/g, '_');
+
+                    switch (perfil) {
+                        case "academia":
+                            window.location.replace("admin-academia.html");
+                            break;
+                        case "profesor_asociado":
+                            window.location.replace("admin-profesor-asociado.html");
+                            break;
+                        case "profesor_embajador":
+                            window.location.replace("admin-profesor-embajador.html");
+                            break;
+                        case "estudiante_autodidacta":
+                            window.location.replace("aula-autodidacta.html");
+                            break;
+                        case "estudiante_de_academia":
+                            window.location.replace("aula-academia.html");
+                            break;
+                        case "estudiante_de_profesor_asociado":
+                            window.location.replace("aula-asociado.html");
+                            break;
+                        case "estudiante_de_profesor_embajador":
+                            window.location.replace("aula-embajador.html");
+                            break;
+                        default:
+                            alert("Tu perfil '" + perfil + "' no tiene un panel asignado. Contacta a soporte.");
+                            await signOut(auth);
+                            window.location.reload();
+                    }
                 } else {
-                    alert("Usuario no registrado en el sistema.");
+                    alert("No existe un perfil configurado para este correo en nuestra base de datos.");
                     await signOut(auth);
                     window.location.reload();
                 }
             } catch (error) {
-                console.error("Error:", error);
+                console.error("Error en flujo:", error);
+                alert("Error de conexión con el servidor de perfiles.");
                 await signOut(auth);
                 navegando = false;
                 if(btn) { btn.disabled = false; btn.innerText = "Entrar a UCMI"; }
@@ -183,7 +194,7 @@
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
-                alert("Correo o contraseña incorrectos.");
+                alert("Credenciales incorrectas o usuario no autorizado.");
                 btn.disabled = false;
                 btn.innerText = "Entrar a UCMI";
             }
