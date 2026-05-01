@@ -27,7 +27,6 @@
             min-height: 100vh;
         }
 
-        /* NAVBAR */
         .navbar-master {
             background: rgba(6, 9, 15, 0.85);
             border-bottom: 1px solid var(--dorado-ucmi);
@@ -35,16 +34,14 @@
             padding: 0.8rem 2rem;
         }
 
-        /* Ocultamos el logo por defecto para evitar el parpadeo */
         .logo-nav { 
             height: 50px; 
             object-fit: contain; 
             border-radius: 5px; 
             opacity: 0; 
-            transition: opacity 0.3s ease;
+            transition: opacity 0.4s ease;
         }
 
-        /* SIDEBAR */
         .offcanvas {
             background: rgba(6, 9, 15, 0.98) !important;
             border-right: 1px solid var(--dorado-ucmi);
@@ -65,10 +62,9 @@
             height: 100%; 
             object-fit: cover; 
             opacity: 0; 
-            transition: opacity 0.3s ease;
+            transition: opacity 0.4s ease;
         }
 
-        /* CARDS */
         .admin-card {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -100,14 +96,12 @@
 <body>
 
 <div class="overlay">
-    <!-- BARRA SUPERIOR -->
     <nav class="navbar navbar-master sticky-top">
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
                 <button class="btn btn-outline-warning me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
                     <i class="bi bi-list"></i>
                 </button>
-                <!-- Quitamos el src fijo de UCMI -->
                 <img src="" id="navLogo" class="logo-nav">
             </div>
             <div class="text-end">
@@ -117,7 +111,6 @@
         </div>
     </nav>
 
-    <!-- MENÚ LATERAL -->
     <div class="offcanvas offcanvas-start" id="sidebarMenu">
         <div class="offcanvas-header border-bottom border-secondary">
             <h5 class="offcanvas-title text-warning">CONFIGURACIÓN</h5>
@@ -126,7 +119,6 @@
         <div class="offcanvas-body d-flex flex-column">
             <div class="text-center mb-4">
                 <div class="profile-img-container">
-                    <!-- Quitamos el src fijo de UCMI -->
                     <img id="logoPreview" src="">
                 </div>
                 <h5 id="sideNombreEntidad" class="fw-bold">Cargando...</h5>
@@ -143,15 +135,14 @@
         </div>
     </div>
 
-    <!-- CONTENIDO PRINCIPAL -->
     <div class="container py-5">
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="admin-card" onclick="abrirFormulario()">
+                <div class="admin-card" onclick="window.abrirFormulario()">
                     <div class="icon-box"><i class="bi bi-person-plus"></i></div>
                     <h4>Captación</h4>
                     <p class="small opacity-75">Link de registro para prospectos.</p>
-                    <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="event.stopPropagation(); copiarLink();">Copiar Enlace</button>
+                    <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="event.stopPropagation(); window.copiarLink();">Copiar Enlace</button>
                 </div>
             </div>
             <div class="col-md-4">
@@ -196,61 +187,79 @@
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "index.html"; return; }
 
-        const userRef = doc(db, "usuarios", user.email);
-        const userSnap = await getDoc(userRef);
-
         const navLogo = document.getElementById('navLogo');
         const logoPrev = document.getElementById('logoPreview');
 
-        if (userSnap.exists()) {
-            const data = userSnap.data();
-            entidadActual = data.entidad || "Sede sin nombre";
-            document.getElementById('navEntidad').innerText = entidadActual;
-            document.getElementById('sideNombreEntidad').innerText = entidadActual;
+        try {
+            const userRef = doc(db, "usuarios", user.email);
+            const userSnap = await getDoc(userRef);
 
-            // Si hay logo personalizado, lo ponemos; si no, ponemos el de UCMI por defecto
-            const finalLogo = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-            
-            navLogo.src = finalLogo;
-            logoPrev.src = finalLogo;
+            if (userSnap.exists()) {
+                const data = userSnap.data();
+                entidadActual = data.entidad || "Sede sin nombre";
+                document.getElementById('navEntidad').innerText = entidadActual;
+                document.getElementById('sideNombreEntidad').innerText = entidadActual;
 
-            // Hacemos aparecer el logo suavemente solo cuando ya tiene el src correcto
-            navLogo.style.opacity = "1";
-            logoPrev.style.opacity = "1";
+                const finalLogo = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+                
+                navLogo.src = finalLogo;
+                logoPrev.src = finalLogo;
 
-        } else {
-            document.getElementById('navEntidad').innerText = "Perfil no encontrado";
-            // Fallback si no existe el doc
-            navLogo.src = "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-            navLogo.style.opacity = "1";
+                navLogo.onload = () => navLogo.style.opacity = "1";
+                logoPrev.onload = () => logoPrev.style.opacity = "1";
+            }
+        } catch (error) {
+            console.error("Error cargando perfil:", error);
         }
     });
 
+    // CORRECCIÓN LÓGICA DE GUARDADO
     document.getElementById('btnSaveLogo').addEventListener('click', async () => {
-        const file = document.getElementById('inputLogo').files[0];
-        if (!file) return alert("Selecciona una imagen");
+        const fileInput = document.getElementById('inputLogo');
+        const file = fileInput.files[0];
+        
+        if (!file) return alert("Por favor, selecciona una imagen primero.");
+        if (!auth.currentUser) return alert("Sesión no válida.");
+
+        const btn = document.getElementById('btnSaveLogo');
+        btn.innerText = "GUARDANDO...";
+        btn.disabled = true;
 
         const reader = new FileReader();
         reader.onloadend = async () => {
             const base64 = reader.result;
             const userRef = doc(db, "usuarios", auth.currentUser.email);
+            
             try {
                 await updateDoc(userRef, { logoCustom: base64 });
+                
                 document.getElementById('navLogo').src = base64;
                 document.getElementById('logoPreview').src = base64;
-                alert("Identidad visual actualizada.");
-            } catch (e) { alert("Error al guardar."); }
+                
+                alert("Identidad visual actualizada con éxito.");
+                fileInput.value = ""; // Limpiar input
+            } catch (e) { 
+                console.error(e);
+                alert("Error al guardar en la base de datos."); 
+            } finally {
+                btn.innerText = "GUARDAR LOGO";
+                btn.disabled = false;
+            }
         };
         reader.readAsDataURL(file);
     });
 
+    // EXPOSICIÓN GLOBAL DE FUNCIONES
     window.copiarLink = () => {
+        if (!entidadActual) return alert("Cargando datos de entidad...");
         const url = `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`;
-        navigator.clipboard.writeText(url);
-        alert("¡Link de captación copiado!");
+        navigator.clipboard.writeText(url).then(() => {
+            alert("¡Link de captación copiado!");
+        });
     };
 
     window.abrirFormulario = () => {
+        if (!entidadActual) return alert("Cargando datos de entidad...");
         const url = `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`;
         window.open(url, '_blank');
     };
