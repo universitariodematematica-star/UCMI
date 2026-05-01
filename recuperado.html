@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Configuración de Usuario</title>
+    <title>UCMI - Administración de Academia</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         :root {
             --azul-profundo: #06090f;
             --dorado-ucmi: #c5a059;
-            --sidebar-width: 280px;
+            --cian-neon: #00f2ff;
+            --purpura-neon: #bc13fe;
+            --blanco-suave: rgba(255, 255, 255, 0.85);
         }
 
         body {
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
             background-size: cover;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             color: white;
             min-height: 100vh;
             margin: 0;
@@ -24,51 +27,10 @@
         .overlay {
             background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%);
             min-height: 100vh;
+            width: 100%;
         }
 
-        /* SIDEBAR */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: calc(var(--sidebar-width) * -1);
-            width: var(--sidebar-width);
-            height: 100%;
-            background: rgba(6, 9, 15, 0.95);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(197, 160, 89, 0.3);
-            transition: 0.4s ease;
-            z-index: 2000;
-            padding: 80px 20px;
-        }
-
-        .sidebar-trigger {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 20px;
-            height: 100%;
-            z-index: 1999;
-        }
-
-        .sidebar:hover, .sidebar-trigger:hover + .sidebar {
-            left: 0;
-        }
-
-        .logo-preview-container {
-            border: 2px dashed rgba(197, 160, 89, 0.3);
-            border-radius: 15px;
-            padding: 15px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        #imgPreview {
-            max-width: 100%;
-            max-height: 80px;
-            display: none;
-            margin-bottom: 10px;
-        }
-
+        /* NAVBAR ESTILO SUPERADMIN */
         .navbar-master {
             background: rgba(6, 9, 15, 0.8);
             border-bottom: 1px solid rgba(197, 160, 89, 0.5);
@@ -76,56 +38,207 @@
             padding: 0.8rem 2rem;
         }
 
-        .logo-nav { height: 60px; }
-
-        .btn-logout {
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            color: #ff4d4d;
-            border-radius: 50px;
-            padding: 5px 15px;
+        .logo-nav { 
+            height: 50px; 
+            filter: drop-shadow(0 0 5px rgba(197, 160, 89, 0.3)); 
+            object-fit: contain;
         }
+
+        /* SIDEBAR DESLIZABLE (OFFCANVAS) */
+        .offcanvas {
+            background: rgba(6, 9, 15, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--dorado-ucmi);
+            color: white;
+            width: 300px !important;
+        }
+
+        .profile-img-container {
+            width: 120px; 
+            height: 120px;
+            margin: 20px auto;
+            border-radius: 50%;
+            border: 2px solid var(--dorado-ucmi);
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
+            background: #000;
+        }
+        
+        #logoPreview { width: 100%; height: 100%; object-fit: cover; }
+
+        /* TARJETAS ESTILO CONTROL MAESTRO */
+        .admin-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 40px 20px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            text-align: center;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+        }
+
+        .admin-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-12px);
+            border-color: var(--dorado-ucmi);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            color: white;
+        }
+
+        .icon-circle {
+            width: 70px; height: 70px;
+            background: rgba(197, 160, 89, 0.1);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; margin: 0 auto 20px;
+            color: var(--dorado-ucmi);
+            text-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
+        }
+
+        .badge-custom {
+            font-size: 0.7rem; letter-spacing: 1.2px;
+            padding: 6px 14px; border-radius: 50px; font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .badge-cyan { background: var(--cian-neon); color: #000; box-shadow: 0 0 10px rgba(0, 242, 255, 0.4); }
+        .badge-purple { background: var(--purpura-neon); color: #fff; box-shadow: 0 0 10px rgba(188, 19, 254, 0.4); }
+        .badge-gold { background: var(--dorado-ucmi); color: #000; box-shadow: 0 0 10px rgba(197, 160, 89, 0.4); }
+
+        .text-glow-gold { color: var(--dorado-ucmi); text-shadow: 0 0 15px rgba(197, 160, 89, 0.6); }
+
+        .btn-menu {
+            background: rgba(197, 160, 89, 0.15);
+            border: 1px solid var(--dorado-ucmi);
+            color: var(--dorado-ucmi);
+            border-radius: 12px;
+            padding: 8px 15px;
+            transition: 0.3s;
+        }
+        .btn-menu:hover { background: var(--dorado-ucmi); color: black; }
     </style>
 </head>
 <body>
 
-<div class="sidebar-trigger"></div>
-
-<div class="sidebar">
-    <h5 style="color: var(--dorado-ucmi)" class="mb-4"><i class="bi bi-palette2 me-2"></i>Personalización</h5>
-    
-    <div class="mb-3">
-        <label class="form-label small opacity-75">Subir Logo de Academia</label>
-        <input type="file" id="logoInput" class="form-control form-control-sm bg-dark text-white border-secondary" accept="image/*">
-    </div>
-
-    <div class="logo-preview-container">
-        <img id="imgPreview" src="#" alt="Vista previa">
-        <div class="form-check form-switch d-flex justify-content-center align-items-center gap-2">
-            <input class="form-check-input" type="checkbox" id="applyLogo">
-            <label class="form-check-label small" for="applyLogo">Aplicar Identidad</label>
-        </div>
-    </div>
-</div>
-
 <div class="overlay">
-    <nav class="navbar navbar-master">
+    <!-- NAVBAR UNIFICADA -->
+    <nav class="navbar navbar-master sticky-top">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <img id="mainLogo" src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo" class="logo-nav">
-            <button id="btnLogout" class="btn btn-logout">Cerrar Sesión</button>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-menu me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarAdmin">
+                    <i class="bi bi-list fs-4"></i>
+                </button>
+                <a href="index.html">
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="UCMI" class="logo-nav" id="navLogo">
+                </a>
+            </div>
+            <div class="text-end">
+                <small class="d-block opacity-75 text-white">Panel Administrativo</small>
+                <span id="navEntidad" class="fw-bold text-glow-gold">Cargando...</span>
+            </div>
         </div>
     </nav>
 
-    <div class="container py-5 text-center">
-        <h1 class="display-4 fw-bold">Panel de Control</h1>
-        <p style="color: var(--dorado-ucmi)">Configuración de Perfil de Usuario</p>
+    <!-- SIDEBAR DESLIZABLE -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarAdmin">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <h5 class="offcanvas-title fw-bold text-warning">CONFIGURACIÓN</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column">
+            <div class="text-center mb-4">
+                <div class="profile-img-container">
+                    <img id="logoPreview" src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png">
+                </div>
+                <h5 id="sideNombreSede" class="fw-bold text-white">Cargando...</h5>
+                <p class="small text-white-50">Sede Autorizada Local</p>
+            </div>
+
+            <div class="p-3 bg-white bg-opacity-10 rounded-4 border border-secondary mb-4">
+                <label class="form-label small fw-bold text-uppercase text-white">Personalizar Logo de Sede</label>
+                <input type="file" id="inputLogo" class="form-control form-control-sm bg-dark text-white border-secondary mb-3" accept="image/*">
+                <button id="btnGuardarLogo" class="btn btn-warning btn-sm w-100 fw-bold">ACTUALIZAR IDENTIDAD</button>
+                <p class="mt-2 mb-0" style="font-size: 0.65rem; color: var(--blanco-suave);">
+                    *Este logo sustituirá al de UCMI en tu consola.
+                </p>
+            </div>
+
+            <div class="mt-auto">
+                <button id="btnLogout" class="btn btn-outline-danger w-100 rounded-pill">
+                    <i class="bi bi-box-arrow-left"></i> SALIR DEL PANEL
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUERPO DEL PANEL -->
+    <div class="container py-5">
+        <div class="row mb-5 text-center">
+            <div class="col-12">
+                <h1 class="display-4 fw-bold mb-0">Gestión de Sede</h1>
+                <p class="lead text-glow-gold" id="mainWelcome">Bienvenido al núcleo administrativo</p>
+                <div class="mx-auto" style="width: 60px; height: 4px; background: var(--dorado-ucmi); border-radius: 10px; margin-top: 10px;"></div>
+            </div>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+            <!-- Captación -->
+            <div class="col-md-3">
+                <div class="admin-card" onclick="abrirFormulario()">
+                    <div class="icon-circle"><i class="bi bi-person-plus-fill"></i></div>
+                    <h3 class="fw-bold">Captación</h3>
+                    <p class="text-white-50 small">Gestión de nuevos ingresos y registros.</p>
+                    <div class="mt-3">
+                        <span class="badge-custom badge-cyan" onclick="event.stopPropagation(); copiarEnlace();">Copiar Link</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alumnos -->
+            <div class="col-md-3">
+                <a href="lista-alumnos.html" class="admin-card">
+                    <div class="icon-circle"><i class="bi bi-people-fill"></i></div>
+                    <h3 class="fw-bold">Alumnos</h3>
+                    <p class="text-white-50 small">Base de datos y control académico.</p>
+                    <div class="mt-3">
+                        <span class="badge-custom badge-purple">Inscritos</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Finanzas -->
+            <div class="col-md-3">
+                <div class="admin-card">
+                    <div class="icon-circle"><i class="bi bi-cash-stack"></i></div>
+                    <h3 class="fw-bold">Pagos</h3>
+                    <p class="text-white-50 small">Mensualidades y reportes de cobro.</p>
+                    <div class="mt-3">
+                        <span class="badge-custom badge-gold">Contabilidad</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-5 pt-4 text-center">
+            <p class="text-white-50 small mb-0">UCMI - Universitario de Ciencias Matemáticas e Idiomas</p>
+            <p class="text-glow-gold fw-bold small">ADMINISTRACIÓN LOCAL v1.0</p>
+        </footer>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -140,96 +253,70 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const logoInput = document.getElementById('logoInput');
-    const imgPreview = document.getElementById('imgPreview');
-    const applyLogo = document.getElementById('applyLogo');
-    const mainLogo = document.getElementById('mainLogo');
+    let linkCaptacionGlobal = "";
+    let userEmail = "";
 
-    // 1. CARGA INICIAL DESDE LA COLECCIÓN 'USUARIOS'
     onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            window.location.href = "index.html";
-        } else {
+        if (!user) { window.location.href = "index.html"; return; }
+        userEmail = user.email;
+
+        // 1. CARGAR DATOS DE LA ENTIDAD
+        try {
+            const q = query(collection(db, "historial_postulaciones"), where("email", "==", user.email));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+                const entidad = snap.docs[0].data().entidad;
+                document.getElementById('navEntidad').innerText = entidad;
+                document.getElementById('sideNombreSede').innerText = entidad;
+                linkCaptacionGlobal = `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidad)}`;
+            } else {
+                document.getElementById('navEntidad').innerText = "Sede No Vinculada";
+                document.getElementById('sideNombreSede').innerText = "Sede No Vinculada";
+            }
+        } catch (e) { console.error("Error cargando entidad:", e); }
+
+        // 2. CARGAR LOGO PERSONALIZADO (Sustitución completa)
+        try {
+            const docRef = doc(db, "usuarios", user.email);
+            const userDoc = await getDoc(docRef);
+            if (userDoc.exists() && userDoc.data().logoCustom) {
+                const logoData = userDoc.data().logoCustom;
+                document.getElementById('logoPreview').src = logoData;
+                document.getElementById('navLogo').src = logoData;
+            }
+        } catch (e) { console.error("Error cargando logo:", e); }
+    });
+
+    // LÓGICA DE ACTUALIZACIÓN DE LOGO
+    document.getElementById('btnGuardarLogo').addEventListener('click', async () => {
+        const file = document.getElementById('inputLogo').files[0];
+        if (!file) return alert("Selecciona una imagen.");
+
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64String = reader.result;
             try {
-                // Buscamos el documento que se llama igual que el email del usuario
-                const userRef = doc(db, "usuarios", user.email);
-                const userDoc = await getDoc(userRef);
-                
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    if (data.logoCustom && data.aplicarLogo) {
-                        mainLogo.src = data.logoCustom;
-                        imgPreview.src = data.logoCustom;
-                        imgPreview.style.display = "block";
-                        applyLogo.checked = true;
-                    }
-                }
-            } catch (error) { console.error("Error al cargar perfil:", error); }
-        }
+                await updateDoc(doc(db, "usuarios", userEmail), { logoCustom: base64String });
+                document.getElementById('logoPreview').src = base64String;
+                document.getElementById('navLogo').src = base64String;
+                alert("¡Identidad visual actualizada!");
+            } catch (error) {
+                console.error("Error al guardar:", error);
+                alert("No se pudo guardar la imagen.");
+            }
+        };
+        reader.readAsDataURL(file);
     });
 
-    // 2. REDIMENSIÓN PROPORCIONAL Y GUARDADO EN 'USUARIOS'
-    logoInput.addEventListener('change', function() {
-        const file = this.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = async () => {
-                    const MAX_DIM = 500;
-                    let width = img.width;
-                    let height = img.height;
+    window.copiarEnlace = () => {
+        if (!linkCaptacionGlobal) return alert("Enlace no disponible aún.");
+        navigator.clipboard.writeText(linkCaptacionGlobal);
+        alert("¡Enlace de captación copiado!");
+    };
 
-                    if (width > height) {
-                        if (width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
-                    } else {
-                        if (height > MAX_DIM) { width *= MAX_DIM / height; height = MAX_DIM; }
-                    }
-
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // Formato WebP al 70% de calidad para ahorrar espacio en Firestore
-                    const optimizedBase64 = canvas.toDataURL('image/webp', 0.7);
-
-                    const user = auth.currentUser;
-                    if (user) {
-                        try {
-                            // Usamos setDoc con merge:true para que cree el usuario si no existe
-                            await setDoc(doc(db, "usuarios", user.email), {
-                                logoCustom: optimizedBase64,
-                                aplicarLogo: true,
-                                email: user.email // Guardamos el email como referencia interna
-                            }, { merge: true });
-
-                            alert("Imagen de perfil actualizada correctamente.");
-                            location.reload();
-                        } catch (err) {
-                            console.error("Error al guardar:", err);
-                            alert("No se pudo guardar la imagen. Revisa los permisos de la colección 'usuarios'.");
-                        }
-                    }
-                };
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // 3. ACTIVAR/DESACTIVAR IDENTIDAD
-    applyLogo.addEventListener('change', async () => {
-        const user = auth.currentUser;
-        if (user) {
-            try {
-                await updateDoc(doc(db, "usuarios", user.email), { 
-                    aplicarLogo: applyLogo.checked 
-                });
-                location.reload();
-            } catch (err) { console.error(err); }
-        }
-    });
+    window.abrirFormulario = () => { 
+        if (linkCaptacionGlobal) window.open(linkCaptacionGlobal, '_blank'); 
+    };
 
     document.getElementById('btnLogout').addEventListener('click', () => {
         signOut(auth).then(() => window.location.href = "index.html");
