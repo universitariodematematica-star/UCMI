@@ -268,15 +268,27 @@
     /* Estilos de tabla y detalles */
     .label-exp { color: var(--dorado-ucmi) !important; font-size: 0.7rem; text-transform: uppercase; font-weight: 800; margin-bottom: 2px; display: block; opacity: 0.9; }
     .val-exp { color: #ffffff !important; font-size: 1rem; font-weight: 500; margin-bottom: 15px; display: block; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px; }
-    .badge-perfil { font-size: 0.7rem; padding: 5px 10px; border-radius: 50px; color: white; font-weight: 700; }
+    .badge-perfil { 
+    font-size: 0.7rem; 
+    padding: 5px 10px; 
+    border-radius: 50px; 
+    font-weight: 700;
+    display: inline-block; /* Asegura que el padding se vea bien */
+    text-transform: uppercase; /* Opcional: para un look más profesional */
+    color: inherit; /* CRUCIAL: permite que el color cambie según la clase de perfil */
+    border: 1px solid transparent; /* Evita saltos visuales si usas bordes en algún perfil */
+}
     #contenidoModal .bg-white { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: rgba(255, 255, 255, 0.8) !important; border-radius: 12px; }
 
-    /* --- CONFIGURACIÓN DE COLORES DE PERFIL --- */
-    .bg-academia  { background: #dc3545; } 
-    .bg-embajador { background: #0d6efd; } 
-    .bg-socio     { background: #6f42c1; } 
-    .bg-profesor  { background: var(--indigo-ucmi); } 
-    .bg-alumno    { background: var(--verde-exito); }
+/* --- CONFIGURACIÓN DE COLORES DE PERFIL (ACTUALIZADO) --- */
+.bg-academia          { background: #ffffff !important; color: #007bff !important; border: 1px solid #007bff; }
+.bg-profesor-academia { background: #ffc107 !important; color: #007bff !important; }
+.bg-profesor-asociado { background: #fd7e14 !important; color: #007bff !important; }
+.bg-profesor-embajador { background: #28a745 !important; color: #007bff !important; }
+.bg-estudiante-ucmi   { background: #007bff !important; color: #ffffff !important; }
+.bg-estudiante-academia { background: #dc3545 !important; color: #ffffff !important; }
+.bg-estudiante-asociado { background: #6610f2 !important; color: #ffffff !important; }
+.bg-estudiante-embajador { background: #6f42c1 !important; color: #ffffff !important; }
 
     /* --- EFECTO DE ENFOQUE AL ABRIR MODAL --- */
     body.modal-open .super-overlay { filter: blur(8px) brightness(0.7); }
@@ -484,12 +496,24 @@
 
             if (valorFiltro !== "todos" && !pLow.includes(valorFiltro)) return;
 
-            let colorClass = "";
-            if (pLow.includes("academia")) colorClass = "bg-academia";
-            else if (pLow.includes("embajador")) colorClass = "bg-embajador";
-            else if (pLow.includes("asociado")) colorClass = "bg-socio";
-            else if (pLow.includes("autodidacta") || pLow.includes("alumno")) colorClass = "bg-alumno";
-            else colorClass = "bg-secondary";
+// --- LÓGICA DE ASIGNACIÓN DE COLORES POR PERFIL ---
+let colorClass = "";
+const p = pLow; // Usamos la variable en minúsculas que ya definiste
+
+if (p === "academia") {
+    colorClass = "bg-academia";
+} else if (p.includes("profesor")) {
+    if (p.includes("academia")) colorClass = "bg-profesor-academia";
+    else if (p.includes("asociado")) colorClass = "bg-profesor-asociado";
+    else if (p.includes("embajador")) colorClass = "bg-profesor-embajador";
+} else if (p.includes("estudiante") || p.includes("alumno") || p.includes("autodidacta")) {
+    if (p.includes("ucmi") || p.includes("autodidacta")) colorClass = "bg-estudiante-ucmi";
+    else if (p.includes("academia")) colorClass = "bg-estudiante-academia";
+    else if (p.includes("asociado")) colorClass = "bg-estudiante-asociado";
+    else if (p.includes("embajador")) colorClass = "bg-estudiante-embajador";
+} else {
+    colorClass = "bg-secondary"; // Color por defecto si no coincide
+}
 
             tbody.innerHTML += `
     <tr>
