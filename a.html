@@ -311,12 +311,11 @@
             <!-- SIDEBAR -->
             <div class="col-md-2 sidebar d-none d-md-flex">
                 <div class="text-center mb-4">
+                    <!-- CONTENEDOR LOGO DINÁMICO -->
                     <div id="contenedorLogoSidebar">
-                        <!-- El logo se inyectará aquí -->
+                        <img id="logoAcademiaPrincipal" src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 60px; border-radius: 8px; opacity: 0; transition: 0.5s;">
                     </div>
-                    <h5 id="nombreAcademiaSidebar" class="fw-bold mt-2 text-white">
-                        <!-- El nombre se inyectará aquí -->
-                    </h5>
+                    <h5 id="nombreAcademiaSidebar" class="fw-bold mt-2 text-white">CARGANDO...</h5>
                 </div>
                 <hr class="text-white-50">
                 <nav class="sidebar-nav">
@@ -339,6 +338,7 @@
             <!-- CONTENIDO PRINCIPAL -->
             <div class="col-md-10 p-4">
                 <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
+                
                 <div class="row mt-4">
                     <div class="col-md-4">
                         <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
@@ -352,6 +352,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="table-container mt-4">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
@@ -377,7 +378,10 @@
 <div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
-            <div id="contenedorLogoAcademia" class="ms-3 mt-3"></div>
+            <!-- Logo dinámico también en el modal -->
+            <div class="ps-4 pt-4">
+                <img id="logoModalAspirante" src="" style="height: 50px; border-radius: 5px;">
+            </div>
             <div class="modal-header border-0 pb-0">
                 <h4 class="fw-bold"><i class="bi bi-file-earmark-person me-2"></i>Expediente del Aspirante</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -399,7 +403,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -416,18 +420,25 @@
     
     let currentId = null;
     let currentData = null;
+    let logoAcademiaGlobal = ""; // Para guardar el logo de la academia logueada
 
     // --- 1. CARGAR IDENTIDAD (LOGO SIDEBAR) ---
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            const q = query(collection(db, "usuarios"), where("email", "==", user.email));
-            const querySnapshot = await getDocs(q);
-            if (!querySnapshot.empty) {
-                const data = querySnapshot.docs[0].data();
-                const logoUrl = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-                document.getElementById('contenedorLogoSidebar').innerHTML = `<img src="${logoUrl}" style="height: 60px; border-radius: 8px;">`;
-                document.getElementById('nombreAcademiaSidebar').innerText = (data.entidad || "Academia").toUpperCase();
+            // Buscamos por el ID del documento que es el email (según tu captura)
+            const userDoc = await getDoc(doc(db, "usuarios", user.email));
+            
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+                
+                const imgElement = document.getElementById('logoAcademiaPrincipal');
+                imgElement.src = logoAcademiaGlobal;
+                imgElement.style.opacity = "1";
+                document.getElementById('nombreAcademiaSidebar').innerText = (data.entidad || "Panel").toUpperCase();
             }
+        } else {
+            window.location.href = "index.html";
         }
     });
 
@@ -452,8 +463,6 @@
 
             if (!mostrar) return;
 
-            const bloqueado = ["profesora academia", "estudiante academia", "estudiante asociado"].includes(perfil) ? "disabled" : "";
-
             tbody.innerHTML += `
                 <tr>
                     <td><div class="fw-bold">${data.entidad || "---"}</div><div class="small text-muted">${data.email}</div></td>
@@ -461,9 +470,7 @@
                     <td><span class="badge bg-secondary">${perfil.toUpperCase()}</span></td>
                     <td class="small">${data.ubicacion || '---'}</td>
                     <td class="text-center">
-                        <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill" ${bloqueado}>
-                            ${bloqueado ? 'Bloqueado' : 'Revisar'}
-                        </button>
+                        <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3">Revisar</button>
                     </td>
                 </tr>`;
         });
@@ -477,29 +484,57 @@
             currentData = snap.data();
             const d = currentData;
             
-            // Buscar logo de la entidad
-            const q = query(collection(db, "usuarios"), where("entidad", "==", d.entidad));
-            const uSnap = await getDocs(q);
-            let logoModal = d.logoCustom || d.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-            if(!uSnap.empty) logoModal = uSnap.docs[0].data().logoCustom || uSnap.docs[0].data().logo || logoModal;
+            // Ponemos el logo de la academia en el modal
+            document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
 
-            document.getElementById('contenedorLogoAcademia').innerHTML = `<img src="${logoModal}" style="height: 60px; border-radius: 8px;">`;
             document.getElementById('contenidoModal').innerHTML = `
-                <div class="col-md-6">
-                    <p><b>Entidad:</b> ${d.entidad}</p>
-                    <p><b>Responsable:</b> ${d.nombreResponsable}</p>
-                    <p><b>Email:</b> ${d.email}</p>
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small d-block">ASPIRANTE</label>
+                    <span class="fw-bold">${d.nombreResponsable}</span>
                 </div>
-                <div class="col-md-6">
-                    <p><b>Perfil:</b> ${d.tipoSolicitante}</p>
-                    <p><b>Ubicación:</b> ${d.ubicacion}</p>
-                    <p><b>WhatsApp:</b> ${d.whatsapp}</p>
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small d-block">ID / DNI</label>
+                    <span>${d.dniEstudiante || d.rif || 'N/A'}</span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small d-block">EMAIL</label>
+                    <span>${d.email}</span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small d-block">WHATSAPP</label>
+                    <span>${d.whatsapp}</span>
+                </div>
+                <div class="col-md-12">
+                    <label class="text-muted small d-block">UBICACIÓN</label>
+                    <span>${d.ubicacion || 'No especificada'}</span>
                 </div>`;
             new bootstrap.Modal(document.getElementById('modalDetalles')).show();
         }
     };
 
-    // --- 4. ESCUCHA TIEMPO REAL ---
+    // --- 4. ACCIONES (ACEPTAR/RECHAZAR) ---
+    document.getElementById('btnConfirmarAcceso').onclick = async () => {
+        if(!currentId || !currentData) return;
+        try {
+            // Se crea el usuario en la colección principal
+            await setDoc(doc(db, "usuarios", currentData.email), {
+                ...currentData,
+                estado: "activo",
+                fechaActivacion: new Date().toLocaleString()
+            });
+            await deleteDoc(doc(db, "postulaciones", currentId));
+            location.reload();
+        } catch (e) { console.error(e); }
+    };
+
+    document.getElementById('btnEliminar').onclick = async () => {
+        if (confirm("¿Rechazar esta solicitud?")) {
+            await deleteDoc(doc(db, "postulaciones", currentId));
+            location.reload();
+        }
+    };
+
+    // --- 5. TIEMPO REAL Y LOGOUT ---
     onSnapshot(collection(db, "postulaciones"), (snap) => {
         registrosLocales = snap.docs;
         renderizarTabla();
@@ -507,7 +542,6 @@
 
     selectorFiltro.addEventListener('change', renderizarTabla);
 
-    // --- 5. LOGOUT ---
     document.getElementById('btnLogout').onclick = async () => {
         await signOut(auth);
         window.location.href = "index.html";
