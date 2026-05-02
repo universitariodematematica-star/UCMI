@@ -271,12 +271,31 @@
     .badge-perfil { font-size: 0.7rem; padding: 5px 10px; border-radius: 50px; color: white; font-weight: 700; }
     #contenidoModal .bg-white { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: rgba(255, 255, 255, 0.8) !important; border-radius: 12px; }
 
-    /* --- CONFIGURACIÓN DE COLORES DE PERFIL --- */
-    .bg-academia  { background: #dc3545; } 
-    .bg-embajador { background: #0d6efd; } 
-    .bg-socio     { background: #6f42c1; } 
-    .bg-profesor  { background: var(--indigo-ucmi); } 
-    .bg-alumno    { background: var(--verde-exito); }
+    /* --- CATEGORÍAS MAESTRAS (FONDOS OSCUROS) --- */
+
+/* Academia (Verde Oscuro) */
+.bg-categoria-academia { 
+    background-color: #0a3d1d !important; 
+    color: #ffffff !important; 
+}
+
+/* Profesores (Azul Oscuro) */
+.bg-categoria-profesor { 
+    background-color: #0d2e5e !important; 
+    color: #ffffff !important; 
+}
+
+/* Estudiantes (Índigo) */
+.bg-categoria-estudiante { 
+    background-color: #311b92 !important; 
+    color: #ffffff !important; 
+}
+
+/* Otros / Pendientes */
+.bg-categoria-default { 
+    background-color: #455a64 !important; 
+    color: #ffffff !important; 
+}
 
     /* --- EFECTO DE ENFOQUE AL ABRIR MODAL --- */
     body.modal-open .super-overlay { filter: blur(8px) brightness(0.7); }
@@ -484,12 +503,25 @@
 
             if (valorFiltro !== "todos" && !pLow.includes(valorFiltro)) return;
 
-            let colorClass = "";
-            if (pLow.includes("academia")) colorClass = "bg-academia";
-            else if (pLow.includes("embajador")) colorClass = "bg-embajador";
-            else if (pLow.includes("asociado")) colorClass = "bg-socio";
-            else if (pLow.includes("autodidacta") || pLow.includes("alumno")) colorClass = "bg-alumno";
-            else colorClass = "bg-secondary";
+            // Líneas a cambiar dentro de registrosLocales.forEach((d) => { ...
+let colorClass = "";
+const p = pLow; // pLow ya tiene el texto en minúsculas y sin espacios
+
+if (p === "academia") {
+    // Caso específico para la entidad sola
+    colorClass = "bg-categoria-academia";
+} 
+else if (p.includes("profesor") || p.includes("profesora")) {
+    // Captura: Profesor Academia, Asociado, Embajador
+    colorClass = "bg-categoria-profesor";
+} 
+else if (p.includes("estudiante") || p.includes("alumno") || p.includes("ucmi")) {
+    // Captura: Estudiante UCMI, Academia, Asociado, Embajador
+    colorClass = "bg-categoria-estudiante";
+} 
+else {
+    colorClass = "bg-categoria-default";
+}
 
             tbody.innerHTML += `
     <tr>
