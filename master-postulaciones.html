@@ -281,14 +281,32 @@
     #contenidoModal .bg-white { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: rgba(255, 255, 255, 0.8) !important; border-radius: 12px; }
 
 /* --- CONFIGURACIÓN DE COLORES DE PERFIL (ACTUALIZADO) --- */
-.bg-academia          { background: #ffffff !important; color: #007bff !important; border: 1px solid #007bff; }
-.bg-profesor-academia { background: #ffc107 !important; color: #007bff !important; }
-.bg-profesor-asociado { background: #fd7e14 !important; color: #007bff !important; }
-.bg-profesor-embajador { background: #28a745 !important; color: #007bff !important; }
-.bg-estudiante-ucmi   { background: #007bff !important; color: #ffffff !important; }
-.bg-estudiante-academia { background: #dc3545 !important; color: #ffffff !important; }
-.bg-estudiante-asociado { background: #6610f2 !important; color: #ffffff !important; }
-.bg-estudiante-embajador { background: #6f42c1 !important; color: #ffffff !important; }
+bg-academia           { background: #ffffff !important; color: #007bff !important; border: 1px solid #007bff; }
+    
+    .bg-academia { 
+    background: #ffffff !important; 
+    color: #007bff !important; 
+    border: 1px solid #007bff; 
+}
+
+/* Profesores */
+.bg-profesor-academia { background: #ffc107 !important; color: #000000 !important; } 
+.bg-profesor-asociado { background: #fd7e14 !important; color: #ffffff !important; } 
+.bg-profesor-embajador { background: #28a745 !important; color: #ffffff !important; } 
+
+/* Estudiantes */
+.bg-estudiante-ucmi, 
+.bg-autodidacta { 
+    background: #007bff !important; 
+    color: #ffffff !important; 
+} 
+
+.bg-estudiante-academia { background: #dc3545 !important; color: #ffffff !important; } 
+.bg-estudiante-asociado { background: #6610f2 !important; color: #ffffff !important; } 
+.bg-estudiante-embajador { background: #6f42c1 !important; color: #ffffff !important; } 
+
+/* Clase de respaldo */
+.bg-secondary-ucmi { background: #6c757d !important; color: #ffffff !important; }
 
     /* --- EFECTO DE ENFOQUE AL ABRIR MODAL --- */
     body.modal-open .super-overlay { filter: blur(8px) brightness(0.7); }
@@ -484,18 +502,66 @@
     });
 
     function renderizarTabla() {
-        const tbody = document.getElementById('listaMaestra');
-        const valorFiltro = selectorFiltro.value; 
-        tbody.innerHTML = '';
+    const tbody = document.getElementById('listaMaestra');
+    const valorFiltro = selectorFiltro.value; 
+    tbody.innerHTML = '';
 
-        registrosLocales.forEach((d) => {
-            const data = d.data();
-            const id = d.id;
-            const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
-            const pLow = perfilOriginal.toLowerCase().trim();
+    registrosLocales.forEach((d) => {
+        const data = d.data();
+        const id = d.id;
 
-            if (valorFiltro !== "todos" && !pLow.includes(valorFiltro)) return;
+        // 1. Normalizamos el perfil para la lógica y el filtro
+        const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
+        const pLow = perfilOriginal.toLowerCase().trim();
 
+        // 2. Aplicamos el filtro de búsqueda
+        if (valorFiltro !== "todos" && !pLow.includes(valorFiltro)) return;
+
+        // 3. ASIGNACIÓN DINÁMICA DE COLORES
+        let colorClass = "";
+
+        if (pLow === "academia") {
+            colorClass = "bg-academia";
+        } 
+        else if (pLow.includes("profesor")) {
+            if (pLow.includes("academia")) colorClass = "bg-profesor-academia";
+            else if (pLow.includes("asociado")) colorClass = "bg-profesor-asociado";
+            else if (pLow.includes("embajador")) colorClass = "bg-profesor-embajador";
+            else colorClass = "bg-profesor-asociado"; // Por defecto
+        } 
+        else if (pLow.includes("estudiante") || pLow.includes("alumno") || pLow.includes("autodidacta")) {
+            if (pLow.includes("ucmi") || pLow.includes("autodidacta")) colorClass = "bg-estudiante-ucmi";
+            else if (pLow.includes("academia")) colorClass = "bg-estudiante-academia";
+            else if (pLow.includes("asociado")) colorClass = "bg-estudiante-asociado";
+            else if (pLow.includes("embajador")) colorClass = "bg-estudiante-embajador";
+            else colorClass = "bg-estudiante-ucmi"; // Por defecto
+        } 
+        else {
+            colorClass = "bg-secondary-ucmi"; // Respaldo para otros casos
+        }
+
+        // 4. GENERACIÓN DEL HTML DE LA FILA
+        tbody.innerHTML += `
+            <tr>
+                <td>
+                    <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : "---"}</div>
+                    <div class="small text-muted">${data.email}</div>
+                </td>
+                <td class="small">
+                    ${data.nombreResponsable || '---'}
+                </td>
+                <td>
+                    <span class="badge-perfil ${colorClass}">${perfilOriginal}</span>
+                </td>
+                <td class="small">
+                    ${data.ubicacion || '---'}
+                </td>
+                <td class="text-center">
+                    <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3">Revisar</button>
+                </td>
+            </tr>`;
+    });
+}
 // --- LÓGICA DE ASIGNACIÓN DE COLORES POR PERFIL ---
 let colorClass = "";
 const p = pLow; // Usamos la variable en minúsculas que ya definiste
