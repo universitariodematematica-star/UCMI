@@ -504,11 +504,35 @@
         }
     };
 
-    // 4. ESCUCHA Y LOGOUT
-    onSnapshot(collection(db, "postulaciones"), (snap) => {
+// 1. Detectamos qué academia está logueada desde la URL
+const urlParams = new URLSearchParams(window.location.search);
+const miAcademia = urlParams.get('ref'); 
+
+// 2. Creamos la función de escucha filtrada
+function iniciarEscuchaProtegida() {
+    if (!miAcademia) {
+        console.warn("No se detectó el nombre de la academia en la URL.");
+        return;
+    }
+
+    // Definimos la ruta: Postulaciones -> Perfil exacto -> Solo mi entidad
+    const q = query(
+        collection(db, "postulaciones"), 
+        where("perfil", "==", "Estudiante Academia"),
+        where("entidad", "==", miAcademia)
+    );
+
+    // Ejecutamos la escucha con el filtro aplicado
+    onSnapshot(q, (snap) => {
         registrosLocales = snap.docs;
         renderizarTabla();
+    }, (error) => {
+        console.error("Error en la consulta: ", error);
     });
+}
+
+// 3. La activamos
+iniciarEscuchaProtegida();
 
     selectorFiltro.addEventListener('change', renderizarTabla);
 
