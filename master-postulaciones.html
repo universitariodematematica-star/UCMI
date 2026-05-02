@@ -358,12 +358,11 @@
         <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
             <label class="small text-muted fw-bold mb-2 d-block text-uppercase" style="letter-spacing: 1px;">Filtrar por Perfil</label>
             <select id="filtroPerfil" class="form-select bg-dark text-white border-0 rounded-pill px-3 shadow-sm">
-                <option value="todos">Mostrar todos</option>
-                <option value="academia">Academias</option>
-                <option value="embajador">Profesor Embajador</option>
-                <option value="asociado">Profesor Asociado</option>
-                <option value="autodidacta">Estudiante Autodidacta</option>
-            </select>
+    <option value="todos">Mostrar todos</option>
+    <option value="academia">Academias</option>
+    <option value="profesor">Profesores (Asoc / Embaj / Acad)</option>
+    <option value="estudiante">Estudiantes (UCMI / Acad / Asoc / Embaj)</option>
+</select>
         </div>
     </div>
 </div>
@@ -492,7 +491,7 @@
 
     function renderizarTabla() {
         const tbody = document.getElementById('listaMaestra');
-        const valorFiltro = selectorFiltro.value; 
+        const valorFiltro = selectorFiltro.value; // "todos", "academia", "profesor", "estudiante"
         tbody.innerHTML = '';
 
         registrosLocales.forEach((d) => {
@@ -501,27 +500,54 @@
             const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
             const pLow = perfilOriginal.toLowerCase().trim();
 
-            if (valorFiltro !== "todos" && !pLow.includes(valorFiltro)) return;
+            // --- 1. MOTOR DE BÚSQUEDA (LÓGICA DE FILTRADO) ---
+            let pasaFiltro = false;
+            if (valorFiltro === "todos") {
+                pasaFiltro = true;
+            } else if (valorFiltro === "academia" && pLow.includes("academia")) {
+                pasaFiltro = true;
+            } else if (valorFiltro === "profesor" && (pLow.includes("profesor") || pLow.includes("profesora") || pLow.includes("embajador") || pLow.includes("asociado"))) {
+                pasaFiltro = true;
+            } else if (valorFiltro === "estudiante" && (pLow.includes("estudiante") || pLow.includes("alumno") || pLow.includes("ucmi") || pLow.includes("autodidacta"))) {
+                pasaFiltro = true;
+            }
 
-            // Líneas a cambiar dentro de registrosLocales.forEach((d) => { ...
-let colorClass = "";
-const p = pLow; // pLow ya tiene el texto en minúsculas y sin espacios
+            if (!pasaFiltro) return;
 
-if (p === "academia") {
-    // Caso específico para la entidad sola
-    colorClass = "bg-categoria-academia";
-} 
-else if (p.includes("profesor") || p.includes("profesora")) {
-    // Captura: Profesor Academia, Asociado, Embajador
-    colorClass = "bg-categoria-profesor";
-} 
-else if (p.includes("estudiante") || p.includes("alumno") || p.includes("ucmi")) {
-    // Captura: Estudiante UCMI, Academia, Asociado, Embajador
-    colorClass = "bg-categoria-estudiante";
-} 
-else {
-    colorClass = "bg-categoria-default";
-}
+            // --- 2. MOTOR DE COLOR (ASIGNACIÓN DE CLASES) ---
+            let colorClass = "";
+            if (pLow === "academia") {
+                colorClass = "bg-categoria-academia";
+            } else if (pLow.includes("profesor") || pLow.includes("profesora") || pLow.includes("embajador") || pLow.includes("asociado")) {
+                colorClass = "bg-categoria-profesor";
+            } else if (pLow.includes("estudiante") || pLow.includes("alumno") || pLow.includes("ucmi") || pLow.includes("autodidacta")) {
+                colorClass = "bg-categoria-estudiante";
+            } else {
+                colorClass = "bg-categoria-default";
+            }
+
+            // --- 3. RENDERIZADO DE LA FILA ---
+            tbody.innerHTML += `
+    <tr>
+        <td>
+            <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : "---"}</div>
+            <div class="small text-muted">${data.email}</div>
+        </td>
+        <td class="small">
+            ${data.nombreResponsable || '---'}
+        </td>
+        <td>
+            <span class="badge-perfil ${colorClass}">${perfilOriginal}</span>
+        </td>
+        <td class="small">
+            ${data.ubicacion || '---'}
+        </td>
+        <td class="text-center">
+            <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3">Revisar</button>
+        </td>
+    </tr>`;
+        });
+    }
 
             tbody.innerHTML += `
     <tr>
