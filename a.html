@@ -308,60 +308,46 @@
 <div class="super-overlay">
     <div class="container-fluid">
         <div class="row">
+            <!-- SIDEBAR -->
             <div class="col-md-2 sidebar d-none d-md-flex">
                 <div class="text-center mb-4">
-                    <!-- Contenedores dinámicos para la identidad de la academia -->
-                    <div id="contenedorLogoSidebar"></div>
-                    <h5 id="nombreAcademiaSidebar" class="fw-bold mt-2 text-white"></h5>
+                    <div id="contenedorLogoSidebar">
+                        <!-- El logo se inyectará aquí -->
+                    </div>
+                    <h5 id="nombreAcademiaSidebar" class="fw-bold mt-2 text-white">
+                        <!-- El nombre se inyectará aquí -->
+                    </h5>
                 </div>
                 <hr class="text-white-50">
                 <nav class="sidebar-nav">
-                    <a href="#" class="nav-item-ucmi active">
-                        <i class="bi bi-person-badge"></i> SOLICITUDES
-                    </a>
-                    <a href="master-vigencia.html" class="nav-item-ucmi">
-                        <i class="bi bi-shield-check"></i> VIGENCIA
-                    </a>
-                    <a href="master-usuarios.html" class="nav-item-ucmi">
-                        <i class="bi bi-people"></i> USUARIOS
-                    </a>
-                    <a href="historial-postulaciones.html" class="nav-item-ucmi">
-                        <i class="bi bi-clock-history"></i> HISTORIAL
-                    </a>
-                    <a href="directorio.html" class="nav-item-ucmi">
-                        <i class="bi bi-person-vcard"></i> DIRECTORIO
-                    </a>
-                    <a href="ofertas-academicas.html" class="nav-item-ucmi">
-                        <i class="bi bi-tags"></i> OFERTAS
-                    </a>
-                    <a href="master-repositorio.html" class="nav-item-ucmi">
-                        <i class="bi bi-grid-1x2"></i> MÓDULOS
-                    </a>
-                    <a href="papelera.html" class="nav-item-ucmi">
-                        <i class="bi bi-trash3"></i> PAPELERA
-                    </a>
+                    <a href="#" class="nav-item-ucmi active"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
+                    <a href="master-vigencia.html" class="nav-item-ucmi"><i class="bi bi-shield-check"></i> VIGENCIA</a>
+                    <a href="master-usuarios.html" class="nav-item-ucmi"><i class="bi bi-people"></i> USUARIOS</a>
+                    <a href="historial-postulaciones.html" class="nav-item-ucmi"><i class="bi bi-clock-history"></i> HISTORIAL</a>
+                    <a href="directorio.html" class="nav-item-ucmi"><i class="bi bi-person-vcard"></i> DIRECTORIO</a>
+                    <a href="ofertas-academicas.html" class="nav-item-ucmi"><i class="bi bi-tags"></i> OFERTAS</a>
+                    <a href="master-repositorio.html" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
+                    <a href="papelera.html" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
                 </nav>
 
                 <div class="mt-4 pt-4 border-top border-secondary">
-                    <a href="super-admin.html" class="btn-sidebar-action w-100">
-                        <i class="bi bi-shield-lock"></i> Panel Maestro
-                    </a>
-                    <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100">
-                        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
-                    </a>
+                    <a href="super-admin.html" class="btn-sidebar-action w-100"><i class="bi bi-shield-lock"></i> Panel Maestro</a>
+                    <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a>
                 </div>
             </div>
+
+            <!-- CONTENIDO PRINCIPAL -->
             <div class="col-md-10 p-4">
                 <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
                 <div class="row mt-4">
                     <div class="col-md-4">
                         <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
-                            <label class="small text-muted fw-bold mb-2 d-block text-uppercase" style="letter-spacing: 1px;">Filtrar por Perfil</label>
+                            <label class="small text-muted fw-bold mb-2 d-block text-uppercase">Filtrar por Perfil</label>
                             <select id="filtroPerfil" class="form-select bg-dark text-white border-0 rounded-pill px-3 shadow-sm">
                                 <option value="todos">Mostrar todos</option>
                                 <option value="academia">Academias</option>
-                                <option value="profesor">Profesores (Asoc / Embaj / Acad)</option>
-                                <option value="estudiante">Estudiantes (UCMI / Acad / Asoc / Embaj)</option>
+                                <option value="profesor">Profesores</option>
+                                <option value="estudiante">Estudiantes</option>
                             </select>
                         </div>
                     </div>
@@ -387,6 +373,7 @@
     </div>
 </div>
 
+<!-- MODAL DE DETALLES -->
 <div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -414,8 +401,6 @@
     import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    emailjs.init("TU_PUBLIC_KEY_AQUÍ");
-
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
         authDomain: "ucmi-13796634.firebaseapp.com",
@@ -432,177 +417,102 @@
     let currentId = null;
     let currentData = null;
 
-    // --- FUNCIÓN PARA IDENTIDAD DEL SIDEBAR ---
-    async function cargarIdentidadPanel() {
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const snap = await getDoc(doc(db, "usuarios", user.email));
-                if (snap.exists()) {
-                    const data = snap.data();
-                    const logo = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-                    const nombre = data.entidad || "PANEL DE CONTROL";
-                    document.getElementById('contenedorLogoSidebar').innerHTML = `
-                        <img src="${logo}" style="height: 60px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
-                    `;
-                    document.getElementById('nombreAcademiaSidebar').innerText = nombre.toUpperCase();
-                }
+    // --- 1. CARGAR IDENTIDAD (LOGO SIDEBAR) ---
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const q = query(collection(db, "usuarios"), where("email", "==", user.email));
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+                const data = querySnapshot.docs[0].data();
+                const logoUrl = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+                document.getElementById('contenedorLogoSidebar').innerHTML = `<img src="${logoUrl}" style="height: 60px; border-radius: 8px;">`;
+                document.getElementById('nombreAcademiaSidebar').innerText = (data.entidad || "Academia").toUpperCase();
             }
-        });
-    }
-    cargarIdentidadPanel();
-
-    // --- VER EXPEDIENTE (CON BÚSQUEDA DE LOGO DE LA ENTIDAD) ---
-    window.verExpediente = async (id) => {
-        currentId = id;
-        const snap = await getDoc(doc(db, "postulaciones", id));
-        
-        if (snap.exists()) {
-            currentData = snap.data();
-            const d = currentData;
-
-            // Buscamos el logo de la entidad que postula al alumno
-            const q = query(collection(db, "usuarios"), where("entidad", "==", d.entidad));
-            const userSnap = await getDocs(q);
-            
-            let imagenLogo = d.logoCustom || d.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-            
-            if (!userSnap.empty) {
-                const userData = userSnap.docs[0].data();
-                imagenLogo = userData.logoCustom || userData.logo || imagenLogo;
-            }
-
-            document.getElementById('contenedorLogoAcademia').innerHTML = `<img src="${imagenLogo}" style="height: 60px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">`;
-
-            document.getElementById('contenidoModal').innerHTML = `
-                <div class="col-md-12 mb-4 border-bottom pb-2">
-                    <label class="label-exp">Fecha de Solicitud</label>
-                    <span class="val-exp text-primary fw-bold"><i class="bi bi-calendar3 me-2"></i>${d.fecha || 'N/A'}</span>
-                </div>
-                <div class="col-md-6">
-                    <label class="label-exp">Entidad / Institución</label><span class="val-exp">${d.entidad || 'N/A'}</span>
-                    <label class="label-exp">Responsable Legal</label><span class="val-exp">${d.nombreResponsable || 'N/A'}</span>
-                    <label class="label-exp">DNI / RIF</label><span class="val-exp">${d.rif || d.dniEstudiante || 'N/A'}</span>
-                    <label class="label-exp">Email</label><span class="val-exp text-lowercase">${d.email || 'N/A'}</span>
-                    <label class="label-exp">WhatsApp</label><span class="val-exp">${d.whatsapp || 'N/A'}</span>
-                </div>
-                <div class="col-md-6" style="background: rgba(0,0,0,0.03); border-radius: 15px; padding: 15px;">
-                    <label class="label-exp">Perfil</label><span class="val-exp fw-bold text-success">${d.tipoSolicitante || d.perfil || 'N/A'}</span>
-                    <label class="label-exp">Licencia</label><span class="val-exp">${d.duracionLicencia || 'N/A'}</span>
-                    <label class="label-exp">Cupos / Edad</label><span class="val-exp">${d.cupos || d.edadEstudiante || '0'}</span>
-                    <label class="label-exp">Ubicación</label><span class="val-exp">${d.ubicacion || 'N/A'}</span>
-                    <label class="label-exp">Programas</label>
-                    <div class="small p-2 bg-white border rounded" style="max-height: 100px; overflow-y: auto; color: black !important;">${d.programas || 'No especificados'}</div>
-                </div>`;
-                
-            new bootstrap.Modal(document.getElementById('modalDetalles')).show();
         }
-    };
+    });
 
-    // --- COMUNICACIÓN Y TABLA ---
-    const enviarEmailAutomatico = (data, decision) => {
-        const templateParams = {
-            to_name: data.nombreResponsable,
-            to_email: data.email,
-            status: decision,
-            message: decision === "ACEPTADO" 
-                ? "Tu solicitud ha sido aprobada. Tus credenciales son tu correo y la clave UCMI2026." 
-                : "Lamentamos informarte que tu solicitud no ha sido aprobada."
-        };
-        emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
-            .then(() => console.log("Email enviado"))
-            .catch((err) => console.error("Error Email:", err));
-    };
-
-    const prepararMensajeWhatsApp = (data, decision) => {
-        const nombre = data.nombreResponsable || "Postulante";
-        const telefono = data.whatsapp || "";
-        if (!telefono || telefono === "N/A") return;
-        let texto = decision === "ACEPTADO" 
-            ? `¡Hola *${nombre}*! Tu solicitud ha sido *ACEPTADA*. ✅ Credenciales: ${data.email} / UCMI2026.`
-            : `Hola *${nombre}*. Tu solicitud no ha sido aprobada en esta ocasión.`;
-        window.open(`https://api.whatsapp.com/send?phone=${telefono.toString().replace(/\D/g, '')}&text=${texto}`, '_blank');
-    };
-
+    // --- 2. RENDERIZAR TABLA ---
     const selectorFiltro = document.getElementById('filtroPerfil');
     let registrosLocales = [];
 
     function renderizarTabla() {
         const tbody = document.getElementById('listaMaestra');
-        const valorFiltro = selectorFiltro.value; 
+        const filtro = selectorFiltro.value;
         tbody.innerHTML = '';
 
-        registrosLocales.forEach((d) => {
-            const data = d.data();
-            const id = d.id;
-            const pLow = (data.tipoSolicitante || data.perfil || "estudiante").toLowerCase();
+        registrosLocales.forEach(docSnap => {
+            const data = docSnap.data();
+            const id = docSnap.id;
+            const perfil = (data.tipoSolicitante || data.perfil || "").toLowerCase();
 
-            let pasaFiltro = valorFiltro === "todos" || 
-                (valorFiltro === "academia" && pLow.includes("academia")) ||
-                (valorFiltro === "profesor" && (pLow.includes("profesor") || pLow.includes("embajador") || pLow.includes("asociado"))) ||
-                (valorFiltro === "estudiante" && (pLow.includes("estudiante") || pLow.includes("alumno") || pLow.includes("ucmi")));
+            let mostrar = filtro === "todos" || 
+                (filtro === "academia" && perfil.includes("academia")) ||
+                (filtro === "profesor" && (perfil.includes("profesor") || perfil.includes("asociado"))) ||
+                (filtro === "estudiante" && (perfil.includes("estudiante") || perfil.includes("ucmi")));
 
-            if (!pasaFiltro) return;
+            if (!mostrar) return;
 
-            const estaInhabilitado = ["profesora academia", "estudiante academia", "estudiante asociado", "estudiante embajador"].includes(pLow) ? "disabled" : "";
+            const bloqueado = ["profesora academia", "estudiante academia", "estudiante asociado"].includes(perfil) ? "disabled" : "";
 
             tbody.innerHTML += `
                 <tr>
-                    <td>
-                        <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : "---"}</div>
-                        <div class="small text-muted">${data.email}</div>
-                    </td>
+                    <td><div class="fw-bold">${data.entidad || "---"}</div><div class="small text-muted">${data.email}</div></td>
                     <td class="small">${data.nombreResponsable || '---'}</td>
-                    <td><span class="badge-perfil bg-dark text-white">${pLow.toUpperCase()}</span></td>
+                    <td><span class="badge bg-secondary">${perfil.toUpperCase()}</span></td>
                     <td class="small">${data.ubicacion || '---'}</td>
                     <td class="text-center">
-                        <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3" ${estaInhabilitado}>
-                            ${estaInhabilitado ? 'Bloqueado' : 'Revisar'}
+                        <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill" ${bloqueado}>
+                            ${bloqueado ? 'Bloqueado' : 'Revisar'}
                         </button>
                     </td>
                 </tr>`;
         });
     }
 
-    selectorFiltro.addEventListener('change', renderizarTabla);
+    // --- 3. VER EXPEDIENTE ---
+    window.verExpediente = async (id) => {
+        currentId = id;
+        const snap = await getDoc(doc(db, "postulaciones", id));
+        if (snap.exists()) {
+            currentData = snap.data();
+            const d = currentData;
+            
+            // Buscar logo de la entidad
+            const q = query(collection(db, "usuarios"), where("entidad", "==", d.entidad));
+            const uSnap = await getDocs(q);
+            let logoModal = d.logoCustom || d.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+            if(!uSnap.empty) logoModal = uSnap.docs[0].data().logoCustom || uSnap.docs[0].data().logo || logoModal;
 
-    document.getElementById('btnConfirmarAcceso').onclick = async () => {
-        if(!currentId || !currentData) return;
-        try {
-            try { await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026"); } catch (e) {}
-            const exp = new Date();
-            const meses = parseInt(String(currentData.duracionLicencia).replace(/\D/g, '')) || 1;
-            exp.setMonth(exp.getMonth() + meses);
-
-            const dataFinal = { ...currentData, estado: "activo", expiracionLicencia: exp.toLocaleString() };
-            await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
-            await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO" });
-            await deleteDoc(doc(db, "postulaciones", currentId));
-
-            enviarEmailAutomatico(currentData, "ACEPTADO");
-            prepararMensajeWhatsApp(dataFinal, "ACEPTADO");
-            location.reload();
-        } catch (e) { console.error(e); }
-    };
-
-    document.getElementById('btnEliminar').onclick = async () => {
-        if (confirm("¿Rechazar solicitud?")) {
-            await setDoc(doc(db, "historial_postulaciones", currentId), { ...currentData, decisionFinal: "RECHAZADO" });
-            await deleteDoc(doc(db, "postulaciones", currentId));
-            location.reload();
+            document.getElementById('contenedorLogoAcademia').innerHTML = `<img src="${logoModal}" style="height: 60px; border-radius: 8px;">`;
+            document.getElementById('contenidoModal').innerHTML = `
+                <div class="col-md-6">
+                    <p><b>Entidad:</b> ${d.entidad}</p>
+                    <p><b>Responsable:</b> ${d.nombreResponsable}</p>
+                    <p><b>Email:</b> ${d.email}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><b>Perfil:</b> ${d.tipoSolicitante}</p>
+                    <p><b>Ubicación:</b> ${d.ubicacion}</p>
+                    <p><b>WhatsApp:</b> ${d.whatsapp}</p>
+                </div>`;
+            new bootstrap.Modal(document.getElementById('modalDetalles')).show();
         }
     };
 
-    document.getElementById('btnLogout').onclick = async (e) => {
-        e.preventDefault();
-        if(confirm("¿Cerrar sesión?")) { await signOut(auth); window.location.href = "index.html"; }
-    };
-
-    onSnapshot(collection(db, "postulaciones"), (snapshot) => {
-        registrosLocales = snapshot.docs;
+    // --- 4. ESCUCHA TIEMPO REAL ---
+    onSnapshot(collection(db, "postulaciones"), (snap) => {
+        registrosLocales = snap.docs;
         renderizarTabla();
     });
+
+    selectorFiltro.addEventListener('change', renderizarTabla);
+
+    // --- 5. LOGOUT ---
+    document.getElementById('btnLogout').onclick = async () => {
+        await signOut(auth);
+        window.location.href = "index.html";
+    };
 </script>
-</body>
 </body>
 
 </html>
