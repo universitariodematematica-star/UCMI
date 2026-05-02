@@ -419,65 +419,49 @@
     let currentData = null;
     let logoAcademiaGlobal = "";
 
-// 1. IDENTIDAD DEL SIDEBAR
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const userDoc = await getDoc(doc(db, "usuarios", user.email));
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-                document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
-                document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
-                document.getElementById('nombreAcademiaSidebar').innerText = (data.entidad || "Panel").toUpperCase();
+// 1. IDENTIDAD Y CARGA AUTOMÁTICA
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        const userDoc = await getDoc(doc(db, "usuarios", user.email));
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            
+            // Personalización visual del Sidebar
+            logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+            document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
+            document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
+            
+            const nombreEntidad = data.entidad || "Panel";
+            document.getElementById('nombreAcademiaSidebar').innerText = nombreEntidad.toUpperCase();
 
-                // === LA LÍNEA MÁGICA ===
-                // Esto inicia la escucha filtrada usando el nombre de la academia de tu perfil
-                iniciarEscuchaProtegida(data.entidad); 
-            }
-        } else {
-            window.location.href = "index.html";
+            // === LA CLAVE: Activamos la escucha usando el dato real de tu perfil en Firebase ===
+            iniciarEscuchaFiltrada(nombreEntidad); 
         }
-    });
-
-    // 2. RENDERIZAR TABLA CON TUS VARIABLES EXACTAS
-    const selectorFiltro = document.getElementById('filtroPerfil');
-    let registrosLocales = [];
-
-    function renderizarTabla() {
-        const tbody = document.getElementById('listaMaestra');
-        const filtro = selectorFiltro.value;
-        tbody.innerHTML = '';
-
-        registrosLocales.forEach(docSnap => {
-            const data = docSnap.data();
-            const id = docSnap.id;
-
-            // Variables exactas de Firebase
-            const nombre = data.nombreResponsable || "---";
-            const perfil = (data.perfil || "").toLowerCase();
-            const localizacion = data.ubicacion || "---";
-
-            let mostrar = filtro === "todos" || 
-                (filtro === "academia" && perfil.includes("academia")) ||
-                (filtro === "profesor" && (perfil.includes("profesor") || perfil.includes("asociado"))) ||
-                (filtro === "estudiante" && (perfil.includes("estudiante") || perfil.includes("ucmi")));
-
-            if (!mostrar) return;
-
-            tbody.innerHTML += `
-                <tr>
-                    <td>
-                        <div class="fw-bold">${nombre}</div>
-                        <div class="small text-muted">${data.email || ''}</div>
-                    </td>
-                    <td><span class="badge bg-secondary">${perfil.toUpperCase()}</span></td>
-                    <td class="small">${localizacion}</td>
-                    <td class="text-center">
-                        <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3">REVISAR</button>
-                    </td>
-                </tr>`;
-        });
+    } else {
+        // Si no hay sesión, mandamos al login
+        window.location.href = "index.html";
     }
+});
+
+// 2. FUNCIÓN DE ESCUCHA (Busca solo los datos de TU academia)
+function iniciarEscuchaFiltrada(academiaNombre) {
+    console.log("Conectando con las solicitudes de:", academiaNombre);
+
+    // Filtramos la colección 'postulaciones' por tu entidad
+    const q = query(
+        collection(db, "postulaciones"), 
+        where("perfil", "==", "Estudiante Academia"),
+        where("entidad", "==", academiaNombre)
+    );
+
+    // Mantenemos la tabla actualizada en tiempo real
+    onSnapshot(q, (snap) => {
+        registrosLocales = snap.docs;
+        renderizarTabla();
+    }, (error) => {
+        console.error("Error en la consulta de Firebase: ", error);
+    });
+}
 
     // 3. EXPEDIENTE
     window.verExpediente = async (id) => {
@@ -508,35 +492,6 @@
         }
     };
 
-// 1. Detectamos qué academia está logueada desde la URL
-const urlParams = new URLSearchParams(window.location.search);
-const miAcademia = urlParams.get('ref'); 
-
-// 2. Creamos la función de escucha filtrada
-function iniciarEscuchaProtegida() {
-    if (!miAcademia) {
-        console.warn("No se detectó el nombre de la academia en la URL.");
-        return;
-    }
-
-    // Definimos la ruta: Postulaciones -> Perfil exacto -> Solo mi entidad
-    const q = query(
-        collection(db, "postulaciones"), 
-        where("perfil", "==", "Estudiante Academia"),
-        where("entidad", "==", miAcademia)
-    );
-
-    // Ejecutamos la escucha con el filtro aplicado
-    onSnapshot(q, (snap) => {
-        registrosLocales = snap.docs;
-        renderizarTabla();
-    }, (error) => {
-        console.error("Error en la consulta: ", error);
-    });
-}
-
-// 3. La activamos
-iniciarEscuchaProtegida();
 
     selectorFiltro.addEventListener('change', renderizarTabla);
 
