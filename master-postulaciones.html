@@ -484,70 +484,81 @@
     const selectorFiltro = document.getElementById('filtroPerfil');
     let registrosLocales = [];
 
-    onSnapshot(collection(db, "postulaciones"), (snapshot) => {
-        registrosLocales = snapshot.docs; 
-        renderizarTabla(); 
-    });
-
 function renderizarTabla() {
-        const tbody = document.getElementById('listaMaestra');
-        const valorFiltro = selectorFiltro.value; 
-        tbody.innerHTML = '';
+    const tbody = document.getElementById('listaMaestra');
+    const valorFiltro = selectorFiltro.value; 
+    tbody.innerHTML = '';
 
-        registrosLocales.forEach((d) => {
-            const data = d.data();
-            const id = d.id;
-            const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
-            const pLow = perfilOriginal.toLowerCase().trim();
+    registrosLocales.forEach((d) => {
+        const data = d.data();
+        const id = d.id;
+        const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
+        const pLow = perfilOriginal.toLowerCase().trim();
 
-            // --- 1. MOTOR DE BÚSQUEDA ---
-            let pasaFiltro = false;
-            if (valorFiltro === "todos") {
-                pasaFiltro = true;
-            } else if (valorFiltro === "academia" && pLow.includes("academia")) {
-                pasaFiltro = true;
-            } else if (valorFiltro === "profesor" && (pLow.includes("profesor") || pLow.includes("embajador") || pLow.includes("asociado"))) {
-                pasaFiltro = true;
-            } else if (valorFiltro === "estudiante" && (pLow.includes("estudiante") || pLow.includes("alumno") || pLow.includes("ucmi") || pLow.includes("autodidacta"))) {
-                pasaFiltro = true;
-            }
+        // --- 1. MOTOR DE BÚSQUEDA ---
+        let pasaFiltro = false;
+        if (valorFiltro === "todos") {
+            pasaFiltro = true;
+        } else if (valorFiltro === "academia" && pLow.includes("academia")) {
+            pasaFiltro = true;
+        } else if (valorFiltro === "profesor" && (pLow.includes("profesor") || pLow.includes("embajador") || pLow.includes("asociado"))) {
+            pasaFiltro = true;
+        } else if (valorFiltro === "estudiante" && (pLow.includes("estudiante") || pLow.includes("alumno") || pLow.includes("ucmi") || pLow.includes("autodidacta"))) {
+            pasaFiltro = true;
+        }
 
-            if (!pasaFiltro) return;
+        if (!pasaFiltro) return;
 
-            // --- 2. MOTOR DE COLOR ---
-            let colorClass = "";
-            if (pLow === "academia") {
-                colorClass = "bg-categoria-academia";
-            } else if (pLow.includes("profesor") || pLow.includes("embajador") || pLow.includes("asociado")) {
-                colorClass = "bg-categoria-profesor";
-            } else if (pLow.includes("estudiante") || pLow.includes("alumno") || pLow.includes("ucmi") || pLow.includes("autodidacta")) {
-                colorClass = "bg-categoria-estudiante";
-            } else {
-                colorClass = "bg-categoria-default";
-            }
+        // --- 2. MOTOR DE COLOR ---
+        let colorClass = "";
+        if (pLow === "academia") {
+            colorClass = "bg-categoria-academia";
+        } else if (pLow.includes("profesor") || pLow.includes("embajador") || pLow.includes("asociado")) {
+            colorClass = "bg-categoria-profesor";
+        } else if (pLow.includes("estudiante") || pLow.includes("alumno") || pLow.includes("ucmi") || pLow.includes("autodidacta")) {
+            colorClass = "bg-categoria-estudiante";
+        } else {
+            colorClass = "bg-categoria-default";
+        }
 
-            // --- 3. RENDERIZADO ---
-            tbody.innerHTML += `
-                <tr>
-                    <td>
-                        <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : "---"}</div>
-                        <div class="small text-muted">${data.email}</div>
-                    </td>
-                    <td class="small">
-                        ${data.nombreResponsable || '---'}
-                    </td>
-                    <td>
-                        <span class="badge-perfil ${colorClass}">${perfilOriginal}</span>
-                    </td>
-                    <td class="small">
-                        ${data.ubicacion || '---'}
-                    </td>
-                    <td class="text-center">
-                        <button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3">Revisar</button>
-                    </td>
-                </tr>`;
-        });
-    }
+        // --- 3. LÓGICA DE INHABILITACIÓN DEL BOTÓN (NUEVA) ---
+        // Lista de perfiles que NO pueden ser revisados (se bloquean)
+        const perfilesBloqueados = [
+            "profesora academia", 
+            "estudiante academia", 
+            "estudiante asociado", 
+            "estudiante embajador"
+        ];
+        
+        // Si el perfil está en la lista negra, el botón se deshabilita
+        const estaInhabilitado = perfilesBloqueados.includes(pLow) ? "disabled" : "";
+
+        // --- 4. RENDERIZADO ---
+        tbody.innerHTML += `
+            <tr>
+                <td>
+                    <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : "---"}</div>
+                    <div class="small text-muted">${data.email}</div>
+                </td>
+                <td class="small">
+                    ${data.nombreResponsable || '---'}
+                </td>
+                <td>
+                    <span class="badge-perfil ${colorClass}">${perfilOriginal}</span>
+                </td>
+                <td class="small">
+                    ${data.ubicacion || '---'}
+                </td>
+                <td class="text-center">
+                    <button onclick="verExpediente('${id}')" 
+                            class="btn btn-dark btn-sm rounded-pill px-3" 
+                            ${estaInhabilitado}> <!-- Atributo dinámico -->
+                        ${estaInhabilitado ? 'Bloqueado' : 'Revisar'}
+                    </button>
+                </td>
+            </tr>`;
+    });
+}
 
     selectorFiltro.addEventListener('change', renderizarTabla);
 
