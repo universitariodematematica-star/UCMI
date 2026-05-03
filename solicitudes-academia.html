@@ -418,6 +418,7 @@
     let currentId = null;
     let currentData = null;
     let logoAcademiaGlobal = "";
+    const selectorFiltro = document.getElementById('filtroPerfil');
 
 // 1. IDENTIDAD Y CARGA AUTOMÁTICA
 onAuthStateChanged(auth, async (user) => {
@@ -460,6 +461,39 @@ function iniciarEscuchaFiltrada(academiaNombre) {
         renderizarTabla();
     }, (error) => {
         console.error("Error en la consulta de Firebase: ", error);
+    });
+}
+
+    let registrosLocales = []; 
+
+function renderizarTabla() {
+    const lista = document.getElementById('listaMaestra');
+    if (!lista) return; 
+    
+    const filtro = selectorFiltro.value;
+    lista.innerHTML = "";
+
+    registrosLocales.forEach(docSnap => {
+        const d = docSnap.data();
+        const id = docSnap.id;
+
+        if (filtro !== "todos" && !d.perfil.toLowerCase().includes(filtro)) return;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <div class="fw-bold">${d.nombreResponsable || d.nombre || 'Sin nombre'}</div>
+                <div class="small text-muted">${d.email}</div>
+            </td>
+            <td><span class="badge bg-categoria-estudiante">${d.perfil}</span></td>
+            <td><i class="bi bi-geo-alt me-1"></i>${d.ubicacion || 'No definida'}</td>
+            <td class="text-center">
+                <button class="btn btn-dark btn-sm" onclick="verExpediente('${id}')">
+                    <i class="bi bi-eye"></i> Revisar
+                </button>
+            </td>
+        `;
+        lista.appendChild(tr);
     });
 }
 
