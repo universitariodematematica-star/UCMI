@@ -186,11 +186,6 @@ input[type=number] {
                     <input type="email" id="emailInput" class="form-control" placeholder="usuario@ejemplo.com" autocomplete="off" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Contraseña de Acceso:</label>
-                    <!-- autocomplete="new-password" para asegurar que nazca vacío -->
-                    <input type="password" id="passInput" class="form-control" autocomplete="new-password" required>
-                </div>
-                <div class="col-md-6">
                     <label class="form-label fw-bold">Número de WhatsApp (2FA):</label>
                     <input type="tel" id="whatsappInput" class="form-control" placeholder="+58 412 0000000" required>
                 </div>
@@ -276,7 +271,6 @@ input[type=number] {
     // LIMPIEZA FORZADA DE CAMPOS (image_1e9396.png)
     window.onload = () => {
         document.getElementById('emailInput').value = "";
-        document.getElementById('passInput').value = "";
     };
 
     window.fn_VerificarEdad = () => {
@@ -300,14 +294,32 @@ input[type=number] {
         const btn = document.getElementById('btnSubmit');
         btn.disabled = true;
 
-        const payload = {
-            nombreResponsable: document.getElementById('nombreInput').value,
-            cedulaResponsable: document.getElementById('dniInput').value,
-            emailUsuario: document.getElementById('emailInput').value,
-            entidad: document.getElementById('nombreInstitucion').value || "Particular",
-            perfil: document.getElementById('perfilUsuario').value,
-            timestamp: new Date()
-        };
+const payload = {
+    // Identidad
+    nombreResponsable: document.getElementById('nombreInput').value,
+    cedulaResponsable: document.getElementById('dniInput').value,
+    fechaNacimiento: document.getElementById('fechaNacimientoInput').value,
+    genero: document.getElementById('generoInput').value,
+    
+    // Contacto y Ubicación
+    email: document.getElementById('emailInput').value,
+    whatsapp: document.getElementById('whatsappInput').value,
+    ubicacion: document.getElementById('ubicacionInput').value,
+    
+    // Datos de Menores (vacíos si es adulto)
+    nombreRepresentante: document.getElementById('repNombre').value,
+    cedulaRepresentante: document.getElementById('repCedula').value,
+    emailRepresentante: document.getElementById('repEmail').value,
+    whatsappRepresentante: document.getElementById('repWhatsapp').value,
+    
+    // Configuración Académica
+    perfil: document.getElementById('perfilUsuario').value,
+    mesesLicencia: document.getElementById('planLicencia').value,
+    entidad: document.getElementById('nombreInstitucion').value || "Particular",
+    
+    // Registro de tiempo
+    timestamp: new Date() 
+};
 
         try {
             await addDoc(collection(db, "postulaciones"), payload);
