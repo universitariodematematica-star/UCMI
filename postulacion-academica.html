@@ -235,18 +235,99 @@
         }
     });
 
-    function fn_GenerarPDF(d) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+   function fn_GenerarPDF(d) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const marginX = 20;
+    let y = 20;
+
+    // --- ENCABEZADO ---
+    doc.setFont("cinzel", "bold"); // Si no carga Cinzel, usará Helvetica por defecto
+    doc.setFontSize(18);
+    doc.setTextColor(26, 42, 58); // Azul UCMI
+    doc.text("COMPROBANTE DE POSTULACIÓN OFICIAL", 105, y, { align: "center" });
+    
+    y += 15;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100);
+    doc.text(`Fecha de registro: ${d.timestamp.toLocaleString()}`, 105, y, { align: "center" });
+
+    // --- SECCIÓN 1: DATOS PERSONALES ---
+    y += 15;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(197, 160, 89); // Dorado UCMI
+    doc.text("1. INFORMACIÓN DEL POSTULANTE", marginX, y);
+    
+    y += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+    doc.text(`Nombre Completo: ${d.nombreResponsable}`, marginX, y);
+    doc.text(`ID / Cédula: ${d.cedulaResponsable}`, marginX + 100, y);
+    
+    y += 7;
+    doc.text(`Fecha de Nacimiento: ${d.fechaNacimiento}`, marginX, y);
+    doc.text(`Género: ${d.genero}`, marginX + 100, y);
+
+    // --- SECCIÓN 2: CONTACTO Y UBICACIÓN ---
+    y += 12;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(197, 160, 89);
+    doc.text("2. CONTACTO Y LOCALIZACIÓN", marginX, y);
+    
+    y += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(0);
+    doc.text(`Correo: ${d.email}`, marginX, y);
+    y += 7;
+    doc.text(`WhatsApp: ${d.whatsapp}`, marginX, y);
+    y += 7;
+    doc.text(`Ubicación: ${d.ubicacion}`, marginX, y);
+
+    // --- SECCIÓN 3: REPRESENTANTE (Solo si existe) ---
+    if (d.nombreRepresentante) {
+        y += 12;
         doc.setFont("helvetica", "bold");
-        doc.text("COMPROBANTE DE POSTULACIÓN UCMI", 105, 20, {align: "center"});
-        doc.setFontSize(12);
-        doc.text(`Responsable: ${d.nombreResponsable}`, 20, 40);
-        doc.text(`ID: ${d.cedulaResponsable}`, 20, 50);
-        doc.text(`Perfil: ${d.perfil}`, 20, 60);
-        doc.text(`Entidad: ${d.entidad}`, 20, 70);
-        window.open(doc.output('bloburl'), '_blank');
+        doc.setTextColor(197, 160, 89);
+        doc.text("3. SUPERVISIÓN LEGAL (REPRESENTANTE)", marginX, y);
+        
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(0);
+        doc.text(`Representante: ${d.nombreRepresentante}`, marginX, y);
+        y += 7;
+        doc.text(`Cédula Rep.: ${d.cedulaRepresentante}`, marginX, y);
+        y += 7;
+        doc.text(`Correo Rep.: ${d.emailRepresentante}`, marginX, y);
+        y += 7;
+        doc.text(`WhatsApp Rep.: ${d.whatsappRepresentante}`, marginX, y);
     }
+
+    // --- SECCIÓN 4: DATOS ACADÉMICOS ---
+    y += 12;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(197, 160, 89);
+    doc.text("4. DETALLES DE LA LICENCIA", marginX, y);
+    
+    y += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(0);
+    doc.text(`Perfil de Usuario: ${d.perfil}`, marginX, y);
+    y += 7;
+    doc.text(`Entidad / Academia: ${d.entidad}`, marginX, y);
+    y += 7;
+    doc.text(`Plan Contratado: ${d.mesesLicencia} meses`, marginX, y);
+
+    // --- PIE DE PÁGINA ---
+    y = 280;
+    doc.setFontSize(9);
+    doc.setTextColor(150);
+    doc.text("Este documento es un comprobante digital generado por el sistema UCMI.", 105, y, { align: "center" });
+
+    window.open(doc.output('bloburl'), '_blank');
+}
 </script>
 </body>
 </html>
