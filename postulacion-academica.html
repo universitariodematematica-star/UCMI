@@ -12,70 +12,50 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        :root { 
-            --azul-ucmi: #1a2a3a; 
-            --dorado-ucmi: #c5a059; 
-            --dorado-brillante: #FFD700;
-        }
-        
+        :root { --azul-ucmi: #1a2a3a; --dorado-ucmi: #c5a059; }
         body { 
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
             background-size: cover; min-height: 100vh; padding: 40px 0; color: white;
         }
-
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.9) 100%); z-index: -1; }
-
-        /* 14. Contenedor en cristal esmerilado */
-        .card-form { 
-            max-width: 850px; 
-            margin: auto; 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 30px; 
-            background: rgba(255, 255, 255, 0.1); 
-            backdrop-filter: blur(15px); 
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5); 
-        }
-
-        .header-institucional { text-align: center; padding: 40px 20px; border-bottom: 1px solid rgba(197, 160, 89, 0.2); }
+        .card-form { max-width: 850px; margin: auto; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: visible; }
+        .header-institucional { text-align: center; padding: 40px 20px; background: rgba(0, 0, 0, 0.3); border-bottom: 1px solid rgba(197, 160, 89, 0.2); border-top-left-radius: 30px; border-top-right-radius: 30px; }
         .inst-logo { height: 100px; margin-bottom: 15px; }
         .inst-titulo { color: var(--dorado-ucmi); font-family: 'Cinzel', serif; font-weight: 800; font-size: 2rem; }
         .seccion-titulo { font-family: 'Cinzel', serif; color: var(--dorado-ucmi); border-bottom: 1px solid rgba(197,160,89,0.3); padding-bottom: 8px; margin: 25px 0 15px 0; font-size: 1.1rem; }
+        .form-label { color: var(--dorado-ucmi); font-size: 0.85rem; }
         
-        /* 1, 2, 4, 15. Campos en cristal NO esmerilado (Transparentes) y letras blancas */
         .form-control, .form-select { 
             border-radius: 10px; 
-            background: rgba(255, 255, 255, 0.05) !important; 
-            backdrop-filter: none !important; 
+            background: rgba(255, 255, 255, 0) !important; 
             color: #ffffff !important; 
             border: 1px solid rgba(255, 255, 255, 0.3); 
             transition: all 0.3s ease; 
         }
-
-        /* 3, 15. Letras guía grises e itálicas */
-        .form-control::placeholder { 
-            color: rgba(200, 200, 200, 0.7) !important; 
-            font-style: italic !important; 
-        }
-
-        /* 5. Quitar flechas de input number */
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
-        input[type=number] { -moz-appearance: textfield; }
-
-        .form-select option { background: var(--azul-ucmi); color: white; }
-
-        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 12px; border: none; width: 100%; margin-top: 20px; }
-        #bloqueRepresentante { display: none; background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); }
         
+        .form-control:focus, .form-select:focus { 
+            background: rgba(255, 255, 255, 0.1) !important; 
+            border-color: var(--dorado-ucmi) !important; 
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.2); 
+        }
+
+        ::placeholder { color: rgba(255, 255, 255, 0.4) !important; font-size: 0.85rem; font-style: italic; }
+        option { background-color: var(--azul-ucmi); color: white; }
+        
+        /* Estilo para el mostrador de costo */
         .costo-display {
             background: rgba(197, 160, 89, 0.1);
             border: 1px dashed var(--dorado-ucmi);
-            border-radius: 15px; padding: 20px; text-align: center; margin-top: 20px;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
         }
         .costo-monto { color: var(--dorado-ucmi); font-size: 1.8rem; font-weight: 800; }
+
+        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 12px; border: none; width: 100%; margin-top: 20px; }
+        #bloqueRepresentante { display: none; background: rgba(255, 77, 77, 0.05); border: 1px solid rgba(255, 77, 77, 0.2); padding: 20px; border-radius: 15px; }
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
     </style>
 </head>
 <body>
@@ -86,7 +66,7 @@
     <div class="card-form">
         <div class="header-institucional">
             <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo UCMI" class="inst-logo">
-            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 5</h1>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 6</h1>
         </div>
 
         <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
@@ -133,10 +113,10 @@
             <div id="bloqueRepresentante" class="mt-4">
                 <div class="seccion-titulo text-danger">3. Supervisión Legal (Requerido para Menores)</div>
                 <div class="row g-3">
-                    <div class="col-md-6"><label class="form-label">Nombre del Representante:</label><input type="text" id="repNombre" class="form-control"></div>
-                    <div class="col-md-6"><label class="form-label">Cédula del Representante:</label><input type="text" id="repCedula" class="form-control"></div>
-                    <div class="col-md-6"><label class="form-label">Correo de Notificación:</label><input type="email" id="repEmail" class="form-control"></div>
-                    <div class="col-md-6"><label class="form-label">WhatsApp del Representante:</label><input type="tel" id="repWhatsapp" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label text-white">Nombre del Representante:</label><input type="text" id="repNombre" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label text-white">Cédula del Representante:</label><input type="text" id="repCedula" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label text-white">Correo de Notificación:</label><input type="email" id="repEmail" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label text-white">WhatsApp del Representante:</label><input type="tel" id="repWhatsapp" class="form-control"></div>
                 </div>
             </div>
 
@@ -165,6 +145,7 @@
                 </div>
             </div>
 
+            <!-- VISUALIZACIÓN DEL COSTO -->
             <div class="costo-display">
                 <div class="small text-uppercase" style="letter-spacing: 2px;">Inversión Estimada</div>
                 <div class="costo-monto">$ <span id="displayInversion">0.00</span> <small style="font-size: 1rem;">USD</small></div>
@@ -192,28 +173,29 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    /* 13. FUNCIÓN MATEMÁTICAMENTE ELEGANTE + ANCLAJE + DECOY + SEGMENTACIÓN */
-    window.fn_CalcularInversion = () => {
-        const x = parseInt(document.getElementById('cuposInput').value) || 0; 
-        const t = parseInt(document.getElementById('planLicencia').value) || 0;
-        
-        if (x <= 0 || t <= 0) return "0.00";
+window.fn_CalcularInversion = () => {
+    const x = parseInt(document.getElementById('cuposInput').value) || 0; 
+    const t = parseInt(document.getElementById('planLicencia').value) || 0;
+    
+    if (x <= 0 || t <= 0) return "0.00";
 
-        // Segmentación y Anclaje (Ix)
-        let ix;
-        if (x <= 10) ix = 10 * x * (1 - (x - 1) / 90);
-        else if (x <= 50) ix = 10 * x * (1 - (10 + 0.5 * (x - 10)) / 100);
-        else if (x <= 200) ix = 10 * x * (1 - (30 + 0.1 * (x - 50)) / 100);
-        else ix = (5 * x) + 100;
+    // 1. Cálculo de Ix (Descuento por cupos)
+    let ix = 0;
+    if (x <= 10) ix = 10 * x * (1 - (x - 1) / 90);
+    else if (x <= 50) ix = 10 * x * (1 - (10 + 0.5 * (x - 10)) / 100);
+    else if (x <= 200) ix = 10 * x * (1 - (30 + 0.1 * (x - 50)) / 100);
+    else ix = (5 * x) + 100;
 
-        // Factor de Tiempo (Decoy/Fidelización asintótica)
-        // A mayor tiempo 't', el costo unitario baja pero el valor total percibido es superior
-        const factorTiempo = 0.7 + (0.3 / (1 + 0.15 * (t - 1)));
-        
-        const total = (ix * t * factorTiempo).toFixed(2);
-        document.getElementById('displayInversion').innerText = total;
-        return total;
-    };
+    // 2. Cálculo del Factor de Tiempo (Asintótico)
+    // El costo base es t, pero se multiplica por el factor de descuento
+    const factorTiempo = 0.7 + (0.3 / (1 + 0.15 * (t - 1)));
+    
+    // 3. Costo Total
+    const total = (ix * t * factorTiempo).toFixed(2);
+    
+    document.getElementById('displayInversion').innerText = total;
+    return total;
+};
 
     window.fn_VerificarEdad = () => {
         const fNacInput = document.getElementById('fechaNacimientoInput').value;
@@ -225,29 +207,31 @@
         
         const esMenor = edad < 18;
         document.getElementById('bloqueRepresentante').style.display = esMenor ? 'block' : 'none';
+        ['repNombre', 'repCedula', 'repEmail', 'repWhatsapp'].forEach(id => {
+            document.getElementById(id).required = esMenor;
+        });
     };
 
     window.fn_AjustarPerfil = () => {
         const p = document.getElementById('perfilUsuario').value;
         const campoEntidad = document.getElementById('nombreInstitucion');
         campoEntidad.placeholder = (p === 'Academia') ? "Nombre de la Academia" : "Nombre del Profesor / Particular";
+        campoEntidad.required = (p === 'Academia');
     };
 
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
         e.preventDefault();
         const form = e.target;
+
         if (!form.checkValidity()) {
             form.classList.add('was-validated');
+            Swal.fire({ icon: "warning", title: "Campos Incompletos", text: "Por favor, rellene los campos resaltados.", confirmButtonColor: "#c5a059" });
             return;
         }
 
         document.getElementById('btnSubmit').disabled = true;
-        
-        // 11, 12. Generación de folio único para Firebase
-        const folioUnico = `UCMI-${Date.now().toString().slice(-6)}`;
 
         const payload = {
-            // 6. Respetando variables originales
             nombreResponsable: document.getElementById('nombreInput').value,
             cedulaResponsable: document.getElementById('dniInput').value,
             fechaNacimiento: document.getElementById('fechaNacimientoInput').value,
@@ -264,17 +248,19 @@
             entidad: document.getElementById('nombreInstitucion').value || "Particular", 
             inversionTotal: fn_CalcularInversion(),
             cupos: document.getElementById('cuposInput').value,
-            folioPostulacio: folioUnico, // Condición 12
             timestamp: new Date()
         };
 
         try {
             await addDoc(collection(db, "postulaciones"), payload);
             fn_GenerarPDF(payload);
-            Swal.fire("Enviado", "Su postulación ha sido procesada", "success");
+            Swal.fire("Éxito", "Postulación enviada y guardada en Firebase", "success");
             form.reset();
+            form.classList.remove('was-validated');
+            document.getElementById('displayInversion').innerText = "0.00";
+            document.getElementById('bloqueRepresentante').style.display = 'none';
         } catch (error) {
-            Swal.fire("Error", "Error al conectar con el servidor", "error");
+            Swal.fire("Error", "No se pudo conectar con Firebase", "error");
         } finally {
             document.getElementById('btnSubmit').disabled = false;
         }
@@ -283,65 +269,101 @@
     async function fn_GenerarPDF(d) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
-        // 7. Franja horizontal color UCMI (Azul Institucional)
-        doc.setFillColor(26, 42, 58);
-        doc.rect(0, 0, 210, 40, 'F'); 
+        const marginX = 20;
+        const azulUCMI = [26, 42, 58];
+        const doradoUCMI = [197, 160, 89];
 
-        // 8. Logo en la parte superior izquierda
+        doc.setFillColor(azulUCMI[0], azulUCMI[1], azulUCMI[2]);
+        doc.rect(0, 0, 210, 45, 'F'); 
+
         try {
             const img = new Image();
             img.src = "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-            img.crossOrigin = "Anonymous";
-            await new Promise(r => {
+            img.crossOrigin = "Anonymous"; 
+            await new Promise((resolve) => {
                 img.onload = () => {
-                    doc.addImage(img, 'PNG', 15, 5, 30, 30);
-                    r();
+                    doc.addImage(img, 'PNG', 12, 7, 30, 30);
+                    resolve();
                 };
-                img.onerror = r;
+                img.onerror = () => resolve();
             });
-        } catch(e) {}
+        } catch (e) {}
 
-        // 9, 10. Textos en Dorado Brillante al lado derecho del logo
-        doc.setTextColor(255, 215, 0); // Dorado Brillante
-        doc.setFont("times", "bold");
-        doc.setFontSize(16);
-        doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS", 50, 20);
-        doc.setFontSize(22);
-        doc.text("UCMI", 50, 32);
-
-        // 11. Fecha y Folio impreso
-        doc.setTextColor(100);
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 150, 50);
-        doc.text(`Folio: ${d.folioPostulacio}`, 150, 55);
-
-        // Cuerpo del PDF - 6. Imprimir valores almacenados
-        doc.setTextColor(26, 42, 58);
+        doc.setTextColor(doradoUCMI[0], doradoUCMI[1], doradoUCMI[2]);
+        doc.setFont("helvetica", "bold");
         doc.setFontSize(14);
-        doc.text("DETALLES DE LA POSTULACIÓN", 20, 75);
-        
-        doc.setFontSize(11);
-        let y = 85;
-        const data = [
-            ["Responsable", d.nombreResponsable],
-            ["Identificación", d.cedulaResponsable],
-            ["Email", d.email],
-            ["Perfil", d.perfil],
-            ["Entidad", d.entidad],
-            ["Meses de Licencia", d.mesesLicencia],
-            ["Cupos Solicitados", d.cupos],
-            ["Inversión Total", `$${d.inversionTotal} USD`]
-        ];
+        doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 48, 22);
+        doc.setFontSize(24);
+        doc.text("UCMI", 48, 34);
 
-        data.forEach(row => {
+        let y = 62;
+        doc.setTextColor(azulUCMI[0], azulUCMI[1], azulUCMI[2]);
+        doc.setFontSize(18);
+        doc.text("Comprobante de solicitud", 105, y, { align: "center" });
+
+        y += 13;
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100);
+        const folio = `REF-${Date.now().toString().slice(-6)}`;
+        doc.text(`Folio: ${folio} | Fecha: ${d.timestamp.toLocaleString()}`, 105, y, { align: "center" });
+
+        y += 15;
+        const renderSection = (titulo, lineas) => {
             doc.setFont("helvetica", "bold");
-            doc.text(`${row[0]}:`, 20, y);
+            doc.setFontSize(11);
+            doc.setTextColor(azulUCMI[0], azulUCMI[1], azulUCMI[2]);
+            doc.text(titulo, marginX, y);
+            y += 2;
+            doc.setLineWidth(0.2);
+            doc.setDrawColor(200);
+            doc.line(marginX, y, 190, y);
+            y += 7;
             doc.setFont("helvetica", "normal");
-            doc.text(`${row[1]}`, 70, y);
-            y += 8;
-        });
+            doc.setFontSize(10);
+            doc.setTextColor(0);
+            lineas.forEach(l => {
+                doc.text(l, marginX + 5, y);
+                y += 6;
+            });
+            y += 6;
+        };
+
+        renderSection("I. DATOS DEL POSTULANTE", [
+            `Nombre Responsable: ${d.nombreResponsable.toUpperCase()}`,
+            `Identificación (ID): ${d.cedulaResponsable}`,
+            `Fecha de Nacimiento: ${d.fechaNacimiento}`
+        ]);
+
+        renderSection("II. INFORMACIÓN DE CONTACTO", [
+            `Correo: ${d.email}`,
+            `WhatsApp: ${d.whatsapp}`,
+            `Ubicación: ${d.ubicacion}`
+        ]);
+
+        if (d.nombreRepresentante) {
+            renderSection("III. REPRESENTACIÓN LEGAL", [
+                `Nombre: ${d.nombreRepresentante}`,
+                `ID Representante: ${d.cedulaRepresentante}`,
+                `Contacto: ${d.whatsappRepresentante}`
+            ]);
+        }
+
+        renderSection("IV. GESTIÓN ACADÉMICA", [
+            `Perfil: ${d.perfil}`,
+            `Institución: ${d.entidad}`,
+            `Vigencia: ${d.mesesLicencia} meses`
+        ]);
+
+        renderSection("V. DETALLES FINANCIEROS", [
+            `Cupos: ${d.cupos}`,
+            `Inversión total: $${d.inversionTotal} USD`,
+            `Estado: PENDIENTE DE VALIDACIÓN`
+        ]);
+
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text("Documento oficial emitido por el sistema UCMI.", 105, 280, { align: "center" });
 
         window.open(doc.output('bloburl'), '_blank');
     }
