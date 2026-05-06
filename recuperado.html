@@ -24,40 +24,38 @@
         .inst-titulo { color: var(--dorado-ucmi); font-family: 'Cinzel', serif; font-weight: 800; font-size: 2rem; }
         .seccion-titulo { font-family: 'Cinzel', serif; color: var(--dorado-ucmi); border-bottom: 1px solid rgba(197,160,89,0.3); padding-bottom: 8px; margin: 25px 0 15px 0; font-size: 1.1rem; }
         .form-label { color: var(--dorado-ucmi); font-size: 0.85rem; }
-        .form-control, .form-select { border-radius: 10px; background: rgba(255, 255, 255, 0.05) !important; color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease; }
-        .form-control:focus, .form-select:focus { background: rgba(255, 255, 255, 0.1) !important; border-color: var(--dorado-ucmi) !important; box-shadow: 0 0 15px rgba(197, 160, 89, 0.2); }
-        option { background-color: var(--azul-ucmi); color: white; }
-        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 12px; border: none; width: 100%; margin-top: 30px; }
-        #bloqueRepresentante { display: none; background: rgba(255, 77, 77, 0.05); border: 1px solid rgba(255, 77, 77, 0.2); padding: 20px; border-radius: 15px; }
-        .was-validated .form-control:invalid, .was-validated .form-select:invalid { border-color: #ff4d4d !important; background-image: none !important; box-shadow: 0 0 10px rgba(255, 77, 77, 0.3) !important; }
-        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-/* Recuperar el estilo de los placeholders */
-::placeholder { 
-    color: rgba(255, 255, 255, 0.4) !important; 
-    font-size: 0.85rem; 
-    font-style: italic; 
-}
-
-/* También asegurar que el texto que el usuario escribe sea siempre blanco */
-.form-control, .form-select {
-    color: #ffffff !important;
-}
-
-        /* ... otros estilos anteriores ... */
-        .was-validated .form-control:invalid, .was-validated .form-select:invalid { 
-            border-color: #ff4d4d !important; 
-            background-image: none !important; 
-            box-shadow: 0 0 10px rgba(255, 77, 77, 0.3) !important; 
-        }
-
-        /* ESTO ES LO QUE FALTABA */
-        ::placeholder { 
-            color: rgba(255, 255, 255, 0.4) !important; 
-            font-size: 0.85rem; 
-            font-style: italic; 
+        
+        .form-control, .form-select { 
+            border-radius: 10px; 
+            background: rgba(255, 255, 255, 0.05) !important; 
+            color: #ffffff !important; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            transition: all 0.3s ease; 
         }
         
+        .form-control:focus, .form-select:focus { 
+            background: rgba(255, 255, 255, 0.1) !important; 
+            border-color: var(--dorado-ucmi) !important; 
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.2); 
+        }
+
+        ::placeholder { color: rgba(255, 255, 255, 0.4) !important; font-size: 0.85rem; font-style: italic; }
+        option { background-color: var(--azul-ucmi); color: white; }
+        
+        /* Estilo para el mostrador de costo */
+        .costo-display {
+            background: rgba(197, 160, 89, 0.1);
+            border: 1px dashed var(--dorado-ucmi);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .costo-monto { color: var(--dorado-ucmi); font-size: 1.8rem; font-weight: 800; }
+
+        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 12px; border: none; width: 100%; margin-top: 20px; }
+        #bloqueRepresentante { display: none; background: rgba(255, 77, 77, 0.05); border: 1px solid rgba(255, 77, 77, 0.2); padding: 20px; border-radius: 15px; }
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
     </style>
 </head>
 <body>
@@ -68,7 +66,7 @@
     <div class="card-form">
         <div class="header-institucional">
             <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo UCMI" class="inst-logo">
-            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 1</h1>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 6</h1>
         </div>
 
         <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
@@ -76,11 +74,11 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Nombre Responsable:</label>
-                    <input type="text" id="nombreInput" class="form-control" required>
+                    <input type="text" id="nombreInput" class="form-control" required placeholder="Nombres y Apellidos">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold">ID (Cédula/RIF):</label>
-                    <input type="text" id="dniInput" class="form-control" required>
+                    <input type="text" id="dniInput" class="form-control" required placeholder="Documento de identidad">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Fecha de Nacimiento:</label>
@@ -135,12 +133,23 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Plan de Licencia en meses:</label>
-                    <input type="number" id="planLicencia" class="form-control" placeholder="Ej: 12" min="1" required>
+                    <input type="number" id="planLicencia" class="form-control" placeholder="Ej: 12" min="1" required oninput="fn_CalcularInversion()">
                 </div>
-                <div class="col-md-12">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Cantidad de Estudiantes / Cupos (x):</label>
+                    <input type="number" id="cuposInput" class="form-control" value="1" min="1" required oninput="fn_CalcularInversion()">
+                </div>
+                <div class="col-md-6">
                     <label class="form-label fw-bold">Nombre de la Entidad:</label>
                     <input type="text" id="nombreInstitucion" class="form-control" placeholder="Nombre de la academia o particular">
                 </div>
+            </div>
+
+            <!-- VISUALIZACIÓN DEL COSTO -->
+            <div class="costo-display">
+                <div class="small text-uppercase" style="letter-spacing: 2px;">Inversión Estimada</div>
+                <div class="costo-monto">$ <span id="displayInversion">0.00</span> <small style="font-size: 1rem;">USD</small></div>
+                <div class="small italic text-white-50">*Sujeto a validación administrativa</div>
             </div>
 
             <button type="submit" id="btnSubmit" class="btn btn-enviar">ENVIAR Y GENERAR COMPROBANTE</button>
@@ -164,6 +173,30 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+window.fn_CalcularInversion = () => {
+    const x = parseInt(document.getElementById('cuposInput').value) || 0; 
+    const t = parseInt(document.getElementById('planLicencia').value) || 0;
+    
+    if (x <= 0 || t <= 0) return "0.00";
+
+    // 1. Cálculo de Ix (Descuento por cupos)
+    let ix = 0;
+    if (x <= 10) ix = 10 * x * (1 - (x - 1) / 90);
+    else if (x <= 50) ix = 10 * x * (1 - (10 + 0.5 * (x - 10)) / 100);
+    else if (x <= 200) ix = 10 * x * (1 - (30 + 0.1 * (x - 50)) / 100);
+    else ix = (5 * x) + 100;
+
+    // 2. Cálculo del Factor de Tiempo (Asintótico)
+    // El costo base es t, pero se multiplica por el factor de descuento
+    const factorTiempo = 0.7 + (0.3 / (1 + 0.15 * (t - 1)));
+    
+    // 3. Costo Total
+    const total = (ix * t * factorTiempo).toFixed(2);
+    
+    document.getElementById('displayInversion').innerText = total;
+    return total;
+};
+
     window.fn_VerificarEdad = () => {
         const fNacInput = document.getElementById('fechaNacimientoInput').value;
         if(!fNacInput) return;
@@ -174,8 +207,6 @@
         
         const esMenor = edad < 18;
         document.getElementById('bloqueRepresentante').style.display = esMenor ? 'block' : 'none';
-        
-        // Hacer obligatorios los campos solo si es menor
         ['repNombre', 'repCedula', 'repEmail', 'repWhatsapp'].forEach(id => {
             document.getElementById(id).required = esMenor;
         });
@@ -185,7 +216,7 @@
         const p = document.getElementById('perfilUsuario').value;
         const campoEntidad = document.getElementById('nombreInstitucion');
         campoEntidad.placeholder = (p === 'Academia') ? "Nombre de la Academia" : "Nombre del Profesor / Particular";
-        campoEntidad.required = (p === 'Academia'); // Obligatorio solo para academias
+        campoEntidad.required = (p === 'Academia');
     };
 
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
@@ -194,140 +225,148 @@
 
         if (!form.checkValidity()) {
             form.classList.add('was-validated');
-            Swal.fire({ icon: "warning", title: "Campos Incompletos", text: "Por favor, rellene los campos resaltados en rojo.", confirmButtonColor: "#c5a059" });
+            Swal.fire({ icon: "warning", title: "Campos Incompletos", text: "Por favor, rellene los campos resaltados.", confirmButtonColor: "#c5a059" });
             return;
         }
 
         document.getElementById('btnSubmit').disabled = true;
 
         const payload = {
-            nombreResponsable: document.getElementById('nombreInput').value, //
+            nombreResponsable: document.getElementById('nombreInput').value,
             cedulaResponsable: document.getElementById('dniInput').value,
             fechaNacimiento: document.getElementById('fechaNacimientoInput').value,
             genero: document.getElementById('generoInput').value || "No especificado",
             email: document.getElementById('emailInput').value,
             whatsapp: document.getElementById('whatsappInput').value,
             ubicacion: document.getElementById('ubicacionInput').value,
-            
-            // Datos del representante
             nombreRepresentante: document.getElementById('repNombre').value || null,
             cedulaRepresentante: document.getElementById('repCedula').value || null,
             emailRepresentante: document.getElementById('repEmail').value || null,
             whatsappRepresentante: document.getElementById('repWhatsapp').value || null,
-            
-            perfil: document.getElementById('perfilUsuario').value, //
+            perfil: document.getElementById('perfilUsuario').value, 
             mesesLicencia: document.getElementById('planLicencia').value,
-            entidad: document.getElementById('nombreInstitucion').value || "Particular", //
+            entidad: document.getElementById('nombreInstitucion').value || "Particular", 
+            inversionTotal: fn_CalcularInversion(),
+            cupos: document.getElementById('cuposInput').value,
             timestamp: new Date()
         };
 
         try {
             await addDoc(collection(db, "postulaciones"), payload);
             fn_GenerarPDF(payload);
-            Swal.fire("Éxito", "Postulación enviada correctamente", "success");
+            Swal.fire("Éxito", "Postulación enviada y guardada en Firebase", "success");
             form.reset();
             form.classList.remove('was-validated');
+            document.getElementById('displayInversion').innerText = "0.00";
             document.getElementById('bloqueRepresentante').style.display = 'none';
         } catch (error) {
-            Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+            Swal.fire("Error", "No se pudo conectar con Firebase", "error");
         } finally {
             document.getElementById('btnSubmit').disabled = false;
         }
     });
 
-   function fn_GenerarPDF(d) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const marginX = 20;
-    let y = 20;
+    async function fn_GenerarPDF(d) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const marginX = 20;
+        const azulUCMI = [26, 42, 58];
+        const doradoUCMI = [197, 160, 89];
 
-    // --- ENCABEZADO ---
-    doc.setFont("cinzel", "bold"); // Si no carga Cinzel, usará Helvetica por defecto
-    doc.setFontSize(18);
-    doc.setTextColor(26, 42, 58); // Azul UCMI
-    doc.text("COMPROBANTE DE POSTULACIÓN OFICIAL", 105, y, { align: "center" });
-    
-    y += 15;
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100);
-    doc.text(`Fecha de registro: ${d.timestamp.toLocaleString()}`, 105, y, { align: "center" });
+        doc.setFillColor(azulUCMI[0], azulUCMI[1], azulUCMI[2]);
+        doc.rect(0, 0, 210, 45, 'F'); 
 
-    // --- SECCIÓN 1: DATOS PERSONALES ---
-    y += 15;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.setTextColor(197, 160, 89); // Dorado UCMI
-    doc.text("1. INFORMACIÓN DEL POSTULANTE", marginX, y);
-    
-    y += 8;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.setTextColor(0);
-    doc.text(`Nombre Completo: ${d.nombreResponsable}`, marginX, y);
-    doc.text(`ID / Cédula: ${d.cedulaResponsable}`, marginX + 100, y);
-    
-    y += 7;
-    doc.text(`Fecha de Nacimiento: ${d.fechaNacimiento}`, marginX, y);
-    doc.text(`Género: ${d.genero}`, marginX + 100, y);
+        try {
+            const img = new Image();
+            img.src = "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+            img.crossOrigin = "Anonymous"; 
+            await new Promise((resolve) => {
+                img.onload = () => {
+                    doc.addImage(img, 'PNG', 12, 7, 30, 30);
+                    resolve();
+                };
+                img.onerror = () => resolve();
+            });
+        } catch (e) {}
 
-    // --- SECCIÓN 2: CONTACTO Y UBICACIÓN ---
-    y += 12;
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(197, 160, 89);
-    doc.text("2. CONTACTO Y LOCALIZACIÓN", marginX, y);
-    
-    y += 8;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(0);
-    doc.text(`Correo: ${d.email}`, marginX, y);
-    y += 7;
-    doc.text(`WhatsApp: ${d.whatsapp}`, marginX, y);
-    y += 7;
-    doc.text(`Ubicación: ${d.ubicacion}`, marginX, y);
-
-    // --- SECCIÓN 3: REPRESENTANTE (Solo si existe) ---
-    if (d.nombreRepresentante) {
-        y += 12;
+        doc.setTextColor(doradoUCMI[0], doradoUCMI[1], doradoUCMI[2]);
         doc.setFont("helvetica", "bold");
-        doc.setTextColor(197, 160, 89);
-        doc.text("3. SUPERVISIÓN LEGAL (REPRESENTANTE)", marginX, y);
-        
-        y += 8;
+        doc.setFontSize(14);
+        doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 48, 22);
+        doc.setFontSize(24);
+        doc.text("UCMI", 48, 34);
+
+        let y = 62;
+        doc.setTextColor(azulUCMI[0], azulUCMI[1], azulUCMI[2]);
+        doc.setFontSize(18);
+        doc.text("Comprobante de solicitud", 105, y, { align: "center" });
+
+        y += 13;
+        doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
-        doc.setTextColor(0);
-        doc.text(`Representante: ${d.nombreRepresentante}`, marginX, y);
-        y += 7;
-        doc.text(`Cédula Rep.: ${d.cedulaRepresentante}`, marginX, y);
-        y += 7;
-        doc.text(`Correo Rep.: ${d.emailRepresentante}`, marginX, y);
-        y += 7;
-        doc.text(`WhatsApp Rep.: ${d.whatsappRepresentante}`, marginX, y);
+        doc.setTextColor(100);
+        const folio = `REF-${Date.now().toString().slice(-6)}`;
+        doc.text(`Folio: ${folio} | Fecha: ${d.timestamp.toLocaleString()}`, 105, y, { align: "center" });
+
+        y += 15;
+        const renderSection = (titulo, lineas) => {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(azulUCMI[0], azulUCMI[1], azulUCMI[2]);
+            doc.text(titulo, marginX, y);
+            y += 2;
+            doc.setLineWidth(0.2);
+            doc.setDrawColor(200);
+            doc.line(marginX, y, 190, y);
+            y += 7;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.setTextColor(0);
+            lineas.forEach(l => {
+                doc.text(l, marginX + 5, y);
+                y += 6;
+            });
+            y += 6;
+        };
+
+        renderSection("I. DATOS DEL POSTULANTE", [
+            `Nombre Responsable: ${d.nombreResponsable.toUpperCase()}`,
+            `Identificación (ID): ${d.cedulaResponsable}`,
+            `Fecha de Nacimiento: ${d.fechaNacimiento}`
+        ]);
+
+        renderSection("II. INFORMACIÓN DE CONTACTO", [
+            `Correo: ${d.email}`,
+            `WhatsApp: ${d.whatsapp}`,
+            `Ubicación: ${d.ubicacion}`
+        ]);
+
+        if (d.nombreRepresentante) {
+            renderSection("III. REPRESENTACIÓN LEGAL", [
+                `Nombre: ${d.nombreRepresentante}`,
+                `ID Representante: ${d.cedulaRepresentante}`,
+                `Contacto: ${d.whatsappRepresentante}`
+            ]);
+        }
+
+        renderSection("IV. GESTIÓN ACADÉMICA", [
+            `Perfil: ${d.perfil}`,
+            `Institución: ${d.entidad}`,
+            `Vigencia: ${d.mesesLicencia} meses`
+        ]);
+
+        renderSection("V. DETALLES FINANCIEROS", [
+            `Cupos: ${d.cupos}`,
+            `Inversión total: $${d.inversionTotal} USD`,
+            `Estado: PENDIENTE DE VALIDACIÓN`
+        ]);
+
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text("Documento oficial emitido por el sistema UCMI.", 105, 280, { align: "center" });
+
+        window.open(doc.output('bloburl'), '_blank');
     }
-
-    // --- SECCIÓN 4: DATOS ACADÉMICOS ---
-    y += 12;
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(197, 160, 89);
-    doc.text("4. DETALLES DE LA LICENCIA", marginX, y);
-    
-    y += 8;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(0);
-    doc.text(`Perfil de Usuario: ${d.perfil}`, marginX, y);
-    y += 7;
-    doc.text(`Entidad / Academia: ${d.entidad}`, marginX, y);
-    y += 7;
-    doc.text(`Plan a contratar: ${d.mesesLicencia} meses`, marginX, y);
-
-    // --- PIE DE PÁGINA ---
-    y = 280;
-    doc.setFontSize(9);
-    doc.setTextColor(150);
-    doc.text("Este documento es un comprobante digital generado por el sistema UCMI.", 105, y, { align: "center" });
-
-    window.open(doc.output('bloburl'), '_blank');
-}
 </script>
 </body>
 </html>
