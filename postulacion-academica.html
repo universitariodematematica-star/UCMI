@@ -55,7 +55,7 @@
     <div class="card-form">
         <div class="header-institucional">
             <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo UCMI" class="inst-logo">
-            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA</h1>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 1</h1>
         </div>
 
         <form id="formUCMI" class="p-4 p-md-5 pt-3" novalidate>
@@ -103,12 +103,15 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label text-white-50 small">Perfil:</label>
-                    <select id="perfilUsuario" class="form-select" required onchange="fn_CalcularInversion()">
-                        <option value="">Seleccione rol...</option>
-                        <option value="Academia">Academia</option>
-                        <option value="Independent Professor">Profesor Independiente</option>
-                        <option value="Estudiante">Estudiante</option>
-                    </select>
+                        <select id="perfilUsuario" class="form-select" required onchange="fn_CalcularInversion()">
+                            <option value="">Seleccione el nivel de postulación...</option>
+                            <!-- Segmento Institucional: Justifica el precio base 12 -->
+                            <option value="Academia">Licencia Institucional / Academia</option>
+                            <!-- Segmento Profesional: Justifica el recargo de gestión (mS = 1.15) -->
+                            <option value="Independent Professor">Consultor / Profesor Independiente</option>
+                            <!-- Segmento Académico: Justifica el precio base 6 -->
+                            <option value="Estudiante">Investigador / Estudiante UCMI</option>
+                        </select>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label text-white-50 small">Duración (Meses):</label>
@@ -124,10 +127,11 @@
                 </div>
             </div>
 
-            <div class="costo-display">
-                <div class="decoy-text">Inversión Total Estimada</div>
-                <div class="costo-monto">$ <span id="displayInversion">0.00</span> <small style="font-size: 1rem;">USD</small></div>
-            </div>
+                <div class="costo-display">
+                    <div class="decoy-text">Inversión Total Estimada</div>
+                    <div style="text-decoration: line-through; color: rgba(255,255,255,0.4); font-size: 1rem; margin-bottom: 5px;" id="displayAnclaje"></div> 
+                    <div class="costo-monto">$ <span id="displayInversion">0.00</span> <small style="font-size: 1rem;">USD</small></div>
+                </div>
 
             <button type="submit" class="btn btn-enviar">REGISTRAR POSTULACIÓN Y GENERAR PDF</button>
         </form>
@@ -154,16 +158,44 @@
         const x = parseInt(document.getElementById('cuposInput').value) || 0; 
         const t = parseInt(document.getElementById('planLicencia').value) || 0;
         const perfil = document.getElementById('perfilUsuario').value;
-        if (x <= 0 || t <= 0) return "0.00";
-
-        let base = (perfil === "Estudiante") ? 5 : 10;
-        let ix = x <= 10 ? base * x * (1 - (x - 1) / 90) : x <= 50 ? base * x * (1 - (10 + 0.5 * (x - 10)) / 100) : (base/2 * x) + 100;
-        let mS = (perfil === "Independent Professor") ? 1.15 : 1.0;
-        const factorT = 0.7 + (0.3 / (1 + 0.15 * (t - 1)));
-        const total = (ix * t * factorT * mS).toFixed(2);
         
-        document.getElementById('displayInversion').innerText = total;
-        return total;
+        // Si no hay datos suficientes, limpiamos los montos
+        if (x <= 0 || t <= 0 || !perfil) {
+            document.getElementById('displayInversion').innerText = "0.00";
+            document.getElementById('displayAnclaje').innerText = "";
+            return "0.00";
+        }
+
+        // 1. SEGMENTACIÓN: Definimos un valor base según el perfil
+        // Esto justifica por qué un profesional tiene un punto de partida distinto al estudiante
+        let base = (perfil === "Estudiante") ? 6 : 12; 
+        
+        // 2. TU FUNCIÓN MATEMÁTICA (El modelo elegante)
+        // Optimizamos el divisor a 85 para que el descuento por volumen sea más atractivo
+        let ix = x <= 10 ? base * x * (1 - (x - 1) / 85) : x <= 50 ? base * x * (1 - (12 + 0.5 * (x - 10)) / 100) : (6 * x) + 120;
+        
+        // Multiplicador por servicio (Independent Professor tiene un recargo sutil por gestión)
+        let mS = (perfil === "Independent Professor") ? 1.15 : 1.0;
+        
+        // Factor de tiempo (a más meses, menor costo mensual relativo)
+        const factorT = 0.75 + (0.25 / (1 + 0.18 * (t - 1)));
+        
+        const totalReal = (ix * t * factorT * mS).toFixed(2);
+        
+        // 3. ANCLAJE (Decoy): El precio "bruto" sin tus algoritmos de optimización
+        const totalAnclaje = (base * x * t * mS).toFixed(2);
+
+        // ACTUALIZACIÓN DE LA INTERFAZ
+        document.getElementById('displayInversion').innerText = totalReal;
+        
+        // Solo mostramos el anclaje si hay un ahorro real (para no confundir)
+        if (parseFloat(totalReal) < parseFloat(totalAnclaje)) {
+            document.getElementById('displayAnclaje').innerText = `Precio de Lista: $ ${totalAnclaje} USD`;
+        } else {
+            document.getElementById('displayAnclaje').innerText = "";
+        }
+        
+        return totalReal;
     };
 
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
