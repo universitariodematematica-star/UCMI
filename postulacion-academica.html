@@ -12,20 +12,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        :root { --azul-ucmi: #1a2a3a; --dorado-ucmi: #c5a059; }
+        :root { 
+            --azul-ucmi: #1a2a3a; 
+            --dorado-ucmi: #c5a059; 
+            --dorado-brillante: #FFD700;
+        }
         
         body { 
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
             background-size: cover; min-height: 100vh; padding: 40px 0; color: white;
         }
 
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(6, 9, 15, 0.75); z-index: -1; }
-        
-        /* 1. Campos en cristal no esmerilado (quitamos backdrop-filter) */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.9) 100%); z-index: -1; }
+
+        /* 14. Contenedor en cristal esmerilado */
         .card-form { 
-            max-width: 850px; margin: auto; border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 30px; background: rgba(255, 255, 255, 0.03); 
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8); 
+            max-width: 850px; 
+            margin: auto; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 30px; 
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(15px); /* Efecto esmerilado */
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5); 
         }
 
         .header-institucional { text-align: center; padding: 40px 20px; border-bottom: 1px solid rgba(197, 160, 89, 0.2); }
@@ -33,36 +41,41 @@
         .inst-titulo { color: var(--dorado-ucmi); font-family: 'Cinzel', serif; font-weight: 800; font-size: 2rem; }
         .seccion-titulo { font-family: 'Cinzel', serif; color: var(--dorado-ucmi); border-bottom: 1px solid rgba(197,160,89,0.3); padding-bottom: 8px; margin: 25px 0 15px 0; font-size: 1.1rem; }
         
-        /* 1, 2, 3 y 4. Estilos de los campos de texto y desplegables */
+        /* 1, 2, 4, 15. Campos en cristal NO esmerilado (Transparentes) y letras blancas */
         .form-control, .form-select { 
             border-radius: 10px; 
-            background: rgba(255, 255, 255, 0.08) !important; /* Cristal transparente */
-            backdrop-filter: none !important; /* No esmerilado */
-            color: #ffffff !important; /* 2. Letras blancas al escribir */
-            border: 1px solid rgba(255, 255, 255, 0.2); 
+            background: rgba(255, 255, 255, 0.05) !important; 
+            backdrop-filter: none !important; /* Cristal no esmerilado */
+            color: #ffffff !important; 
+            border: 1px solid rgba(255, 255, 255, 0.3); 
             transition: all 0.3s ease; 
         }
 
-        /* 3. Letras guías grises */
-        .form-control::placeholder { color: #888888 !important; }
-        
-        .form-control:focus, .form-select:focus { 
-            background: rgba(255, 255, 255, 0.15) !important; 
-            border-color: var(--dorado-ucmi) !important; 
-            box-shadow: 0 0 15px rgba(197, 160, 89, 0.2); 
+        /* 3, 15. Letras guía grises e itálicas */
+        .form-control::placeholder { 
+            color: rgba(200, 200, 200, 0.7) !important; 
+            font-style: italic !important; 
         }
 
-        /* 5. Quitar flechas de subir/bajar valores numéricos */
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        /* 5. Quitar flechas de input number */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
         input[type=number] { -moz-appearance: textfield; }
 
-        .form-select option { background-color: #0d141d; color: white; }
+        .form-select option { background: var(--azul-ucmi); color: white; }
+
+        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 12px; border: none; width: 100%; margin-top: 20px; }
+        #bloqueRepresentante { display: none; background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); }
         
-        .costo-display { background: rgba(197, 160, 89, 0.1); border: 1px dashed var(--dorado-ucmi); border-radius: 15px; padding: 20px; text-align: center; margin-top: 20px; }
+        .costo-display {
+            background: rgba(197, 160, 89, 0.1);
+            border: 1px dashed var(--dorado-ucmi);
+            border-radius: 15px; padding: 20px; text-align: center; margin-top: 20px;
+        }
         .costo-monto { color: var(--dorado-ucmi); font-size: 1.8rem; font-weight: 800; }
-        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 12px; border: none; width: 100%; margin-top: 20px; transition: 0.3s; }
-        .btn-enviar:hover { transform: scale(1.02); opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -73,28 +86,28 @@
     <div class="card-form">
         <div class="header-institucional">
             <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo UCMI" class="inst-logo">
-            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 2</h1>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 6</h1>
         </div>
 
         <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
             <div class="seccion-titulo">1. Datos de Identidad y Validación</div>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label text-white-50 small">Nombre Responsable:</label>
-                    <input type="text" id="nombreInput" class="form-control" required placeholder="Escriba su nombre completo">
+                    <label class="form-label fw-bold">Nombre Responsable:</label>
+                    <input type="text" id="nombreInput" class="form-control" required placeholder="Nombres y Apellidos">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label text-white-50 small">ID (Cédula/RIF):</label>
+                    <label class="form-label fw-bold">ID (Cédula/RIF):</label>
                     <input type="text" id="dniInput" class="form-control" required placeholder="Documento de identidad">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label text-white-50 small">Fecha de Nacimiento:</label>
+                    <label class="form-label fw-bold">Fecha de Nacimiento:</label>
                     <input type="date" id="fechaNacimientoInput" class="form-control" required onchange="fn_VerificarEdad()">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label text-white-50 small">Género:</label>
+                    <label class="form-label fw-bold">Género:</label>
                     <select id="generoInput" class="form-select"> 
-                        <option value="" selected>Seleccionar...</option>
+                        <option value="" selected>No especificado</option>
                         <option value="Masculino">Masculino</option>
                         <option value="Femenino">Femenino</option>
                     </select>
@@ -104,60 +117,61 @@
             <div class="seccion-titulo">2. Datos de Acceso y Seguridad</div>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label text-white-50 small">Correo Electrónico:</label>
-                    <input type="email" id="emailInput" class="form-control" placeholder="ejemplo@correo.com" required>
+                    <label class="form-label fw-bold">Correo Electrónico:</label>
+                    <input type="email" id="emailInput" class="form-control" placeholder="usuario@ejemplo.com" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label text-white-50 small">WhatsApp (2FA):</label>
-                    <input type="tel" id="whatsappInput" class="form-control" placeholder="+00 000 0000000" required>
+                    <label class="form-label fw-bold">Número de WhatsApp (2FA):</label>
+                    <input type="tel" id="whatsappInput" class="form-control" placeholder="+58 412 0000000" required>
                 </div>
-                <div class="col-md-12">
-                    <label class="form-label text-white-50 small">Ubicación (Ciudad y País):</label>
-                    <input type="text" id="ubicacionInput" class="form-control" placeholder="Ciudad, País" required>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Ubicación (Ciudad y País):</label>
+                    <input type="text" id="ubicacionInput" class="form-control" placeholder="Ej: Caracas, Venezuela" required>
                 </div>
             </div>
 
-            <div id="bloqueRepresentante" class="mt-4" style="display:none; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px;">
-                <div class="seccion-titulo" style="color: #ff6b6b;">Supervisión Legal (Menor de edad)</div>
+            <div id="bloqueRepresentante" class="mt-4">
+                <div class="seccion-titulo text-danger">3. Supervisión Legal (Requerido para Menores)</div>
                 <div class="row g-3">
-                    <div class="col-md-6"><input type="text" id="repNombre" class="form-control" placeholder="Nombre Representante"></div>
-                    <div class="col-md-6"><input type="text" id="repCedula" class="form-control" placeholder="ID Representante"></div>
-                    <div class="col-md-6"><input type="email" id="repEmail" class="form-control" placeholder="Correo Representante"></div>
-                    <div class="col-md-6"><input type="tel" id="repWhatsapp" class="form-control" placeholder="WhatsApp Representante"></div>
+                    <div class="col-md-6"><label class="form-label">Nombre del Representante:</label><input type="text" id="repNombre" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label">Cédula del Representante:</label><input type="text" id="repCedula" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label">Correo de Notificación:</label><input type="email" id="repEmail" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label">WhatsApp del Representante:</label><input type="tel" id="repWhatsapp" class="form-control"></div>
                 </div>
             </div>
 
-            <div class="seccion-titulo">3. Gestión de Licencias</div>
+            <div class="seccion-titulo">4. Gestión de Licencias y Acceso Académico</div>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label text-white-50 small">Perfil de Usuario:</label>
+                    <label class="form-label fw-bold">Perfil de Usuario:</label>
                     <select id="perfilUsuario" class="form-select" required onchange="fn_AjustarPerfil()">
-                        <option value="">Seleccione perfil...</option>
-                        <option value="Academia">Academia (Segmento A)</option>
-                        <option value="Independent Professor">Profesor Independiente (Segmento B)</option>
-                        <option value="Estudiante UCMI">Estudiante UCMI (Segmento C)</option>
+                        <option value="">Selecciona el perfil</option>
+                        <option value="Academia">Academia</option>
+                        <option value="Independent Professor">Profesor independiente</option>
+                        <option value="Estudiante UCMI">Estudiante UCMI</option>
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label text-white-50 small">Plan Licencia (Meses):</label>
-                    <input type="number" id="planLicencia" class="form-control" placeholder="Meses (ej: 12)" min="1" required oninput="fn_CalcularInversion()">
+                    <label class="form-label fw-bold">Plan de Licencia en meses:</label>
+                    <input type="number" id="planLicencia" class="form-control" placeholder="Ej: 12" min="1" required oninput="fn_CalcularInversion()">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label text-white-50 small">Cupos / Estudiantes:</label>
+                    <label class="form-label fw-bold">Cantidad de Estudiantes / Cupos (x):</label>
                     <input type="number" id="cuposInput" class="form-control" value="1" min="1" required oninput="fn_CalcularInversion()">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label text-white-50 small">Nombre de la Entidad:</label>
-                    <input type="text" id="nombreInstitucion" class="form-control" placeholder="Nombre Institución">
+                    <label class="form-label fw-bold">Nombre de la Entidad:</label>
+                    <input type="text" id="nombreInstitucion" class="form-control" placeholder="Nombre de la academia o particular">
                 </div>
             </div>
 
             <div class="costo-display">
                 <div class="small text-uppercase" style="letter-spacing: 2px;">Inversión Estimada</div>
                 <div class="costo-monto">$ <span id="displayInversion">0.00</span> <small style="font-size: 1rem;">USD</small></div>
+                <div class="small italic text-white-50">*Sujeto a validación administrativa</div>
             </div>
 
-            <button type="submit" id="btnSubmit" class="btn btn-enviar">PROCESAR POSTULACIÓN Y PDF</button>
+            <button type="submit" id="btnSubmit" class="btn btn-enviar">ENVIAR Y GENERAR COMPROBANTE</button>
         </form>
     </div>
 </div>
@@ -178,76 +192,90 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 13. Función Matemáticamente Elegante (Algoritmo de Inversión)
-    // Conceptos: Anclaje de precio, Decoy por volumen y Segmentación de perfiles
+    /* 13. FUNCIÓN MATEMÁTICAMENTE ELEGANTE + SEGMENTACIÓN/DECOY */
     window.fn_CalcularInversion = () => {
         const x = parseInt(document.getElementById('cuposInput').value) || 0; 
         const t = parseInt(document.getElementById('planLicencia').value) || 0;
-        const perfil = document.getElementById('perfilUsuario').value;
         
         if (x <= 0 || t <= 0) return "0.00";
 
-        // Segmentación y Anclaje
-        let baseRate = (perfil === 'Academia') ? 12 : (perfil === 'Estudiante UCMI' ? 8 : 10);
-        
-        // Decoy / Descuento Asintótico: f(x) = base * x * factor_descuento
-        let factorX = (x <= 10) ? (1 - (x - 1) / 50) : 0.75;
-        let costoBase = baseRate * x * factorX;
+        // Segmentación y Anclaje (Ix)
+        let ix;
+        if (x <= 10) ix = 10 * x * (1 - (x - 1) / 90);
+        else if (x <= 50) ix = 10 * x * (1 - (10 + 0.5 * (x - 10)) / 100);
+        else if (x <= 200) ix = 10 * x * (1 - (30 + 0.1 * (x - 50)) / 100);
+        else ix = (5 * x) + 100;
 
-        // Función de tiempo elegante (curva de aprendizaje/retención)
-        const factorT = 0.6 + (0.4 / (1 + 0.1 * (t - 1)));
-        const total = (costoBase * t * factorT).toFixed(2);
+        // Factor de Tiempo (Decoy/Fidelización asintótica)
+        const factorTiempo = 0.7 + (0.3 / (1 + 0.15 * (t - 1)));
         
+        const total = (ix * t * factorTiempo).toFixed(2);
         document.getElementById('displayInversion').innerText = total;
         return total;
     };
 
     window.fn_VerificarEdad = () => {
-        const fNac = new Date(document.getElementById('fechaNacimientoInput').value);
+        const fNacInput = document.getElementById('fechaNacimientoInput').value;
+        if(!fNacInput) return;
+        const fNac = new Date(fNacInput);
         const hoy = new Date();
         let edad = hoy.getFullYear() - fNac.getFullYear();
         if (hoy.getMonth() < fNac.getMonth() || (hoy.getMonth() === fNac.getMonth() && hoy.getDate() < fNac.getDate())) edad--;
-        document.getElementById('bloqueRepresentante').style.display = (edad < 18) ? 'block' : 'none';
+        
+        const esMenor = edad < 18;
+        document.getElementById('bloqueRepresentante').style.display = esMenor ? 'block' : 'none';
     };
 
     window.fn_AjustarPerfil = () => {
-        fn_CalcularInversion(); // Recalcula al cambiar perfil
+        const p = document.getElementById('perfilUsuario').value;
+        const campoEntidad = document.getElementById('nombreInstitucion');
+        campoEntidad.placeholder = (p === 'Academia') ? "Nombre de la Academia" : "Nombre del Profesor / Particular";
     };
 
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
         e.preventDefault();
         const form = e.target;
         if (!form.checkValidity()) {
-            Swal.fire("Atención", "Complete todos los campos obligatorios", "warning");
+            form.classList.add('was-validated');
             return;
         }
 
-        const folio = `UCMI-${Date.now().toString().slice(-6)}`;
+        document.getElementById('btnSubmit').disabled = true;
         
-        // 6. No cambiar variables firebase. 12. Enviar folioPostulacio.
+        // 11, 12. Folio y Fecha para Firebase
+        const folioUnico = `UCMI-${Date.now().toString().slice(-6)}`;
+
         const payload = {
+            // 6. Respetando variables originales
             nombreResponsable: document.getElementById('nombreInput').value,
             cedulaResponsable: document.getElementById('dniInput').value,
             fechaNacimiento: document.getElementById('fechaNacimientoInput').value,
-            genero: document.getElementById('generoInput').value,
+            genero: document.getElementById('generoInput').value || "No especificado",
             email: document.getElementById('emailInput').value,
             whatsapp: document.getElementById('whatsappInput').value,
             ubicacion: document.getElementById('ubicacionInput').value,
+            nombreRepresentante: document.getElementById('repNombre').value || null,
+            cedulaRepresentante: document.getElementById('repCedula').value || null,
+            emailRepresentante: document.getElementById('repEmail').value || null,
+            whatsappRepresentante: document.getElementById('repWhatsapp').value || null,
             perfil: document.getElementById('perfilUsuario').value, 
             mesesLicencia: document.getElementById('planLicencia').value,
+            entidad: document.getElementById('nombreInstitucion').value || "Particular", 
+            inversionTotal: fn_CalcularInversion(),
             cupos: document.getElementById('cuposInput').value,
-            entidad: document.getElementById('nombreInstitucion').value,
-            inversionTotal: document.getElementById('displayInversion').innerText,
-            folioPostulacio: folio, // 12
-            timestamp: new Date().toLocaleString()
+            folioPostulacio: folioUnico, // Condición 12
+            timestamp: new Date()
         };
 
         try {
             await addDoc(collection(db, "postulaciones"), payload);
             fn_GenerarPDF(payload);
-            Swal.fire("Éxito", "Datos registrados y PDF generado", "success");
+            Swal.fire("Enviado", "Su postulación ha sido procesada", "success");
+            form.reset();
         } catch (error) {
-            Swal.fire("Error", "Error al conectar con Firebase", "error");
+            Swal.fire("Error", "Error al conectar con el servidor", "error");
+        } finally {
+            document.getElementById('btnSubmit').disabled = false;
         }
     });
 
@@ -256,55 +284,62 @@
         const doc = new jsPDF();
         
         // 7. Franja horizontal color UCMI (Azul Institucional)
-        doc.setFillColor(26, 42, 58); 
-        doc.rect(0, 0, 210, 40, 'F');
+        doc.setFillColor(26, 42, 58);
+        doc.rect(0, 0, 210, 40, 'F'); 
 
-        // 8. Logo UCMI parte superior izquierda
+        // 8. Logo en la parte superior izquierda
         try {
             const img = new Image();
             img.src = "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
             img.crossOrigin = "Anonymous";
-            await new Promise(r => { img.onload = () => { doc.addImage(img, 'PNG', 10, 5, 30, 30); r(); }; img.onerror = r; });
+            await new Promise(r => {
+                img.onload = () => {
+                    doc.addImage(img, 'PNG', 15, 5, 30, 30);
+                    r();
+                };
+                img.onerror = r;
+            });
         } catch(e) {}
 
-        // 9. Texto lado derecho logo dorado brillante
-        doc.setTextColor(197, 160, 89);
+        // 9, 10. Textos en Dorado Brillante
+        doc.setTextColor(255, 215, 0); // Dorado Brillante
+        doc.setFont("times", "bold");
         doc.setFontSize(16);
-        doc.setFont("helvetica", "bold");
-        doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS", 45, 20);
-
-        // 10. UCMI debajo en dorado brillante
+        doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS", 50, 20);
         doc.setFontSize(22);
-        doc.text("UCMI", 45, 32);
+        doc.text("UCMI", 50, 32);
 
-        // 11. Fecha y Folio
-        doc.setFontSize(10);
+        // 11. Fecha y Folio impreso
         doc.setTextColor(100);
-        doc.text(`Fecha: ${d.timestamp}`, 150, 50);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 150, 50);
         doc.text(`Folio: ${d.folioPostulacio}`, 150, 55);
 
-        // 6. Imprimir valores almacenados (Contenido del PDF)
+        // Cuerpo del PDF - 6. Imprimir valores almacenados
         doc.setTextColor(26, 42, 58);
         doc.setFontSize(14);
         doc.text("DETALLES DE LA POSTULACIÓN", 20, 70);
         
         doc.setFontSize(11);
-        doc.setFont("helvetica", "normal");
         let y = 80;
-        const campos = [
+        const data = [
             ["Responsable", d.nombreResponsable],
             ["Identificación", d.cedulaResponsable],
-            ["Perfil Académico", d.perfil],
-            ["Entidad", d.entidad || "N/A"],
-            ["Plan Solicitado", `${d.mesesLicencia} Meses`],
-            ["Cupos Activos", d.cupos],
-            ["Inversión Total", `$ ${d.inversionTotal} USD`]
+            ["Email", d.email],
+            ["Perfil", d.perfil],
+            ["Entidad", d.entidad],
+            ["Meses de Licencia", d.mesesLicencia],
+            ["Cupos Solicitados", d.cupos],
+            ["Inversión Total", `$${d.inversionTotal} USD`]
         ];
 
-        campos.forEach(c => {
-            doc.text(`${c[0]}:`, 20, y);
-            doc.text(`${c[1]}`, 70, y);
-            y += 10;
+        data.forEach(row => {
+            doc.setFont("helvetica", "bold");
+            doc.text(`${row[0]}:`, 20, y);
+            doc.setFont("helvetica", "normal");
+            doc.text(`${row[1]}`, 70, y);
+            y += 8;
         });
 
         window.open(doc.output('bloburl'), '_blank');
