@@ -19,7 +19,7 @@
         }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.9) 100%); z-index: -1; }
         
-        /* DISEÑO CRISTAL ESMERILADO */
+        /* CARD PRINCIPAL ESMERILADA */
         .card-form { 
             max-width: 850px; margin: auto; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 30px; 
             background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(25px) saturate(180%); 
@@ -31,10 +31,15 @@
         .inst-titulo { color: var(--dorado-ucmi); font-family: 'Cinzel', serif; font-weight: 800; font-size: 2rem; }
         .seccion-titulo { font-family: 'Cinzel', serif; color: var(--dorado-ucmi); border-bottom: 1px solid rgba(197,160,89,0.3); padding-bottom: 8px; margin: 25px 0 15px 0; font-size: 1.1rem; }
         
+        /* INPUTS Y SELECTS ESMERILADOS (ARREGLADO) */
         .form-control, .form-select { 
             border-radius: 12px; background: rgba(255, 255, 255, 0.1) !important; backdrop-filter: blur(10px);
             color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.25); transition: all 0.3s ease; 
         }
+        
+        /* EVITAR FONDO BLANCO EN LAS OPCIONES */
+        select option { background-color: var(--azul-ucmi) !important; color: white !important; }
+
         .form-control:focus, .form-select:focus { background: rgba(255, 255, 255, 0.15) !important; border-color: var(--dorado-ucmi) !important; box-shadow: 0 0 15px rgba(197, 160, 89, 0.4); }
         ::placeholder { color: rgba(200, 200, 200, 0.5) !important; font-size: 0.85rem; font-style: italic; }
         
@@ -42,7 +47,6 @@
         .costo-monto { color: var(--dorado-ucmi); font-size: 2.4rem; font-weight: 800; }
 
         .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 16px; border-radius: 15px; border: none; width: 100%; cursor: pointer; }
-        #bloqueRepresentante { display: none; background: rgba(255, 77, 77, 0.08); border: 1px solid rgba(255, 77, 77, 0.3); padding: 25px; border-radius: 20px; }
     </style>
 </head>
 <body>
@@ -52,7 +56,7 @@
     <div class="card-form">
         <div class="header-institucional">
             <img src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" alt="Logo UCMI" class="inst-logo">
-            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA</h1>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 1</h1>
         </div>
 
         <form id="formUCMI" class="p-4 p-md-5 pt-3" novalidate>
@@ -91,20 +95,12 @@
                     <input type="tel" id="whatsappInput" class="form-control" placeholder="+58 4XX 0000000" required>
                 </div>
                 <div class="col-md-12">
-                    <label class="form-label text-white-50 small">Ubicación:</label>
+                    <label class="form-label text-white-50 small">Ubicación Actual:</label>
                     <input type="text" id="ubicacionInput" class="form-control" placeholder="Ciudad, Estado y País" required>
                 </div>
             </div>
 
-            <div id="bloqueRepresentante" class="mt-4">
-                <div class="seccion-titulo text-danger">3. Supervisión Legal (Requerido)</div>
-                <div class="row g-3">
-                    <div class="col-md-6"><input type="text" id="repNombre" class="form-control" placeholder="Nombre Representante"></div>
-                    <div class="col-md-6"><input type="text" id="repCedula" class="form-control" placeholder="Cédula Representante"></div>
-                </div>
-            </div>
-
-            <div class="seccion-titulo">4. Configuración de Licencia</div>
+            <div class="seccion-titulo">3. Configuración de Licencia</div>
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label text-white-50 small">Perfil:</label>
@@ -116,7 +112,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label text-white-50 small">Duración (Meses):</label>
-                    <input type="number" id="planLicencia" class="form-control" placeholder="Meses (Ej: 12)" min="1" required oninput="fn_CalcularInversion()">
+                    <input type="number" id="planLicencia" class="form-control" placeholder="Ej: 12" min="1" required oninput="fn_CalcularInversion()">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label text-white-50 small">Cupos (x):</label>
@@ -168,22 +164,11 @@
         return total;
     };
 
-    window.fn_VerificarEdad = () => {
-        const fNac = new Date(document.getElementById('fechaNacimientoInput').value);
-        const edad = new Date().getFullYear() - fNac.getFullYear();
-        document.getElementById('bloqueRepresentante').style.display = edad < 18 ? 'block' : 'none';
-    };
-
-    window.fn_AjustarPerfil = () => {
-        const p = document.getElementById('perfilUsuario').value;
-        document.getElementById('nombreInstitucion').placeholder = p === 'Academia' ? "Nombre de su Academia" : "Nombre Particular";
-    };
-
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!e.target.checkValidity()) return Swal.fire("Atención", "Complete los campos obligatorios", "warning");
+        if (!e.target.checkValidity()) return Swal.fire("Error", "Complete los campos", "warning");
 
-        const payload = {
+        const d = {
             nombre: document.getElementById('nombreInput').value,
             cedula: document.getElementById('dniInput').value,
             fechaNac: document.getElementById('fechaNacimientoInput').value,
@@ -196,72 +181,53 @@
             cupos: document.getElementById('cuposInput').value,
             entidad: document.getElementById('nombreInstitucion').value || "Particular",
             total: fn_CalcularInversion(),
-            repNombre: document.getElementById('repNombre').value || "N/A",
-            repCedula: document.getElementById('repCedula').value || "N/A",
             fechaEmision: new Date().toLocaleString()
         };
 
         try {
-            await addDoc(collection(db, "postulaciones"), payload);
-            fn_GenerarPDF(payload);
-            Swal.fire("Éxito", "Postulación Registrada", "success");
-        } catch (e) { Swal.fire("Error", "Error de servidor", "error"); }
+            await addDoc(collection(db, "postulaciones"), d);
+            fn_GenerarPDF(d);
+            Swal.fire("Enviado", "Postulación exitosa", "success");
+        } catch (e) { Swal.fire("Error", "Fallo de servidor", "error"); }
     });
 
     function fn_GenerarPDF(d) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        // CABECERA
+        // CABECERA UCMI
         doc.setFillColor(26, 42, 58); doc.rect(0, 0, 210, 50, 'F'); 
         doc.setTextColor(197, 160, 89);
         doc.setFont("helvetica", "bold"); doc.setFontSize(30); doc.text("UCMI", 105, 25, { align: "center" });
         doc.setFontSize(12); doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 105, 35, { align: "center" });
 
-        // TÍTULO
-        doc.setTextColor(26, 42, 58); doc.setFontSize(18);
+        doc.setTextColor(0); doc.setFontSize(16);
         doc.text("COMPROBANTE DE SOLICITUD DE POSTULACIÓN", 105, 70, { align: "center" });
         
-        doc.setFontSize(10); doc.setTextColor(0);
-        let y = 85;
+        doc.setFontSize(10);
+        let y = 90;
+        const campos = [
+            ["FECHA EMISIÓN", d.fechaEmision],
+            ["NOMBRE", d.nombre],
+            ["CÉDULA", d.cedula],
+            ["NACIMIENTO", d.fechaNac],
+            ["GÉNERO", d.genero],
+            ["EMAIL", d.email],
+            ["WHATSAPP", d.whatsapp],
+            ["UBICACIÓN", d.ubicacion],
+            ["PERFIL", d.perfil],
+            ["INSTITUCIÓN", d.entidad],
+            ["MESES", d.meses],
+            ["CUPOS", d.cupos],
+            ["INVERSIÓN", `$${d.total} USD`]
+        ];
 
-        // FUNCIÓN PARA IMPRIMIR FILAS
-        const fila = (label, valor) => {
-            doc.setFont("helvetica", "bold"); doc.text(`${label}:`, 25, y);
-            doc.setFont("helvetica", "normal"); doc.text(`${valor}`, 80, y);
-            y += 9;
-        };
+        campos.forEach(c => {
+            doc.setFont("helvetica", "bold"); doc.text(`${c[0]}:`, 25, y);
+            doc.setFont("helvetica", "normal"); doc.text(`${c[1]}`, 75, y);
+            y += 10;
+        });
 
-        fila("FECHA DE EMISIÓN", d.fechaEmision);
-        fila("NOMBRE COMPLETO", d.nombre.toUpperCase());
-        fila("ID / CÉDULA", d.cedula);
-        fila("FECHA NACIMIENTO", d.fechaNac);
-        fila("GÉNERO", d.genero);
-        fila("CORREO ELECTRÓNICO", d.email);
-        fila("NÚMERO WHATSAPP", d.whatsapp);
-        fila("UBICACIÓN", d.ubicacion);
-        
-        y += 5; doc.setDrawColor(200); doc.line(25, y, 185, y); y += 10;
-        
-        fila("PERFIL ACADÉMICO", d.perfil);
-        fila("ENTIDAD", d.entidad);
-        fila("TIEMPO LICENCIA", `${d.meses} Meses`);
-        fila("CANTIDAD CUPOS", `${d.cupos} Estudiantes`);
-        
-        if(d.repNombre !== "N/A") {
-            y += 5; doc.setFont("helvetica", "bold"); doc.text("DATOS DEL REPRESENTANTE LEGAL:", 25, y); y += 9;
-            fila("REPRESENTANTE", d.repNombre);
-            fila("ID REPRESENTANTE", d.repCedula);
-        }
-
-        y += 10;
-        doc.setFillColor(197, 160, 89); doc.rect(25, y, 160, 15, 'F');
-        doc.setTextColor(255); doc.setFontSize(14);
-        doc.text(`INVERSIÓN TOTAL ESTIMADA: $${d.total} USD`, 105, y + 10, { align: "center" });
-
-        doc.setTextColor(150); doc.setFontSize(8);
-        doc.text("Este ticket es una pre-aprobación sujeta a validación de pagos y documentos.", 105, 285, { align: "center" });
-        
         window.open(doc.output('bloburl'), '_blank');
     }
 </script>
