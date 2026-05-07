@@ -318,18 +318,26 @@
 
     // --- UTILIDADES DE FECHA ---
     function formatearFechaInicio(str) {
-        if (!str || typeof str !== 'string') return "Sin fecha";
-        try {
-            const partes = str.split(',')[0].split('/');
-            if (partes.length === 3) {
-                const dia = partes[0].padStart(2, '0');
-                const mes = partes[1].padStart(2, '0');
-                const anio = partes[2];
-                return `${dia}/${mes}/${anio}`;
-            }
-            return str;
-        } catch (e) { return "Error formato"; }
+    // Si no hay dato, es nulo o no es string, sale rápido
+    if (!str || typeof str !== 'string') return "Sin fecha";
+    
+    try {
+        // Intentamos obtener solo la parte de la fecha antes de la coma
+        // Si no hay coma, toma el string completo
+        const soloFecha = str.split(',')[0].trim();
+        const partes = soloFecha.split('/');
+        
+        if (partes.length === 3) {
+            const dia = partes[0].padStart(2, '0');
+            const mes = partes[1].padStart(2, '0');
+            const anio = partes[2];
+            return `${dia}/${mes}/${anio}`;
+        }
+        return soloFecha; // Si no tiene barras pero hay texto, lo muestra
+    } catch (e) { 
+        return "Error formato"; 
     }
+}
 
     function obtenerDateValido(str) {
         if (!str || typeof str !== 'string' || !str.includes('/')) return new Date();
