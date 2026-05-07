@@ -6,8 +6,14 @@
     <script type="module" src="auth-guard.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UCMI - Directorio Maestro</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         :root {
             --dorado-ucmi: #c5a059;
@@ -24,7 +30,6 @@
 
         .super-overlay { background: rgba(6, 9, 15, 0.94); min-height: 100vh; padding-bottom: 50px; }
 
-        /* NAVBAR SUPERIOR */
         .nav-ucmi {
             background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(20px);
@@ -49,29 +54,11 @@
             align-items: center;
         }
 
-        .nav-btn:hover {
-            color: var(--dorado-ucmi);
-            background: rgba(197, 160, 89, 0.1);
-        }
+        .nav-btn:hover { color: var(--dorado-ucmi); background: rgba(197, 160, 89, 0.1); }
+        .nav-btn.active { color: white; background: var(--dorado-ucmi); box-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
 
-        .nav-btn.active {
-            color: white;
-            background: var(--dorado-ucmi);
-            box-shadow: 0 0 15px rgba(197, 160, 89, 0.3);
-        }
+        .btn-logout { color: var(--rojo-error) !important; border: 1px solid rgba(255, 77, 77, 0.2); cursor: pointer; }
 
-        .btn-logout {
-            color: var(--rojo-error) !important;
-            border: 1px solid rgba(255, 77, 77, 0.2);
-            cursor: pointer;
-        }
-
-        .btn-logout:hover {
-            background: rgba(255, 77, 77, 0.1) !important;
-            border-color: var(--rojo-error);
-        }
-
-        /* CONTENEDOR DE TABLA */
         .list-container {
             background: var(--glass);
             backdrop-filter: blur(25px);
@@ -113,7 +100,6 @@
 <body>
 
 <div class="super-overlay">
-    
     <nav class="nav-ucmi">
         <div class="container-fluid d-flex justify-content-between align-items-center px-4">
             <div class="d-flex align-items-center">
@@ -137,20 +123,27 @@
     </nav>
 
     <div class="container-fluid px-5">
-        
         <div class="d-flex justify-content-between align-items-center mt-5 mb-4">
             <div>
-                <h2 class="fw-bold mb-0">Directorio Maestro</h2>
-                <p class="text-muted small">Registros históricos ordenados alfabéticamente por entidad</p>
+                <h2 class="fw-bold mb-0">Directorio Maestro 1</h2>
+                <p class="text-muted small">Registros históricos ordenados alfabéticamente</p>
             </div>
-            <div style="min-width: 400px;">
-                <input type="text" id="inputBusqueda" class="form-control search-box" placeholder="Buscar institución, responsable o email...">
+            <div class="d-flex gap-3 align-items-center">
+                <button onclick="exportarExcel()" class="btn btn-outline-success btn-sm rounded-pill px-3">
+                    <i class="bi bi-file-earmark-excel me-1"></i> Excel
+                </button>
+                <button onclick="exportarPDF()" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                    <i class="bi bi-file-pdf me-1"></i> PDF
+                </button>
+                <div style="min-width: 300px;">
+                    <input type="text" id="inputBusqueda" class="form-control search-box" placeholder="Buscar registros...">
+                </div>
             </div>
         </div>
 
         <div class="list-container">
             <div class="table-responsive">
-                <table class="table align-middle">
+                <table class="table align-middle" id="tablaDirectorio">
                     <thead>
                         <tr>
                             <th style="width: 25%;">Entidad / Institución</th>
@@ -191,43 +184,27 @@
     const auth = getAuth(app);
     let registrosMaster = [];
 
-    // --- FUNCIÓN GLOBAL DE CIERRE DE SESIÓN ---
     window.cerrarSesionUCMI = function() {
-        signOut(auth).then(() => {
-            window.location.href = "index.html";
-        }).catch((error) => {
-            console.error("Error al salir:", error);
-        });
+        signOut(auth).then(() => { window.location.href = "index.html"; });
     };
 
-    // --- LIMPIEZA DE NÚMEROS WHATSAPP (Evita 404) ---
     function limpiarNumero(num) {
-        if(!num) return "";
-        return num.replace(/\D/g, ''); 
+        return num ? num.replace(/\D/g, '') : ""; 
     }
 
-    // --- ESCUCHA DE DATOS EN TIEMPO REAL ---
     onSnapshot(collection(db, "historial_postulaciones"), (snapshot) => {
         registrosMaster = snapshot.docs.map(doc => doc.data());
-        
-        // ORDEN ALFABÉTICO
         registrosMaster.sort((a, b) => {
             const nA = (a.entidad && a.entidad !== "N/A" ? a.entidad : a.nombreResponsable || "").toLowerCase();
             const nB = (b.entidad && b.entidad !== "N/A" ? b.entidad : b.nombreResponsable || "").toLowerCase();
             return nA.localeCompare(nB);
         });
-
         renderizar(registrosMaster);
     });
 
     function renderizar(lista) {
         const tbody = document.getElementById('tablaCuerpo');
-        tbody.innerHTML = '';
-
-        if(lista.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 opacity-50">No hay registros disponibles.</td></tr>';
-            return;
-        }
+        tbody.innerHTML = lista.length === 0 ? '<tr><td colspan="6" class="text-center p-4">Sin registros.</td></tr>' : '';
 
         lista.forEach(reg => {
             const entidad = reg.entidad && reg.entidad !== "N/A" ? reg.entidad : '<span class="text-personal">Individual</span>';
@@ -239,21 +216,13 @@
                     <td class="fw-bold">${entidad}</td>
                     <td>${reg.nombreResponsable || "---"}</td>
                     <td><span class="small text-warning">${reg.perfil || reg.tipoSolicitante || 'Estudiante'}</span></td>
-                    <td>
-                        <a href="https://wa.me/${numLimpio}" target="_blank" class="contact-link">
-                            <i class="bi bi-whatsapp text-success me-1"></i> ${reg.whatsapp || '---'}
-                        </a>
-                    </td>
+                    <td><a href="https://wa.me/${numLimpio}" target="_blank" class="contact-link"><i class="bi bi-whatsapp text-success me-1"></i> ${reg.whatsapp || '---'}</a></td>
                     <td><a href="mailto:${reg.email}" class="contact-link small">${reg.email}</a></td>
-                    <td class="text-center">
-                        <span class="badge-status status-${status}">${status}</span>
-                    </td>
-                </tr>
-            `;
+                    <td class="text-center"><span class="badge-status status-${status}">${status}</span></td>
+                </tr>`;
         });
     }
 
-    // --- BUSCADOR ---
     document.getElementById('inputBusqueda').addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
         const filtrados = registrosMaster.filter(r => 
@@ -263,7 +232,44 @@
         );
         renderizar(filtrados);
     });
-</script>
 
+    // --- FUNCIONES DE EXPORTACIÓN ---
+    window.exportarPDF = () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'pt', 'a4');
+        doc.autoTable({
+            html: '#tablaDirectorio',
+            startY: 60,
+            theme: 'grid',
+            headStyles: { fillColor: [197, 160, 89], textColor: [255, 255, 255] },
+            didDrawPage: (data) => {
+                doc.setFontSize(18);
+                doc.setTextColor(197, 160, 89);
+                doc.text("UCMI - DIRECTORIO MAESTRO", data.settings.margin.left, 40);
+            }
+        });
+        doc.save(`Directorio_UCMI_${new Date().toLocaleDateString()}.pdf`);
+    };
+
+    window.exportarExcel = () => {
+        const rows = document.querySelectorAll('#tablaCuerpo tr');
+        const datos = Array.from(rows).map(row => {
+            const cols = row.querySelectorAll('td');
+            if (cols.length < 6) return null;
+            return {
+                "ENTIDAD": cols[0].innerText.trim(),
+                "RESPONSABLE": cols[1].innerText.trim(),
+                "PERFIL": cols[2].innerText.trim(),
+                "WHATSAPP": cols[3].innerText.trim(),
+                "EMAIL": cols[4].innerText.trim(),
+                "ESTADO": cols[5].innerText.trim()
+            };
+        }).filter(d => d !== null);
+        const ws = XLSX.utils.json_to_sheet(datos);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Directorio");
+        XLSX.writeFile(wb, "Directorio_Maestro_UCMI.xlsx");
+    };
+</script>
 </body>
 </html>
