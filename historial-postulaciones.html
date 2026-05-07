@@ -212,7 +212,7 @@
 
             <!-- CONTENIDO -->
             <div class="col-md-10 p-5">
-                <h2 class="neon-gold text-uppercase mb-4">Historial de Solicitudes</h2>
+                <h2 class="neon-gold text-uppercase mb-4">Historial de Solicitudes 1</h2>
                 <div class="glass-panel">
                     <div class="table-responsive">
                         <table class="table-historial text-white">
@@ -283,7 +283,7 @@
     });
 
     // --- CARGA DE DATOS ---
-    const q = query(collection(db, "historial_postulaciones"), orderBy("fecha", "desc"));
+    const q = query(collection(db, "historial_postulaciones"), orderBy("timestamp", "desc"));
 
     onSnapshot(q, (snapshot) => {
         tablaCuerpo.innerHTML = '';
@@ -294,18 +294,25 @@
 
         snapshot.forEach((doc) => {
             const p = doc.data();
+            
+            // 1. Verificación de estado (Tu punto 3)
             const estado = p.decisionFinal || "PENDIENTE";
             let statusClass = 'status-pendiente';
             if(estado === 'ACEPTADO') statusClass = 'status-aprobado';
             if(estado === 'RECHAZADO') statusClass = 'status-rechazado';
-
+        
+            // 2. Formateo de fecha (Usando tu campo 'timestamp' de Firebase)
+            const fechaLegible = p.timestamp && typeof p.timestamp.toDate === 'function' 
+                ? p.timestamp.toDate().toLocaleDateString() 
+                : (p.fechaProceso || '---');
+        
             tablaCuerpo.innerHTML += `
                 <tr>
                     <td class="ps-4">
                         <div class="fw-bold text-white">${p.entidad || 'Sin Entidad'}</div>
                         <div class="text-white-50 small">${p.nombreResponsable || '---'}</div>
                     </td>
-                    <td><span class="date-chip">${p.fecha || '---'}</span></td>
+                    <td><span class="date-chip">${fechaLegible}</span></td>
                     <td><div class="small fw-bold text-warning">${(p.perfil || 'Academia').toUpperCase()}</div></td>
                     <td><span class="badge-status ${statusClass}">${estado}</span></td>
                     <td class="text-end pe-4">
@@ -316,7 +323,6 @@
                 </tr>
             `;
         });
-    });
 </script>
 </body>
 </html>
