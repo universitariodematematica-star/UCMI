@@ -193,4 +193,266 @@
     .progress-bar-neon { background: linear-gradient(90deg, var(--purpura-neon), var(--cian-tech)); box-shadow: 0 0 12px rgba(0, 242, 255, 0.5); }
     
     .status-badge { font-size: 0.65rem; padding: 6px 14px; border-radius: 8px; font-weight: 800; border: 1px solid #00ff8844; color: #00ff88; background: #00ff8811; }
-    .email-badge { font-
+    .email-badge { font-family: 'Courier New', monospace; color: var(--cian-tech); background: rgba(0, 242, 255, 0.1); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; border: 1px solid rgba(0, 242, 255, 0.2); }
+    
+    .btn-revocar {
+        border: 1px solid rgba(255, 77, 77, 0.4);
+        color: #ff4d4d;
+        background: rgba(255, 77, 77, 0.05);
+        border-radius: 12px;
+        font-size: 0.8rem;
+        padding: 8px 20px;
+        transition: 0.3s;
+    }
+    .btn-revocar:hover { background: #ff4d4d; color: white; }
+</style>
+</head>
+<body>
+
+<div class="super-overlay">
+    <div class="container-fluid">
+        <div class="row">
+            
+            <div class="col-md-2 sidebar d-none d-md-flex flex-column">
+                <div class="brand-container">
+                    <img src="logo-ucmi.png" alt="UCMI Logo" class="brand-logo">
+                </div>
+
+                <nav class="nav flex-column mb-auto">
+                    <p class="nav-section-title">Protocolos</p>
+                    
+                    <a class="nav-link-custom" href="master-postulaciones.html">
+                        <i class="bi bi-person-badge"></i> Solicitudes
+                    </a>
+                    <a class="nav-link-custom active" href="master-vigencia.html">
+                        <i class="bi bi-clock-history"></i> Vigencia
+                    </a>
+                    <a class="nav-link-custom" href="master-usuarios.html">
+                        <i class="bi bi-people"></i> Usuarios
+                    </a>
+                    <a class="nav-link-custom" href="historial-postulaciones.html">
+                        <i class="bi bi-archive"></i> Historial
+                    </a>
+                    <a class="nav-link-custom" href="directorio.html">
+                        <i class="bi bi-journal-text"></i> Directorio
+                    </a>
+                    <a class="nav-link-custom" href="ofertas-academicas.html">
+                        <i class="bi bi-mortarboard"></i> Ofertas
+                    </a>
+                    <a class="nav-link-custom" href="master-repositorio.html">
+                        <i class="bi bi-grid-1x2"></i> Módulos
+                    </a>
+                    <a class="nav-link-custom" href="papelera.html">
+                        <i class="bi bi-trash3"></i> Papelera
+                    </a>
+
+                    <p class="nav-section-title mt-4">Sistema</p>
+                    <a href="super-admin.html" class="btn-system-white">
+                        <i class="bi bi-shield-lock"></i> Panel Maestro
+                    </a>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <button id="btnLogout" class="btn-logout-custom">
+                        <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-10 p-5">
+                <div class="glass-panel">
+                    <div class="d-flex justify-content-between align-items-center mb-5">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-info rounded-3 p-2 me-3 shadow-lg"><i class="bi bi-cpu-fill text-dark fs-4"></i></div>
+                            <h3 class="fw-bold m-0 text-uppercase" style="letter-spacing: 4px;">Panel de Vigencia Operativa</h3>
+                        </div>
+                        <div style="min-width: 350px;">
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-secondary text-info"><i class="bi bi-search"></i></span>
+                                <input type="text" id="inputBusqueda" class="form-control bg-transparent text-white border-secondary" placeholder="Buscar entidad, email o responsable..." style="border-radius: 0 12px 12px 0;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Responsable / Identificador</th>
+                                    <th>Activación</th>
+                                    <th style="width: 20%;">Cronología</th>
+                                    <th>Expiración</th>
+                                    <th>Remanente</th>
+                                    <th class="text-end">Operaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaVigencia"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let usuariosMaster = [];
+
+    // --- UTILIDADES DE FECHA ---
+    function formatearFechaInicio(str) {
+        if (!str || typeof str !== 'string') return "Sin fecha";
+        try {
+            const partes = str.split(',')[0].split('/');
+            if (partes.length === 3) {
+                const dia = partes[0].padStart(2, '0');
+                const mes = partes[1].padStart(2, '0');
+                const anio = partes[2];
+                return `${dia}/${mes}/${anio}`;
+            }
+            return str;
+        } catch (e) { return "Error formato"; }
+    }
+
+    function obtenerDateValido(str) {
+        if (!str || typeof str !== 'string' || !str.includes('/')) return new Date();
+        try {
+            const [fecha, hora] = str.split(', ');
+            const [d, m, a] = fecha.split('/');
+            return new Date(`${a}-${m.padStart(2,'0')}-${d.padStart(2,'0')}T${hora || '00:00:00'}`);
+        } catch(e) { return new Date(); }
+    }
+
+    // --- FUNCIÓN RENDERIZAR ---
+    function renderizar(lista) {
+        const contenedor = document.getElementById('listaVigencia');
+        contenedor.innerHTML = '';
+
+        lista.forEach((data) => {
+            const id = data.id;
+            const fechaInicioTexto = formatearFechaInicio(data.fechaActivacion);
+            const dateInicio = obtenerDateValido(data.fechaActivacion);
+            const dateFin = data.expiracionTimestamp ? new Date(data.expiracionTimestamp) : new Date();
+            const ahora = new Date();
+
+            const totalMs = dateFin - dateInicio;
+            const transcurridoMs = ahora - dateInicio;
+            let porcentaje = Math.floor((transcurridoMs / totalMs) * 100);
+            porcentaje = Math.min(Math.max(porcentaje || 0, 0), 100);
+
+            const diasRestantes = Math.ceil((dateFin - ahora) / (1000 * 60 * 60 * 24));
+
+            contenedor.innerHTML += `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="p-2 rounded-circle bg-opacity-10 bg-info me-3" style="border: 1px solid #00f2ff55">
+                                <i class="bi bi-person-badge-fill text-info fs-5"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-white mb-1">${data.entidad || 'Entidad'}</div>
+                                <div class="email-badge">${data.email || id}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="text-white-50 mb-1" style="font-size: 0.6rem;">FECHA INICIO:</div>
+                        <div class="fw-bold small text-white">${fechaInicioTexto}</div>
+                    </td>
+                    <td>
+                        <div class="progress mb-2">
+                            <div class="progress-bar progress-bar-neon" style="width: ${porcentaje}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between" style="font-size: 0.6rem;">
+                            <span class="text-white-50">CONSUMO</span>
+                            <span class="text-info fw-bold">${porcentaje}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="text-white-50 mb-1" style="font-size: 0.6rem;">VENCE EN:</div>
+                        <div class="fw-bold text-info small">${dateFin.toLocaleDateString()}</div>
+                    </td>
+                    <td>
+                        <span class="status-badge">${diasRestantes > 0 ? diasRestantes + ' DÍAS' : 'EXPIRADO'}</span>
+                    </td>
+                    <td class="text-end">
+                        <button onclick="revocarAcceso('${id}', '${data.entidad}')" class="btn btn-revocar">
+                            <i class="bi bi-trash3-fill me-2"></i>Revocar
+                        </button>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    // --- ESCUCHA DE FIREBASE CON FILTRO DE PAPELERA ---
+    onSnapshot(collection(db, "usuarios"), (snapshot) => {
+        usuariosMaster = snapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .filter(u => u.status !== "eliminado"); // Ocultamos los eliminados
+        renderizar(usuariosMaster);
+    });
+
+    // --- MOTOR DE BÚSQUEDA ---
+    document.getElementById('inputBusqueda').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        const filtrados = usuariosMaster.filter(u => 
+            (u.entidad || "").toLowerCase().includes(term) ||
+            (u.email || "").toLowerCase().includes(term) ||
+            (u.id || "").toLowerCase().includes(term)
+        );
+        renderizar(filtrados);
+    });
+
+    // --- NUEVA LÓGICA DE REVOCAR (BORRADO LÓGICO) ---
+    window.revocarAcceso = async (id, entidad) => {
+        const confirm = await Swal.fire({
+            title: '¿REVOCAR ACCESO?',
+            text: `La entidad ${entidad} perderá acceso inmediato y será enviada a la papelera.`,
+            icon: 'warning',
+            background: '#06090f',
+            color: '#fff',
+            showCancelButton: true,
+            confirmButtonColor: '#ff4d4d',
+            cancelButtonColor: '#333',
+            confirmButtonText: 'Sí, revocar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (confirm.isConfirmed) {
+            try {
+                const userRef = doc(db, "usuarios", id);
+                await updateDoc(userRef, {
+                    status: "eliminado",
+                    fechaEliminacion: serverTimestamp()
+                });
+                Swal.fire({ title: 'Acceso Revocado', icon: 'success', background: '#06090f', color: '#fff' });
+            } catch (e) {
+                console.error(e);
+                Swal.fire({ title: 'Error', text: 'No se pudo procesar', icon: 'error' });
+            }
+        }
+    };
+
+    document.getElementById('btnLogout').addEventListener('click', () => {
+        signOut(auth).then(() => { window.location.href = "index.html"; });
+    });
+</script>
+</body>
+</html>
