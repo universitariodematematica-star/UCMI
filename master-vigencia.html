@@ -243,7 +243,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-5">
                         <div class="d-flex align-items-center">
                             <div class="bg-info rounded-3 p-2 me-3 shadow-lg"><i class="bi bi-cpu-fill text-dark fs-4"></i></div>
-                            <h3 class="fw-bold m-0 text-uppercase" style="letter-spacing: 4px;">Panel de Vigencia Operativa 2</h3>
+                            <h3 class="fw-bold m-0 text-uppercase" style="letter-spacing: 4px;">Panel de Vigencia Operativa 3</h3>
                         </div>
                         <div style="min-width: 350px;">
                             <div class="input-group">
@@ -295,32 +295,62 @@
 
     let usuariosMaster = [];
 
-    // --- UTILIDADES DE FECHA CORREGIDAS ---
-    function formatearFechaInicio(str) {
-        if (!str || typeof str !== 'string') return "Sin fecha";
+    // --- CORRECCIÓN DEFINITIVA DE FECHAS (SOPORTA TIMESTAMP Y STRING) ---
+    
+    function formatearFechaInicio(valor) {
+        if (!valor) return "Sin fecha";
+        
         try {
-            // Soporta "DD/MM/YYYY, HH:MM" o solo "DD/MM/YYYY"
-            const soloFecha = str.split(',')[0].trim();
-            const partes = soloFecha.split('/');
-            if (partes.length === 3) {
-                const dia = partes[0].padStart(2, '0');
-                const mes = partes[1].padStart(2, '0');
-                const anio = partes[2];
-                return `${dia}/${mes}/${anio}`;
+            let fechaObj;
+            // Si es un Timestamp de Firebase (tiene método toDate)
+            if (valor && typeof valor.toDate === 'function') {
+                fechaObj = valor.toDate();
+            } 
+            // Si ya es un objeto Date
+            else if (valor instanceof Date) {
+                fechaObj = valor;
             }
-            return soloFecha;
-        } catch (e) { return "Error formato"; }
+            // Si es un String (formato manual)
+            else if (typeof valor === 'string') {
+                const soloFecha = valor.split(',')[0].trim();
+                const partes = soloFecha.split('/');
+                if (partes.length === 3) {
+                    return `${partes[0].padStart(2, '0')}/${partes[1].padStart(2, '0')}/${partes[2]}`;
+                }
+                return valor;
+            } else {
+                return "Formato desconocido";
+            }
+
+            // Retorno para objetos de fecha
+            const d = String(fechaObj.getDate()).padStart(2, '0');
+            const m = String(fechaObj.getMonth() + 1).padStart(2, '0');
+            const a = fechaObj.getFullYear();
+            return `${d}/${m}/${a}`;
+
+        } catch (e) { 
+            console.error("Error en formatearFechaInicio:", e);
+            return "Error"; 
+        }
     }
 
-    function obtenerDateValido(str) {
-        if (!str || typeof str !== 'string' || !str.includes('/')) return new Date();
+    function obtenerDateValido(valor) {
+        if (!valor) return new Date();
+        
         try {
-            const [fecha, hora] = str.split(',');
-            const [d, m, a] = fecha.trim().split('/');
-            const horaLimpia = hora ? hora.trim() : '00:00:00';
-            // Crear objeto Date compatible (ISO)
-            return new Date(`${a}-${m.padStart(2,'0')}-${d.padStart(2,'0')}T${horaLimpia}`);
-        } catch(e) { return new Date(); }
+            if (valor && typeof valor.toDate === 'function') return valor.toDate();
+            if (valor instanceof Date) return valor;
+            
+            if (typeof valor === 'string' && valor.includes('/')) {
+                const [fecha, hora] = valor.split(',');
+                const [d, m, a] = fecha.trim().split('/');
+                const h = hora ? hora.trim() : '00:00:00';
+                return new Date(`${a}-${m.padStart(2,'0')}-${d.padStart(2,'0')}T${h}`);
+            }
+        } catch(e) { 
+            console.error("Error en obtenerDateValido:", e);
+        }
+        return new Date();
     }
 
     // --- FUNCIÓN RENDERIZAR ---
@@ -330,8 +360,12 @@
 
         lista.forEach((data) => {
             const id = data.id;
+            
+            // Usamos las nuevas funciones compatibles con Timestamps
             const fechaInicioTexto = formatearFechaInicio(data.fechaActivacion);
             const dateInicio = obtenerDateValido(data.fechaActivacion);
+            
+            // Expiración (usamos el int64 que ya tienes guardado)
             const dateFin = data.expiracionTimestamp ? new Date(data.expiracionTimestamp) : new Date();
             const ahora = new Date();
 
@@ -376,7 +410,7 @@
                         <span class="status-badge">${diasRestantes > 0 ? diasRestantes + ' DÍAS' : 'EXPIRADO'}</span>
                     </td>
                     <td class="text-end">
-                        <button onclick="revocarAcceso('${id}', '${data.entidad || 'este usuario'}')" class="btn btn-revocar">
+                        <button onclick="revocarAcceso('${id}', '${data.entidad || 'Usuario'}')" class="btn btn-revocar">
                             <i class="bi bi-trash3-fill me-2"></i>Revocar
                         </button>
                     </td>
@@ -384,6 +418,7 @@
         });
     }
 
+    // --- ESCUCHA DE FIREBASE ---
     onSnapshot(collection(db, "usuarios"), (snapshot) => {
         usuariosMaster = snapshot.docs
             .map(doc => ({ id: doc.id, ...doc.data() }))
@@ -391,16 +426,18 @@
         renderizar(usuariosMaster);
     });
 
+    // --- MOTOR DE BÚSQUEDA ---
     document.getElementById('inputBusqueda').addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase().trim();
         const filtrados = usuariosMaster.filter(u => 
             (u.entidad || "").toLowerCase().includes(term) ||
             (u.email || "").toLowerCase().includes(term) ||
-            (u.id || "").toLowerCase().includes(term)
+            (u.nombreResponsable || "").toLowerCase().includes(term)
         );
         renderizar(filtrados);
     });
 
+    // --- BORRADO LÓGICO ---
     window.revocarAcceso = async (id, entidad) => {
         const confirm = await Swal.fire({
             title: '¿REVOCAR ACCESO?',
