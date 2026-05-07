@@ -137,7 +137,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Cantidad de Estudiantes / Cupos (x):</label>
-                    <input type="number" id="cuposInput" class="form-control" value="1" min="1" required oninput="fn_CalcularInversion()">
+                    <input type="number" id="cuposInput" class="form-control" value="1" min="1" required oninput="fn_CalcularInversion()" onkeydown="if(this.readOnly) return false;">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Nombre de la Entidad:</label>
@@ -233,12 +233,28 @@ window.fn_CalcularInversion = () => {
         });
     };
 
-    window.fn_AjustarPerfil = () => {
-        const p = document.getElementById('perfilUsuario').value;
-        const campoEntidad = document.getElementById('nombreInstitucion');
-        campoEntidad.placeholder = (p === 'Academia') ? "Nombre de la Academia" : "Nombre del Profesor / Particular";
-        campoEntidad.required = (p === 'Academia');
-    };
+window.fn_AjustarPerfil = () => {
+    const p = document.getElementById('perfilUsuario').value;
+    const campoEntidad = document.getElementById('nombreInstitucion');
+    const campoCupos = document.getElementById('cuposInput');
+
+    // Ajuste de placeholder y obligatoriedad para la entidad
+    campoEntidad.placeholder = (p === 'Academia') ? "Nombre de la Academia" : "Nombre del Profesor / Particular";
+    campoEntidad.required = (p === 'Academia');
+
+    // NUEVA LÓGICA: Bloqueo de cupos para Estudiante UCMI
+    if (p === 'Estudiante UCMI') {
+        campoCupos.value = 1;         // Forzar el valor a 1
+        campoCupos.readOnly = true;   // Impedir que se escriba
+        campoCupos.style.opacity = "0.7"; // Efecto visual de deshabilitado
+    } else {
+        campoCupos.readOnly = false;  // Liberar el campo para otros perfiles
+        campoCupos.style.opacity = "1";
+    }
+
+    // Recalcular la inversión automáticamente al cambiar el perfil
+    fn_CalcularInversion();
+};
 
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
         e.preventDefault();
