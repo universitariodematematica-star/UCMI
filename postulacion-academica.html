@@ -60,7 +60,7 @@
     <div class="card-form">
         <div class="header-institucional">
             <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" alt="Logo UCMI" class="inst-logo">
-            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 3</h1>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 2</h1>
         </div>
         <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
             <div class="seccion-titulo">1. Datos de Identidad</div>
@@ -99,7 +99,7 @@
                         <option value="Estudiante UCMI">Estudiante UCMI</option>
                     </select>
                 </div>
-                <div class="col-md-6"><label class="form-label">Meses:</label><input type="number" id="planLicencia" class="form-control" min="1" required oninput="fn_CalcularInversion()"></div>
+                <div class="col-md-6"><label class="form-label">Duración de la licencia:</label><input type="number" id="planLicencia" class="form-control" min="1" required oninput="fn_CalcularInversion()"></div>
                 <div class="col-md-6"><label class="form-label">Cupos:</label><input type="number" id="cuposInput" class="form-control" value="1" min="1" oninput="fn_CalcularInversion()"></div>
                 <div class="col-md-6"><label class="form-label">Entidad:</label><input type="text" id="nombreInstitucion" class="form-control"></div>
             </div>
@@ -128,6 +128,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // Asegúrate de agregar orderBy en la línea de importaciones de firestore
+import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Y cambia la consulta así:
 onSnapshot(query(collection(db, "ofertas"), where("ofertado", "==", true), orderBy("modulo", "asc")), (snap) => {
@@ -221,15 +223,16 @@ onSnapshot(query(collection(db, "ofertas"), where("ofertado", "==", true), order
         const row = (t, v) => { doc.setFont("helvetica","bold"); doc.text(t, 20, y); doc.setFont("helvetica","normal"); doc.text(v, 75, y); y+=8; };
         
         row("Postulante:", d.nombre.toUpperCase());
-        row("Documento:", d.dni);
-        row("Nacimiento:", d.fechaNacimiento);
+        row("ID (Cédula/RIF):", d.dni);
+        row("Fecha de nacimiento:", d.fechaNacimiento);
         row("Género:", d.genero);
         row("Correo:", d.email);
         row("WhatsApp:", d.whatsapp);
         row("Ubicación:", d.ubicacion);
         row("Perfil Académico:", d.perfil);
-        row("Duración Solicitada:", d.meses + " meses");
+        row("Duración de la licencia:", d.meses + " meses");
         row("Institución/Entidad:", d.entidad);
+        row("Cupos:", d.cupos);
         row("Módulos Seleccionados:", d.modulos.join(", "));
         
         y+=10;
