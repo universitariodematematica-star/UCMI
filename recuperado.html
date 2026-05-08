@@ -60,7 +60,7 @@
     <div class="card-form">
         <div class="header-institucional">
             <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" alt="Logo UCMI" class="inst-logo">
-            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 4</h1>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 6</h1>
         </div>
         <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
             <div class="seccion-titulo">1. Datos de Identidad</div>
@@ -226,37 +226,47 @@ window.fn_CalcularInversion = () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    // Configuración del Logo
     const imgLogo = new Image();
-    imgLogo.crossOrigin = "Anonymous"; // Evita problemas de permisos (CORS)
+    imgLogo.crossOrigin = "Anonymous";
     imgLogo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png';
 
-    // Función interna para dibujar el contenido una vez cargada la imagen
     imgLogo.onload = function() {
-        // --- ENCABEZADO ---
+        // --- 1. FRANJA AZUL ---
         doc.setFillColor(26, 42, 58); // Azul UCMI
-        doc.rect(0, 0, 210, 40, 'F');
+        doc.rect(0, 0, 210, 45, 'F');
         
-        // Insertar Logo (x, y, ancho, alto)
-        doc.addImage(imgLogo, 'PNG', 15, 5, 30, 30);
+        // Logo a la izquierda
+        doc.addImage(imgLogo, 'PNG', 10, 5, 30, 30);
         
+        // --- 2. TEXTO DENTRO DE LA FRANJA (Centrado) ---
+        // Nombre Completo (Blanco para que resalte en el azul)
         doc.setTextColor(197, 160, 89); // Dorado UCMI
-        doc.setFontSize(18);
+        doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
-        doc.text("UCMI - COMPROBANTE DE REGISTRO", 50, 25);
-        
-        // --- CUERPO DEL DOCUMENTO ---
-        doc.setTextColor(0); 
-        doc.setFontSize(11);
-        let y = 55;
+        doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 115, 20, { align: "center" });
 
-        // Función auxiliar para filas
+        // Siglas UCMI (Dorado)
+        doc.setTextColor(197, 160, 89); // Dorado UCMI
+        doc.setFontSize(22);
+        doc.text("UCMI", 115, 35, { align: "center" });
+
+        // --- 3. TÍTULO FUERA DE LA FRANJA ---
+        doc.setTextColor(26, 42, 58); // Azul UCMI
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.text("COMPROBANTE DE POSTULACIÓN", 105, 60, { align: "center" });
+
+        // --- 4. DATOS DEL POSTULANTE ---
+        doc.setTextColor(0); 
+        doc.setFontSize(10);
+        let y = 75;
+
         const row = (label, value) => {
             doc.setFont("helvetica", "bold");
             doc.text(label, 20, y);
             doc.setFont("helvetica", "normal");
             doc.text(String(value), 75, y);
-            y += 9;
+            y += 8;
         };
 
         row("Postulante:", d.nombre.toUpperCase());
@@ -271,43 +281,29 @@ window.fn_CalcularInversion = () => {
         row("Entidad:", d.entidad);
         row("Cupos:", d.cupos);
         
-        // Manejo de módulos (Salto de línea si son muchos)
         doc.setFont("helvetica", "bold");
         doc.text("Módulos:", 20, y);
         doc.setFont("helvetica", "normal");
         const modulosTexto = d.modulos.join(", ");
-        const splitModulos = doc.splitTextToSize(modulosTexto, 115);
+        const splitModulos = doc.splitTextToSize(modulosTexto, 110);
         doc.text(splitModulos, 75, y);
         
-        // Ajustar 'y' según el largo de los módulos
-        y += (splitModulos.length * 7) + 5;
+        y += (splitModulos.length * 7) + 10;
 
-        // --- RECUADRO DE INVERSIÓN ---
+        // --- 5. RECUADRO DE INVERSIÓN ---
         doc.setFillColor(245, 245, 245);
-        doc.rect(20, y, 170, 18, 'F');
-        doc.setDrawColor(197, 160, 89);
-        doc.rect(20, y, 170, 18, 'S');
-
-        doc.setFontSize(13);
+        doc.rect(20, y, 170, 15, 'F');
+        doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(26, 42, 58);
-        doc.text(`INVERSIÓN TOTAL ESTIMADA: $${d.total} USD`, 30, y + 11);
-
-        // --- PIE DE PÁGINA ---
-        doc.setFontSize(9);
-        doc.setTextColor(150);
-        doc.text("Este documento es un comprobante de postulación y no representa un recibo de pago final.", 20, 280);
+        doc.text(`INVERSIÓN TOTAL ESTIMADA: $${d.total} USD`, 105, y + 10, { align: "center" });
 
         // Abrir PDF
         window.open(doc.output('bloburl'), '_blank');
     };
 
-    // Si el logo falla al cargar, generamos el PDF sin él para no bloquear al usuario
     imgLogo.onerror = function() {
-        console.error("No se pudo cargar el logo para el PDF.");
-        // Ejecutamos la misma lógica pero sin doc.addImage
-        // (Opcional: podrías copiar la lógica de onload aquí omitiendo la imagen)
-        alert("El comprobante se generará sin logo debido a un problema de conexión con la imagen.");
+        alert("Error al cargar el logo institucional. El PDF se generará sin imágenes.");
     };
 }
 </script>
