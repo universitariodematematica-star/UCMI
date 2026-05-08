@@ -18,16 +18,40 @@
             font-family: 'Poppins', sans-serif;
         }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.9) 100%); z-index: -1; }
-        .card-form { max-width: 850px; margin: auto; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
-        .header-institucional { text-align: center; padding: 40px 20px; background: rgba(0, 0, 0, 0.3); border-bottom: 1px solid rgba(197, 160, 89, 0.2); border-top-left-radius: 30px; border-top-right-radius: 30px; }
+        .card-form { max-width: 850px; margin: auto; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden; }
+        .header-institucional { text-align: center; padding: 40px 20px; background: rgba(0, 0, 0, 0.4); border-bottom: 1px solid rgba(197, 160, 89, 0.2); }
         .inst-logo { height: 100px; margin-bottom: 15px; }
         .inst-titulo { color: var(--dorado-ucmi); font-family: 'Cinzel', serif; font-weight: 800; font-size: 2rem; }
         .seccion-titulo { font-family: 'Cinzel', serif; color: var(--dorado-ucmi); border-bottom: 1px solid rgba(197,160,89,0.3); padding-bottom: 8px; margin: 25px 0 15px 0; font-size: 1.1rem; }
-        .form-label { color: var(--dorado-ucmi); font-size: 0.85rem; }
-        .form-control, .form-select { border-radius: 10px; background: rgba(255, 255, 255, 0.05) !important; color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.2); }
-        .costo-display { background: rgba(197, 160, 89, 0.1); border: 1px dashed var(--dorado-ucmi); border-radius: 15px; padding: 20px; text-align: center; margin-top: 20px; }
+        .form-label { color: var(--dorado-ucmi); font-size: 0.85rem; font-weight: 600; }
+
+        /* --- FIX PARA CAMPOS BLANCOS (AUTOCOMPLETE) --- */
+        .form-control, .form-select { 
+            border-radius: 10px; 
+            background: rgba(255, 255, 255, 0.05) !important; 
+            color: #ffffff !important; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+        }
+
+        /* Esta es la magia para Google Chrome y Edge */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus,
+        textarea:-webkit-autofill,
+        textarea:-webkit-autofill:hover,
+        textarea:-webkit-autofill:focus,
+        select:-webkit-autofill,
+        select:-webkit-autofill:hover,
+        select:-webkit-autofill:focus {
+            -webkit-text-fill-color: white !important;
+            -webkit-box-shadow: 0 0 0px 1000px rgba(30, 30, 30, 0.9) inset !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        .costo-display { background: rgba(197, 160, 100, 0.15); border: 1px dashed var(--dorado-ucmi); border-radius: 15px; padding: 20px; text-align: center; margin-top: 20px; }
         .costo-monto { color: var(--dorado-ucmi); font-size: 1.8rem; font-weight: 800; }
-        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 12px; border: none; width: 100%; margin-top: 20px; }
+        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 12px; border: none; width: 100%; margin-top: 20px; transition: 0.3s; }
+        .btn-enviar:hover { transform: scale(1.02); filter: brightness(1.1); }
     </style>
 </head>
 <body>
@@ -41,17 +65,17 @@
         <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
             <div class="seccion-titulo">1. Datos de Identidad</div>
             <div class="row g-3">
-                <div class="col-md-6"><label class="form-label">Nombre Responsable:</label><input type="text" id="nombreInput" class="form-control" required></div>
-                <div class="col-md-6"><label class="form-label">ID (Cédula/RIF):</label><input type="text" id="dniInput" class="form-control" required></div>
+                <div class="col-md-6"><label class="form-label">Nombre Responsable:</label><input type="text" id="nombreInput" class="form-control" required autocomplete="off"></div>
+                <div class="col-md-6"><label class="form-label">ID (Cédula/RIF):</label><input type="text" id="dniInput" class="form-control" required autocomplete="off"></div>
                 <div class="col-md-6"><label class="form-label">Fecha de Nacimiento:</label><input type="date" id="fechaNacimientoInput" class="form-control" required onchange="fn_VerificarEdad()"></div>
                 <div class="col-md-6"><label class="form-label">Género:</label><select id="generoInput" class="form-select" required><option value="">Selecciona...</option><option value="Masculino">Masculino</option><option value="Femenino">Femenino</option></select></div>
             </div>
 
             <div class="seccion-titulo">2. Contacto</div>
             <div class="row g-3">
-                <div class="col-md-4"><label class="form-label">Correo:</label><input type="email" id="emailInput" class="form-control" required></div>
-                <div class="col-md-4"><label class="form-label">WhatsApp:</label><input type="tel" id="whatsappInput" class="form-control" required></div>
-                <div class="col-md-4"><label class="form-label">Ubicación:</label><input type="text" id="ubicacionInput" class="form-control" required></div>
+                <div class="col-md-4"><label class="form-label">Correo:</label><input type="email" id="emailInput" class="form-control" required autocomplete="off"></div>
+                <div class="col-md-4"><label class="form-label">WhatsApp:</label><input type="tel" id="whatsappInput" class="form-control" required autocomplete="off"></div>
+                <div class="col-md-4"><label class="form-label">Ubicación:</label><input type="text" id="ubicacionInput" class="form-control" required autocomplete="off"></div>
             </div>
 
             <div id="bloqueRepresentante" class="mt-4" style="display:none">
@@ -131,7 +155,6 @@
             }
         }
         document.getElementById('displayInversion').innerText = total.toFixed(2);
-        return total.toFixed(2);
     };
 
     window.fn_AjustarPerfil = () => {
@@ -146,6 +169,7 @@
 
     window.fn_VerificarEdad = () => {
         const f = document.getElementById('fechaNacimientoInput').value;
+        if(!f) return;
         const edad = new Date().getFullYear() - new Date(f).getFullYear();
         document.getElementById('bloqueRepresentante').style.display = edad < 18 ? 'block' : 'none';
     };
@@ -154,7 +178,7 @@
         e.preventDefault();
         const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(m => m.value);
         if(!e.target.checkValidity() || modulos.length === 0) {
-            Swal.fire("Error", "Completa los datos y módulos", "error");
+            Swal.fire("Error", "Completa todos los datos y selecciona al menos un módulo", "error");
             return;
         }
 
@@ -178,33 +202,38 @@
         try {
             await addDoc(collection(db, "postulaciones"), payload);
             fn_GenerarPDF(payload);
-            Swal.fire("Éxito", "Guardado y PDF generado", "success");
-        } catch(err) { Swal.fire("Error", "Error Firebase", "error"); }
+            Swal.fire("¡Listo!", "Tu postulación ha sido enviada con éxito.", "success");
+            e.target.reset();
+        } catch(err) { Swal.fire("Error", "Hubo un problema al conectar con el servidor.", "error"); }
     });
 
     function fn_GenerarPDF(d) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         doc.setFillColor(26, 42, 58); doc.rect(0,0,210,40,'F');
-        doc.setTextColor(197, 160, 89); doc.setFontSize(18); doc.text("UCMI - COMPROBANTE", 20, 25);
+        doc.setTextColor(197, 160, 89); doc.setFontSize(18); doc.text("UCMI - COMPROBANTE DE REGISTRO", 20, 25);
         
         doc.setTextColor(0); doc.setFontSize(10);
         let y = 50;
-        const row = (t, v) => { doc.setFont("helvetica","bold"); doc.text(t, 20, y); doc.setFont("helvetica","normal"); doc.text(v, 70, y); y+=8; };
+        const row = (t, v) => { doc.setFont("helvetica","bold"); doc.text(t, 20, y); doc.setFont("helvetica","normal"); doc.text(v, 75, y); y+=8; };
         
-        row("Nombre:", d.nombre);
-        row("Cédula:", d.dni);
+        row("Postulante:", d.nombre.toUpperCase());
+        row("Documento:", d.dni);
         row("Nacimiento:", d.fechaNacimiento);
         row("Género:", d.genero);
-        row("Email:", d.email);
+        row("Correo:", d.email);
         row("WhatsApp:", d.whatsapp);
         row("Ubicación:", d.ubicacion);
-        row("Perfil:", d.perfil);
-        row("Duración:", d.meses + " meses");
-        row("Entidad:", d.entidad);
-        row("Módulos:", d.modulos.join(", "));
-        y+=5;
-        doc.setFontSize(14); doc.text(`TOTAL: $${d.total} USD`, 20, y);
+        row("Perfil Académico:", d.perfil);
+        row("Duración Solicitada:", d.meses + " meses");
+        row("Institución/Entidad:", d.entidad);
+        row("Módulos Seleccionados:", d.modulos.join(", "));
+        
+        y+=10;
+        doc.setFillColor(245, 245, 245); doc.rect(20, y-5, 170, 15, 'F');
+        doc.setFontSize(12); doc.setFont("helvetica","bold");
+        doc.text(`INVERSIÓN TOTAL ESTIMADA: $${d.total} USD`, 25, y+5);
+        
         window.open(doc.output('bloburl'), '_blank');
     }
 </script>
