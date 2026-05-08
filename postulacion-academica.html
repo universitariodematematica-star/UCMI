@@ -66,7 +66,7 @@
     <div class="card-form">
         <div class="header-institucional">
             <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" alt="Logo UCMI" class="inst-logo">
-            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 1</h1>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 2</h1>
         </div>
 
         <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
@@ -175,6 +175,37 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    // Lectura de módulos desde la colección 'ofertas'
+onSnapshot(query(collection(db, "ofertas"), where("ofertado", "==", true)), (snap) => {
+    const contenedor = document.getElementById('contenedorModulos');
+    contenedor.innerHTML = "";
+    
+    if (snap.empty) {
+        contenedor.innerHTML = "<div class='col-12 text-center small text-white-50'>No hay módulos disponibles.</div>";
+        return;
+    }
+
+    snap.forEach(docSnap => {
+        const datos = docSnap.data();
+        const nombreModulo = datos.modulo; // Accede al campo "modulo" de tu imagen
+        
+        const div = document.createElement('div');
+        div.className = 'col-md-4 col-6 mb-2';
+        div.innerHTML = `
+            <div class="form-check custom-card-modulo">
+                <input class="form-check-input check-modulo" type="checkbox" 
+                       value="${nombreModulo}" 
+                       id="mod_${docSnap.id}" 
+                       onchange="fn_CalcularInversion()">
+                <label class="form-check-label text-white small" for="mod_${docSnap.id}">
+                    ${nombreModulo}
+                </label>
+            </div>
+        `;
+        contenedor.appendChild(div);
+    });
+});
 
 window.fn_CalcularInversion = () => {
     const x = parseInt(document.getElementById('cuposInput').value) || 0; 
