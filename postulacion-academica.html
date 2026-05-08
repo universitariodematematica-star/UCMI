@@ -305,12 +305,14 @@
         }
     });
 
-    async function fn_GenerarPDF(d) {
+async function fn_GenerarPDF(d) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        const marginX = 20;
         const azulUCMI = [26, 42, 58];
         const doradoUCMI = [197, 160, 89];
 
+        // Encabezado institucional
         doc.setFillColor(azulUCMI[0], azulUCMI[1], azulUCMI[2]);
         doc.rect(0, 0, 210, 45, 'F'); 
 
@@ -318,38 +320,92 @@
             const img = new Image();
             img.src = "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
             img.crossOrigin = "Anonymous";
-            await new Promise((r) => { img.onload = () => { doc.addImage(img, 'PNG', 12, 7, 30, 30); r(); }; img.onerror = () => r(); });
+            await new Promise((r) => { 
+                img.onload = () => { doc.addImage(img, 'PNG', 12, 7, 30, 30); r(); }; 
+                img.onerror = () => r(); 
+            });
         } catch(e){}
 
         doc.setTextColor(doradoUCMI[0], doradoUCMI[1], doradoUCMI[2]);
         doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
         doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 48, 22);
         doc.setFontSize(24);
         doc.text("UCMI", 48, 34);
 
-        let y = 65;
+        let y = 62;
         doc.setTextColor(azulUCMI[0], azulUCMI[1], azulUCMI[2]);
         doc.setFontSize(18);
         doc.text("Comprobante de Solicitud Académica", 105, y, { align: "center" });
-        
-        y += 15;
-        doc.setFontSize(10);
-        doc.setTextColor(0);
-        const lines = [
-            `Responsable: ${d.nombreResponsable.toUpperCase()}`,
-            `ID: ${d.cedulaResponsable}`,
-            `Perfil: ${d.perfil}`,
-            `Entidad: ${d.entidad}`,
-            `Módulos: ${d.modulosSeleccionados.join(", ")}`,
-            `Vigencia: ${d.mesesLicencia} meses | Cupos: ${d.cupos}`,
-            `Inversión Total: $${d.inversionTotal} USD`,
-            `Fecha: ${d.timestamp.toLocaleString()}`
-        ];
 
-        lines.forEach(line => {
-            doc.text(line, 20, y);
-            y += 8;
-        });
+        y += 12;
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        doc.text(`Fecha de Emisión: ${d.timestamp.toLocaleString()}`, 105, y, { align: "center" });
+
+        y += 15;
+        const renderSection = (titulo, lineas) => {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(azulUCMI[0], azulUCMI[1], azulUCMI[2]);
+            doc.text(titulo, marginX, y);
+            y += 2;
+            doc.setLineWidth(0.2);
+            doc.setDrawColor(200);
+            doc.line(marginX, y, 190, y);
+            y += 7;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.setTextColor(0);
+            lineas.forEach(l => {
+                doc.text(l, marginX + 5, y);
+                y += 6;
+            });
+            y += 6;
+        };
+
+        // I. DATOS PERSONALES
+        renderSection("I. INFORMACIÓN DEL POSTULANTE", [
+            `Nombre: ${d.nombreResponsable.toUpperCase()}`,
+            `ID / Cédula: ${d.cedulaResponsable}`,
+            `Fecha de Nacimiento: ${d.fechaNacimiento}`,
+            `Género: ${d.genero}`
+        ]);
+
+        // II. CONTACTO Y UBICACIÓN
+        renderSection("II. DATOS DE CONTACTO", [
+            `Correo Electrónico: ${d.email}`,
+            `WhatsApp: ${d.whatsapp}`,
+            `Ubicación: ${d.ubicacion}`
+        ]);
+
+        // III. REPRESENTACIÓN (Si aplica)
+        if (d.nombreRepresentante) {
+            renderSection("III. REPRESENTACIÓN LEGAL", [
+                `Representante: ${d.nombreRepresentante}`,
+                `ID Representante: ${d.cedulaRepresentante}`,
+                `WhatsApp: ${d.whatsappRepresentante}`
+            ]);
+        }
+
+        // IV. DETALLES ACADÉMICOS Y LICENCIA
+        renderSection("IV. GESTIÓN DE LICENCIA", [
+            `Perfil de Usuario: ${d.perfil}`,
+            `Entidad/Institución: ${d.entidad}`,
+            `Duración de Licencia: ${d.mesesLicencia} meses`,
+            `Cupos/Estudiantes: ${d.cupos}`,
+            `Módulos: ${d.modulosSeleccionados.join(", ")}`
+        ]);
+
+        // V. RESUMEN FINANCIERO
+        doc.setFillColor(245, 245, 245);
+        doc.rect(marginX, y, 170, 15, 'F');
+        doc.setFont("helvetica", "bold");
+        doc.text(`INVERSIÓN TOTAL: $${d.inversionTotal} USD`, marginX + 5, y + 10);
+
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text("Este documento es una solicitud sujeta a validación por parte de UCMI.", 105, 285, { align: "center" });
 
         window.open(doc.output('bloburl'), '_blank');
     }
