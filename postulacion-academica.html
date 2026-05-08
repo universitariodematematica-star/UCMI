@@ -60,7 +60,7 @@
     <div class="card-form">
         <div class="header-institucional">
             <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" alt="Logo UCMI" class="inst-logo">
-            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 7</h1>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 8</h1>
         </div>
         <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
             <div class="seccion-titulo">1. Datos de Identidad</div>
@@ -222,7 +222,38 @@ window.fn_CalcularInversion = () => {
         } catch(err) { Swal.fire("Error", "Hubo un problema al conectar con el servidor.", "error"); }
     });
 
-    function fn_GenerarPDF(d) {
+    async function procesarRegistro() {
+    // 1. Capturamos los datos con los NUEVOS nombres que pide el Panel
+    const datosPostulacion = {
+        entidad: document.getElementById('entidad').value,
+        nombreResponsable: document.getElementById('nombre').value, // Antes 'nombre'
+        cedulaResponsable: document.getElementById('dni').value,    // Antes 'dni'
+        email: document.getElementById('email').value,
+        whatsapp: document.getElementById('whatsapp').value,
+        ubicacion: document.getElementById('ubicacion').value,
+        perfil: document.getElementById('perfil').value,
+        mesesLicencia: document.getElementById('meses').value,      // Antes 'meses'
+        cupos: document.getElementById('cupos').value,
+        modulos: obtenerModulosSeleccionados(), // Tu función que saca los checks
+        total: document.getElementById('totalInversion').innerText,
+        timestamp: new Date()
+    };
+
+    try {
+        // 2. Guardar en Firebase
+        await db.collection("postulaciones").add(datosPostulacion);
+        
+        // 3. Emitir el PDF (Usando los nuevos nombres)
+        fn_GenerarPDF(datosPostulacion);
+
+        alert("Postulación enviada con éxito");
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
+// --- FUNCIÓN DEL PDF CORREGIDA Y ACTUALIZADA ---
+function fn_GenerarPDF(d) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
@@ -231,32 +262,27 @@ window.fn_CalcularInversion = () => {
     imgLogo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png';
 
     imgLogo.onload = function() {
-        // --- 1. FRANJA AZUL ---
-        doc.setFillColor(26, 42, 58); // Azul UCMI
+        // Franja Azul
+        doc.setFillColor(26, 42, 58);
         doc.rect(0, 0, 210, 45, 'F');
         
-        // Logo a la izquierda
         doc.addImage(imgLogo, 'PNG', 10, 5, 30, 30);
         
-        // --- 2. TEXTO DENTRO DE LA FRANJA (Centrado) ---
-        // Nombre Completo (Blanco para que resalte en el azul)
-        doc.setTextColor(197, 160, 89); // Dorado UCMI
+        // Texto en Dorado
+        doc.setTextColor(197, 160, 89);
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
-        doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 115, 20, { align: "center" });
+        doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 120, 20, { align: "center" });
 
-        // Siglas UCMI (Dorado)
-        doc.setTextColor(197, 160, 89); // Dorado UCMI
         doc.setFontSize(22);
-        doc.text("UCMI", 115, 35, { align: "center" });
+        doc.text("UCMI", 120, 35, { align: "center" });
 
-        // --- 3. TÍTULO FUERA DE LA FRANJA ---
-        doc.setTextColor(26, 42, 58); // Azul UCMI
+        // Título en Azul fuera de la franja
+        doc.setTextColor(26, 42, 58);
         doc.setFontSize(16);
-        doc.setFont("helvetica", "bold");
-        doc.text("COMPROBANTE DE POSTULACIÓN", 105, 60, { align: "center" });
+        doc.text("COMPROBANTE DE REGISTRO", 105, 60, { align: "center" });
 
-        // --- 4. DATOS DEL POSTULANTE ---
+        // Datos del Cuerpo (Usando las nuevas variables)
         doc.setTextColor(0); 
         doc.setFontSize(10);
         let y = 75;
@@ -265,32 +291,21 @@ window.fn_CalcularInversion = () => {
             doc.setFont("helvetica", "bold");
             doc.text(label, 20, y);
             doc.setFont("helvetica", "normal");
-            doc.text(String(value), 75, y);
+            doc.text(String(value || 'N/A'), 75, y);
             y += 8;
         };
 
-        row("Postulante:", d.nombreResponsable.toUpperCase());
-        row("ID (Cédula/RIF):", d.cedulaResponsable);
-        row("Fecha Nacimiento:", d.fechaNacimiento);
-        row("Género:", d.genero);
+        row("Postulante:", d.nombreResponsable.toUpperCase()); // CAMBIADO
+        row("ID (Cédula/RIF):", d.cedulaResponsable);          // CAMBIADO
         row("Correo:", d.email);
         row("WhatsApp:", d.whatsapp);
         row("Ubicación:", d.ubicacion);
         row("Perfil Académico:", d.perfil);
-        row("Licencia:", d.mesesLicencia + " meses");
+        row("Licencia:", d.mesesLicencia + " meses");          // CAMBIADO
         row("Entidad:", d.entidad);
-        row("Cupos:", d.cupos);
         
-        doc.setFont("helvetica", "bold");
-        doc.text("Módulos:", 20, y);
-        doc.setFont("helvetica", "normal");
-        const modulosTexto = d.modulos.join(", ");
-        const splitModulos = doc.splitTextToSize(modulosTexto, 110);
-        doc.text(splitModulos, 75, y);
-        
-        y += (splitModulos.length * 7) + 10;
-
-        // --- 5. RECUADRO DE INVERSIÓN ---
+        // Recuadro de Inversión
+        y += 10;
         doc.setFillColor(245, 245, 245);
         doc.rect(20, y, 170, 15, 'F');
         doc.setFontSize(12);
@@ -298,12 +313,11 @@ window.fn_CalcularInversion = () => {
         doc.setTextColor(26, 42, 58);
         doc.text(`INVERSIÓN TOTAL ESTIMADA: $${d.total} USD`, 105, y + 10, { align: "center" });
 
-        // Abrir PDF
         window.open(doc.output('bloburl'), '_blank');
     };
 
     imgLogo.onerror = function() {
-        alert("Error al cargar el logo institucional. El PDF se generará sin imágenes.");
+        alert("Error al generar PDF: No se pudo cargar el logo.");
     };
 }
 </script>
