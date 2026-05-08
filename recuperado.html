@@ -2,280 +2,167 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <style>html { display: none; }</style>
-    <script type="module" src="auth-guard.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Panel de Vigencia Operativa</title>
+    <title>Postulación Oficial - UCMI</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
-    :root {
-        --dorado-ucmi: #c5a059;
-        --purpura-neon: #bc13fe;
-        --cian-tech: #00f2ff;
-    }
+        :root { --azul-ucmi: #1a2a3a; --dorado-ucmi: #c5a059; }
+        body { 
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover; min-height: 100vh; padding: 40px 0; color: white;
+        }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.9) 100%); z-index: -1; }
+        .card-form { max-width: 850px; margin: auto; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: visible; }
+        .header-institucional { text-align: center; padding: 40px 20px; background: rgba(0, 0, 0, 0.3); border-bottom: 1px solid rgba(197, 160, 89, 0.2); border-top-left-radius: 30px; border-top-right-radius: 30px; }
+        .inst-logo { height: 100px; margin-bottom: 15px; }
+        .inst-titulo { color: var(--dorado-ucmi); font-family: 'Cinzel', serif; font-weight: 800; font-size: 2rem; }
+        .seccion-titulo { font-family: 'Cinzel', serif; color: var(--dorado-ucmi); border-bottom: 1px solid rgba(197,160,89,0.3); padding-bottom: 8px; margin: 25px 0 15px 0; font-size: 1.1rem; }
+        .form-label { color: var(--dorado-ucmi); font-size: 0.85rem; }
+        
+        .form-control, .form-select { 
+            border-radius: 10px; 
+            background: rgba(255, 255, 255, 0.05) !important; 
+            color: #ffffff !important; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            transition: all 0.3s ease; 
+        }
+        
+        .form-control:focus, .form-select:focus { 
+            background: rgba(255, 255, 255, 0.1) !important; 
+            border-color: var(--dorado-ucmi) !important; 
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.2); 
+        }
 
-    body {
-        background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-        background-size: cover;
-        font-family: 'Segoe UI', sans-serif;
-        color: white;
-        margin: 0;
-        overflow-x: hidden;
-    }
+        ::placeholder { color: rgba(255, 255, 255, 0.4) !important; font-size: 0.85rem; font-style: italic; }
+        option { background-color: var(--azul-ucmi); color: white; }
+        
+        /* Estilo para el mostrador de costo */
+        .costo-display {
+            background: rgba(197, 160, 89, 0.1);
+            border: 1px dashed var(--dorado-ucmi);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .costo-monto { color: var(--dorado-ucmi); font-size: 1.8rem; font-weight: 800; }
 
-    .super-overlay {
-        background: radial-gradient(circle, rgba(6, 9, 15, 0.5) 0%, rgba(6, 9, 15, 0.95) 100%);
-        min-height: 100vh;
-    }
-
-    /* --- SIDEBAR & NAVEGACIÓN --- */
-    .sidebar {
-        background: rgba(255, 255, 255, 0.02) !important;
-        backdrop-filter: blur(20px) saturate(150%);
-        -webkit-backdrop-filter: blur(20px) saturate(150%);
-        border-right: 1px solid rgba(255, 255, 255, 0.08);
-        min-height: 100vh;
-        padding: 40px 20px;
-        position: sticky;
-        top: 0;
-    }
-
-    .nav-section-title {
-        color: rgba(255, 255, 255, 0.3);
-        font-size: 0.65rem;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 15px;
-        padding-left: 10px;
-    }
-
-    .nav-link-custom {
-        display: flex;
-        align-items: center;
-        padding: 12px 15px;
-        color: rgba(255, 255, 255, 0.6);
-        text-decoration: none;
-        border-radius: 12px;
-        font-size: 0.85rem;
-        transition: all 0.3s ease;
-        margin-bottom: 5px;
-    }
-
-    .nav-link-custom i { 
-        font-size: 1.1rem; 
-        margin-right: 12px; 
-        width: 20px; 
-        text-align: center; 
-    }
-
-    .nav-link-custom:hover {
-        background: rgba(255, 255, 255, 0.05);
-        color: var(--cian-tech);
-        transform: translateX(5px);
-    }
-
-    .nav-link-custom.active {
-        background: rgba(188, 19, 254, 0.1);
-        color: #d880ff;
-        border: 1px solid rgba(188, 19, 254, 0.2);
-        box-shadow: 0 0 15px rgba(188, 19, 254, 0.1);
-        text-shadow: 0 0 8px rgba(188, 19, 254, 0.6);
-    }
-
-    .btn-system-white {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: #ffffff;
-        width: 100%;
-        padding: 12px;
-        border-radius: 12px;
-        font-size: 0.8rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        margin-top: 10px;
-    }
-
-    .btn-system-white:hover {
-        background: rgba(255, 255, 255, 0.9);
-        color: #000000;
-        box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-    }
-
-    .btn-logout-custom {
-        background: rgba(255, 77, 77, 0.05);
-        border: 1px solid rgba(255, 77, 77, 0.2);
-        color: #ff4d4d;
-        width: 100%;
-        padding: 12px;
-        border-radius: 12px;
-        font-size: 0.8rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: 0.3s;
-        margin-top: 20px;
-    }
-
-    .btn-logout-custom:hover { 
-        background: #ff4d4d; 
-        color: white;
-        box-shadow: 0 0 15px rgba(255, 77, 77, 0.4);
-    }
-
-    .glass-panel {
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        backdrop-filter: blur(25px) !important;
-        border-radius: 35px;
-        padding: 45px;
-        box-shadow: 0 30px 60px rgba(0,0,0,0.7);
-        max-width: 1300px;
-        margin: auto;
-    }
-
-    .table {
-        --bs-table-bg: transparent !important;
-        --bs-table-color: white !important;
-        border-collapse: separate;
-        border-spacing: 0 12px;
-    }
-
-    .table thead th {
-        border: none !important;
-        color: rgba(255,255,255,0.5);
-        text-transform: uppercase;
-        font-size: 0.7rem;
-        letter-spacing: 2.5px;
-        padding-bottom: 25px;
-    }
-
-    .table tbody tr {
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 15px;
-    }
-
-    .table tbody td {
-        background: transparent !important;
-        border: none !important;
-        padding: 22px 15px;
-        vertical-align: middle;
-    }
-
-    .progress { background-color: rgba(255, 255, 255, 0.1); height: 5px; border-radius: 10px; }
-    .progress-bar-neon { background: linear-gradient(90deg, var(--purpura-neon), var(--cian-tech)); box-shadow: 0 0 12px rgba(0, 242, 255, 0.5); }
-    
-    .status-badge { font-size: 0.65rem; padding: 6px 14px; border-radius: 8px; font-weight: 800; border: 1px solid #00ff8844; color: #00ff88; background: #00ff8811; }
-    .email-badge { font-family: 'Courier New', monospace; color: var(--cian-tech); background: rgba(0, 242, 255, 0.1); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; border: 1px solid rgba(0, 242, 255, 0.2); }
-    
-    .btn-revocar {
-        border: 1px solid rgba(255, 77, 77, 0.4);
-        color: #ff4d4d;
-        background: rgba(255, 77, 77, 0.05);
-        border-radius: 12px;
-        font-size: 0.8rem;
-        padding: 8px 20px;
-        transition: 0.3s;
-    }
-    .btn-revocar:hover { background: #ff4d4d; color: white; }
-</style>
+        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 12px; border: none; width: 100%; margin-top: 20px; }
+        #bloqueRepresentante { display: none; background: rgba(255, 77, 77, 0.05); border: 1px solid rgba(255, 77, 77, 0.2); padding: 20px; border-radius: 15px; }
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+    </style>
 </head>
 <body>
 
-<div class="super-overlay">
-    <div class="container-fluid">
-        <div class="row">
-            
-            <div class="col-md-2 sidebar d-none d-md-flex flex-column">
-                <nav class="nav flex-column mb-auto">
-                    <p class="nav-section-title">Protocolos</p>
-                    
-                    <a class="nav-link-custom" href="master-postulaciones.html">
-                        <i class="bi bi-person-badge"></i> Solicitudes
-                    </a>
-                    <a class="nav-link-custom active" href="master-vigencia.html">
-                        <i class="bi bi-clock-history"></i> Vigencia
-                    </a>
-                    <a class="nav-link-custom" href="master-usuarios.html">
-                        <i class="bi bi-people"></i> Usuarios
-                    </a>
-                    <a class="nav-link-custom" href="historial-postulaciones.html">
-                        <i class="bi bi-archive"></i> Historial
-                    </a>
-                    <a class="nav-link-custom" href="directorio.html">
-                        <i class="bi bi-journal-text"></i> Directorio
-                    </a>
-                    <a class="nav-link-custom" href="ofertas-academicas.html">
-                        <i class="bi bi-mortarboard"></i> Ofertas
-                    </a>
-                    <a class="nav-link-custom" href="master-repositorio.html">
-                        <i class="bi bi-grid-1x2"></i> Módulos
-                    </a>
-                    <a class="nav-link-custom" href="papelera.html">
-                        <i class="bi bi-trash3"></i> Papelera
-                    </a>
+<div class="overlay"></div>
 
-                    <p class="nav-section-title mt-4">Sistema</p>
-                    <a href="super-admin.html" class="btn-system-white">
-                        <i class="bi bi-shield-lock"></i> Panel Maestro
-                    </a>
-                </nav>
-
-                <div class="sidebar-footer">
-                    <button id="btnLogout" class="btn-logout-custom">
-                        <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
-                    </button>
-                </div>
-            </div>
-
-            <div class="col-md-10 p-5">
-                <div class="glass-panel">
-                    <div class="d-flex justify-content-between align-items-center mb-5">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-info rounded-3 p-2 me-3 shadow-lg"><i class="bi bi-cpu-fill text-dark fs-4"></i></div>
-                            <h3 class="fw-bold m-0 text-uppercase" style="letter-spacing: 4px;">Panel de Vigencia Operativa</h3>
-                        </div>
-                        <div style="min-width: 350px;">
-                            <div class="input-group">
-                                <span class="input-group-text bg-transparent border-secondary text-info"><i class="bi bi-search"></i></span>
-                                <input type="text" id="inputBusqueda" class="form-control bg-transparent text-white border-secondary" placeholder="Buscar entidad, email o responsable..." style="border-radius: 0 12px 12px 0;">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Responsable / Identificador</th>
-                                    <th>Activación</th>
-                                    <th style="width: 20%;">Cronología</th>
-                                    <th>Expiración</th>
-                                    <th>Remanente</th>
-                                    <th class="text-end">Operaciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="listaVigencia"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
+<div class="container">
+    <div class="card-form">
+        <div class="header-institucional">
+            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" alt="Logo UCMI" class="inst-logo">
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 1</h1>
         </div>
+
+        <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
+            <div class="seccion-titulo">1. Datos de Identidad y Validación</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Nombre Responsable:</label>
+                    <input type="text" id="nombreInput" class="form-control" required placeholder="Nombres y Apellidos">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">ID (Cédula/RIF):</label>
+                    <input type="text" id="dniInput" class="form-control" required placeholder="Documento de identidad">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Fecha de Nacimiento:</label>
+                    <input type="date" id="fechaNacimientoInput" class="form-control" required onchange="fn_VerificarEdad()">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Género:</label>
+                    <select id="generoInput" class="form-select"> 
+                        <option value="" selected>No especificado</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="seccion-titulo">2. Datos de Acceso y Seguridad</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Correo Electrónico:</label>
+                    <input type="email" id="emailInput" class="form-control" placeholder="usuario@ejemplo.com" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Número de WhatsApp (2FA):</label>
+                    <input type="tel" id="whatsappInput" class="form-control" placeholder="+58 412 0000000" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Ubicación (Ciudad y País):</label>
+                    <input type="text" id="ubicacionInput" class="form-control" placeholder="Ej: Caracas, Venezuela" required>
+                </div>
+            </div>
+
+            <div id="bloqueRepresentante" class="mt-4">
+                <div class="seccion-titulo text-danger">3. Supervisión Legal (Requerido para Menores)</div>
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label text-white">Nombre del Representante:</label><input type="text" id="repNombre" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label text-white">Cédula del Representante:</label><input type="text" id="repCedula" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label text-white">Correo de Notificación:</label><input type="email" id="repEmail" class="form-control"></div>
+                    <div class="col-md-6"><label class="form-label text-white">WhatsApp del Representante:</label><input type="tel" id="repWhatsapp" class="form-control"></div>
+                </div>
+            </div>
+
+            <div class="seccion-titulo">4. Gestión de Licencias y Acceso Académico</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Perfil de Usuario:</label>
+                    <select id="perfilUsuario" class="form-select" required onchange="fn_AjustarPerfil()">
+                        <option value="">Selecciona el perfil</option>
+                        <option value="Academia">Academia</option>
+                        <option value="Profesor independiente">Profesor independiente</option>
+                        <option value="Estudiante UCMI">Estudiante UCMI</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Plan de Licencia en meses:</label>
+                    <input type="number" id="planLicencia" class="form-control" placeholder="Ej: 12" min="1" required oninput="fn_CalcularInversion()">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Cantidad de Estudiantes / Cupos (x):</label>
+                    <input type="number" id="cuposInput" class="form-control" value="1" min="1" required oninput="fn_CalcularInversion()" onkeydown="if(this.readOnly) return false;">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Nombre de la Entidad:</label>
+                    <input type="text" id="nombreInstitucion" class="form-control" placeholder="Nombre de la academia o particular">
+                </div>
+            </div>
+
+            <!-- VISUALIZACIÓN DEL COSTO -->
+            <div class="costo-display">
+                <div class="small text-uppercase" style="letter-spacing: 2px;">Inversión Total</div>
+                <div class="costo-monto">$ <span id="displayInversion">0.00</span> <small style="font-size: 1rem;">USD</small></div>
+                <div id="ahorroDisplay" class="small fw-bold" style="color: #4ade80; display: none;">
+                    <i class="bi bi-graph-up-arrow"></i> Ahorro aplicado: <span id="porcentajeAhorro">0</span>%
+                </div>
+                <div class="small italic text-white-50 mt-1">*Sujeto a validación administrativa</div>
+            </div>
+
+            <button type="submit" id="btnSubmit" class="btn btn-enviar">ENVIAR Y GENERAR COMPROBANTE</button>
+        </form>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -288,147 +175,235 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
 
-    let usuariosMaster = [];
-
-    // --- UTILIDADES DE FECHA ---
-    function formatearFechaInicio(str) {
-        if (!str || typeof str !== 'string') return "Sin fecha";
-        try {
-            const partes = str.split(',')[0].split('/');
-            if (partes.length === 3) {
-                const dia = partes[0].padStart(2, '0');
-                const mes = partes[1].padStart(2, '0');
-                const anio = partes[2];
-                return `${dia}/${mes}/${anio}`;
-            }
-            return str;
-        } catch (e) { return "Error formato"; }
+window.fn_CalcularInversion = () => {
+    const x = parseInt(document.getElementById('cuposInput').value) || 0; 
+    const t = parseInt(document.getElementById('planLicencia').value) || 0;
+    
+    if (x <= 0 || t <= 0) {
+        document.getElementById('ahorroDisplay').style.display = 'none';
+        return "0.00";
     }
 
-    function obtenerDateValido(str) {
-        if (!str || typeof str !== 'string' || !str.includes('/')) return new Date();
-        try {
-            const [fecha, hora] = str.split(', ');
-            const [d, m, a] = fecha.split('/');
-            return new Date(`${a}-${m.padStart(2,'0')}-${d.padStart(2,'0')}T${hora || '00:00:00'}`);
-        } catch(e) { return new Date(); }
+    // 1. Costo Base Real (Sin descuentos: $10 por cupo por mes)
+    const costoBaseSinDescuento = 10 * x * t;
+
+    // 2. Tu cálculo de Ix (Descuento por cupos)
+    let ix = 0;
+    if (x <= 10) ix = 10 * x * (1 - (x - 1) / 90);
+    else if (x <= 50) ix = 10 * x * (1 - (10 + 0.5 * (x - 10)) / 100);
+    else if (x <= 200) ix = 10 * x * (1 - (30 + 0.1 * (x - 50)) / 100);
+    else ix = (5 * x) + 100;
+
+    // 3. Tu Factor de Tiempo
+    const factorTiempo = 0.7 + (0.3 / (1 + 0.15 * (t - 1)));
+    
+    // 4. Inversión Total
+    const total = parseFloat((ix * t * factorTiempo).toFixed(2));
+    
+    // 5. Cálculo del Porcentaje de Ahorro
+    const ahorroPorcentaje = Math.round(((costoBaseSinDescuento - total) / costoBaseSinDescuento) * 100);
+
+    // Actualizar Interfaz
+    document.getElementById('displayInversion').innerText = total.toFixed(2);
+    
+    const ahorroElemento = document.getElementById('ahorroDisplay');
+    if (ahorroPorcentaje > 0) {
+        document.getElementById('porcentajeAhorro').innerText = ahorroPorcentaje;
+        ahorroElemento.style.display = 'block';
+    } else {
+        ahorroElemento.style.display = 'none';
     }
 
-    // --- FUNCIÓN RENDERIZAR ---
-    function renderizar(lista) {
-        const contenedor = document.getElementById('listaVigencia');
-        contenedor.innerHTML = '';
+    return total.toFixed(2);
+};
 
-        lista.forEach((data) => {
-            const id = data.id;
-            const fechaInicioTexto = formatearFechaInicio(data.fechaActivacion);
-            const dateInicio = obtenerDateValido(data.fechaActivacion);
-            const dateFin = data.expiracionTimestamp ? new Date(data.expiracionTimestamp) : new Date();
-            const ahora = new Date();
-
-            const totalMs = dateFin - dateInicio;
-            const transcurridoMs = ahora - dateInicio;
-            let porcentaje = Math.floor((transcurridoMs / totalMs) * 100);
-            porcentaje = Math.min(Math.max(porcentaje || 0, 0), 100);
-
-            const diasRestantes = Math.ceil((dateFin - ahora) / (1000 * 60 * 60 * 24));
-
-            contenedor.innerHTML += `
-                <tr>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <div class="p-2 rounded-circle bg-opacity-10 bg-info me-3" style="border: 1px solid #00f2ff55">
-                                <i class="bi bi-person-badge-fill text-info fs-5"></i>
-                            </div>
-                            <div>
-                                <div class="fw-bold text-white mb-1">${data.entidad || 'Entidad'}</div>
-                                <div class="email-badge">${data.email || id}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="text-white-50 mb-1" style="font-size: 0.6rem;">FECHA INICIO:</div>
-                        <div class="fw-bold small text-white">${fechaInicioTexto}</div>
-                    </td>
-                    <td>
-                        <div class="progress mb-2">
-                            <div class="progress-bar progress-bar-neon" style="width: ${porcentaje}%"></div>
-                        </div>
-                        <div class="d-flex justify-content-between" style="font-size: 0.6rem;">
-                            <span class="text-white-50">CONSUMO</span>
-                            <span class="text-info fw-bold">${porcentaje}%</span>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="text-white-50 mb-1" style="font-size: 0.6rem;">VENCE EN:</div>
-                        <div class="fw-bold text-info small">${dateFin.toLocaleDateString()}</div>
-                    </td>
-                    <td>
-                        <span class="status-badge">${diasRestantes > 0 ? diasRestantes + ' DÍAS' : 'EXPIRADO'}</span>
-                    </td>
-                    <td class="text-end">
-                        <button onclick="revocarAcceso('${id}', '${data.entidad}')" class="btn btn-revocar">
-                            <i class="bi bi-trash3-fill me-2"></i>Revocar
-                        </button>
-                    </td>
-                </tr>`;
+    window.fn_VerificarEdad = () => {
+        const fNacInput = document.getElementById('fechaNacimientoInput').value;
+        if(!fNacInput) return;
+        const fNac = new Date(fNacInput);
+        const hoy = new Date();
+        let edad = hoy.getFullYear() - fNac.getFullYear();
+        if (hoy.getMonth() < fNac.getMonth() || (hoy.getMonth() === fNac.getMonth() && hoy.getDate() < fNac.getDate())) edad--;
+        
+        const esMenor = edad < 18;
+        document.getElementById('bloqueRepresentante').style.display = esMenor ? 'block' : 'none';
+        ['repNombre', 'repCedula', 'repEmail', 'repWhatsapp'].forEach(id => {
+            document.getElementById(id).required = esMenor;
         });
-    }
-
-    // --- ESCUCHA DE FIREBASE CON FILTRO DE PAPELERA ---
-    onSnapshot(collection(db, "usuarios"), (snapshot) => {
-        usuariosMaster = snapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data() }))
-            .filter(u => u.status !== "eliminado"); // Ocultamos los eliminados
-        renderizar(usuariosMaster);
-    });
-
-    // --- MOTOR DE BÚSQUEDA ---
-    document.getElementById('inputBusqueda').addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase().trim();
-        const filtrados = usuariosMaster.filter(u => 
-            (u.entidad || "").toLowerCase().includes(term) ||
-            (u.email || "").toLowerCase().includes(term) ||
-            (u.id || "").toLowerCase().includes(term)
-        );
-        renderizar(filtrados);
-    });
-
-    // --- NUEVA LÓGICA DE REVOCAR (BORRADO LÓGICO) ---
-    window.revocarAcceso = async (id, entidad) => {
-        const confirm = await Swal.fire({
-            title: '¿REVOCAR ACCESO?',
-            text: `La entidad ${entidad} perderá acceso inmediato y será enviada a la papelera.`,
-            icon: 'warning',
-            background: '#06090f',
-            color: '#fff',
-            showCancelButton: true,
-            confirmButtonColor: '#ff4d4d',
-            cancelButtonColor: '#333',
-            confirmButtonText: 'Sí, revocar',
-            cancelButtonText: 'Cancelar'
-        });
-
-        if (confirm.isConfirmed) {
-            try {
-                const userRef = doc(db, "usuarios", id);
-                await updateDoc(userRef, {
-                    status: "eliminado",
-                    fechaEliminacion: serverTimestamp()
-                });
-                Swal.fire({ title: 'Acceso Revocado', icon: 'success', background: '#06090f', color: '#fff' });
-            } catch (e) {
-                console.error(e);
-                Swal.fire({ title: 'Error', text: 'No se pudo procesar', icon: 'error' });
-            }
-        }
     };
 
-    document.getElementById('btnLogout').addEventListener('click', () => {
-        signOut(auth).then(() => { window.location.href = "index.html"; });
+window.fn_AjustarPerfil = () => {
+    const p = document.getElementById('perfilUsuario').value;
+    const campoEntidad = document.getElementById('nombreInstitucion');
+    const campoCupos = document.getElementById('cuposInput');
+
+    // Ajuste de placeholder y obligatoriedad para la entidad
+    campoEntidad.placeholder = (p === 'Academia') ? "Nombre de la Academia" : "Nombre del Profesor / Particular";
+    campoEntidad.required = (p === 'Academia');
+
+    // NUEVA LÓGICA: Bloqueo de cupos para Estudiante UCMI
+    if (p === 'Estudiante UCMI') {
+        campoCupos.value = 1;         // Forzar el valor a 1
+        campoCupos.readOnly = true;   // Impedir que se escriba
+        campoCupos.style.opacity = "0.7"; // Efecto visual de deshabilitado
+    } else {
+        campoCupos.readOnly = false;  // Liberar el campo para otros perfiles
+        campoCupos.style.opacity = "1";
+    }
+
+    // Recalcular la inversión automáticamente al cambiar el perfil
+    fn_CalcularInversion();
+};
+
+    document.getElementById('formUCMI').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            Swal.fire({ icon: "warning", title: "Campos Incompletos", text: "Por favor, rellene los campos resaltados.", confirmButtonColor: "#c5a059" });
+            return;
+        }
+
+        document.getElementById('btnSubmit').disabled = true;
+
+        const payload = {
+            nombreResponsable: document.getElementById('nombreInput').value,
+            cedulaResponsable: document.getElementById('dniInput').value,
+            fechaNacimiento: document.getElementById('fechaNacimientoInput').value,
+            genero: document.getElementById('generoInput').value || "No especificado",
+            email: document.getElementById('emailInput').value,
+            whatsapp: document.getElementById('whatsappInput').value,
+            ubicacion: document.getElementById('ubicacionInput').value,
+            nombreRepresentante: document.getElementById('repNombre').value || null,
+            cedulaRepresentante: document.getElementById('repCedula').value || null,
+            emailRepresentante: document.getElementById('repEmail').value || null,
+            whatsappRepresentante: document.getElementById('repWhatsapp').value || null,
+            perfil: document.getElementById('perfilUsuario').value, 
+            mesesLicencia: document.getElementById('planLicencia').value,
+            entidad: document.getElementById('nombreInstitucion').value || "Particular", 
+            inversionTotal: fn_CalcularInversion(),
+            cupos: document.getElementById('cuposInput').value,
+            timestamp: new Date()
+        };
+
+        try {
+            await addDoc(collection(db, "postulaciones"), payload);
+            fn_GenerarPDF(payload);
+            Swal.fire("Éxito", "Postulación enviada y guardada en Firebase", "success");
+            form.reset();
+            form.classList.remove('was-validated');
+            document.getElementById('displayInversion').innerText = "0.00";
+            document.getElementById('bloqueRepresentante').style.display = 'none';
+        } catch (error) {
+            Swal.fire("Error", "No se pudo conectar con Firebase", "error");
+        } finally {
+            document.getElementById('btnSubmit').disabled = false;
+        }
     });
+
+    async function fn_GenerarPDF(d) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const marginX = 20;
+        const azulUCMI = [26, 42, 58];
+        const doradoUCMI = [197, 160, 89];
+
+        doc.setFillColor(azulUCMI[0], azulUCMI[1], azulUCMI[2]);
+        doc.rect(0, 0, 210, 45, 'F'); 
+
+        try {
+            const img = new Image();
+            img.src = "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+            img.crossOrigin = "Anonymous"; 
+            await new Promise((resolve) => {
+                img.onload = () => {
+                    doc.addImage(img, 'PNG', 12, 7, 30, 30);
+                    resolve();
+                };
+                img.onerror = () => resolve();
+            });
+        } catch (e) {}
+
+        doc.setTextColor(doradoUCMI[0], doradoUCMI[1], doradoUCMI[2]);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 48, 22);
+        doc.setFontSize(24);
+        doc.text("UCMI", 48, 34);
+
+        let y = 62;
+        doc.setTextColor(azulUCMI[0], azulUCMI[1], azulUCMI[2]);
+        doc.setFontSize(18);
+        doc.text("Comprobante de solicitud", 105, y, { align: "center" });
+
+        y += 13;
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100);
+        const folio = `REF-${Date.now().toString().slice(-6)}`;
+        doc.text(`Folio: ${folio} | Fecha: ${d.timestamp.toLocaleString()}`, 105, y, { align: "center" });
+
+        y += 15;
+        const renderSection = (titulo, lineas) => {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(azulUCMI[0], azulUCMI[1], azulUCMI[2]);
+            doc.text(titulo, marginX, y);
+            y += 2;
+            doc.setLineWidth(0.2);
+            doc.setDrawColor(200);
+            doc.line(marginX, y, 190, y);
+            y += 7;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.setTextColor(0);
+            lineas.forEach(l => {
+                doc.text(l, marginX + 5, y);
+                y += 6;
+            });
+            y += 6;
+        };
+
+        renderSection("I. DATOS DEL POSTULANTE", [
+            `Nombre Responsable: ${d.nombreResponsable.toUpperCase()}`,
+            `Identificación (ID): ${d.cedulaResponsable}`,
+            `Fecha de Nacimiento: ${d.fechaNacimiento}`
+        ]);
+
+        renderSection("II. INFORMACIÓN DE CONTACTO", [
+            `Correo: ${d.email}`,
+            `WhatsApp: ${d.whatsapp}`,
+            `Ubicación: ${d.ubicacion}`
+        ]);
+
+        if (d.nombreRepresentante) {
+            renderSection("III. REPRESENTACIÓN LEGAL", [
+                `Nombre: ${d.nombreRepresentante}`,
+                `ID Representante: ${d.cedulaRepresentante}`,
+                `Contacto: ${d.whatsappRepresentante}`
+            ]);
+        }
+
+        renderSection("IV. GESTIÓN ACADÉMICA", [
+            `Perfil: ${d.perfil}`,
+            `Institución: ${d.entidad}`,
+            `Vigencia: ${d.mesesLicencia} meses`
+        ]);
+
+        renderSection("V. DETALLES FINANCIEROS", [
+            `Cupos: ${d.cupos}`,
+            `Inversión total: $${d.inversionTotal} USD`,
+            `Estado: PENDIENTE DE VALIDACIÓN`
+        ]);
+
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text("Documento oficial emitido por el sistema UCMI.", 105, 280, { align: "center" });
+
+        window.open(doc.output('bloburl'), '_blank');
+    }
 </script>
 </body>
 </html>
