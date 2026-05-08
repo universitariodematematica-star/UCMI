@@ -114,8 +114,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
+    
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
         authDomain: "ucmi-13796634.firebaseapp.com",
@@ -138,45 +137,39 @@ onSnapshot(query(collection(db, "ofertas"), where("ofertado", "==", true), order
     snap.forEach(docSnap => {
         const d = docSnap.data();
         // Mantenemos tus clases col-4 y check-modulo intactas
-        contenedor.innerHTML += `<div class="col-4 small"><input type="checkbox" class="check-modulo" value="${d.modulo}" onchange="fn_CalcularInversion()"> ${d.modulo}</div>`;
+        contenedor.innerHTML += `
+    <div class="col-4 small">
+        <input type="checkbox" class="check-modulo" value="${d.modulo}" onchange="fn_CalcularInversion()"> 
+        ${d.modulo}
+    </div>`;
     });
 });
 
-    window.fn_CalcularInversion = () => {
+window.fn_CalcularInversion = () => {
     const p = document.getElementById('perfilUsuario').value;
-    // Usamos || 0 para evitar errores si el campo está vacío
-    const x = parseInt(document.getElementById('cuposInput').value) || 0;
     const t = parseInt(document.getElementById('planLicencia').value) || 0;
     const n = document.querySelectorAll('.check-modulo:checked').length;
     
     let total = 0;
 
-    // Solo calculamos si hay tiempo y perfil seleccionados
-    if (t > 0 && p !== "") {
-        // CORRECCIÓN: Aseguramos que la operación (t-1) ocurra antes del multiplicador 0.15
+    // Si no hay meses o no hay módulos marcados, el costo siempre será 0
+    if (t > 0 && n > 0) {
         const ft = 0.7 + (0.3 / (1 + (0.15 * (t - 1))));
 
         if (p === 'Estudiante UCMI') {
-            // Lógica por módulos para estudiantes
+            // Precio base según cantidad de módulos seleccionados
             let pb = n === 1 ? 10 : n === 2 ? 18 : n === 3 ? 24 : n >= 4 ? 28 : 0;
             total = pb * t * ft;
         } else {
-            // Lógica por cupos para Academia y Profesor Independiente
+            // Lógica para Academia/Profesor (usa cupos)
+            const x = parseInt(document.getElementById('cuposInput').value) || 0;
             if (x > 0) {
-                let ix = 0;
-                if (x <= 10) {
-                    ix = 10 * x * (1 - (x - 1) / 90);
-                } else if (x <= 50) {
-                    ix = 10 * x * (1 - (10 + 0.5 * (x - 10)) / 100);
-                } else {
-                    ix = (5 * x) + 100;
-                }
+                let ix = x <= 10 ? 10 * x * (1 - (x - 1) / 90) : x <= 50 ? 10 * x * (1 - (10 + 0.5 * (x - 10)) / 100) : (5 * x) + 100;
                 total = ix * t * ft;
             }
         }
     }
-
-    // Mostramos 0.00 si no se cumplen las condiciones, o el total calculado
+    
     document.getElementById('displayInversion').innerText = total.toFixed(2);
 };
     window.fn_AjustarPerfil = () => {
