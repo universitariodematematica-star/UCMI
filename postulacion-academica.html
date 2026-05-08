@@ -114,7 +114,8 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    
+    import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
         authDomain: "ucmi-13796634.firebaseapp.com",
@@ -127,51 +128,43 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Asegúrate de agregar orderBy en la línea de importaciones de firestore
-import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-// Y cambia la consulta así:
-onSnapshot(query(collection(db, "ofertas"), where("ofertado", "==", true), orderBy("modulo", "asc")), (snap) => {
-    const contenedor = document.getElementById('contenedorModulos');
-    contenedor.innerHTML = "";
-    snap.forEach(docSnap => {
-        const d = docSnap.data();
-        // Mantenemos tus clases col-4 y check-modulo intactas
-        contenedor.innerHTML += `
-    <div class="col-4 small">
-        <input type="checkbox" class="check-modulo" value="${d.modulo}" onchange="fn_CalcularInversion()"> 
-        ${d.modulo}
-    </div>`;
+    // Carga de módulos dinámica
+    onSnapshot(query(collection(db, "ofertas"), where("ofertado", "==", true), orderBy("modulo", "asc")), (snap) => {
+        const contenedor = document.getElementById('contenedorModulos');
+        contenedor.innerHTML = "";
+        snap.forEach(docSnap => {
+            const d = docSnap.data();
+            contenedor.innerHTML += `
+            <div class="col-4 small">
+                <input type="checkbox" class="check-modulo" value="${d.modulo}" onchange="fn_CalcularInversion()"> 
+                ${d.modulo}
+            </div>`;
+        });
     });
-});
 
-window.fn_CalcularInversion = () => {
-    const p = document.getElementById('perfilUsuario').value;
-    const t = parseInt(document.getElementById('planLicencia').value) || 0;
-    const n = document.querySelectorAll('.check-modulo:checked').length;
-    
-    let total = 0;
+    // Lógica de cálculo
+    window.fn_CalcularInversion = () => {
+        const p = document.getElementById('perfilUsuario').value;
+        const t = parseInt(document.getElementById('planLicencia').value) || 0;
+        const n = document.querySelectorAll('.check-modulo:checked').length;
+        let total = 0;
 
-    // Si no hay meses o no hay módulos marcados, el costo siempre será 0
-    if (t > 0 && n > 0) {
-        const ft = 0.7 + (0.3 / (1 + (0.15 * (t - 1))));
-
-        if (p === 'Estudiante UCMI') {
-            // Precio base según cantidad de módulos seleccionados
-            let pb = n === 1 ? 10 : n === 2 ? 18 : n === 3 ? 24 : n >= 4 ? 28 : 0;
-            total = pb * t * ft;
-        } else {
-            // Lógica para Academia/Profesor (usa cupos)
-            const x = parseInt(document.getElementById('cuposInput').value) || 0;
-            if (x > 0) {
-                let ix = x <= 10 ? 10 * x * (1 - (x - 1) / 90) : x <= 50 ? 10 * x * (1 - (10 + 0.5 * (x - 10)) / 100) : (5 * x) + 100;
-                total = ix * t * ft;
+        if (t > 0 && n > 0) {
+            const ft = 0.7 + (0.3 / (1 + (0.15 * (t - 1))));
+            if (p === 'Estudiante UCMI') {
+                let pb = n === 1 ? 10 : n === 2 ? 18 : n === 3 ? 24 : n >= 4 ? 28 : 0;
+                total = pb * t * ft;
+            } else {
+                const x = parseInt(document.getElementById('cuposInput').value) || 0;
+                if (x > 0) {
+                    let ix = x <= 10 ? 10 * x * (1 - (x - 1) / 90) : x <= 50 ? 10 * x * (1 - (10 + 0.5 * (x - 10)) / 100) : (5 * x) + 100;
+                    total = ix * t * ft;
+                }
             }
         }
-    }
-    
-    document.getElementById('displayInversion').innerText = total.toFixed(2);
-};
+        document.getElementById('displayInversion').innerText = total.toFixed(2);
+    };
+
     window.fn_AjustarPerfil = () => {
         const p = document.getElementById('perfilUsuario').value;
         const c = document.getElementById('cuposInput');
@@ -189,137 +182,97 @@ window.fn_CalcularInversion = () => {
         document.getElementById('bloqueRepresentante').style.display = edad < 18 ? 'block' : 'none';
     };
 
+    // ENVÍO DE FORMULARIO - UNIFICADO
     document.getElementById('formUCMI').addEventListener('submit', async (e) => {
         e.preventDefault();
         const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(m => m.value);
+        
         if(!e.target.checkValidity() || modulos.length === 0) {
             Swal.fire("Error", "Completa todos los datos y selecciona al menos un módulo", "error");
             return;
         }
 
+        // CREACIÓN DEL OBJETO CON LOS NOMBRES CORRECTOS
         const payload = {
-            nombre: document.getElementById('nombreInput').value,
-            dni: document.getElementById('dniInput').value,
+            nombreResponsable: document.getElementById('nombreInput').value,
+            cedulaResponsable: document.getElementById('dniInput').value,
+            mesesLicencia: document.getElementById('planLicencia').value,
             fechaNacimiento: document.getElementById('fechaNacimientoInput').value,
             genero: document.getElementById('generoInput').value,
             email: document.getElementById('emailInput').value,
             whatsapp: document.getElementById('whatsappInput').value,
             ubicacion: document.getElementById('ubicacionInput').value,
             perfil: document.getElementById('perfilUsuario').value,
-            meses: document.getElementById('planLicencia').value,
             cupos: document.getElementById('cuposInput').value,
             entidad: document.getElementById('nombreInstitucion').value || "Particular",
             total: document.getElementById('displayInversion').innerText,
-            modulos,
+            modulos: modulos,
             timestamp: new Date()
         };
 
         try {
+            // Guardar en Firestore
             await addDoc(collection(db, "postulaciones"), payload);
+            
+            // Generar PDF usando el mismo objeto
             fn_GenerarPDF(payload);
+
             Swal.fire("¡Listo!", "Tu postulación ha sido enviada con éxito.", "success");
             e.target.reset();
-        } catch(err) { Swal.fire("Error", "Hubo un problema al conectar con el servidor.", "error"); }
+            document.getElementById('displayInversion').innerText = "0.00";
+        } catch(err) { 
+            console.error(err);
+            Swal.fire("Error", "Hubo un problema al conectar con el servidor.", "error"); 
+        }
     });
 
-    async function procesarRegistro() {
-    // 1. Capturamos los datos con los NUEVOS nombres que pide el Panel
-    const datosPostulacion = {
-        entidad: document.getElementById('entidad').value,
-        nombreResponsable: document.getElementById('nombreResponsable').value, // Antes 'nombre'
-        cedulaResponsable: document.getElementById('cedulaResponsable').value,    // Antes 'dni'
-        email: document.getElementById('email').value,
-        whatsapp: document.getElementById('whatsapp').value,
-        ubicacion: document.getElementById('ubicacion').value,
-        perfil: document.getElementById('perfil').value,
-        mesesLicencia: document.getElementById('mesesLicencia').value,      // Antes 'meses'
-        cupos: document.getElementById('cupos').value,
-        modulos: obtenerModulosSeleccionados(), // Tu función que saca los checks
-        total: document.getElementById('totalInversion').innerText,
-        timestamp: new Date()
-    };
+    // FUNCIÓN PDF (Mantenida dentro del módulo para que sea accesible)
+    function fn_GenerarPDF(d) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const imgLogo = new Image();
+        imgLogo.crossOrigin = "Anonymous";
+        imgLogo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png';
 
-    try {
-        // 2. Guardar en Firebase
-        await db.collection("postulaciones").add(datosPostulacion);
-        
-        // 3. Emitir el PDF (Usando los nuevos nombres)
-        fn_GenerarPDF(datosPostulacion);
+        imgLogo.onload = function() {
+            doc.setFillColor(26, 42, 58);
+            doc.rect(0, 0, 210, 45, 'F');
+            doc.addImage(imgLogo, 'PNG', 10, 5, 30, 30);
+            doc.setTextColor(197, 160, 89);
+            doc.setFontSize(14); doc.setFont("helvetica", "bold");
+            doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 120, 20, { align: "center" });
+            doc.setFontSize(22); doc.text("UCMI", 120, 35, { align: "center" });
 
-        alert("Postulación enviada con éxito");
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
+            doc.setTextColor(26, 42, 58);
+            doc.setFontSize(16); doc.text("COMPROBANTE DE REGISTRO", 105, 60, { align: "center" });
 
-// --- FUNCIÓN DEL PDF CORREGIDA Y ACTUALIZADA ---
-function fn_GenerarPDF(d) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    const imgLogo = new Image();
-    imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png';
+            doc.setTextColor(0); doc.setFontSize(10);
+            let y = 75;
+            const row = (label, value) => {
+                doc.setFont("helvetica", "bold"); doc.text(label, 20, y);
+                doc.setFont("helvetica", "normal"); doc.text(String(value || 'N/A'), 85, y);
+                y += 8;
+            };
 
-    imgLogo.onload = function() {
-        // Franja Azul
-        doc.setFillColor(26, 42, 58);
-        doc.rect(0, 0, 210, 45, 'F');
-        
-        doc.addImage(imgLogo, 'PNG', 10, 5, 30, 30);
-        
-        // Texto en Dorado
-        doc.setTextColor(197, 160, 89);
-        doc.setFontSize(14);
-        doc.setFont("helvetica", "bold");
-        doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 120, 20, { align: "center" });
+            row("Postulante:", d.nombreResponsable.toUpperCase());
+            row("ID (Cédula/RIF):", d.cedulaResponsable);
+            row("Correo:", d.email);
+            row("WhatsApp:", d.whatsapp);
+            row("Ubicación:", d.ubicacion);
+            row("Perfil Académico:", d.perfil);
+            row("Licencia:", d.mesesLicencia + " meses");
+            row("Entidad:", d.entidad);
+            
+            y += 10;
+            doc.setFillColor(245, 245, 245);
+            doc.rect(20, y, 170, 15, 'F');
+            doc.setFontSize(12); doc.setFont("helvetica", "bold");
+            doc.setTextColor(26, 42, 58);
+            doc.text(`INVERSIÓN TOTAL ESTIMADA: $${d.total} USD`, 105, y + 10, { align: "center" });
 
-        doc.setFontSize(22);
-        doc.text("UCMI", 120, 35, { align: "center" });
-
-        // Título en Azul fuera de la franja
-        doc.setTextColor(26, 42, 58);
-        doc.setFontSize(16);
-        doc.text("COMPROBANTE DE REGISTRO", 105, 60, { align: "center" });
-
-        // Datos del Cuerpo (Usando las nuevas variables)
-        doc.setTextColor(0); 
-        doc.setFontSize(10);
-        let y = 75;
-
-        const row = (label, value) => {
-            doc.setFont("helvetica", "bold");
-            doc.text(label, 20, y);
-            doc.setFont("helvetica", "normal");
-            doc.text(String(value || 'N/A'), 75, y);
-            y += 8;
+            window.open(doc.output('bloburl'), '_blank');
         };
-
-        row("Postulante:", d.nombreResponsable.toUpperCase()); // CAMBIADO
-        row("ID (Cédula/RIF):", d.cedulaResponsable);          // CAMBIADO
-        row("Correo:", d.email);
-        row("WhatsApp:", d.whatsapp);
-        row("Ubicación:", d.ubicacion);
-        row("Perfil Académico:", d.perfil);
-        row("Licencia:", d.mesesLicencia + " meses");          // CAMBIADO
-        row("Entidad:", d.entidad);
-        
-        // Recuadro de Inversión
-        y += 10;
-        doc.setFillColor(245, 245, 245);
-        doc.rect(20, y, 170, 15, 'F');
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(26, 42, 58);
-        doc.text(`INVERSIÓN TOTAL ESTIMADA: $${d.total} USD`, 105, y + 10, { align: "center" });
-
-        window.open(doc.output('bloburl'), '_blank');
-    };
-
-    imgLogo.onerror = function() {
-        alert("Error al generar PDF: No se pudo cargar el logo.");
-    };
-}
+    }
 </script>
 </body>
 </html>
