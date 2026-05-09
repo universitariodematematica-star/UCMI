@@ -143,12 +143,34 @@
             <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 3</h1>
         </div>
         <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
-            <div class="seccion-titulo">1. Datos de Identidad</div>
+<div class="seccion-titulo">1. Datos de Identidad</div>
             <div class="row g-3">
-                <div class="col-md-6"><label class="form-label">Nombre Responsable:</label><input type="text" id="nombreInput" class="form-control" required autocomplete="off"></div>
-                <div class="col-md-6"><label class="form-label">ID (Cédula/RIF):</label><input type="text" id="dniInput" class="form-control" required autocomplete="off"></div>
-                <div class="col-md-6"><label class="form-label">Fecha de Nacimiento:</label><input type="date" id="fechaNacimientoInput" class="form-control" required onchange="fn_VerificarEdad()"></div>
-                <div class="col-md-6"><label class="form-label">Género:</label><select id="generoInput" class="form-select" required><option value="">Selecciona...</option><option value="Masculino">Masculino</option><option value="Femenino">Femenino</option></select></div>
+                <div class="col-md-6">
+                    <label class="form-label">Nombre del Aspirante:</label>
+                    <input type="text" id="nombreInput" class="form-control" required placeholder="Ej: Juan Carlos Riera">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">ID (Cédula/DNI):</label>
+                    <input type="text" id="dniInput" class="form-control" required placeholder="Nro. de Identidad">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Fecha de Nacimiento:</label>
+                    <input type="date" id="fechaNacimientoInput" class="form-control" required onchange="fn_VerificarEdad()">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Género:</label>
+                    <select id="generoInput" class="form-select" required>
+                        <option value="">Selecciona...</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+            </div>
+                <div id="seccionMenor" class="col-12 d-none">
+                    <hr class="border-secondary">
+                    <p class="text-warning mb-0"><i class="bi bi-exclamation-triangle"></i> <strong>Aspirante menor de edad:</strong> Requiere autorización del representante legal.</p>
+                </div>
             </div>
 
             <div class="seccion-titulo">2. Contacto</div>
@@ -270,9 +292,8 @@
     };
 
 // --- 4. LÓGICA DE PREVISUALIZACIÓN Y ENVÍO FINAL ---
-    let datosTemporales = null; // Variable global para guardar los datos antes de confirmar
+    let datosTemporales = null; 
 
-    // 4.1. Captura inicial (Botón Enviar del formulario)
     document.getElementById('formUCMI').addEventListener('submit', (e) => {
         e.preventDefault();
         const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(m => m.value);
@@ -289,7 +310,6 @@
             return;
         }
 
-        // Preparamos el payload (objeto de datos)
         datosTemporales = {
             nombreResponsable: document.getElementById('nombreInput').value,
             cedulaResponsable: document.getElementById('dniInput').value,
@@ -308,55 +328,50 @@
             modulos: modulos
         };
 
-        // Inyectamos el resumen en el Modal
+        const hoy = new Date();
+        const cumple = new Date(datosTemporales.fechaNacimiento);
+        let edad = hoy.getFullYear() - cumple.getFullYear();
+        if (hoy.getMonth() < cumple.getMonth() || (hoy.getMonth() === cumple.getMonth() && hoy.getDate() < cumple.getDate())) edad--;
+
         document.getElementById('previewContent').innerHTML = `
             <div class="p-3" style="background: rgba(255,255,255,0.05); border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.2);">
                 <p><strong>Aspirante:</strong> ${datosTemporales.nombreResponsable.toUpperCase()}</p>
                 <p><strong>ID:</strong> ${datosTemporales.cedulaResponsable}</p>
                 <p><strong>Perfil:</strong> ${datosTemporales.perfil}</p>
-                <p><strong>Ubicación:</strong> ${datosTemporales.ubicacion}</p>
+                <p><strong>WhatsApp:</strong> ${datosTemporales.whatsapp}</p>
                 <p><strong>Módulos:</strong> ${datosTemporales.modulos.join(', ')}</p>
                 <p><strong>Licencia:</strong> ${datosTemporales.mesesLicencia} meses (${datosTemporales.cupos} cupos)</p>
+                ${edad < 18 ? `<p class="text-warning small"><i class="bi bi-exclamation-triangle"></i> Menor de edad - Rep: ${datosTemporales.repNombre}</p>` : ''}
                 <hr style="border-color: var(--dorado-ucmi)">
                 <h4 class="text-center mt-3" style="color: var(--dorado-ucmi)">Total: $${datosTemporales.total} USD</h4>
             </div>
         `;
 
-        // Abrimos el modal de previsualización
         const myModal = new bootstrap.Modal(document.getElementById('modalPreview'));
         myModal.show();
     });
 
-    // 4.2. Confirmación Final (Botón Verde Neón)
     document.getElementById('confirmarEnvio').addEventListener('click', async () => {
         try {
-            // Deshabilitar botón para evitar doble envío
             const btnConfirmar = document.getElementById('confirmarEnvio');
             btnConfirmar.disabled = true;
             btnConfirmar.innerText = "PROCESANDO...";
 
-            // 1. Guardar en Firebase
             await addDoc(collection(db, "postulaciones"), {
                 ...datosTemporales,
                 timestamp: new Date()
             });
             
-            // 2. Generar y abrir PDF
             fn_GenerarPDF(datosTemporales);
 
-            // 3. Cerrar Modal
-            const modalEl = document.getElementById('modalPreview');
-            const modalInstance = bootstrap.Modal.getInstance(modalEl);
-            modalInstance.hide();
+            bootstrap.Modal.getInstance(document.getElementById('modalPreview')).hide();
 
-            // 4. Éxito y Limpieza
             Swal.fire({
                 title: "¡Postulación Enviada!",
-                text: "Los datos se guardaron y tu PDF se ha generado correctamente.",
+                text: "Registro exitoso para ${datosTemporales.perfil}. Se ha generado su comprobante PDF.",
                 icon: "success",
                 background: "#1a2a3a",
-                color: "#ffffff",
-                confirmButtonColor: "#28a745"
+                color: "#ffffff"
             });
 
             document.getElementById('formUCMI').reset();
@@ -365,7 +380,13 @@
 
         } catch(err) { 
             console.error(err);
-            Swal.fire({ title: "Error", text: "No se pudo conectar con Firebase.", icon: "error" });
+            Swal.fire({ title: "Error", text: "Fallo al guardar en base de datos.", icon: "error" });
+        } finally {
+            const btn = document.getElementById('confirmarEnvio');
+            btn.disabled = false;
+            btn.innerText = "CONFIRMAR Y ENVIAR";
+        }
+    });
         } finally {
             const btnConfirmar = document.getElementById('confirmarEnvio');
             btnConfirmar.disabled = false;
