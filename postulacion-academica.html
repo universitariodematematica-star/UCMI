@@ -74,6 +74,55 @@
         .costo-monto { color: var(--dorado-ucmi); font-size: 1.8rem; font-weight: 800; }
         .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 12px; border: none; width: 100%; margin-top: 20px; transition: 0.3s; }
         .btn-enviar:hover { transform: scale(1.02); filter: brightness(1.1); }
+
+        /* --- ESTILOS NEÓN PARA PREVISUALIZACIÓN --- */
+        .btn-neon-red {
+            background: transparent;
+            border: 2px solid #ff003c;
+            color: #ff003c !important;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 0, 60, 0.2);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+        }
+        .btn-neon-red:hover {
+            background: #ff003c;
+            color: white !important;
+            box-shadow: 0 0 20px #ff003c, 0 0 40px rgba(255, 0, 60, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-neon-green {
+            background: transparent;
+            border: 2px solid #00ff94;
+            color: #00ff94 !important;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 148, 0.2);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+        }
+        .btn-neon-green:hover {
+            background: #00ff94;
+            color: #06090f !important; /* Color oscuro para contraste */
+            box-shadow: 0 0 20px #00ff94, 0 0 40px rgba(0, 255, 148, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Estilo para el contenedor de texto dentro del modal */
+        #previewContent p {
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 4px;
+        }
+        
     </style>
 </head>
 <body>
@@ -208,8 +257,11 @@
         document.getElementById('bloqueRepresentante').style.display = edad < 18 ? 'block' : 'none';
     };
 
-    // 4. Manejo del Envío del Formulario
-    document.getElementById('formUCMI').addEventListener('submit', async (e) => {
+// --- 4. LÓGICA DE PREVISUALIZACIÓN Y ENVÍO FINAL ---
+    let datosTemporales = null; // Variable global para guardar los datos antes de confirmar
+
+    // 4.1. Captura inicial (Botón Enviar del formulario)
+    document.getElementById('formUCMI').addEventListener('submit', (e) => {
         e.preventDefault();
         const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(m => m.value);
         
@@ -225,7 +277,8 @@
             return;
         }
 
-        const payload = {
+        // Preparamos el payload (objeto de datos)
+        datosTemporales = {
             nombreResponsable: document.getElementById('nombreInput').value,
             cedulaResponsable: document.getElementById('dniInput').value,
             fechaNacimiento: document.getElementById('fechaNacimientoInput').value,
@@ -240,41 +293,71 @@
             cupos: document.getElementById('cuposInput').value,
             entidad: document.getElementById('nombreInstitucion').value || "Particular",
             total: document.getElementById('displayInversion').innerText,
-            modulos: modulos,
-            timestamp: new Date()
+            modulos: modulos
         };
 
-        try {
-            await addDoc(collection(db, "postulaciones"), payload);
-            
-            // Generar PDF con toda la información
-            fn_GenerarPDF(payload);
+        // Inyectamos el resumen en el Modal
+        document.getElementById('previewContent').innerHTML = `
+            <div class="p-3" style="background: rgba(255,255,255,0.05); border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.2);">
+                <p><strong>Aspirante:</strong> ${datosTemporales.nombreResponsable.toUpperCase()}</p>
+                <p><strong>ID:</strong> ${datosTemporales.cedulaResponsable}</p>
+                <p><strong>Perfil:</strong> ${datosTemporales.perfil}</p>
+                <p><strong>Ubicación:</strong> ${datosTemporales.ubicacion}</p>
+                <p><strong>Módulos:</strong> ${datosTemporales.modulos.join(', ')}</p>
+                <p><strong>Licencia:</strong> ${datosTemporales.mesesLicencia} meses (${datosTemporales.cupos} cupos)</p>
+                <hr style="border-color: var(--dorado-ucmi)">
+                <h4 class="text-center mt-3" style="color: var(--dorado-ucmi)">Total: $${datosTemporales.total} USD</h4>
+            </div>
+        `;
 
-            // Alerta personalizada UCMI
+        // Abrimos el modal de previsualización
+        const myModal = new bootstrap.Modal(document.getElementById('modalPreview'));
+        myModal.show();
+    });
+
+    // 4.2. Confirmación Final (Botón Verde Neón)
+    document.getElementById('confirmarEnvio').addEventListener('click', async () => {
+        try {
+            // Deshabilitar botón para evitar doble envío
+            const btnConfirmar = document.getElementById('confirmarEnvio');
+            btnConfirmar.disabled = true;
+            btnConfirmar.innerText = "PROCESANDO...";
+
+            // 1. Guardar en Firebase
+            await addDoc(collection(db, "postulaciones"), {
+                ...datosTemporales,
+                timestamp: new Date()
+            });
+            
+            // 2. Generar y abrir PDF
+            fn_GenerarPDF(datosTemporales);
+
+            // 3. Cerrar Modal
+            const modalEl = document.getElementById('modalPreview');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            modalInstance.hide();
+
+            // 4. Éxito y Limpieza
             Swal.fire({
-                title: "¡Postulación Exitosa!",
-                text: "Los datos han sido registrados y su comprobante se ha generado.",
+                title: "¡Postulación Enviada!",
+                text: "Los datos se guardaron y tu PDF se ha generado correctamente.",
                 icon: "success",
                 background: "#1a2a3a",
                 color: "#ffffff",
-                confirmButtonColor: "#28a745",
-                confirmButtonText: "Entendido"
+                confirmButtonColor: "#28a745"
             });
 
-            e.target.reset();
+            document.getElementById('formUCMI').reset();
             document.getElementById('displayInversion').innerText = "0.00";
             document.getElementById('bloqueRepresentante').style.display = 'none';
-            
+
         } catch(err) { 
             console.error(err);
-            Swal.fire({
-                title: "Error",
-                text: "No se pudo procesar el registro. Verifique su conexión.",
-                icon: "error",
-                background: "#1a2a3a",
-                color: "#ffffff",
-                confirmButtonColor: "#d33"
-            });
+            Swal.fire({ title: "Error", text: "No se pudo conectar con Firebase.", icon: "error" });
+        } finally {
+            const btnConfirmar = document.getElementById('confirmarEnvio');
+            btnConfirmar.disabled = false;
+            btnConfirmar.innerText = "CONFIRMAR Y ENVIAR";
         }
     });
 
@@ -354,5 +437,29 @@
         };
     }
 </script>
+
+<!-- PASO 1: Modal de Previsualización (CÓDIGO NUEVO) -->
+    <div class="modal fade" id="modalPreview" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content card-form" style="background: rgba(10, 15, 25, 0.95); border: 1px solid var(--dorado-ucmi);">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="inst-titulo" style="font-size: 1.5rem;">Resumen de Postulación</h5>
+                </div>
+                <div class="modal-body text-white" id="previewContent">
+                    <!-- Aquí se inyectará el resumen con JS -->
+                </div>
+                <div class="modal-footer border-0 d-flex justify-content-between">
+                    <button type="button" class="btn-neon-red" data-bs-dismiss="modal">CORREGIR DATOS</button>
+                    <button type="button" id="confirmarEnvio" class="btn-neon-green">CONFIRMAR Y ENVIAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de Firebase y Lógica -->
+    <script type="module">
+        // ... (aquí iría tu JavaScript)
+    </script>
+    
 </body>
 </html>
