@@ -358,11 +358,11 @@
         <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
             <label class="small text-muted fw-bold mb-2 d-block text-uppercase" style="letter-spacing: 1px;">Filtrar por Perfil</label>
             <select id="filtroPerfil" class="form-select bg-dark text-white border-0 rounded-pill px-3 shadow-sm">
-    <option value="todos">Mostrar todos</option>
-    <option value="academia">Academias</option>
-    <option value="profesor">Profesores (Asoc / Embaj / Acad)</option>
-    <option value="estudiante">Estudiantes (UCMI / Acad / Asoc / Embaj)</option>
-</select>
+                <option value="todos">Mostrar todos</option>
+                <option value="Academia">Academia</option>
+                <option value="Profesor independiente">Profesor independiente</option>
+                <option value="Estudiante UCMI">Estudiante UCMI</option>
+            </select>
         </div>
     </div>
 </div>
@@ -495,27 +495,24 @@ function renderizarTabla() {
         const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
         const pLow = perfilOriginal.toLowerCase().trim();
 
-        // --- 1. MOTOR DE BÚSQUEDA ---
+        // --- 1. MOTOR DE BÚSQUEDA ACTUALIZADO ---
         let pasaFiltro = false;
         if (valorFiltro === "todos") {
             pasaFiltro = true;
-        } else if (valorFiltro === "academia" && pLow.includes("academia")) {
-            pasaFiltro = true;
-        } else if (valorFiltro === "profesor" && (pLow.includes("profesor") || pLow.includes("embajador") || pLow.includes("asociado"))) {
-            pasaFiltro = true;
-        } else if (valorFiltro === "estudiante" && (pLow.includes("estudiante") || pLow.includes("alumno") || pLow.includes("ucmi") || pLow.includes("autodidacta"))) {
-            pasaFiltro = true;
+        } else {
+            // Compara el valor del selector directamente con el perfil almacenado
+            pasaFiltro = (perfilOriginal === valorFiltro);
         }
-
+        
         if (!pasaFiltro) return;
 
-        // --- 2. MOTOR DE COLOR ---
+        // --- 2. MOTOR DE COLOR ACTUALIZADO ---
         let colorClass = "";
-        if (pLow === "academia") {
+        if (perfilOriginal === "Academia") {
             colorClass = "bg-categoria-academia";
-        } else if (pLow.includes("profesor") || pLow.includes("embajador") || pLow.includes("asociado")) {
+        } else if (perfilOriginal === "Profesor independiente") {
             colorClass = "bg-categoria-profesor";
-        } else if (pLow.includes("estudiante") || pLow.includes("alumno") || pLow.includes("ucmi") || pLow.includes("autodidacta")) {
+        } else if (perfilOriginal === "Estudiante UCMI") {
             colorClass = "bg-categoria-estudiante";
         } else {
             colorClass = "bg-categoria-default";
