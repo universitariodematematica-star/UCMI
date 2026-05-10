@@ -57,7 +57,7 @@
     <div class="card-form">
         <div class="header-institucional">
             <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" alt="Logo UCMI" class="inst-logo">
-            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA - VERSIÓN 3-1</h1>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA - VERSIÓN 4-1</h1>
         </div>
         <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
             <div class="seccion-titulo">1. Datos de Identidad</div>
@@ -248,10 +248,22 @@ window.fn_CalcularInversion = () => {
             return;
         }
 
-        datosPayload = {
+datosPayload = {
             nombreResponsable: document.getElementById('nombreInput').value,
             cedulaResponsable: document.getElementById('dniInput').value,
+            fechaNacimiento: document.getElementById('fechaNacimientoInput').value,
+            genero: document.getElementById('generoInput').value,
+            email: document.getElementById('emailInput').value,
+            whatsapp: document.getElementById('whatsappInput').value,
+            ubicacion: document.getElementById('ubicacionInput').value,
+            repNombre: document.getElementById('repNombre').value || "N/A",
+            repCedula: document.getElementById('repCedula').value || "N/A",
+            repEmail: document.getElementById('repEmail').value || "N/A",
+            repWhatsapp: document.getElementById('repWhatsapp').value || "N/A",
             perfil: document.getElementById('perfilUsuario').value,
+            entidad: document.getElementById('nombreInstitucion').value || "N/A",
+            licencia: document.getElementById('planLicencia').value,
+            cupos: document.getElementById('cuposInput').value,
             total: document.getElementById('displayInversion').innerText,
             modulos: modulos,
             timestamp: new Date()
@@ -301,19 +313,92 @@ ${document.getElementById('bloqueRepresentante').style.display === 'block' ? `
     document.getElementById('btnConfirmarFinal').addEventListener('click', async () => {
         try {
             await addDoc(collection(db, "postulaciones"), datosPayload);
-            fn_GenerarPDF(datosPayload);
+fn_GenerarPDF(datosPayload);
             Swal.fire({ title: "¡Éxito!", text: "Postulación registrada.", icon: "success" });
             location.reload();
         } catch(err) { Swal.fire({ title: "Error", text: "Falló la conexión.", icon: "error" }); }
     });
 
     function fn_GenerarPDF(d) {
-        const doc = new jspdf.jsPDF();
-        doc.setFontSize(18); doc.text("COMPROBANTE UCMI", 105, 20, { align: "center" });
-        doc.setFontSize(12); doc.text(`Postulante: ${d.nombreResponsable}`, 20, 40);
-        doc.text(`ID: ${d.cedulaResponsable}`, 20, 50);
-        doc.text(`Inversión Total: $${d.total} USD`, 20, 60);
-        doc.save(`UCMI_${d.cedulaResponsable}.pdf`);
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const imgLogo = new Image();
+        imgLogo.crossOrigin = "Anonymous";
+        imgLogo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png';
+
+        imgLogo.onload = function() {
+            // Cabecera Institucional
+            doc.setFillColor(26, 42, 58); doc.rect(0, 0, 210, 45, 'F');
+            doc.addImage(imgLogo, 'PNG', 10, 5, 30, 30);
+            doc.setTextColor(197, 160, 89);
+            doc.setFontSize(14); doc.setFont("helvetica", "bold");
+            doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 120, 20, { align: "center" });
+            doc.setFontSize(22); doc.text("UCMI", 120, 35, { align: "center" });
+
+            // Título del Documento
+            doc.setTextColor(26, 42, 58); doc.setFontSize(16);
+            doc.text("COMPROBANTE OFICIAL DE REGISTRO", 105, 60, { align: "center" });
+
+            doc.setTextColor(0); doc.setFontSize(9);
+            let y = 75;
+            const row = (label, value) => {
+                doc.setFont("helvetica", "bold"); doc.text(label, 20, y);
+                doc.setFont("helvetica", "normal"); doc.text(String(value || 'N/A'), 70, y);
+                y += 7;
+            };
+
+            // Sección 1: Postulante
+            doc.setFontSize(11); doc.setFont("helvetica", "bold");
+            doc.text("1. INFORMACIÓN DEL POSTULANTE", 20, y); y += 5;
+            doc.line(20, y, 190, y); y += 7;
+
+            row("Nombre Completo:", d.nombreResponsable.toUpperCase());
+            row("ID (Cédula/RIF):", d.cedulaResponsable);
+            row("WhatsApp:", d.whatsapp);
+            row("Correo:", d.email);
+
+            // Sección Representante (Si existe)
+            if(d.repNombre !== "N/A" && d.repNombre !== "") {
+                y += 5;
+                doc.setTextColor(150, 0, 0);
+                doc.text("REPRESENTANTE LEGAL", 20, y); y += 7;
+                doc.setTextColor(0);
+                row("Nombre Rep.:", d.repNombre);
+                row("WhatsApp Rep.:", d.repWhatsapp);
+                row("Correo Rep.:", d.repEmail);
+            }
+
+            // Sección 2: Detalles Académicos
+            y += 5;
+            doc.setFontSize(11); doc.setFont("helvetica", "bold");
+            doc.text("2. DETALLES ACADÉMICOS Y LICENCIA", 20, y); y += 5;
+            doc.line(20, y, 190, y); y += 7;
+
+            row("Perfil Seleccionado:", d.perfil);
+            row("Institución / Entidad:", d.entidad);
+            row("Duración Licencia:", d.licencia + " meses");
+            row("Cupos Asignados:", d.cupos);
+            
+            doc.setFont("helvetica", "bold"); doc.text("Módulos:", 20, y);
+            const modSplit = doc.splitTextToSize(d.modulos.join(", "), 120);
+            doc.setFont("helvetica", "normal"); doc.text(modSplit, 70, y);
+            y += (modSplit.length * 7) + 5;
+
+            // Cuadro de Inversión Final
+            doc.setFillColor(245, 245, 245); doc.rect(20, y, 170, 15, 'F');
+            doc.setFontSize(12); doc.setFont("helvetica", "bold");
+            doc.setTextColor(26, 42, 58);
+            doc.text(`INVERSIÓN TOTAL ESTIMADA: $${d.total} USD`, 105, y + 10, { align: "center" });
+
+            // Abrir en nueva pestaña
+            window.open(doc.output('bloburl'), '_blank');
+        };
+
+        imgLogo.onerror = () => {
+            console.error("Error cargando el logo.");
+            doc.text("COMPROBANTE OFICIAL UCMI", 105, 20, { align: "center" });
+            doc.save(`UCMI_${d.cedulaResponsable}.pdf`);
+        };
     }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
