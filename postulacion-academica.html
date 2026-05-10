@@ -57,7 +57,7 @@
     <div class="card-form">
         <div class="header-institucional">
             <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" alt="Logo UCMI" class="inst-logo">
-            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA - VERSIÓN 4-1</h1>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA - VERSIÓN 5-1</h1>
         </div>
         <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
             <div class="seccion-titulo">1. Datos de Identidad</div>
@@ -327,7 +327,7 @@ fn_GenerarPDF(datosPayload);
         imgLogo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png';
 
         imgLogo.onload = function() {
-            // Cabecera Institucional
+            // 1. Cabecera Institucional
             doc.setFillColor(26, 42, 58); doc.rect(0, 0, 210, 45, 'F');
             doc.addImage(imgLogo, 'PNG', 10, 5, 30, 30);
             doc.setTextColor(197, 160, 89);
@@ -335,68 +335,84 @@ fn_GenerarPDF(datosPayload);
             doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 120, 20, { align: "center" });
             doc.setFontSize(22); doc.text("UCMI", 120, 35, { align: "center" });
 
-            // Título del Documento
+            // 2. Título del Documento
             doc.setTextColor(26, 42, 58); doc.setFontSize(16);
             doc.text("COMPROBANTE OFICIAL DE REGISTRO", 105, 60, { align: "center" });
 
             doc.setTextColor(0); doc.setFontSize(9);
             let y = 75;
-            const row = (label, value) => {
+
+            // Función auxiliar para filas
+            const row = (label, value, col2 = 75) => {
                 doc.setFont("helvetica", "bold"); doc.text(label, 20, y);
-                doc.setFont("helvetica", "normal"); doc.text(String(value || 'N/A'), 70, y);
+                doc.setFont("helvetica", "normal"); doc.text(String(value || 'N/A'), col2, y);
                 y += 7;
             };
 
-            // Sección 1: Postulante
+            // SECCIÓN 1: DATOS DE IDENTIDAD
             doc.setFontSize(11); doc.setFont("helvetica", "bold");
-            doc.text("1. INFORMACIÓN DEL POSTULANTE", 20, y); y += 5;
+            doc.text("1. DATOS DE IDENTIDAD", 20, y); y += 5;
             doc.line(20, y, 190, y); y += 7;
 
-            row("Nombre Completo:", d.nombreResponsable.toUpperCase());
+            row("Nombre Responsable:", d.nombreResponsable.toUpperCase());
             row("ID (Cédula/RIF):", d.cedulaResponsable);
-            row("WhatsApp:", d.whatsapp);
-            row("Correo:", d.email);
+            row("Fecha de Nacimiento:", d.fechaNacimiento);
+            row("Género:", d.genero);
 
-            // Sección Representante (Si existe)
+            // SECCIÓN 2: CONTACTO
+            y += 5;
+            doc.setFontSize(11); doc.setFont("helvetica", "bold");
+            doc.text("2. CONTACTO", 20, y); y += 5;
+            doc.line(20, y, 190, y); y += 7;
+
+            row("Correo:", d.email);
+            row("WhatsApp:", d.whatsapp);
+            row("Ubicación:", d.ubicacion);
+
+            // SECCIÓN 3: REPRESENTANTE LEGAL (Solo si no es N/A)
             if(d.repNombre !== "N/A" && d.repNombre !== "") {
                 y += 5;
                 doc.setTextColor(150, 0, 0);
-                doc.text("REPRESENTANTE LEGAL", 20, y); y += 7;
-                doc.setTextColor(0);
+                doc.setFontSize(11);
+                doc.text("3. INFORMACIÓN DEL REPRESENTANTE LEGAL", 20, y); y += 5;
+                doc.line(20, y, 190, y); y += 7;
+                doc.setTextColor(0); doc.setFontSize(9);
+
                 row("Nombre Rep.:", d.repNombre);
-                row("WhatsApp Rep.:", d.repWhatsapp);
+                row("ID Rep.:", d.repCedula);
                 row("Correo Rep.:", d.repEmail);
+                row("WhatsApp Rep.:", d.repWhatsapp);
             }
 
-            // Sección 2: Detalles Académicos
+            // SECCIÓN 4: MÓDULOS Y LICENCIA
             y += 5;
             doc.setFontSize(11); doc.setFont("helvetica", "bold");
-            doc.text("2. DETALLES ACADÉMICOS Y LICENCIA", 20, y); y += 5;
+            doc.text("4. MÓDULOS Y LICENCIA", 20, y); y += 5;
             doc.line(20, y, 190, y); y += 7;
 
-            row("Perfil Seleccionado:", d.perfil);
-            row("Institución / Entidad:", d.entidad);
-            row("Duración Licencia:", d.licencia + " meses");
-            row("Cupos Asignados:", d.cupos);
+            row("Perfil:", d.perfil);
+            row("Entidad:", d.entidad);
+            row("Licencia:", d.licencia + " meses");
+            row("Cupos:", d.cupos);
             
             doc.setFont("helvetica", "bold"); doc.text("Módulos:", 20, y);
-            const modSplit = doc.splitTextToSize(d.modulos.join(", "), 120);
-            doc.setFont("helvetica", "normal"); doc.text(modSplit, 70, y);
+            const modSplit = doc.splitTextToSize(d.modulos.join(", "), 115);
+            doc.setFont("helvetica", "normal"); doc.text(modSplit, 75, y);
             y += (modSplit.length * 7) + 5;
 
-            // Cuadro de Inversión Final
+            // CUADRO FINAL DE INVERSIÓN
+            y += 5;
             doc.setFillColor(245, 245, 245); doc.rect(20, y, 170, 15, 'F');
             doc.setFontSize(12); doc.setFont("helvetica", "bold");
             doc.setTextColor(26, 42, 58);
             doc.text(`INVERSIÓN TOTAL ESTIMADA: $${d.total} USD`, 105, y + 10, { align: "center" });
 
-            // Abrir en nueva pestaña
+            // Salida
             window.open(doc.output('bloburl'), '_blank');
         };
 
         imgLogo.onerror = () => {
-            console.error("Error cargando el logo.");
-            doc.text("COMPROBANTE OFICIAL UCMI", 105, 20, { align: "center" });
+            doc.text("Error al cargar logo. Comprobante UCMI generado.", 20, 20);
             doc.save(`UCMI_${d.cedulaResponsable}.pdf`);
         };
     }
