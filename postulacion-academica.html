@@ -219,81 +219,151 @@ window.fn_CalcularInversion = () => {
     }
 };
 
-    // Envío y PDF
+// 4. Manejo del Envío del Formulario (CON CORRECCIÓN DE PAYLOAD)
     let datosPayload = null;
+
     document.getElementById('formUCMI').addEventListener('submit', (e) => {
         e.preventDefault();
         const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(m => m.value);
+        
         if(!e.target.checkValidity() || modulos.length === 0) {
-            Swal.fire({ title: "Error", text: "Completa los datos y elige al menos un módulo.", icon: "error" });
+            Swal.fire({ title: "Atención", text: "Completa los datos y elige al menos un módulo.", icon: "warning", background: "#1a2a3a", color: "#ffffff" });
             return;
         }
 
+        // Armamos el objeto exacto que requiere el PDF detallado
         datosPayload = {
             nombreResponsable: document.getElementById('nombreInput').value,
             cedulaResponsable: document.getElementById('dniInput').value,
+            fechaNacimiento: document.getElementById('fechaNacimientoInput').value,
+            genero: document.getElementById('generoInput').value,
+            email: document.getElementById('emailInput').value,
+            whatsapp: document.getElementById('whatsappInput').value,
+            ubicacion: document.getElementById('ubicacionInput').value,
+            repNombre: document.getElementById('repNombre').value || "N/A",
+            repCedula: document.getElementById('repCedula').value || "N/A",
             perfil: document.getElementById('perfilUsuario').value,
+            mesesLicencia: document.getElementById('planLicencia').value,
+            cupos: document.getElementById('cuposInput').value,
+            entidad: document.getElementById('nombreInstitucion').value || "Particular",
             total: document.getElementById('displayInversion').innerText,
             modulos: modulos,
             timestamp: new Date()
         };
 
-// Capturamos los nombres de los módulos seleccionados para listarlos
-const nombresModulos = datosPayload.modulos.join(", ");
-const entidad = document.getElementById('nombreInstitucion').value || "N/A";
-
-document.getElementById('resumenModal').innerHTML = `
-    <div style="border-bottom: 1px solid rgba(197,160,89,0.2); padding-bottom: 10px; margin-bottom: 10px;">
-        <p><strong><i class="bi bi-person-fill"></i> Postulante:</strong> ${datosPayload.nombreResponsable.toUpperCase()}</p>
-        <p><strong><i class="bi bi-card-text"></i> ID/Cédula:</strong> ${document.getElementById('dniInput').value}</p>
-        <p><strong><i class="bi bi-calendar-event"></i> Fecha de Nacimiento:</strong> ${document.getElementById('fechaNacimientoInput').value}</p>
-        <p><strong><i class="bi bi-gender-ambiguous"></i> Género:</strong> ${document.getElementById('generoInput').value}</p>
-    </div>
-
-    <div style="border-bottom: 1px solid rgba(197,160,89,0.2); padding-bottom: 10px; margin-bottom: 10px;">
-        <p><strong><i class="bi bi-envelope-at"></i> Correo:</strong> ${document.getElementById('emailInput').value}</p>
-        <p><strong><i class="bi bi-whatsapp"></i> WhatsApp:</strong> ${document.getElementById('whatsappInput').value}</p>
-        <p><strong><i class="bi bi-geo-alt"></i> Ubicación:</strong> ${document.getElementById('ubicacionInput').value}</p>
-    </div>
-
-    ${document.getElementById('bloqueRepresentante').style.display === 'block' ? `
-    <div style="border-bottom: 1px solid rgba(255,0,0,0.2); padding-bottom: 10px; margin-bottom: 10px; color: #ffcccc;">
-        <p><strong><i class="bi bi-shield-shaded"></i> Representante:</strong> ${document.getElementById('repNombre').value}</p>
-        <p><strong><i class="bi bi-id-card"></i> ID Representante:</strong> ${document.getElementById('repCedula').value}</p>
-    </div>` : ''}
-
-    <div style="background: rgba(197,160,89,0.1); padding: 10px; border-radius: 10px;">
-        <p><strong><i class="bi bi-building"></i> Entidad:</strong> ${entidad}</p>
-        <p><strong><i class="bi bi-briefcase"></i> Perfil:</strong> ${datosPayload.perfil}</p>
-        <p><strong><i class="bi bi-layers"></i> Módulos (${datosPayload.modulos.length}):</strong> <span class="small" style="color: #ddd;">${nombresModulos}</span></p>
-        <p><strong><i class="bi bi-calendar-check"></i> Licencia:</strong> ${document.getElementById('planLicencia').value} meses</p>
-        <p><strong><i class="bi bi-people"></i> Cupos:</strong> ${document.getElementById('cuposInput').value}</p>
-        <hr style="border-color: var(--dorado-ucmi)">
-        <p style="font-size: 1.2rem; color: var(--dorado-ucmi); text-align: center; margin: 0;">
-            <strong>Total a Invertir: $${datosPayload.total} USD</strong>
-        </p>
-    </div>
-`;
+        // Llenar el modal de revisión (Resumen visual)
+        const nombresModulos = datosPayload.modulos.join(", ");
+        document.getElementById('resumenModal').innerHTML = `
+            <div style="font-size: 0.9rem; border-bottom: 1px solid rgba(197,160,89,0.2); padding-bottom: 10px;">
+                <p><strong>Postulante:</strong> ${datosPayload.nombreResponsable.toUpperCase()}</p>
+                <p><strong>Correo:</strong> ${datosPayload.email}</p>
+                <p><strong>Perfil:</strong> ${datosPayload.perfil}</p>
+                <p><strong>Licencia:</strong> ${datosPayload.mesesLicencia} meses | <strong>Cupos:</strong> ${datosPayload.cupos}</p>
+                <p><strong>Módulos:</strong> <span class="small text-secondary">${nombresModulos}</span></p>
+                <hr>
+                <p class="text-center" style="font-size: 1.2rem; color: var(--dorado-ucmi);"><strong>Total: $${datosPayload.total} USD</strong></p>
+            </div>`;
         
         new bootstrap.Modal(document.getElementById('modalConfirmacion')).show();
     });
 
+    // Botón final dentro del Modal
     document.getElementById('btnConfirmarFinal').addEventListener('click', async () => {
         try {
             await addDoc(collection(db, "postulaciones"), datosPayload);
-            fn_GenerarPDF(datosPayload);
-            Swal.fire({ title: "¡Éxito!", text: "Postulación registrada.", icon: "success" });
-            location.reload();
-        } catch(err) { Swal.fire({ title: "Error", text: "Falló la conexión.", icon: "error" }); }
+            fn_GenerarPDF(datosPayload); // Llamamos al PDF detallado
+            Swal.fire({ title: "¡Éxito!", text: "Postulación registrada y comprobante generado.", icon: "success", background: "#1a2a3a", color: "#ffffff" });
+            setTimeout(() => location.reload(), 2000);
+        } catch(err) { 
+            Swal.fire({ title: "Error", text: "No se pudo conectar con Firebase.", icon: "error" }); 
+        }
     });
 
+// 5. Función de Generación de PDF Detallado (ESTILO UCMI)
     function fn_GenerarPDF(d) {
-        const doc = new jspdf.jsPDF();
-        doc.setFontSize(18); doc.text("COMPROBANTE UCMI", 105, 20, { align: "center" });
-        doc.setFontSize(12); doc.text(`Postulante: ${d.nombreResponsable}`, 20, 40);
-        doc.text(`ID: ${d.cedulaResponsable}`, 20, 50);
-        doc.text(`Inversión Total: $${d.total} USD`, 20, 60);
-        doc.save(`UCMI_${d.cedulaResponsable}.pdf`);
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const imgLogo = new Image();
+        imgLogo.crossOrigin = "Anonymous";
+        imgLogo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png';
+
+        imgLogo.onload = function() {
+            // Cabecera institucional
+            doc.setFillColor(26, 42, 58); // Azul UCMI
+            doc.rect(0, 0, 210, 45, 'F');
+            doc.addImage(imgLogo, 'PNG', 15, 5, 30, 30);
+            
+            doc.setTextColor(197, 160, 89); // Dorado UCMI
+            doc.setFontSize(14); doc.setFont("helvetica", "bold");
+            doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 125, 20, { align: "center" });
+            doc.setFontSize(22); doc.text("UCMI", 125, 35, { align: "center" });
+
+            doc.setTextColor(26, 42, 58);
+            doc.setFontSize(16); doc.text("COMPROBANTE OFICIAL DE REGISTRO", 105, 60, { align: "center" });
+
+            doc.setTextColor(0); doc.setFontSize(9);
+            let y = 75;
+
+            const row = (label, value) => {
+                doc.setFont("helvetica", "bold"); doc.text(label, 20, y);
+                doc.setFont("helvetica", "normal"); doc.text(String(value || 'N/A'), 75, y);
+                y += 7;
+            };
+
+            // SECCIÓN 1
+            doc.setFontSize(11); doc.setFont("helvetica", "bold");
+            doc.text("1. INFORMACIÓN DEL POSTULANTE", 20, y); y += 5;
+            doc.line(20, y, 190, y); y += 7;
+
+            row("Nombre Completo:", d.nombreResponsable.toUpperCase());
+            row("ID (Cédula/RIF):", d.cedulaResponsable);
+            row("Fecha de Nacimiento:", d.fechaNacimiento);
+            row("Correo Electrónico:", d.email);
+            row("WhatsApp:", d.whatsapp);
+            row("Ubicación:", d.ubicacion);
+            
+            if(d.repNombre !== "N/A" && d.repNombre !== "") {
+                y += 3;
+                doc.setFont("helvetica", "bold"); doc.text("REPRESENTANTE LEGAL:", 20, y);
+                doc.setFont("helvetica", "normal"); doc.text(`${d.repNombre} (${d.repCedula})`, 75, y);
+                y += 7;
+            }
+
+            // SECCIÓN 2
+            y += 5;
+            doc.setFontSize(11); doc.setFont("helvetica", "bold");
+            doc.text("2. DETALLES DE LICENCIA Y MÓDULOS", 20, y); y += 5;
+            doc.line(20, y, 190, y); y += 7;
+
+            row("Perfil:", d.perfil);
+            row("Institución:", d.entidad);
+            row("Duración:", d.mesesLicencia + " meses");
+            row("Cupos:", d.cupos);
+            
+            // Tratamiento de módulos para que no se salgan de la hoja
+            doc.setFont("helvetica", "bold"); doc.text("Módulos:", 20, y);
+            const modulosTxt = Array.isArray(d.modulos) ? d.modulos.join(", ") : d.modulos;
+            const splitModulos = doc.splitTextToSize(modulosTxt, 115);
+            doc.setFont("helvetica", "normal");
+            doc.text(splitModulos, 75, y);
+            y += (splitModulos.length * 7);
+
+            // TOTAL
+            y += 10;
+            doc.setFillColor(245, 245, 245);
+            doc.rect(20, y, 170, 15, 'F');
+            doc.setDrawColor(197, 160, 89);
+            doc.rect(20, y, 170, 15, 'D');
+            doc.setFontSize(12); doc.setFont("helvetica", "bold");
+            doc.text(`INVERSIÓN TOTAL ESTIMADA: $${d.total} USD`, 105, y + 10, { align: "center" });
+
+            window.open(doc.output('bloburl'), '_blank');
+        };
+
+        imgLogo.onerror = () => {
+            alert("El registro fue exitoso, pero el logo no pudo cargarse en el PDF.");
+            // Opcional: Generar PDF básico aquí
+        };
     }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
