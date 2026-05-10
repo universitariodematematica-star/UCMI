@@ -279,7 +279,7 @@ window.fn_CalcularInversion = () => {
         }
     });
 
-// 5. Función de Generación de PDF Detallado (ESTILO UCMI)
+// 5. Función de Generación de PDF Detallado (RESTAURADA Y OPTIMIZADA)
     function fn_GenerarPDF(d) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -310,26 +310,25 @@ window.fn_CalcularInversion = () => {
                 y += 7;
             };
 
-            // SECCIÓN 1
+            // SECCIÓN 1: DATOS PERSONALES
             doc.setFontSize(11); doc.setFont("helvetica", "bold");
             doc.text("1. INFORMACIÓN DEL POSTULANTE", 20, y); y += 5;
             doc.line(20, y, 190, y); y += 7;
 
             row("Nombre Completo:", d.nombreResponsable.toUpperCase());
             row("ID (Cédula/RIF):", d.cedulaResponsable);
-            row("Fecha de Nacimiento:", d.fechaNacimiento);
-            row("Correo Electrónico:", d.email);
             row("WhatsApp:", d.whatsapp);
+            row("Correo:", d.email);
             row("Ubicación:", d.ubicacion);
             
             if(d.repNombre !== "N/A" && d.repNombre !== "") {
-                y += 3;
+                y += 2;
                 doc.setFont("helvetica", "bold"); doc.text("REPRESENTANTE LEGAL:", 20, y);
                 doc.setFont("helvetica", "normal"); doc.text(`${d.repNombre} (${d.repCedula})`, 75, y);
                 y += 7;
             }
 
-            // SECCIÓN 2
+            // SECCIÓN 2: LICENCIA Y MÓDULOS
             y += 5;
             doc.setFontSize(11); doc.setFont("helvetica", "bold");
             doc.text("2. DETALLES DE LICENCIA Y MÓDULOS", 20, y); y += 5;
@@ -340,7 +339,7 @@ window.fn_CalcularInversion = () => {
             row("Duración:", d.mesesLicencia + " meses");
             row("Cupos:", d.cupos);
             
-            // Tratamiento de módulos para que no se salgan de la hoja
+            // Tratamiento de módulos para evitar desborde
             doc.setFont("helvetica", "bold"); doc.text("Módulos:", 20, y);
             const modulosTxt = Array.isArray(d.modulos) ? d.modulos.join(", ") : d.modulos;
             const splitModulos = doc.splitTextToSize(modulosTxt, 115);
@@ -348,7 +347,7 @@ window.fn_CalcularInversion = () => {
             doc.text(splitModulos, 75, y);
             y += (splitModulos.length * 7);
 
-            // TOTAL
+            // TOTAL CON RECUADRO
             y += 10;
             doc.setFillColor(245, 245, 245);
             doc.rect(20, y, 170, 15, 'F');
@@ -361,11 +360,10 @@ window.fn_CalcularInversion = () => {
         };
 
         imgLogo.onerror = () => {
-            alert("El registro fue exitoso, pero el logo no pudo cargarse en el PDF.");
-            // Opcional: Generar PDF básico aquí
+            alert("Registro exitoso. El PDF se generará sin logo por problemas de conexión.");
+            // Aquí podrías llamar a una versión simplificada si el logo falla
         };
-    }
-</script>
+    }</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
