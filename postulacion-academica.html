@@ -180,13 +180,10 @@ window.fn_CalcularInversion = () => {
     let ahorro = 0;
 
     if (t > 0 && n > 0) {
-        // 1. Calculamos el Precio Base Teórico (Sin descuentos por tiempo ni perfil)
-        // Usamos un precio estándar de $10 por módulo/mes para la comparación
-        const precioBaseTeorico = 10 * n * t * (p === 'Estudiante UCMI' ? 1 : x);
-        
-        // 2. Aplicamos tu Algoritmo de Regresión
+        // 1. Algoritmo de Regresión de Tiempo (ft)
         const ft = 0.7 + (0.3 / (1 + (0.15 * (t - 1))));
         
+        // 2. Cálculo del Total según Perfil
         if (p === 'Estudiante UCMI') {
             let pb = n === 1 ? 10 : n === 2 ? 18 : n === 3 ? 24 : n >= 4 ? 28 : 0;
             total = pb * t * ft;
@@ -195,17 +192,28 @@ window.fn_CalcularInversion = () => {
             total = ix * t * ft;
         }
 
-        // 3. Calculamos el porcentaje de ahorro real
-        if (precioBaseTeorico > total) {
-            ahorro = ((precioBaseTeorico - total) / precioBaseTeorico) * 100;
+        // 3. Cálculo de Ahorro Lógico (Comparado con precio base de mercado de $10/cupo/mes)
+        // Referencia: Lo que pagaría cualquier entidad fuera de la red UCMI
+        const precioReferencia = (p === 'Estudiante UCMI') ? 10 * n * t : 10 * x * t;
+        
+        if (precioReferencia > 0 && total > 0) {
+            ahorro = ((precioReferencia - total) / precioReferencia) * 100;
         }
+
+        // 4. Límites de seguridad para realismo comercial
+        if (p !== 'Estudiante UCMI' && ahorro > 50) ahorro = 50;
+        if (p === 'Estudiante UCMI' && ahorro > 70) ahorro = 70;
     }
 
-    // Mostramos los resultados
+    // Actualización de la interfaz
     document.getElementById('displayInversion').innerText = total.toFixed(2);
     const badgeAhorro = document.getElementById('badgeAhorro');
-    if (ahorro > 0) {
-        badgeAhorro.innerHTML = `<span class="badge bg-success">¡Ahorras un ${ahorro.toFixed(0)}%!</span>`;
+    
+    if (ahorro > 5 && total > 0) {
+        badgeAhorro.innerHTML = `
+            <span class="badge bg-success" style="font-size: 0.9rem; padding: 8px 15px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                <i class="bi bi-piggy-bank-fill me-1"></i> ¡Ahorras un ${ahorro.toFixed(0)}%!
+            </span>`;
     } else {
         badgeAhorro.innerHTML = "";
     }
