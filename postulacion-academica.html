@@ -75,11 +75,25 @@
                 <div class="col-md-4"><label class="form-label">Ubicación:</label><input type="text" id="ubicacionInput" class="form-control" required></div>
             </div>
 
-            <div id="bloqueRepresentante" class="mt-4" style="display:none">
-                <div class="seccion-titulo text-danger">3. Representante Legal</div>
+<div id="bloqueRepresentante" class="mt-4" style="display:none">
+                <div class="seccion-titulo text-danger">3. Información del Representante Legal</div>
                 <div class="row g-3">
-                    <div class="col-md-6"><input type="text" id="repNombre" class="form-control" placeholder="Nombre Rep."></div>
-                    <div class="col-md-6"><input type="text" id="repCedula" class="form-control" placeholder="ID Rep."></div>
+                    <div class="col-md-6">
+                        <label class="form-label text-danger">Nombre del Representante:</label>
+                        <input type="text" id="repNombre" class="form-control" placeholder="Nombre y Apellido">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-danger">ID del Representante:</label>
+                        <input type="text" id="repCedula" class="form-control" placeholder="Cédula/RIF">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-danger">Correo del Representante:</label>
+                        <input type="email" id="repEmail" class="form-control" placeholder="ejemplo@correo.com">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-danger">WhatsApp del Representante:</label>
+                        <input type="tel" id="repWhatsapp" class="form-control" placeholder="Número de contacto">
+                    </div>
                 </div>
             </div>
 
@@ -157,11 +171,16 @@
     });
 
     // Lógica Global
-    window.fn_VerificarEdad = () => {
+window.fn_VerificarEdad = () => {
         const f = document.getElementById('fechaNacimientoInput').value;
         if(!f) return;
         const edad = new Date().getFullYear() - new Date(f).getFullYear();
-        document.getElementById('bloqueRepresentante').style.display = edad < 18 ? 'block' : 'none';
+        const esMenor = edad < 18;
+        document.getElementById('bloqueRepresentante').style.display = esMenor ? 'block' : 'none';
+        
+        // Control de obligatoriedad
+        const ids = ['repNombre', 'repCedula', 'repEmail', 'repWhatsapp'];
+        ids.forEach(id => document.getElementById(id).required = esMenor);
     };
 
     window.fn_AjustarPerfil = () => {
@@ -255,11 +274,12 @@ document.getElementById('resumenModal').innerHTML = `
         <p><strong><i class="bi bi-whatsapp"></i> WhatsApp:</strong> ${document.getElementById('whatsappInput').value}</p>
         <p><strong><i class="bi bi-geo-alt"></i> Ubicación:</strong> ${document.getElementById('ubicacionInput').value}</p>
     </div>
-
-    ${document.getElementById('bloqueRepresentante').style.display === 'block' ? `
-    <div style="border-bottom: 1px solid rgba(255,0,0,0.2); padding-bottom: 10px; margin-bottom: 10px; color: #ffcccc;">
+    
+${document.getElementById('bloqueRepresentante').style.display === 'block' ? `
+    <div style="border-bottom: 1px solid rgba(255,0,0,0.2); padding-bottom: 10px; margin-bottom: 10px; color: #ffcccc; font-size: 0.85rem;">
         <p><strong><i class="bi bi-shield-shaded"></i> Representante:</strong> ${document.getElementById('repNombre').value}</p>
-        <p><strong><i class="bi bi-id-card"></i> ID Representante:</strong> ${document.getElementById('repCedula').value}</p>
+        <p><strong><i class="bi bi-envelope"></i> Correo Rep:</strong> ${document.getElementById('repEmail').value}</p>
+        <p><strong><i class="bi bi-whatsapp"></i> WhatsApp Rep:</strong> ${document.getElementById('repWhatsapp').value}</p>
     </div>` : ''}
 
     <div style="background: rgba(197,160,89,0.1); padding: 10px; border-radius: 10px;">
