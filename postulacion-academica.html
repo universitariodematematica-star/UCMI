@@ -57,7 +57,7 @@
     <div class="card-form">
         <div class="header-institucional">
             <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" alt="Logo UCMI" class="inst-logo">
-            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA - VERSIÓN 5-1</h1>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA - VERSIÓN 5-2</h1>
         </div>
         <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
             <div class="seccion-titulo">1. Datos de Identidad</div>
@@ -256,10 +256,10 @@ datosPayload = {
             email: document.getElementById('emailInput').value,
             whatsapp: document.getElementById('whatsappInput').value,
             ubicacion: document.getElementById('ubicacionInput').value,
-            repNombre: document.getElementById('repNombre').value || "N/A",
-            repCedula: document.getElementById('repCedula').value || "N/A",
-            repEmail: document.getElementById('repEmail').value || "N/A",
-            repWhatsapp: document.getElementById('repWhatsapp').value || "N/A",
+            repNombre: document.getElementById('repNombre').value.trim() || "N/A",
+            repCedula: document.getElementById('repCedula').value.trim() || "N/A",
+            repEmail: document.getElementById('repEmail').value.trim() || "N/A",
+            repWhatsapp: document.getElementById('repWhatsapp').value.trim() || "N/A",
             perfil: document.getElementById('perfilUsuario').value,
             entidad: document.getElementById('nombreInstitucion').value || "N/A",
             licencia: document.getElementById('planLicencia').value,
@@ -314,7 +314,7 @@ ${document.getElementById('bloqueRepresentante').style.display === 'block' ? `
         try {
             await addDoc(collection(db, "postulaciones"), datosPayload);
 fn_GenerarPDF(datosPayload);
-            Swal.fire({ title: "¡Éxito!", text: "Postulación registrada.", icon: "success" });
+            await Swal.fire({ title: "¡Éxito!", text: "Postulación registrada. El comprobante se abrirá en una nueva pestaña.", icon: "success", confirmButtonColor: "#c5a059" });
             location.reload();
         } catch(err) { Swal.fire({ title: "Error", text: "Falló la conexión.", icon: "error" }); }
     });
@@ -370,7 +370,7 @@ fn_GenerarPDF(datosPayload);
             row("Ubicación:", d.ubicacion);
 
             // SECCIÓN 3: REPRESENTANTE LEGAL (Solo si no es N/A)
-            if(d.repNombre !== "N/A" && d.repNombre !== "") {
+            if(d.repNombre && d.repNombre !== "N/A") {
                 y += 5;
                 doc.setTextColor(150, 0, 0);
                 doc.setFontSize(11);
@@ -378,10 +378,10 @@ fn_GenerarPDF(datosPayload);
                 doc.line(20, y, 190, y); y += 7;
                 doc.setTextColor(0); doc.setFontSize(9);
 
-                row("Nombre Rep.:", d.repNombre);
-                row("ID Rep.:", d.repCedula);
-                row("Correo Rep.:", d.repEmail);
-                row("WhatsApp Rep.:", d.repWhatsapp);
+                row("Nombre Rep.:", (d.repNombre || "N/A").toUpperCase());
+                row("ID Rep.:", (d.repCedula || "N/A"));
+                row("Correo Rep.:", (d.repEmail || "N/A").toLowerCase());
+                row("WhatsApp Rep.:", (d.repWhatsapp || "N/A"));
             }
 
             // SECCIÓN 4: MÓDULOS Y LICENCIA
