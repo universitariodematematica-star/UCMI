@@ -57,7 +57,7 @@
     <div class="card-form">
         <div class="header-institucional">
             <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" alt="Logo UCMI" class="inst-logo">
-            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 3</h1>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA 5</h1>
         </div>
         <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
             <div class="seccion-titulo">1. Datos de Identidad</div>
@@ -102,8 +102,12 @@
             </div>
 
             <div class="costo-display">
-                <div class="costo-monto">$ <span id="displayInversion">0.00</span> USD</div>
+                <div class="costo-monto">
+                    $ <span id="displayInversion">0.00</span> USD
+                </div>
+                <div id="badgeAhorro" class="mt-2"></div> 
             </div>
+            
             <button type="submit" id="btnSubmit" class="btn btn-enviar">ENVIAR POSTULACIÓN</button>
         </form>
     </div>
@@ -167,25 +171,53 @@
         fn_CalcularInversion();
     };
 
-    window.fn_CalcularInversion = () => {
-        const p = document.getElementById('perfilUsuario').value;
-        const t = parseInt(document.getElementById('planLicencia').value) || 0;
-        const n = document.querySelectorAll('.check-modulo:checked').length;
-        const x = parseInt(document.getElementById('cuposInput').value) || 0;
-        let total = 0;
+window.fn_CalcularInversion = () => {
+    const p = document.getElementById('perfilUsuario').value;
+    const t = parseInt(document.getElementById('planLicencia').value) || 0;
+    const n = document.querySelectorAll('.check-modulo:checked').length;
+    const x = parseInt(document.getElementById('cuposInput').value) || 0;
+    let total = 0;
+    let ahorro = 0;
 
-        if (t > 0 && n > 0) {
-            const ft = 0.7 + (0.3 / (1 + (0.15 * (t - 1))));
-            if (p === 'Estudiante UCMI') {
-                let pb = n === 1 ? 10 : n === 2 ? 18 : n === 3 ? 24 : n >= 4 ? 28 : 0;
-                total = pb * t * ft;
-            } else if (x > 0) {
-                let ix = x <= 10 ? 10 * x * (1 - (x - 1) / 90) : x <= 50 ? 10 * x * (1 - (10 + 0.5 * (x - 10)) / 100) : (5 * x) + 100;
-                total = ix * t * ft;
-            }
+    if (t > 0 && n > 0) {
+        // 1. Algoritmo de Regresión de Tiempo (ft)
+        const ft = 0.7 + (0.3 / (1 + (0.15 * (t - 1))));
+        
+        // 2. Cálculo del Total según Perfil
+        if (p === 'Estudiante UCMI') {
+            let pb = n === 1 ? 10 : n === 2 ? 18 : n === 3 ? 24 : n >= 4 ? 28 : 0;
+            total = pb * t * ft;
+        } else if (x > 0) {
+            let ix = x <= 10 ? 10 * x * (1 - (x - 1) / 90) : x <= 50 ? 10 * x * (1 - (10 + 0.5 * (x - 10)) / 100) : (5 * x) + 100;
+            total = ix * t * ft;
         }
-        document.getElementById('displayInversion').innerText = total.toFixed(2);
-    };
+
+        // 3. Cálculo de Ahorro Lógico (Comparado con precio base de mercado de $10/cupo/mes)
+        // Referencia: Lo que pagaría cualquier entidad fuera de la red UCMI
+        const precioReferencia = (p === 'Estudiante UCMI') ? 10 * n * t : 10 * x * t;
+        
+        if (precioReferencia > 0 && total > 0) {
+            ahorro = ((precioReferencia - total) / precioReferencia) * 100;
+        }
+
+        // 4. Límites de seguridad para realismo comercial
+        if (p !== 'Estudiante UCMI' && ahorro > 50) ahorro = 50;
+        if (p === 'Estudiante UCMI' && ahorro > 70) ahorro = 70;
+    }
+
+    // Actualización de la interfaz
+    document.getElementById('displayInversion').innerText = total.toFixed(2);
+    const badgeAhorro = document.getElementById('badgeAhorro');
+    
+    if (ahorro > 5 && total > 0) {
+        badgeAhorro.innerHTML = `
+            <span class="badge bg-success" style="font-size: 0.9rem; padding: 8px 15px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                <i class="bi bi-piggy-bank-fill me-1"></i> ¡Ahorras un ${ahorro.toFixed(0)}%!
+            </span>`;
+    } else {
+        badgeAhorro.innerHTML = "";
+    }
+};
 
     // Envío y PDF
     let datosPayload = null;
