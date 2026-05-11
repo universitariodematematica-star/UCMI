@@ -158,7 +158,7 @@
             <div class="col-md-2 sidebar d-none d-md-flex">
                 <div class="text-center mb-4">
                     <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" class="logo-sidebar" alt="Logo">
-                    <h5 class="fw-bold text-white small opacity-50">SISTEMA MAESTRO</h5>
+                       <h5 id="subtituloSidebar" class="fw-bold text-white small opacity-50">SISTEMA MAESTRO</h5>
                 </div>
                 
                 <nav class="nav flex-column mb-auto">
@@ -205,16 +205,15 @@
             <!-- CONTENIDO PRINCIPAL -->
             <div class="col-md-10 p-4">
                 <div class="text-center mb-5">
-                    <h1 class="fw-bold text-uppercase display-6"><i class="bi bi-journal-bookmark-fill me-3 text-glow-gold"></i>Repositorio Maestro</h1>
+                    <h1 id="repoTitulo" class="fw-bold text-uppercase display-6"><i class="bi bi-journal-bookmark-fill me-3 text-glow-gold"></i>Repositorio Maestro</h1>
                     <p class="text-white-50">Protocolos de Enseñanza Supralógica</p>
                 </div>
-
                 <div id="contenedorModulos" class="row g-4 mb-5">
-    <div class="text-center py-5">
-        <div class="spinner-border text-warning" role="status"></div>
-        <p class="mt-2 text-white-50 small">Sincronizando con el Repositorio Maestro...</p>
-    </div>
-</div>
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-warning" role="status"></div>
+                        <p class="mt-2 text-white-50 small">Sincronizando con el Repositorio Maestro...</p>
+                    </div>
+                </div>
 
                 <footer class="mt-5 text-center text-white-25 small">
                     UCMI — Desarrollo Humano y Excelencia Académica © 2026
@@ -241,29 +240,45 @@
                 const app = initializeApp(firebaseConfig);
                 const auth = getAuth(app);
                 const db = getFirestore(app);
-                const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
-                 
+                // Eliminamos la constante fija del Maestro para permitir multitenencia
+
                 onAuthStateChanged(auth, async (user) => {
-                if (!user || user.uid !== MI_UID_MAESTRO) { 
-                window.location.href = "index.html"; 
-                return;
-                }
+                if (user) {
+                // Si hay usuario, cargamos el repositorio usando SU propia UID
                 cargarModulosRepositorio(user.uid);
+                } else {
+                // Solo si no hay nadie logueado, mandamos al index
+                window.location.href = "index.html";
+                }
                 });
                  
                 async function cargarModulosRepositorio(uid) {
-                const docRef = doc(db, "academias", uid);
-                try {
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                renderizarGrid(docSnap.data().modulosAdquiridos || {}, uid);
-                } else {
-                document.getElementById('contenedorModulos').innerHTML = 
-                `<div class="text-center w-100"><p class="text-white-50">No hay módulos configurados en Firestore.</p></div>`;
-                }
-                } catch (error) {
-                console.error("Error cargando repositorio:", error);
-                }
+                    const docRef = doc(db, "academias", uid);
+                    try {
+                        const docSnap = await getDoc(docRef);
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            
+                            // 1. Actualización de textos
+                            document.getElementById('repoTitulo').innerText = data.nombreInstitucion || "Repositorio Maestro";
+                            document.getElementById('subtituloSidebar').innerText = data.nombreInstitucion ? `PANEL ${data.nombreInstitucion.toUpperCase()}` : "SISTEMA MAESTRO";
+                            
+                            // 2. Renderizado de módulos
+                            if (data.modulosAdquiridos && Object.keys(data.modulosAdquiridos).length > 0) {
+                                renderizarGrid(data.modulosAdquiridos, uid);
+                            } else {
+                                document.getElementById('contenedorModulos').innerHTML = 
+                                `<div class="text-center w-100"><p class="text-white-50">No hay módulos configurados en esta academia.</p></div>`;
+                            }
+                        } else {
+                            document.getElementById('contenedorModulos').innerHTML =
+                            `<div class="text-center w-100"><p class="text-white-50">La academia no existe en la base de datos.</p></div>`;
+                        }
+                    } catch (error) {
+                        console.error("Error cargando repositorio:", error);
+                        document.getElementById('contenedorModulos').innerHTML = 
+                        `<div class="text-center w-100"><p class="text-danger">Error de conexión con el servidor.</p></div>`;
+                    }
                 }
                  
                 function renderizarGrid(modulos, uid) {
@@ -291,20 +306,36 @@
                 card.querySelector('input').addEventListener('change', (e) => {
                 actualizarVisibilidad(uid, id, e.target.checked);
                 });
-                Linea 294->             
+         
                 container.appendChild(card);
                 });
                 }
                  
-                async function actualizarVisibilidad(uid, modId, estado) {
-                const ref = doc(db, "academias", uid);
-                try {
-                await updateDoc(ref, { [\`modulosAdquiridos.\${modId}.visible\`]: estado });
-                cargarModulosRepositorio(uid);
-                } catch (error) {
-                alert("Error al actualizar: " + error.message);
-                }
-                }
+async function actualizarVisibilidad(uid, modId, estado) {
+    const ref = doc(db, "academias", uid);
+    
+    // Referencia al badge y al texto para feedback inmediato
+    const switchInput = document.getElementById(`sw_${modId}`);
+    const card = switchInput.closest('.program-card');
+    const badge = card.querySelector('.status-badge');
+
+    try {
+        // 1. Actualización optimista: Cambiamos la UI antes de que responda el servidor
+        badge.className = `status-badge ${estado ? 'badge-visible' : 'badge-hidden'}`;
+        badge.innerText = estado ? 'ACTIVO' : 'OCULTO';
+
+        // 2. Ejecutamos la tarea en el servidor
+        await updateDoc(ref, { [`modulosAdquiridos.${modId}.visible`]: estado });
+        
+        console.log(`Módulo ${modId} actualizado a ${estado}`);
+    } catch (error) {
+        // 3. Reversión: Si falla el servidor, devolvemos el switch a su estado anterior
+        switchInput.checked = !estado;
+        badge.className = `status-badge ${!estado ? 'badge-visible' : 'badge-hidden'}`;
+        badge.innerText = !estado ? 'ACTIVO' : 'OCULTO';
+        alert("Error de conexión: No se pudo guardar el cambio.");
+    }
+}
                 
                 document.getElementById('btnLogoutSidebar').addEventListener('click', () => {
                 signOut(auth).then(() => { window.location.href = "index.html"; });
