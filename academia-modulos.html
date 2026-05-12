@@ -136,43 +136,48 @@
         .title-repo { font-weight: 900; font-size: 3.5rem; text-transform: uppercase; }
         .title-icon { color: var(--dorado-ucmi); filter: drop-shadow(0 0 15px rgba(197, 160, 89, 0.5)); }
         .subtitle-repo { color: rgba(255, 255, 255, 0.4); font-size: 1.1rem; letter-spacing: 4px; }
-
-        /* --- Tarjetas --- */
-        .module-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-
-        .card-module {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 40px;
-            text-align: center;
-            transition: all 0.5s ease;
-            position: relative;
-        }
-
-        .card-module:hover {
-            transform: translateY(-10px);
-            border-color: var(--dorado-ucmi);
-            background: rgba(255, 255, 255, 0.07);
-        }
-
-        .module-icon { font-size: 3.5rem; color: var(--dorado-ucmi); margin-bottom: 25px; }
-        .module-name { font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; }
-        .module-desc { font-size: 0.9rem; color: rgba(255, 255, 255, 0.5); }
-        
-        .badge-status {
-            position: absolute; top: 20px; right: 20px;
-            font-size: 0.65rem; font-weight: 900;
-            padding: 6px 14px; border-radius: 30px;
-            background: rgba(0, 242, 255, 0.1); color: var(--cian-tech);
-            border: 1px solid var(--cian-tech);
-        }
-
+/* --- Estilos de Lista y Switch UCMI --- */
+         .list-container {
+             display: flex;
+             flex-direction: column;
+             gap: 12px;
+             max-width: 950px;
+             margin: 0 auto;
+         }
+         .module-item {
+             background: rgba(255, 255, 255, 0.03);
+             border: 1px solid rgba(255, 255, 255, 0.08);
+             backdrop-filter: blur(15px);
+             border-radius: 16px;
+             padding: 15px 25px;
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             transition: all 0.3s ease;
+         }
+         .module-item:hover {
+             background: rgba(255, 255, 255, 0.07);
+             border-color: var(--cian-tech);
+             transform: translateX(8px);
+         }
+         .status-label {
+             font-size: 0.65rem;
+             font-weight: 800;
+             text-transform: uppercase;
+             margin-right: 15px;
+             letter-spacing: 1px;
+         }
+         .form-check-input {
+             width: 3.2em !important;
+             height: 1.6em !important;
+             cursor: pointer;
+         }
+         .form-check-input:checked {
+             background-color: var(--cian-tech) !important;
+             border-color: var(--cian-tech) !important;
+         }
+         .text-publico { color: var(--cian-tech); }
+         .text-oculto { color: rgba(255, 255, 255, 0.25); }
         .footer-system { margin-top: 100px; padding-bottom: 40px; text-align: center; opacity: 0.3; }
 
         @media (max-width: 768px) {
@@ -212,13 +217,13 @@
                 <header class="header-main">
                     <h1 class="title-repo">
                         <i class="bi bi-journal-bookmark-fill title-icon"></i>
-                        <span id="section-title">Cargando...5</span>
+                        <span id="section-title">Cargando...</span>
                     </h1>
                     <p class="subtitle-repo" id="section-subtitle">Sincronizando con Supralógica...</p>
                 </header>
 
                 <div id="dynamic-content">
-                    <div class="module-grid" id="modules-container">
+                    <div class="list-container" id="modules-container">
                         </div>
                 </div>
 
@@ -263,14 +268,22 @@
                     if (misModulos.length === 0) {
                         contenedor.innerHTML = '<p class="text-center opacity-50">No hay módulos registrados.</p>';
                     } else {
-                        contenedor.innerHTML = misModulos.map(nombre => `
-                            <article class="card-module">
-                                <div class="badge-status">ADQUIRIDO</div>
-                                <i class="bi bi-translate module-icon"></i>
-                                <h3 class="module-name">${nombre}</h3>
-                                <p class="module-desc">Programa oficial de nivelación UCMI.</p>
-                            </article>
-                        `).join('');
+                    contenedor.innerHTML = misModulos.map((nombre, index) => `
+                                                <div class="module-item">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="me-3 opacity-50"><i class="bi bi-stack"></i></div>
+                                                        <div><h3 class="m-0" style="font-size: 1rem;">${nombre}</h3></div>
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        <span id="label-${index}" class="status-label text-publico">Público</span>
+                                                        <div class="form-check form-switch m-0">
+                                                            <input class="form-check-input" type="checkbox" role="switch" 
+                                                                   id="switch-${index}" checked 
+                                                                   onchange="window.actualizarVisibilidad(${index})">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `).join('');
                     }
                 } else {
                     contenedor.innerHTML = `<p class="text-center opacity-50">Error: El usuario no existe en la base de datos.</p>`;
@@ -303,6 +316,18 @@
                     cargarDatos();
                 }
             });
+            // Lógica visual para los interruptores
+        window.actualizarVisibilidad = async (index) => {
+            const sw = document.getElementById(`switch-${index}`);
+            const label = document.getElementById(`label-${index}`);
+            
+            // Actualización visual
+            label.innerText = sw.checked ? "Público" : "Oculto";
+            label.className = sw.checked ? "status-label text-publico" : "status-label text-oculto";
+        
+            // Opcional: Aquí podrías disparar la actualización a la DB
+            // await updateDoc(doc(db, "usuarios", userId), { [`visibilidad.${index}`]: sw.checked });
+        };
         });
 
         // --- EJECUCIÓN INICIAL (Ahora sí funciona) ---
