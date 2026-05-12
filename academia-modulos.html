@@ -316,26 +316,38 @@
         });
     });
 
-    // --- 3. Función de Sincronización Global ---
+// --- 3. Función de Sincronización Global ---
     window.actualizarVisibilidad = async (index, nombreModulo) => {
         const sw = document.getElementById(`switch-${index}`);
         const label = document.getElementById(`label-${index}`);
         
+        // Log para depuración (mira esto en F12)
+        console.log("Intentando sincronizar ID:", userId);
+
         label.innerText = sw.checked ? "Público" : "Oculto";
         label.className = sw.checked ? "status-label text-publico" : "status-label text-oculto";
 
         try {
+            // Intentamos obtener la referencia. 
+            // Si el documento en Firestore se llama por el Email, 
+            // asegúrate de que 'userId' contenga el email.
             const userRef = doc(db, "usuarios", userId);
+            
             await updateDoc(userRef, {
                 [`modulos-ofertados-academia.${nombreModulo}`]: sw.checked
             });
+            
+            console.log("Sincronización Supralógica exitosa.");
         } catch (error) {
-            console.error("Error al guardar:", error);
-            sw.checked = !sw.checked; // Revertir visualmente
-            alert("Fallo al sincronizar.");
+            console.error("Error detallado:", error);
+            // Revertir el switch si falla
+            sw.checked = !sw.checked;
+            label.innerText = sw.checked ? "Público" : "Oculto";
+            label.className = sw.checked ? "status-label text-publico" : "status-label text-oculto";
+            
+            alert("Error de permisos: El ID '" + userId + "' no coincide con tu perfil o no tienes sesión activa.");
         }
     };
-
     // --- 4. Ejecución Inicial ---
     cargarDatos();
 </script>
