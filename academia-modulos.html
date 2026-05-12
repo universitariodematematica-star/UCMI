@@ -356,123 +356,81 @@
      </div>
  </div>
 
- <script type="module">
-    import { db } from './firebase-config.js'; // Asegúrate que este archivo existe y exporta 'db'
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<script type="module">
+        import { db } from './firebase-config.js'; 
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-document.addEventListener('DOMContentLoaded', async () => {
-    
-    // Función Maestra que extrae los datos de Firebase
-    const cargarDatosFirebase = async () => {
-        const contenedor = document.getElementById('modules-container');
-        const sectionTitle = document.getElementById('section-title');
-        const sectionSubtitle = document.getElementById('section-subtitle');
+        document.addEventListener('DOMContentLoaded', async () => {
+            const contenedor = document.getElementById('modules-container');
+            const sectionTitle = document.getElementById('section-title');
+            const sectionSubtitle = document.getElementById('section-subtitle');
 
-        // 1. Obtenemos el ID del usuario (debería estar guardado al hacer login)
-        const userId = localStorage.getItem('userId'); 
-
-        if (!userId) {
-            contenedor.innerHTML = '<p class="text-center opacity-50">Error: No se detectó sesión de usuario.</p>';
-            return;
-        }
-
-        try {
-            // 2. Apuntamos al documento en la colección 'usuarios'
-            const docRef = doc(db, "usuarios", userId);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                
-                // 3. Extraemos los datos que me pasaste
-                const misModulos = data.modulos || []; // Array: ["Inglés C1", "Inglés C2"]
-                const nombreEntidad = data.entidad || "Repositorio";
-                const responsable = data.nombreResponsable || "";
-
-                // 4. Actualizamos el encabezado con "Learning Bridge"
-                if (sectionTitle) sectionTitle.innerText = nombreEntidad;
-                if (sectionSubtitle) sectionSubtitle.innerText = `Responsable: ${responsable} | Sede: ${data.ubicacion}`;
-
-                // 5. Renderizamos las tarjetas dinámicamente
-                if (misModulos.length === 0) {
-                    contenedor.innerHTML = '<p class="text-center opacity-50">No hay módulos asignados.</p>';
+            // 1. Función para cargar módulos desde la base de datos
+            const cargarModulos = async () => {
+                const userId = localStorage.getItem('userId');
+                if (!userId) {
+                    contenedor.innerHTML = '<p class="text-center opacity-50">Sesión no iniciada.</p>';
                     return;
                 }
 
-                contenedor.innerHTML = misModulos.map(nombre => `
-                    <article class="card-module">
-                        <div class="badge-status">Adquirido</div>
-                        <i class="bi bi-translate module-icon"></i>
-                        <h3 class="module-name">${nombre}</h3>
-                        <p class="module-desc">Programa oficial de nivelación lingüística de ${nombreEntidad}.</p>
-                    </article>
-                `).join('');
+                try {
+                    const docRef = doc(db, "usuarios", userId);
+                    const docSnap = await getDoc(docRef);
 
-            } else {
-                contenedor.innerHTML = '<p class="text-center text-danger">El repositorio no existe en la base de datos.</p>';
-            }
-        } catch (error) {
-            console.error("Error vinculando Firebase:", error);
-            contenedor.innerHTML = '<p class="text-center text-danger">Error de conexión con el repositorio maestro.</p>';
-        }
-    };
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        const misModulos = data.modulos || [];
+                        
+                        // Actualizamos encabezados dinámicamente
+                        if (sectionTitle) sectionTitle.innerText = data.entidad || "Mi Repositorio";
+                        if (sectionSubtitle) sectionSubtitle.innerText = `Responsable: ${data.nombreResponsable || 'N/A'}`;
 
-    // Gestión de la Navegación Lateral
-    const navLinks = document.querySelectorAll('.nav-link-custom');
-    navLinks.forEach(link => {
-        link.addEventListener('click', async (e) => {
-            e.preventDefault();
-            navLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-            
-            const textoMenu = link.innerText.trim();
-            if (textoMenu === 'Módulos') {
-                await cargarDatosFirebase();
-            } else {
-                document.getElementById('section-title').innerText = textoMenu;
-                document.getElementById('modules-container').innerHTML =
-                    '<div class="col-12 text-center opacity-50"><p>Sección en desarrollo...</p></div>';
-            }
-        });
-    });
-
-    // Ejecución inicial
-    await cargarDatosFirebase();
-
-    // Personalización de Logo según el perfil que me pasaste
-    const logoImg = document.getElementById('logoAcademia');
-    const userRole = localStorage.getItem('userRole');
-    if (userRole === 'Profesor independiente' && logoImg) {
-        logoImg.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
-    }
-});
-                e.preventDefault();
-                navLinks.forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-                
-                const textoMenu = link.innerText.trim();
-                sectionTitle.innerText = textoMenu;
-
-                if (textoMenu === 'Módulos') {
-                    await cargarModulos();
-                } else {
-                    document.getElementById('modules-container').innerHTML =
-                        '<div class="col-12 text-center opacity-50"><p>Sección en desarrollo...</p></div>';
+                        // Generamos las tarjetas
+                        if (misModulos.length === 0) {
+                            contenedor.innerHTML = '<p class="text-center opacity-50">No hay módulos activos.</p>';
+                        } else {
+                            contenedor.innerHTML = misModulos.map(nombre => `
+                                <article class="card-module">
+                                    <div class="badge-status">Activo</div>
+                                    <i class="bi bi-box-seam module-icon"></i>
+                                    <h3 class="module-name">${nombre}</h3>
+                                    <p class="module-desc">Acceso autorizado al contenido del protocolo.</p>
+                                </article>
+                            `).join('');
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error de conexión:", error);
+                    contenedor.innerHTML = '<p class="text-center text-danger">Error al conectar con el servidor.</p>';
                 }
+            };
+
+            // 2. Control del Menú Lateral
+            document.querySelectorAll('.nav-link-custom').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const textoMenu = link.innerText.trim();
+                    
+                    // Solo si no es el link de 'Módulos' mostramos "En desarrollo"
+                    if (textoMenu !== 'Módulos') {
+                        e.preventDefault();
+                        document.querySelectorAll('.nav-link-custom').forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+                        sectionTitle.innerText = textoMenu;
+                        contenedor.innerHTML = '<div class="col-12 text-center opacity-50 mt-5">Esta sección se habilitará en la siguiente fase.</div>';
+                    }
+                });
             });
+
+            // 3. Ajuste de Identidad (Logo)
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'Profesor independiente') {
+                const logoImg = document.getElementById('logoAcademia');
+                if (logoImg) logoImg.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
+            }
+
+            // 4. Ejecución inicial
+            await cargarModulos();
         });
-
-        // Ejecución inicial
-        await cargarModulos(); 
-
-        // Personalización de Logo
-        const logoImg = document.getElementById('logoAcademia');
-        const userRole = localStorage.getItem('userRole');
-        if (userRole === 'Profesor independiente' && logoImg) {
-            logoImg.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
-        }
-    });
- </script>
-
+    </script>
  </body>
  </html>
