@@ -314,7 +314,7 @@
                 cargarDatos();
             }
         });
-    });
+
 
 // --- 3. Función de Sincronización Global ---
     window.actualizarVisibilidad = async (index, nombreModulo) => {
@@ -331,22 +331,23 @@
             // Intentamos obtener la referencia. 
             // Si el documento en Firestore se llama por el Email, 
             // asegúrate de que 'userId' contenga el email.
-            const userRef = doc(db, "usuarios", userId);
+            const userRef = doc(db, "usuarios", userId.toLowerCase().trim());
             
             await updateDoc(userRef, {
-                [`modulos-ofertados-academia.${nombreModulo}`]: sw.checked
-            });
-            
-            console.log("Sincronización Supralógica exitosa.");
-        } catch (error) {
-            console.error("Error detallado:", error);
-            // Revertir el switch si falla
-            sw.checked = !sw.checked;
-            label.innerText = sw.checked ? "Público" : "Oculto";
-            label.className = sw.checked ? "status-label text-publico" : "status-label text-oculto";
-            
-            alert("Error de permisos: El ID '" + userId + "' no coincide con tu perfil o no tienes sesión activa.");
-        }
+            [`modulos-ofertados-academia.${nombreModulo}`]: sw.checked
+        });
+        
+        console.log("Sincronización Supralógica exitosa para:", userId);
+    } catch (error) {
+        console.error("Error de permisos o conexión:", error);
+        
+        // Revertimos el switch visualmente si la base de datos lo rechaza
+        sw.checked = !sw.checked;
+        label.innerText = sw.checked ? "Público" : "Oculto";
+        label.className = sw.checked ? "status-label text-publico" : "status-label text-oculto";
+        
+        alert("Error de seguridad: No se pudo actualizar. Verifica que tu sesión esté activa como " + userId);
+    }
     };
     // --- 4. Ejecución Inicial ---
     cargarDatos();
