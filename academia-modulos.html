@@ -357,58 +357,95 @@
  </div>
 
  <script type="module">
-    // Importamos la base de datos desde tu archivo de configuración
-    import { db } from './firebase-config.js';
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { db } from './firebase-config.js'; // Asegúrate que este archivo existe y exporta 'db'
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        
-        // Función Maestra de Renderizado (AHORA CON FIREBASE)
-        const cargarModulos = async () => {
-            const contenedor = document.getElementById('modules-container');
-            if (!contenedor) return;
-
-            // Obtenemos el ID de la academia activa (por ejemplo, 'ucmi' o el que guardes en login)
-            const academiaId = localStorage.getItem('academiaId') || 'ucmi';
-
-            try {
-                // LLAMADA AL REPOSITORIO EN FIREBASE (Variable: modulos)
-                const docRef = doc(db, "academias", academiaId);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    const misModulos = data.modulos || []; // Aquí está tu variable del repositorio
-
-                    if (misModulos.length === 0) {
-                        contenedor.innerHTML = '<p class="text-center opacity-50">No hay módulos disponibles en este repositorio.</p>';
-                        return;
-                    }
-
-                    // Renderizamos las tarjetas manteniendo TU DISEÑO
-                    contenedor.innerHTML = misModulos.map(nombre => `
-                        <article class="card-module">
-                            <div class="badge-status">Adquirido</div>
-                            <i class="bi bi-translate module-icon"></i>
-                            <h3 class="module-name">${nombre}</h3>
-                            <p class="module-desc">Programa oficial de nivelación lingüística UCMI.</p>
-                        </article>
-                    `).join('');
-                } else {
-                    contenedor.innerHTML = '<p class="text-center opacity-50">Error: El repositorio de esta academia no existe.</p>';
-                }
-            } catch (error) {
-                console.error("Error al cargar repositorio:", error);
-                contenedor.innerHTML = '<p class="text-center text-danger">Error de conexión con Firebase.</p>';
-            }
-        };
-
-        // Gestión de la Navegación Lateral
-        const navLinks = document.querySelectorAll('.nav-link-custom');
+document.addEventListener('DOMContentLoaded', async () => {
+    
+    // Función Maestra que extrae los datos de Firebase
+    const cargarDatosFirebase = async () => {
+        const contenedor = document.getElementById('modules-container');
         const sectionTitle = document.getElementById('section-title');
+        const sectionSubtitle = document.getElementById('section-subtitle');
 
-        navLinks.forEach(link => {
-            link.addEventListener('click', async (e) => {
+        // 1. Obtenemos el ID del usuario (debería estar guardado al hacer login)
+        const userId = localStorage.getItem('userId'); 
+
+        if (!userId) {
+            contenedor.innerHTML = '<p class="text-center opacity-50">Error: No se detectó sesión de usuario.</p>';
+            return;
+        }
+
+        try {
+            // 2. Apuntamos al documento en la colección 'usuarios'
+            const docRef = doc(db, "usuarios", userId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // 3. Extraemos los datos que me pasaste
+                const misModulos = data.modulos || []; // Array: ["Inglés C1", "Inglés C2"]
+                const nombreEntidad = data.entidad || "Repositorio";
+                const responsable = data.nombreResponsable || "";
+
+                // 4. Actualizamos el encabezado con "Learning Bridge"
+                if (sectionTitle) sectionTitle.innerText = nombreEntidad;
+                if (sectionSubtitle) sectionSubtitle.innerText = `Responsable: ${responsable} | Sede: ${data.ubicacion}`;
+
+                // 5. Renderizamos las tarjetas dinámicamente
+                if (misModulos.length === 0) {
+                    contenedor.innerHTML = '<p class="text-center opacity-50">No hay módulos asignados.</p>';
+                    return;
+                }
+
+                contenedor.innerHTML = misModulos.map(nombre => `
+                    <article class="card-module">
+                        <div class="badge-status">Adquirido</div>
+                        <i class="bi bi-translate module-icon"></i>
+                        <h3 class="module-name">${nombre}</h3>
+                        <p class="module-desc">Programa oficial de nivelación lingüística de ${nombreEntidad}.</p>
+                    </article>
+                `).join('');
+
+            } else {
+                contenedor.innerHTML = '<p class="text-center text-danger">El repositorio no existe en la base de datos.</p>';
+            }
+        } catch (error) {
+            console.error("Error vinculando Firebase:", error);
+            contenedor.innerHTML = '<p class="text-center text-danger">Error de conexión con el repositorio maestro.</p>';
+        }
+    };
+
+    // Gestión de la Navegación Lateral
+    const navLinks = document.querySelectorAll('.nav-link-custom');
+    navLinks.forEach(link => {
+        link.addEventListener('click', async (e) => {
+            e.preventDefault();
+            navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            
+            const textoMenu = link.innerText.trim();
+            if (textoMenu === 'Módulos') {
+                await cargarDatosFirebase();
+            } else {
+                document.getElementById('section-title').innerText = textoMenu;
+                document.getElementById('modules-container').innerHTML =
+                    '<div class="col-12 text-center opacity-50"><p>Sección en desarrollo...</p></div>';
+            }
+        });
+    });
+
+    // Ejecución inicial
+    await cargarDatosFirebase();
+
+    // Personalización de Logo según el perfil que me pasaste
+    const logoImg = document.getElementById('logoAcademia');
+    const userRole = localStorage.getItem('userRole');
+    if (userRole === 'Profesor independiente' && logoImg) {
+        logoImg.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
+    }
+});
                 e.preventDefault();
                 navLinks.forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
