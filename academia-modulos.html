@@ -244,7 +244,7 @@
     // Limpiamos y aseguramos el ID del usuario
     let rawUserId = localStorage.getItem('userId');
     const userId = rawUserId ? rawUserId.toLowerCase().trim() : null;
-
+    const userRole = localStorage.getItem('userRole'); // Añade esto aquí
     const contenedor = document.getElementById('modules-container');
     const sectionTitle = document.getElementById('section-title');
     const sectionSubtitle = document.getElementById('section-subtitle');
@@ -264,7 +264,15 @@
                 const data = docSnap.data();
                 const misModulos = data.modulos || [];
                 const estados = data['modulos-ofertados-academia'] || {};
-                
+
+                const logoElement = document.getElementById('logoAcademia');
+                if (data.logoCustom) {
+                    // Si existe un logo personalizado en Base64 en Firestore, lo usamos
+                    logoElement.src = data.logoCustom;
+                } else if (localStorage.getItem('userRole') === 'Profesor independiente') {
+                    // Si no hay logo personalizado pero es Profesor Independiente, usamos el de Star
+                    logoElement.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
+                }
                 sectionTitle.innerText = "Módulos Académicos";
 
                 if (misModulos.length === 0) {
@@ -302,27 +310,33 @@
     };
 
     // --- 2. Lógica de Interfaz y Navegación ---
-    const userRole = localStorage.getItem('userRole');
-    if (userRole === 'Profesor independiente') {
-        const logo = document.getElementById('logoAcademia');
-        if (logo) logo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
-    }
 
     document.querySelectorAll('.nav-link-custom').forEach(link => {
-        link.addEventListener('click', (e) => {
-            const texto = link.innerText.trim();
-            document.querySelectorAll('.nav-link-custom').forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
+    link.addEventListener('click', (e) => {
+        // Bloqueamos la recarga SIEMPRE para manejarlo con JS
+        e.preventDefault(); 
+        
+        const texto = link.innerText.trim();
+        
+        // Actualización visual de la pestaña activa
+        document.querySelectorAll('.nav-link-custom').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
 
-            if (texto !== 'Módulos') {
-                e.preventDefault();
-                sectionTitle.innerText = texto;
-                contenedor.innerHTML = '<div class="text-center opacity-50 mt-5">Sección en fase de implementación...</div>';
-            } else {
-                cargarDatos();
-            }
-        });
+        // Limpieza de subtítulo para secciones nuevas
+        sectionSubtitle.innerText = "Gestión de " + texto;
+
+        if (texto === 'Módulos') {
+            cargarDatos();
+        } else {
+            sectionTitle.innerText = texto;
+            contenedor.innerHTML = `
+                <div class="text-center opacity-50 mt-5">
+                    <i class="bi bi-gear-wide-connected display-1"></i>
+                    <p class="mt-3">Sección "${texto}" en fase de implementación...</p>
+                </div>`;
+        }
     });
+});
 
     // --- 3. Función de Sincronización Global (Expuesta a window) ---
     window.actualizarVisibilidad = async (index, nombreModulo) => {
