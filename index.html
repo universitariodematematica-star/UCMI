@@ -152,7 +152,7 @@
         async function procesarRedireccion(user) {
             if (navegando) return;
             navegando = true;
-
+            localStorage.setItem('userId', user.email.toLowerCase().trim());
             if (user.uid === MI_UID_MAESTRO) {
                 window.location.replace("super-admin.html");
                 return;
@@ -163,6 +163,7 @@
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
+                    localStorage.setItem('userRole', docSnap.data().perfil || "");
                     const perfil = (docSnap.data().perfil || "").toLowerCase().trim().replace(/\s+/g, '_');
                     const rutas = {
                         "academia": "admin-academia.html",
@@ -195,7 +196,8 @@
         window.cerrarSesionLimpiar = async () => {
             limpiarTodo();
             await signOut(auth);
-            window.location.reload();
+            localStorage.clear();
+            window.location.reload();           
         };
 
         // Observador de Sesión
