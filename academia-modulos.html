@@ -232,7 +232,8 @@
 </div>
 
 <script type="module">
-    import { db } from './firebase-config.js';
+    // Asegúrate de que este archivo existe en la misma carpeta
+    import { db } from './firebase-config.js'; 
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -240,9 +241,9 @@
         const sectionTitle = document.getElementById('section-title');
         const sectionSubtitle = document.getElementById('section-subtitle');
 
-        // 1. Función para cargar datos de Firebase
         const cargarDatos = async () => {
             const userId = localStorage.getItem('userId');
+            
             if (!userId) {
                 contenedor.innerHTML = '<p class="text-center opacity-50">Sesión expirada. Por favor, inicia sesión.</p>';
                 return;
@@ -254,37 +255,42 @@
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    const misModulos = data.modulos || [];
                     
-                    sectionTitle.innerText = data.entidad || "Mi Repositorio";
-                    sectionSubtitle.innerText = `Responsable: ${data.nombreResponsable || 'N/A'}`;
+                    // Usando 'modulos' en plural como en tu imagen de la base de datos
+                    const misModulos = data.modulos || []; 
+                    
+                    // Mapeo de encabezados según tu Firebase
+                    sectionTitle.innerText = data.entidad || "REPOSITORIO 1";
+                    sectionSubtitle.innerText = `Responsable: ${data.nombre || 'N/A'}`;
 
                     if (misModulos.length === 0) {
-                        contenedor.innerHTML = '<p class="text-center opacity-50">No hay módulos asignados.</p>';
+                        contenedor.innerHTML = '<p class="text-center opacity-50">No hay módulos registrados en esta cuenta.</p>';
                     } else {
                         contenedor.innerHTML = misModulos.map(nombre => `
                             <article class="card-module">
-                                <div class="badge-status">Activo</div>
-                                <i class="bi bi-cpu module-icon"></i>
+                                <div class="badge-status">ADQUIRIDO</div>
+                                <i class="bi bi-translate module-icon"></i>
                                 <h3 class="module-name">${nombre}</h3>
-                                <p class="module-desc">Contenido desbloqueado mediante protocolo institucional.</p>
+                                <p class="module-desc">Programa oficial de nivelación lingüística UCMI.</p>
                             </article>
                         `).join('');
                     }
+                } else {
+                    contenedor.innerHTML = `<p class="text-center opacity-50">Error: No se encontró el usuario ${userId}</p>`;
                 }
             } catch (error) {
-                console.error("Error en Firebase:", error);
-                contenedor.innerHTML = '<p class="text-center text-danger">Error de conexión con la base de datos.</p>';
+                console.error("Error de Firebase:", error);
+                contenedor.innerHTML = '<p class="text-center text-danger">Error de conexión con el servidor.</p>';
             }
         };
 
-        // 2. Aplicar logo según rol (Antes de cargar datos para evitar parpadeo)
+        // Personalización del logo por rol
         if (localStorage.getItem('userRole') === 'Profesor independiente') {
             const logo = document.getElementById('logoAcademia');
             if (logo) logo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
         }
 
-        // 3. Manejo de Menú interactivo
+        // Eventos de navegación
         document.querySelectorAll('.nav-link-custom').forEach(link => {
             link.addEventListener('click', (e) => {
                 const texto = link.innerText.trim();
@@ -295,15 +301,14 @@
                     sectionTitle.innerText = texto;
                     contenedor.innerHTML = '<div class="text-center opacity-50 mt-5">Sección en fase de implementación...</div>';
                 } else {
-                    // Si vuelve a hacer clic en Módulos, recargamos los datos
                     cargarDatos();
                 }
             });
         });
 
-        // 4. Ejecución inicial
+        // Ejecución inicial
         await cargarDatos();
-    }); // Aquí se cierra correctamente el DOMContentLoaded
+    });
 </script>
 </body>
 </html>
