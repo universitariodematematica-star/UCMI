@@ -334,15 +334,17 @@
                 <header class="header-main">
                     <h1 class="title-repo">
                         <i class="bi bi-journal-bookmark-fill title-icon"></i>
-                        <span id="section-title">Repositorio</span>
+                        <span id="section-title">Repositorio 1</span>
                     </h1>
                     <p class="subtitle-repo" id="section-subtitle">Protocolos Supralógica v3.0</p>
                 </header>
 
-<div id="dynamic-content">
-    <div class="module-grid">
-        </div>
-</div>
+                <div id="dynamic-content">
+                    <div class="module-grid" id="modules-container">
+                             
+                    </div>
+                </div>
+                
                 <footer class="footer-system">
                     <p class="mb-1">UCMI — Desarrollo Humano & Excelencia Académica</p>
                     <p class="small text-uppercase">Plataforma Maestra © 2026</p>
@@ -355,22 +357,57 @@
 </div>
 
 <script>
-    /**
-     * Inicialización del entorno UCMI
-     * Modo: Estático / Preparación de Interfaz
-     */
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('--- Interfaz Maestra Cargada ---');
+     // 1. Simulación de datos
+     const misModulos = [
+         "Inglés A1", "Inglés A2", "Inglés B1", 
+         "Inglés B2", "Inglés C1", "Inglés C2"
+     ];
 
-    // Lógica de Personalización de Logo
-    const logoImg = document.getElementById('logoAcademia');
-    const userRole = localStorage.getItem('userRole'); // Obtenemos el tipo de usuario
+     // 2. Función Maestra de Renderizado
+     const cargarModulos = () => {
+         const contenedor = document.getElementById('modules-container');
+         if (!contenedor) return;
 
-    if (userRole === 'Profesor independiente' && logoImg) {
-        // Cambiamos el logo de UCMI por el de Star
-        logoImg.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
-        console.log('Personalización: Logo de Profesor Independiente aplicado.');
-    }
+         contenedor.innerHTML = misModulos.map(nombre => `
+             <article class="card-module">
+                 <div class="badge-status">Adquirido</div>
+                 <i class="bi bi-translate module-icon"></i>
+                 <h3 class="module-name">${nombre}</h3>
+                 <p class="module-desc">Programa oficial de nivelación lingüística UCMI.</p>
+             </article>
+         `).join('');
+     };
+
+     // 3. Gestión de la Navegación Lateral
+     const navLinks = document.querySelectorAll('.nav-link-custom');
+     const sectionTitle = document.getElementById('section-title');
+
+     navLinks.forEach(link => {
+         link.addEventListener('click', (e) => {
+             e.preventDefault();
+             navLinks.forEach(l => l.classList.remove('active'));
+             link.classList.add('active');
+             
+             const textoMenu = link.innerText.trim();
+             sectionTitle.innerText = textoMenu;
+
+             if (textoMenu === 'Módulos') {
+                 cargarModulos();
+             } else {
+                 document.getElementById('modules-container').innerHTML = 
+                     '<div class="col-12 text-center opacity-50"><p>Sección en desarrollo...</p></div>';
+             }
+         });
+     });
+
+     // 4. Ejecución inicial y Personalización de Logo
+     cargarModulos(); 
+     const logoImg = document.getElementById('logoAcademia');
+     const userRole = localStorage.getItem('userRole');
+     if (userRole === 'Profesor independiente' && logoImg) {
+         logoImg.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
+     }
 });
 </script>
 
