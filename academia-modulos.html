@@ -212,7 +212,7 @@
                 <header class="header-main">
                     <h1 class="title-repo">
                         <i class="bi bi-journal-bookmark-fill title-icon"></i>
-                        <span id="section-title">Cargando...4</span>
+                        <span id="section-title">Cargando...5</span>
                     </h1>
                     <p class="subtitle-repo" id="section-subtitle">Sincronizando con Supralógica...</p>
                 </header>
@@ -232,8 +232,8 @@
 </div>
 
 <script type="module">
-    // Asegúrate de que este archivo existe en la misma carpeta
-    import { db } from './firebase-config.js'; 
+    // 1. Importación desde el archivo que acabas de crear
+    import { db } from './firebase-config.js';
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -245,7 +245,7 @@
             const userId = localStorage.getItem('userId');
             
             if (!userId) {
-                contenedor.innerHTML = '<p class="text-center opacity-50">Sesión expirada. Por favor, inicia sesión.</p>';
+                contenedor.innerHTML = '<p class="text-center opacity-50">Sesión expirada. Inicia sesión de nuevo.</p>';
                 return;
             }
 
@@ -255,28 +255,26 @@
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    
-                    // Usando 'modulos' en plural como en tu imagen de la base de datos
+                    // Sincronización exacta con tu Firebase (plural: modulos)
                     const misModulos = data.modulos || []; 
                     
-                    // Mapeo de encabezados según tu Firebase
-                    sectionTitle.innerText = data.entidad || "REPOSITORIO 1";
+                    sectionTitle.innerText = data.entidad || "REPOSITORIO MAESTRO";
                     sectionSubtitle.innerText = `Responsable: ${data.nombre || 'N/A'}`;
 
                     if (misModulos.length === 0) {
-                        contenedor.innerHTML = '<p class="text-center opacity-50">No hay módulos registrados en esta cuenta.</p>';
+                        contenedor.innerHTML = '<p class="text-center opacity-50">No hay módulos registrados.</p>';
                     } else {
                         contenedor.innerHTML = misModulos.map(nombre => `
                             <article class="card-module">
                                 <div class="badge-status">ADQUIRIDO</div>
                                 <i class="bi bi-translate module-icon"></i>
                                 <h3 class="module-name">${nombre}</h3>
-                                <p class="module-desc">Programa oficial de nivelación lingüística UCMI.</p>
+                                <p class="module-desc">Programa oficial de nivelación UCMI.</p>
                             </article>
                         `).join('');
                     }
                 } else {
-                    contenedor.innerHTML = `<p class="text-center opacity-50">Error: No se encontró el usuario ${userId}</p>`;
+                    contenedor.innerHTML = `<p class="text-center opacity-50">Error: Documento ${userId} no existe.</p>`;
                 }
             } catch (error) {
                 console.error("Error de Firebase:", error);
@@ -284,13 +282,13 @@
             }
         };
 
-        // Personalización del logo por rol
+        // Logo para el rol de Profesor independiente
         if (localStorage.getItem('userRole') === 'Profesor independiente') {
             const logo = document.getElementById('logoAcademia');
             if (logo) logo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
         }
 
-        // Eventos de navegación
+        // Navegación lateral
         document.querySelectorAll('.nav-link-custom').forEach(link => {
             link.addEventListener('click', (e) => {
                 const texto = link.innerText.trim();
@@ -304,9 +302,11 @@
                     cargarDatos();
                 }
             });
-// 4. Ejecución inicial (AHORA DENTRO DEL BLOQUE CORRECTO)
+        });
+
+        // 2. Ejecución inicial DENTRO del bloque correcto
         await cargarDatos();
-    }); // Este cierra el DOMContentLoaded de la línea 239
+    });
 </script>
 </body>
 </html>
