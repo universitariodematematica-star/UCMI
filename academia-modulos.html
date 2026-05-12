@@ -232,7 +232,7 @@
 </div>
 
 <script type="module">
-    import { db } from './firebase-config.js'; 
+    import { db } from './firebase-config.js';
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -240,6 +240,7 @@
         const sectionTitle = document.getElementById('section-title');
         const sectionSubtitle = document.getElementById('section-subtitle');
 
+        // 1. Función para cargar datos de Firebase
         const cargarDatos = async () => {
             const userId = localStorage.getItem('userId');
             if (!userId) {
@@ -259,7 +260,7 @@
                     sectionSubtitle.innerText = `Responsable: ${data.nombreResponsable || 'N/A'}`;
 
                     if (misModulos.length === 0) {
-                        contenedor.innerHTML = '<p class="text-center opacity-50">No hay módulos asignados a esta cuenta.</p>';
+                        contenedor.innerHTML = '<p class="text-center opacity-50">No hay módulos asignados.</p>';
                     } else {
                         contenedor.innerHTML = misModulos.map(nombre => `
                             <article class="card-module">
@@ -272,12 +273,18 @@
                     }
                 }
             } catch (error) {
-                console.error(error);
+                console.error("Error en Firebase:", error);
                 contenedor.innerHTML = '<p class="text-center text-danger">Error de conexión con la base de datos.</p>';
             }
         };
 
-        // Manejo de Menú
+        // 2. Aplicar logo según rol (Antes de cargar datos para evitar parpadeo)
+        if (localStorage.getItem('userRole') === 'Profesor independiente') {
+            const logo = document.getElementById('logoAcademia');
+            if (logo) logo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
+        }
+
+        // 3. Manejo de Menú interactivo
         document.querySelectorAll('.nav-link-custom').forEach(link => {
             link.addEventListener('click', (e) => {
                 const texto = link.innerText.trim();
@@ -287,19 +294,16 @@
                     link.classList.add('active');
                     sectionTitle.innerText = texto;
                     contenedor.innerHTML = '<div class="text-center opacity-50 mt-5">Sección en fase de implementación...</div>';
+                } else {
+                    // Si vuelve a hacer clic en Módulos, recargamos los datos
+                    cargarDatos();
                 }
             });
         });
 
-        // Aplicar logo según rol
-        if (localStorage.getItem('userRole') === 'Profesor independiente') {
-            const logo = document.getElementById('logoAcademia');
-            if (logo) logo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
-        }
-
+        // 4. Ejecución inicial
         await cargarDatos();
-    });
+    }); // Aquí se cierra correctamente el DOMContentLoaded
 </script>
-
 </body>
 </html>
