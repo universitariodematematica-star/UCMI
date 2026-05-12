@@ -136,48 +136,49 @@
         .title-repo { font-weight: 900; font-size: 3.5rem; text-transform: uppercase; }
         .title-icon { color: var(--dorado-ucmi); filter: drop-shadow(0 0 15px rgba(197, 160, 89, 0.5)); }
         .subtitle-repo { color: rgba(255, 255, 255, 0.4); font-size: 1.1rem; letter-spacing: 4px; }
-/* --- Estilos de Lista y Switch UCMI --- */
-         .list-container {
-             display: flex;
-             flex-direction: column;
-             gap: 12px;
-             max-width: 950px;
-             margin: 0 auto;
-         }
-         .module-item {
-             background: rgba(255, 255, 255, 0.03);
-             border: 1px solid rgba(255, 255, 255, 0.08);
-             backdrop-filter: blur(15px);
-             border-radius: 16px;
-             padding: 15px 25px;
-             display: flex;
-             justify-content: space-between;
-             align-items: center;
-             transition: all 0.3s ease;
-         }
-         .module-item:hover {
-             background: rgba(255, 255, 255, 0.07);
-             border-color: var(--cian-tech);
-             transform: translateX(8px);
-         }
-         .status-label {
-             font-size: 0.65rem;
-             font-weight: 800;
-             text-transform: uppercase;
-             margin-right: 15px;
-             letter-spacing: 1px;
-         }
-         .form-check-input {
-             width: 3.2em !important;
-             height: 1.6em !important;
-             cursor: pointer;
-         }
-         .form-check-input:checked {
-             background-color: var(--cian-tech) !important;
-             border-color: var(--cian-tech) !important;
-         }
-         .text-publico { color: var(--cian-tech); }
-         .text-oculto { color: rgba(255, 255, 255, 0.25); }
+
+        /* --- Estilos de Lista y Switch UCMI --- */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 950px;
+            margin: 0 auto;
+        }
+        .module-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .module-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: var(--cian-tech);
+            transform: translateX(8px);
+        }
+        .status-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-right: 15px;
+            letter-spacing: 1px;
+        }
+        .form-check-input {
+            width: 3.2em !important;
+            height: 1.6em !important;
+            cursor: pointer;
+        }
+        .form-check-input:checked {
+            background-color: var(--cian-tech) !important;
+            border-color: var(--cian-tech) !important;
+        }
+        .text-publico { color: var(--cian-tech); }
+        .text-oculto { color: rgba(255, 255, 255, 0.25); }
         .footer-system { margin-top: 100px; padding-bottom: 40px; text-align: center; opacity: 0.3; }
 
         @media (max-width: 768px) {
@@ -217,7 +218,7 @@
                 <header class="header-main">
                     <h1 class="title-repo">
                         <i class="bi bi-journal-bookmark-fill title-icon"></i>
-                        <span id="section-title">Cargando...4</span>
+                        <span id="section-title">Cargando...</span>
                     </h1>
                     <p class="subtitle-repo" id="section-subtitle">Sincronizando con Supralógica...</p>
                 </header>
@@ -240,12 +241,15 @@
     import { db } from './firebase-config.js';
     import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        let userId = localStorage.getItem('userId');
+    // Limpiamos y aseguramos el ID del usuario
+    let rawUserId = localStorage.getItem('userId');
+    const userId = rawUserId ? rawUserId.toLowerCase().trim() : null;
+
     const contenedor = document.getElementById('modules-container');
     const sectionTitle = document.getElementById('section-title');
     const sectionSubtitle = document.getElementById('section-subtitle');
 
-    // --- 1. Función de Carga (Corregida) ---
+    // --- 1. Función de Carga ---
     const cargarDatos = async () => {
         if (!userId) {
             contenedor.innerHTML = '<p class="text-center opacity-50">Sesión expirada.</p>';
@@ -261,8 +265,12 @@
                 const misModulos = data.modulos || [];
                 const estados = data['modulos-ofertados-academia'] || {};
                 
-                // Actualizamos el título al cargar con éxito
                 sectionTitle.innerText = "Módulos Académicos";
+
+                if (misModulos.length === 0) {
+                    contenedor.innerHTML = '<p class="text-center opacity-50 mt-5">No tienes módulos asignados.</p>';
+                    return;
+                }
 
                 contenedor.innerHTML = misModulos.map((nombre, index) => {
                     const estaActivo = estados[nombre] !== false;
@@ -285,11 +293,11 @@
                         </div>`;
                 }).join('');
             } else {
-                contenedor.innerHTML = `<p class="text-center opacity-50">Usuario no encontrado.</p>`;
+                contenedor.innerHTML = `<p class="text-center opacity-50">Usuario [${userId}] no encontrado en la base de datos.</p>`;
             }
         } catch (error) {
             console.error("Error Firebase:", error);
-            contenedor.innerHTML = '<p class="text-center text-danger">Error de conexión.</p>';
+            contenedor.innerHTML = '<p class="text-center text-danger">Error de conexión con Supralógica.</p>';
         }
     };
 
@@ -314,41 +322,34 @@
                 cargarDatos();
             }
         });
+    });
 
-
-// --- 3. Función de Sincronización Global ---
+    // --- 3. Función de Sincronización Global (Expuesta a window) ---
     window.actualizarVisibilidad = async (index, nombreModulo) => {
         const sw = document.getElementById(`switch-${index}`);
         const label = document.getElementById(`label-${index}`);
         
-        // Log para depuración (mira esto en F12)
-        console.log("Intentando sincronizar ID:", userId);
+        console.log("Sincronizando estado para:", nombreModulo);
 
         label.innerText = sw.checked ? "Público" : "Oculto";
         label.className = sw.checked ? "status-label text-publico" : "status-label text-oculto";
 
         try {
-            // Intentamos obtener la referencia. 
-            // Si el documento en Firestore se llama por el Email, 
-            // asegúrate de que 'userId' contenga el email.
-            const userRef = doc(db, "usuarios", userId.toLowerCase().trim());
-            
+            const userRef = doc(db, "usuarios", userId);
             await updateDoc(userRef, {
-            [`modulos-ofertados-academia.${nombreModulo}`]: sw.checked
-        });
-        
-        console.log("Sincronización Supralógica exitosa para:", userId);
-    } catch (error) {
-        console.error("Error de permisos o conexión:", error);
-        
-        // Revertimos el switch visualmente si la base de datos lo rechaza
-        sw.checked = !sw.checked;
-        label.innerText = sw.checked ? "Público" : "Oculto";
-        label.className = sw.checked ? "status-label text-publico" : "status-label text-oculto";
-        
-        alert("Error de seguridad: No se pudo actualizar. Verifica que tu sesión esté activa como " + userId);
-    }
+                [`modulos-ofertados-academia.${nombreModulo}`]: sw.checked
+            });
+            console.log("Sincronización Supralógica exitosa.");
+        } catch (error) {
+            console.error("Error detallado:", error);
+            // Reversión por error
+            sw.checked = !sw.checked;
+            label.innerText = sw.checked ? "Público" : "Oculto";
+            label.className = sw.checked ? "status-label text-publico" : "status-label text-oculto";
+            alert("Error: No tienes permisos para editar o la sesión expiró.");
+        }
     };
+
     // --- 4. Ejecución Inicial ---
     cargarDatos();
 </script>
