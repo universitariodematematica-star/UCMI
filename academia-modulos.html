@@ -232,7 +232,6 @@
 </div>
 
 <script type="module">
-    // 1. Importación desde el archivo que acabas de crear
     import { db } from './firebase-config.js';
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -241,6 +240,7 @@
         const sectionTitle = document.getElementById('section-title');
         const sectionSubtitle = document.getElementById('section-subtitle');
 
+        // Definimos la función dentro del listener
         const cargarDatos = async () => {
             const userId = localStorage.getItem('userId');
             
@@ -255,8 +255,7 @@
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    // Sincronización exacta con tu Firebase (plural: modulos)
-                    const misModulos = data.modulos || []; 
+                    const misModulos = data.modulos || [];
                     
                     sectionTitle.innerText = data.entidad || "REPOSITORIO MAESTRO";
                     sectionSubtitle.innerText = `Responsable: ${data.nombre || 'N/A'}`;
@@ -274,7 +273,7 @@
                         `).join('');
                     }
                 } else {
-                    contenedor.innerHTML = `<p class="text-center opacity-50">Error: Documento ${userId} no existe.</p>`;
+                    contenedor.innerHTML = `<p class="text-center opacity-50">Error: El usuario no existe en la base de datos.</p>`;
                 }
             } catch (error) {
                 console.error("Error de Firebase:", error);
@@ -282,20 +281,22 @@
             }
         };
 
-        // Logo para el rol de Profesor independiente
-        if (localStorage.getItem('userRole') === 'Profesor independiente') {
+        // --- LÓGICA DE LOGO PERSONALIZADO ---
+        const userRole = localStorage.getItem('userRole');
+        if (userRole === 'Profesor independiente') {
             const logo = document.getElementById('logoAcademia');
             if (logo) logo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
         }
 
-        // Navegación lateral
+        // --- NAVEGACIÓN LATERAL ---
         document.querySelectorAll('.nav-link-custom').forEach(link => {
             link.addEventListener('click', (e) => {
                 const texto = link.innerText.trim();
+                document.querySelectorAll('.nav-link-custom').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
                 if (texto !== 'Módulos') {
                     e.preventDefault();
-                    document.querySelectorAll('.nav-link-custom').forEach(l => l.classList.remove('active'));
-                    link.classList.add('active');
                     sectionTitle.innerText = texto;
                     contenedor.innerHTML = '<div class="text-center opacity-50 mt-5">Sección en fase de implementación...</div>';
                 } else {
@@ -304,7 +305,7 @@
             });
         });
 
-        // 2. Ejecución inicial DENTRO del bloque correcto
+        // --- EJECUCIÓN INICIAL (Ahora sí funciona) ---
         await cargarDatos();
     });
 </script>
