@@ -221,86 +221,121 @@
      });
 
      // Función de impresión PDF
-     function imprimirComprobante(datos) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
+// Función de impresión PDF optimizada con estilo Institucional
+      function imprimirComprobante(datos) {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+          const pageWidth = doc.internal.pageSize.getWidth();
 
-    // 1. CABECERA INSTITUCIONAL (Fondo azul oscuro)
-    doc.setFillColor(26, 37, 47); // Color azul muy oscuro similar a image_e6b4e4.png
-    doc.rect(0, 0, pageWidth, 45, 'F');
+          // 1. CABECERA INSTITUCIONAL (Estilo UCMI - Franja Oscura)
+          // Dibujamos el fondo azul oscuro profundo
+          doc.setFillColor(26, 37, 47); 
+          doc.rect(0, 0, pageWidth, 45, 'F');
 
-    // Logo Dinámico (Si existe)
-    if (logoBase64) {
-        doc.addImage(logoBase64, 'PNG', 15, 7, 30, 30);
-    }
+          // Logo posicionado a la izquierda (usando el logoBase64 capturado dinámicamente)
+          if (logoBase64) {
+              doc.addImage(logoBase64, 'PNG', 15, 7, 30, 30);
+          }
 
-    // Nombre de la Academia y Siglas
-    doc.setTextColor(197, 160, 89); // Tono dorado/amarillo
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text(datos.entidad.toUpperCase(), 55, 22);
-    
-    doc.setFontSize(22);
-    const siglas = datos.entidad.substring(0, 4).toUpperCase();
-    doc.text(siglas, 55, 35);
+          // Texto de Cabecera en Dorado UCMI (#c5a059)
+          doc.setTextColor(197, 160, 89); 
+          doc.setFont("helvetica", "bold");
+          
+          // Nombre de la Entidad
+          doc.setFontSize(14);
+          doc.text(datos.entidad.toUpperCase(), 55, 22);
+          
+          // Siglas Institucionales
+          doc.setFontSize(22);
+          const siglas = datos.entidad.substring(0, 4).toUpperCase();
+          doc.text(siglas, 55, 35);
 
-    // 2. TÍTULO DEL DOCUMENTO
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(16);
-    doc.text("COMPROBANTE OFICIAL DE REGISTRO", pageWidth / 2, 60, { align: 'center' });
+          // 2. TÍTULO DEL DOCUMENTO
+          doc.setTextColor(40, 40, 40);
+          doc.setFontSize(16);
+          doc.text("COMPROBANTE OFICIAL DE REGISTRO", pageWidth / 2, 60, { align: 'center' });
 
-    // Función auxiliar para dibujar líneas de sección
-    const dibujarSeccion = (titulo, y, color = [0, 0, 0]) => {
-        doc.setFontSize(11);
-        doc.setTextColor(color[0], color[1], color[2]);
-        doc.setFont("helvetica", "bold");
-        doc.text(titulo, 20, y);
-        doc.setDrawColor(200, 200, 200);
-        doc.line(20, y + 2, 190, y + 2);
-        return y + 12;
-    };
+          // Estilos para el cuerpo del documento
+          let currentY = 75;
+          const dibujarLinea = (yPos) => {
+              doc.setDrawColor(220, 220, 220);
+              doc.line(20, yPos, 190, yPos);
+          };
 
-    // 3. DATOS DE IDENTIDAD
-    let currentY = dibujarSeccion("1. DATOS DE IDENTIDAD", 75);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    
-    const fila = (label, valor, y) => {
-        doc.setFont("helvetica", "bold");
-        doc.text(label, 20, y);
-        doc.setFont("helvetica", "normal");
-        doc.text(String(valor).toUpperCase(), 65, y);
-    };
+          const fila = (label, valor, yPos) => {
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(10);
+              doc.setTextColor(60, 60, 60);
+              doc.text(label, 20, yPos);
+              doc.setFont("helvetica", "normal");
+              doc.setTextColor(0, 0, 0);
+              doc.text(String(valor || 'N/A').toUpperCase(), 65, yPos);
+          };
 
-    fila("Nombre Responsable:", datos.nombreResponsable, currentY);
-    fila("ID (Cédula/RIF):", datos.dniEstudiante, currentY + 7);
-    fila("Fecha de Nacimiento:", datos.fechaNacimiento, currentY + 14);
-    fila("Género:", datos.genero, currentY + 21);
+          // SECCIÓN 1: DATOS DE IDENTIDAD
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(11);
+          doc.setTextColor(26, 37, 47);
+          doc.text("1. DATOS DE IDENTIDAD DEL ESTUDIANTE", 20, currentY);
+          dibujarLinea(currentY + 2);
+          currentY += 12;
 
-    // 4. CONTACTO
-    currentY = dibujarSeccion("2. CONTACTO", currentY + 35);
-    fila("Correo:", datos.email, currentY);
-    fila("WhatsApp:", datos.whatsapp, currentY + 7);
-    fila("Ubicación:", datos.ubicacion, currentY + 14);
+          fila("Nombre Completo:", datos.nombreResponsable, currentY);
+          fila("Documento (ID):", datos.dniEstudiante, currentY + 7);
+          fila("Fecha Nacimiento:", datos.fechaNacimiento, currentY + 14);
+          fila("Edad:", datos.edadEstudiante + " años", currentY + 21);
+          fila("Género:", datos.genero, currentY + 28);
+          currentY += 40;
 
-    // 5. INFORMACIÓN DEL REPRESENTANTE (Solo si es menor)
-    if (datos.edadEstudiante < 18) {
-        currentY = dibujarSeccion("3. INFORMACIÓN DEL REPRESENTANTE LEGAL", currentY + 28, [128, 0, 0]); // Rojo vino
-        fila("Nombre Rep.:", datos.nombreRepresentante, currentY);
-        fila("ID Rep.:", datos.dniRepresentante, currentY + 7);
-        fila("Correo Rep.:", datos.correoRepresentante, currentY + 14);
-        fila("WhatsApp Rep.:", datos.whatsappRepresentante, currentY + 21);
-    }
+          // SECCIÓN 2: CONTACTO
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(11);
+          doc.text("2. INFORMACIÓN DE CONTACTO", 20, currentY);
+          dibujarLinea(currentY + 2);
+          currentY += 12;
 
-    // Pie de página con fecha
-    doc.setFontSize(8);
-    doc.setTextColor(150);
-    doc.text("Generado automáticamente por el sistema UCMI - " + datos.fechaInscripcion, 20, 285);
+          fila("Correo Electrónico:", datos.email.toLowerCase(), currentY);
+          fila("WhatsApp:", datos.whatsapp, currentY + 7);
+          fila("Ubicación:", datos.ubicacion, currentY + 14);
+          currentY += 25;
 
-    // Guardar
-    doc.save(`Comprobante_${datos.dniEstudiante}.pdf`);
-}
+          // SECCIÓN 3: REPRESENTANTE (Solo si es menor de edad)
+          if (datos.edadEstudiante < 18) {
+              doc.setTextColor(128, 0, 0); // Texto en rojo vino para resaltar tutoría
+              doc.setFont("helvetica", "bold");
+              doc.text("3. DATOS DEL REPRESENTANTE LEGAL", 20, currentY);
+              dibujarLinea(currentY + 2);
+              currentY += 12;
+
+              fila("Nombre Tutor:", datos.nombreRepresentante, currentY);
+              fila("ID Tutor:", datos.dniRepresentante, currentY + 7);
+              fila("WhatsApp Tutor:", datos.whatsappRepresentante, currentY + 14);
+              currentY += 25;
+          }
+
+          // SECCIÓN 4: ACADÉMICO
+          doc.setTextColor(26, 37, 47);
+          doc.setFont("helvetica", "bold");
+          doc.text("4. SELECCIÓN ACADÉMICA", 20, currentY);
+          dibujarLinea(currentY + 2);
+          currentY += 12;
+
+          doc.setFont("helvetica", "bold");
+          doc.text("Módulos Inscritos:", 20, currentY);
+          doc.setFont("helvetica", "normal");
+          const modulosTxt = doc.splitTextToSize(datos.modulosInscritos.join(", ").toUpperCase(), 120);
+          doc.text(modulosTxt, 65, currentY);
+
+          // PIE DE PÁGINA SEGURIDAD
+          doc.setFontSize(8);
+          doc.setTextColor(150);
+          const fechaFooter = "Generado el: " + datos.fechaInscripcion;
+          doc.text(fechaFooter, 20, 285);
+          doc.text("SISTEMA DE GESTIÓN ACADÉMICA UCMI - REGISTRO VÁLIDO", pageWidth - 20, 285, { align: 'right' });
+
+          // Descarga automática
+          doc.save(`Postulacion_${datos.dniEstudiante}.pdf`);
+      }
 
      document.getElementById('formIdiomas').onsubmit = async (e) => {
           e.preventDefault();
