@@ -24,12 +24,10 @@
         .inst-nombre { font-family: 'Cinzel', serif; color: #f3f0df; font-size: 1rem; letter-spacing: 4px; text-transform: uppercase; }
         .inst-titulo { color: var(--dorado-ucmi); font-weight: 800; font-size: 2.2rem; }
         
-        /* Estilos de formulario */
         .form-label { color: var(--dorado-ucmi); font-size: 0.85rem; font-weight: bold; margin-top: 10px; }
         .form-control { border-radius: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.08); color: white; }
         .form-control:focus { background: rgba(255, 255, 255, 0.15); border-color: var(--dorado-ucmi); color: white; box-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
         
-        /* Checkboxes Personalizados */
         .modulo-item {
             background: rgba(255, 255, 255, 0.05);
             padding: 12px 15px;
@@ -88,7 +86,6 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN CONDICIONAL PARA MENORES -->
             <div id="panelRepresentante" class="seccion-representante">
                 <h6 class="text-warning fw-bold mb-3"><i class="bi bi-shield-check me-2"></i>DATOS DEL REPRESENTANTE</h6>
                 <div class="row g-3">
@@ -107,7 +104,6 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN DE MÓDULOS AL FINAL -->
             <div class="mt-5">
                 <label class="form-label d-block mb-3">SELECCIONE LOS MÓDULOS A LOS QUE DESEA POSTULAR:</label>
                 <div id="contenedorModulos" class="row g-2">
@@ -141,7 +137,6 @@
     const urlParams = new URLSearchParams(window.location.search);
     const sedeRef = urlParams.get('ref') || "UCMI";
 
-    // 1. CARGAR IDENTIDAD Y MÓDULOS ACTIVOS (CHECKBOXES)
     async function cargarConfiguracion() {
         const q = query(collection(db, "usuarios"), where("entidad", "==", sedeRef));
         const snap = await getDocs(q);
@@ -149,28 +144,29 @@
         if (!snap.empty) {
             const data = snap.docs[0].data();
             
-            // Logo y Nombre
             document.getElementById('logoDinamico').src = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
             document.getElementById('logoDinamico').style.opacity = "1";
             document.getElementById('nombreSede').innerText = data.entidad.toUpperCase();
 
-            // Renderizar Checkboxes
             const contenedor = document.getElementById('contenedorModulos');
             const listaAdquirida = data.modulos || [];
             const estadosVisibilidad = data['modulos-ofertados-academia'] || {};
 
-            // Filtramos solo los que el profesor activó (true)
+            contenedor.innerHTML = '';
+
             const modulosPublicos = listaAdquirida.filter(m => estadosVisibilidad[m] === true);
 
             if (modulosPublicos.length > 0) {
-                contenedor.innerHTML = ''; // Limpiar mensaje de carga
                 modulosPublicos.forEach(mod => {
                     const col = document.createElement('div');
                     col.className = 'col-md-6';
+                    // Normalización para ID: elimina tildes para evitar errores en el selector HTML
+                    const idSeguro = mod.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
+                    
                     col.innerHTML = `
                         <div class="form-check modulo-item">
-                            <input class="form-check-input check-modulo" type="checkbox" value="${mod}" id="check_${mod}">
-                            <label class="form-check-label ms-2 w-100" style="cursor:pointer;" for="check_${mod}">
+                            <input class="form-check-input check-modulo" type="checkbox" value="${mod}" id="check_${idSeguro}">
+                            <label class="form-check-label ms-2 w-100" style="cursor:pointer;" for="check_${idSeguro}">
                                 ${mod}
                             </label>
                         </div>
@@ -184,7 +180,6 @@
     }
     cargarConfiguracion();
 
-    // 2. LÓGICA DE MENOR DE EDAD
     document.getElementById('edadEstudiante').addEventListener('input', (e) => {
         const panel = document.getElementById('panelRepresentante');
         const inputs = panel.querySelectorAll('input');
@@ -197,16 +192,13 @@
         }
     });
 
-    // 3. ENVÍO A FIREBASE
     document.getElementById('formIdiomas').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnSubmit');
-        
-        // Recoger módulos marcados
         const seleccionados = Array.from(document.querySelectorAll('.check-modulo:checked')).map(cb => cb.value);
 
         if (seleccionados.length === 0) {
-            return Swal.fire("Módulos requeridos", "Por favor, selecciona al menos un módulo para tu postulación.", "warning");
+            return Swal.fire("Módulos requeridos", "Por favor, selecciona al menos un módulo.", "warning");
         }
 
         if (!e.target.checkValidity()) {
@@ -215,7 +207,7 @@
         }
 
         btn.disabled = true;
-        btn.innerText = "ENVIANDO POSTULACIÓN...";
+        btn.innerText = "ENVIANDO...";
 
         const datos = {
             modulosInscritos: seleccionados,
@@ -241,13 +233,13 @@
             await Swal.fire({
                 icon: 'success',
                 title: '¡Postulación Exitosa!',
-                text: 'Tus datos han sido registrados. La academia se pondrá en contacto contigo.',
+                text: 'Tus datos han sido registrados correctamente.',
                 confirmButtonColor: '#c5a059'
             });
             location.reload();
         } catch (err) {
             console.error(err);
-            Swal.fire("Error", "No pudimos conectar con el servidor. Intenta de nuevo.", "error");
+            Swal.fire("Error", "Ocurrió un error al enviar. Intenta de nuevo.", "error");
             btn.disabled = false;
             btn.innerText = "COMPLETAR POSTULACIÓN";
         }
