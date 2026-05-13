@@ -9,19 +9,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Estilos personalizados UCMI */
         .bg-ucmi-dark { background-color: #1a252f; }
         .text-ucmi-gold { color: #c5a059; }
         .border-ucmi-gold { border-color: #c5a059; }
+        .focus-ring-ucmi:focus { --tw-ring-color: #c5a059; border-color: #c5a059; }
     </style>
 </head>
 <body class="bg-gray-100 p-4 md:p-8">
 
     <div id="app" class="max-w-4xl mx-auto bg-white shadow-xl rounded-lg overflow-hidden">
-        <!-- Encabezado -->
+        
+        <!-- Encabezado Institucional -->
         <div class="bg-ucmi-dark p-6 flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center overflow-hidden">
-                    <!-- Placeholder para el logo -->
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center overflow-hidden border-2 border-ucmi-gold">
                     <span class="text-xs font-bold text-gray-400">LOGO</span>
                 </div>
                 <div>
@@ -29,100 +31,102 @@
                     <p class="text-white text-sm">Portal de Postulaciones Académicas</p>
                 </div>
             </div>
-            <div class="text-right text-gray-400 text-xs">
-                Presiona <b>Ctrl + Q</b> para autocompletar
+            <div class="text-right text-gray-400 text-xs hidden sm:block">
+                Presiona <b class="text-ucmi-gold">Ctrl + Q</b> para autocompletar
             </div>
         </div>
 
-        <!-- Formulario -->
+        <!-- Formulario Principal -->
         <form @submit.prevent="enviarFormulario" class="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            <!-- Datos del Estudiante -->
+            <!-- Bloque 1: Datos Personales -->
             <div class="space-y-4">
-                <h2 class="font-bold border-b-2 border-ucmi-gold pb-1">Datos del Postulante</h2>
+                <h2 class="font-bold border-b-2 border-ucmi-gold pb-1 text-ucmi-dark">Datos del Postulante</h2>
                 <div>
-                    <label class="block text-sm font-medium">Nombre Completo</label>
-                    <input v-model="formData.nombreResponsable" type="text" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500" required>
+                    <label class="block text-sm font-medium text-gray-700">Nombre Completo</label>
+                    <input v-model="formData.nombreResponsable" type="text" class="w-full border rounded p-2 focus:ring-2 focus-ring-ucmi outline-none" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium">DNI / Cédula</label>
-                    <input v-model="formData.dniEstudiante" type="text" class="w-full border rounded p-2" required>
+                    <label class="block text-sm font-medium text-gray-700">DNI / Cédula</label>
+                    <input v-model="formData.dniEstudiante" type="text" class="w-full border rounded p-2 focus:ring-2 focus-ring-ucmi outline-none" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium">Fecha de Nacimiento</label>
-                    <input v-model="formData.fechaNacimiento" type="date" @change="calcularEdad" class="w-full border rounded p-2" required>
+                    <label class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
+                    <input v-model="formData.fechaNacimiento" type="date" @change="calcularEdad" class="w-full border rounded p-2 focus:ring-2 focus-ring-ucmi outline-none" required>
                 </div>
             </div>
 
-            <!-- Contacto y Otros -->
+            <!-- Bloque 2: Contacto -->
             <div class="space-y-4">
-                <h2 class="font-bold border-b-2 border-ucmi-gold pb-1">Contacto</h2>
+                <h2 class="font-bold border-b-2 border-ucmi-gold pb-1 text-ucmi-dark">Información de Contacto</h2>
                 <div>
-                    <label class="block text-sm font-medium">Email</label>
-                    <input v-model="formData.email" type="email" class="w-full border rounded p-2" required>
+                    <label class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+                    <input v-model="formData.email" type="email" class="w-full border rounded p-2 focus:ring-2 focus-ring-ucmi outline-none" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium">WhatsApp</label>
-                    <input v-model="formData.whatsapp" type="tel" class="w-full border rounded p-2" required>
+                    <label class="block text-sm font-medium text-gray-700">WhatsApp</label>
+                    <input v-model="formData.whatsapp" type="tel" class="w-full border rounded p-2 focus:ring-2 focus-ring-ucmi outline-none" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium">Ubicación</label>
-                    <input v-model="formData.ubicacion" type="text" placeholder="Ciudad, País" class="w-full border rounded p-2" required>
+                    <label class="block text-sm font-medium text-gray-700">Ubicación (Ciudad/País)</label>
+                    <input v-model="formData.ubicacion" type="text" class="w-full border rounded p-2 focus:ring-2 focus-ring-ucmi outline-none" required>
                 </div>
             </div>
 
-            <!-- Sección Condicional: Representante -->
-            <div v-if="formData.edadEstudiante < 18 && formData.fechaNacimiento" class="md:col-span-2 bg-red-50 p-4 rounded-md border border-red-200">
-                <h2 class="font-bold text-red-800 mb-3 text-sm">INFORMACIÓN DEL REPRESENTANTE LEGAL (Requerido por minoría de edad: {{formData.edadEstudiante}} años)</h2>
+            <!-- Bloque 3: Representante (Dinámico) -->
+            <div v-if="formData.edadEstudiante !== null && formData.edadEstudiante < 18" class="md:col-span-2 bg-red-50 p-4 rounded-md border border-red-200">
+                <h2 class="font-bold text-red-800 mb-3 text-sm">DATOS DEL REPRESENTANTE (Menor de edad: {{formData.edadEstudiante}} años)</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <input v-model="formData.nombreRepresentante" placeholder="Nombre del Tutor" class="p-2 border rounded">
-                    <input v-model="formData.dniRepresentante" placeholder="DNI del Tutor" class="p-2 border rounded">
-                    <input v-model="formData.whatsappRepresentante" placeholder="WhatsApp del Tutor" class="p-2 border rounded">
+                    <input v-model="formData.nombreRepresentante" placeholder="Nombre del Tutor" class="p-2 border rounded focus:ring-1 focus:ring-red-400 outline-none">
+                    <input v-model="formData.dniRepresentante" placeholder="DNI del Tutor" class="p-2 border rounded focus:ring-1 focus:ring-red-400 outline-none">
+                    <input v-model="formData.whatsappRepresentante" placeholder="WhatsApp del Tutor" class="p-2 border rounded focus:ring-1 focus:ring-red-400 outline-none">
                 </div>
             </div>
 
-            <!-- Selección Académica -->
+            <!-- Bloque 4: Selección Académica -->
             <div class="md:col-span-2">
-                <h2 class="font-bold border-b-2 border-ucmi-gold pb-1 mb-3">Módulos de Interés</h2>
-                <div class="flex flex-wrap gap-4">
-                    <label v-for="mod in opcionesModulos" :key="mod" class="flex items-center space-x-2">
-                        <input type="checkbox" :value="mod" v-model="formData.modulosInscritos">
-                        <span>{{mod}}</span>
+                <h2 class="font-bold border-b-2 border-ucmi-gold pb-1 mb-3 text-ucmi-dark">Módulos Académicos</h2>
+                <div class="flex flex-wrap gap-4 bg-gray-50 p-4 rounded border">
+                    <label v-for="mod in opcionesModulos" :key="mod" class="flex items-center space-x-2 cursor-pointer hover:text-ucmi-gold transition">
+                        <input type="checkbox" :value="mod" v-model="formData.modulosInscritos" class="w-4 h-4 accent-ucmi-dark">
+                        <span class="text-sm font-medium uppercase">{{mod}}</span>
                     </label>
                 </div>
             </div>
 
-            <button type="submit" class="md:col-span-2 bg-ucmi-dark text-ucmi-gold font-bold py-3 rounded hover:bg-gray-800 transition">
-                FINALIZAR POSTULACIÓN Y GENERAR COMPROBANTE
+            <!-- Botón de Envío -->
+            <button type="submit" class="md:col-span-2 bg-ucmi-dark text-ucmi-gold font-bold py-4 rounded shadow-lg hover:bg-slate-800 transform active:scale-95 transition-all">
+                FINALIZAR REGISTRO Y DESCARGAR PDF
             </button>
         </form>
 
-        <!-- El Modal de éxito que mencionaste -->
-        <div v-if="mostrarModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg p-8 max-w-sm text-center">
-                <div class="text-green-500 text-5xl mb-4">✓</div>
-                <h2 class="text-2xl font-bold mb-2">¡Registro Exitoso!</h2>
-                <p class="text-gray-600 mb-6">Tu comprobante PDF se ha generado automáticamente.</p>
-                <button @click="mostrarModal = false" class="bg-ucmi-dark text-white px-6 py-2 rounded">Cerrar</button>
+        <!-- Modal de Confirmación -->
+        <div v-if="mostrarModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-xl p-8 max-w-sm w-full text-center shadow-2xl border-t-4 border-ucmi-gold">
+                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-green-600 text-3xl">✓</span>
+                </div>
+                <h2 class="text-2xl font-bold text-ucmi-dark mb-2">¡Registro Exitoso!</h2>
+                <p class="text-gray-600 mb-6">Se ha generado tu comprobante oficial de postulación.</p>
+                <button @click="mostrarModal = false" class="w-full bg-ucmi-dark text-white font-bold py-2 rounded hover:bg-gray-700 transition"> Entendido </button>
             </div>
         </div>
     </div>
 
     <script>
-        const { createApp, ref, reactive } = Vue;
+        const { createApp, ref, reactive, onMounted } = Vue;
 
-        const app = createApp({
+        createApp({
             setup() {
                 const mostrarModal = ref(false);
                 const opcionesModulos = ["Matemáticas", "Física", "Programación", "Lógica", "Inglés"];
                 
                 const formData = reactive({
-                    entidad: "UCMI - Institución Superior",
+                    entidad: "UCMI - Universidad de Ciencias Modernas",
                     nombreResponsable: "",
                     dniEstudiante: "",
                     fechaNacimiento: "",
                     edadEstudiante: null,
-                    genero: "No especificado",
                     email: "",
                     whatsapp: "",
                     ubicacion: "",
@@ -139,9 +143,7 @@
                     const cumple = new Date(formData.fechaNacimiento);
                     let edad = hoy.getFullYear() - cumple.getFullYear();
                     const m = hoy.getMonth() - cumple.getMonth();
-                    if (m < 0 || (m === 0 && hoy.getDate() < cumple.getDate())) {
-                        edad--;
-                    }
+                    if (m < 0 || (m === 0 && hoy.getDate() < cumple.getDate())) edad--;
                     formData.edadEstudiante = edad;
                 };
 
@@ -151,91 +153,85 @@
                     mostrarModal.value = true;
                 };
 
-                // Función PDF con estilo institucional
+                // Lógica del Generador de PDF Institucional
                 const imprimirComprobante = (datos) => {
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
                     const pageWidth = doc.internal.pageSize.getWidth();
 
-                    // Franja oscura superior
+                    // Header Oscuro
                     doc.setFillColor(26, 37, 47);
-                    doc.rect(0, 0, pageWidth, 40, 'F');
+                    doc.rect(0, 0, pageWidth, 45, 'F');
 
-                    // Texto Dorado
+                    // Título Dorado
                     doc.setTextColor(197, 160, 89);
                     doc.setFont("helvetica", "bold");
-                    doc.setFontSize(22);
-                    doc.text("UCMI", 20, 25);
+                    doc.setFontSize(24);
+                    doc.text("UCMI", 20, 28);
                     doc.setFontSize(10);
-                    doc.text("SISTEMA DE GESTIÓN ACADÉMICA", 20, 32);
+                    doc.text("COMPROBANTE OFICIAL DE POSTULACIÓN", 20, 36);
 
-                    // Cuerpo
-                    doc.setTextColor(40, 40, 40);
-                    doc.setFontSize(16);
-                    doc.text("COMPROBANTE DE POSTULACIÓN", pageWidth / 2, 55, { align: 'center' });
+                    // Contenido
+                    doc.setTextColor(50, 50, 50);
+                    doc.setFontSize(12);
+                    let y = 65;
 
-                    doc.setFontSize(11);
-                    let y = 70;
-                    
-                    const agregarCampo = (label, valor) => {
+                    const row = (label, value) => {
                         doc.setFont("helvetica", "bold");
                         doc.text(label, 20, y);
                         doc.setFont("helvetica", "normal");
-                        doc.text(String(valor).toUpperCase(), 70, y);
+                        doc.text(String(value).toUpperCase(), 75, y);
                         y += 10;
                     };
 
-                    agregarCampo("ESTUDIANTE:", datos.nombreResponsable);
-                    agregarCampo("ID:", datos.dniEstudiante);
-                    agregarCampo("EDAD:", datos.edadEstudiante + " AÑOS");
-                    agregarCampo("EMAIL:", datos.email);
+                    row("POSTULANTE:", datos.nombreResponsable);
+                    row("DOCUMENTO:", datos.dniEstudiante);
+                    row("EDAD:", datos.edadEstudiante + " AÑOS");
+                    row("CONTACTO:", datos.whatsapp);
+                    row("EMAIL:", datos.email.toLowerCase());
                     
                     if (datos.edadEstudiante < 18) {
+                        doc.setDrawColor(197, 160, 89);
+                        doc.line(20, y-5, 190, y-5);
+                        y += 5;
                         doc.setTextColor(150, 0, 0);
-                        agregarCampo("REPRESENTANTE:", datos.nombreRepresentante);
-                        doc.setTextColor(40, 40, 40);
+                        row("TUTOR LEGAL:", datos.nombreRepresentante);
+                        row("ID TUTOR:", datos.dniRepresentante);
+                        doc.setTextColor(50, 50, 50);
                     }
 
-                    agregarCampo("MÓDULOS:", datos.modulosInscritos.join(", "));
-                    agregarCampo("REGISTRO:", datos.fechaInscripcion);
+                    row("ASIGNATURAS:", datos.modulosInscritos.join(", "));
+                    row("FECHA REGISTRO:", datos.fechaInscripcion);
 
                     doc.save(`Postulacion_${datos.dniEstudiante}.pdf`);
                 };
 
+                // Lógica para Ctrl + Q (Autocompletado)
+                onMounted(() => {
+                    document.addEventListener('keydown', (e) => {
+                        if (e.ctrlKey && e.key === 'q') {
+                            e.preventDefault();
+                            
+                            formData.nombreResponsable = "Juan Carlos Riera";
+                            formData.dniEstudiante = "1712345678";
+                            formData.fechaNacimiento = "2010-06-20"; // Genera menor de edad
+                            formData.email = "jcriera.dev@ucmi.edu";
+                            formData.whatsapp = "+593 987 654 321";
+                            formData.ubicacion = "Quito, Ecuador";
+                            formData.nombreRepresentante = "Nory Romero";
+                            formData.dniRepresentante = "1709876543";
+                            formData.whatsappRepresentante = "+593 912 345 678";
+                            formData.modulosInscritos = ["Matemáticas", "Programación", "Lógica"];
+                            
+                            calcularEdad();
+                            console.log("Mock data cargado.");
+                        }
+                    });
+                });
+
                 return { formData, opcionesModulos, calcularEdad, enviarFormulario, mostrarModal };
             }
         }).mount('#app');
-
-        // --- ATAJO DE TECLADO CTRL + Q ---
-        document.addEventListener('keydown', function(event) {
-            if (event.ctrlKey && event.key === 'q') {
-                event.preventDefault();
-                
-                // Estos datos se inyectan directamente en el proxy de Vue
-                const mock = {
-                    nombreResponsable: "Juan Carlos Riera",
-                    dniEstudiante: "1712345678",
-                    fechaNacimiento: "2010-03-15",
-                    email: "jcriera.dev@example.com",
-                    whatsapp: "+593 987654321",
-                    ubicacion: "Quito, Ecuador",
-                    nombreRepresentante: "Nory Romero",
-                    dniRepresentante: "1709876543",
-                    whatsappRepresentante: "+593 912345678",
-                    modulosInscritos: ["Matemáticas", "Lógica"]
-                };
-
-                // Asignar los datos al objeto reactivo para que se vean en el HTML
-                Object.assign(app.formData, mock);
-                
-                // Forzar el cálculo de edad
-                const hoy = new Date();
-                const cumple = new Date(mock.fechaNacimiento);
-                app.formData.edadEstudiante = hoy.getFullYear() - cumple.getFullYear();
-
-                console.log("Datos de prueba cargados con éxito.");
-            }
-        });
     </script>
 </body>
 </html>
