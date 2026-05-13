@@ -23,12 +23,27 @@
         .inst-logo { height: 110px; margin-bottom: 15px; opacity: 0; transition: 0.5s; }
         .inst-nombre { font-family: 'Cinzel', serif; color: #f3f0df; font-size: 1rem; letter-spacing: 4px; text-transform: uppercase; }
         .inst-titulo { color: var(--dorado-ucmi); font-weight: 800; font-size: 2.2rem; }
+        
+        /* Estilos de formulario */
         .form-label { color: var(--dorado-ucmi); font-size: 0.85rem; font-weight: bold; margin-top: 10px; }
-        .form-control, .form-select { border-radius: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.08); color: white; }
-        .form-control:focus, .form-select:focus { background: rgba(255, 255, 255, 0.15); border-color: var(--dorado-ucmi); color: white; box-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
-        .form-select option { background: #1a2a3a; color: white; }
+        .form-control { border-radius: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.08); color: white; }
+        .form-control:focus { background: rgba(255, 255, 255, 0.15); border-color: var(--dorado-ucmi); color: white; box-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
+        
+        /* Checkboxes Personalizados */
+        .modulo-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(197, 160, 89, 0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .modulo-item:hover { background: rgba(197, 160, 89, 0.1); border-color: var(--dorado-ucmi); }
+        .form-check-input:checked { background-color: var(--dorado-ucmi); border-color: var(--dorado-ucmi); }
+        
         .seccion-representante { display: none; background: rgba(197, 160, 89, 0.05); padding: 20px; border-radius: 20px; border: 1px solid rgba(197, 160, 89, 0.2); margin-top: 20px; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; border: none; width: 100%; margin-top: 30px; transition: 0.3s; }
         .btn-enviar:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(197, 160, 89, 0.4); }
     </style>
@@ -47,14 +62,6 @@
 
         <form id="formIdiomas" class="p-4 p-md-5 pt-3" novalidate>
             <div class="row g-3">
-                <!-- SELECCIÓN DE MÓDULO DINÁMICO -->
-                <div class="col-12">
-                    <label class="form-label">MÓDULO AL QUE POSTULA:</label>
-                    <select id="moduloPostulacion" class="form-select" required>
-                        <option value="" selected disabled>Cargando módulos disponibles...</option>
-                    </select>
-                </div>
-
                 <div class="col-12">
                     <label class="form-label">NOMBRE COMPLETO DEL ESTUDIANTE:</label>
                     <input type="text" id="nombreResponsable" class="form-control" required>
@@ -83,7 +90,7 @@
 
             <!-- SECCIÓN CONDICIONAL PARA MENORES -->
             <div id="panelRepresentante" class="seccion-representante">
-                <h6 class="text-warning fw-bold mb-3"><i class="bi bi-shield-check me-2"></i>DATOS DEL REPRESENTANTE (MENOR DE EDAD)</h6>
+                <h6 class="text-warning fw-bold mb-3"><i class="bi bi-shield-check me-2"></i>DATOS DEL REPRESENTANTE</h6>
                 <div class="row g-3">
                     <div class="col-12">
                         <label class="form-label">NOMBRE DEL REPRESENTANTE:</label>
@@ -96,6 +103,16 @@
                     <div class="col-md-6">
                         <label class="form-label">WHATSAPP DEL REPRESENTANTE:</label>
                         <input type="text" id="whatsappRepresentante" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN DE MÓDULOS AL FINAL -->
+            <div class="mt-5">
+                <label class="form-label d-block mb-3">SELECCIONE LOS MÓDULOS A LOS QUE DESEA POSTULAR:</label>
+                <div id="contenedorModulos" class="row g-2">
+                    <div class="col-12 text-center opacity-50">
+                        <small>Sincronizando oferta académica...</small>
                     </div>
                 </div>
             </div>
@@ -124,7 +141,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const sedeRef = urlParams.get('ref') || "UCMI";
 
-    // 1. CARGAR IDENTIDAD Y MÓDULOS FILTRADOS
+    // 1. CARGAR IDENTIDAD Y MÓDULOS ACTIVOS (CHECKBOXES)
     async function cargarConfiguracion() {
         const q = query(collection(db, "usuarios"), where("entidad", "==", sedeRef));
         const snap = await getDocs(q);
@@ -132,28 +149,36 @@
         if (!snap.empty) {
             const data = snap.docs[0].data();
             
-            // Cargar Logo y Nombre
+            // Logo y Nombre
             document.getElementById('logoDinamico').src = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
             document.getElementById('logoDinamico').style.opacity = "1";
             document.getElementById('nombreSede').innerText = data.entidad.toUpperCase();
 
-            // Filtrar Módulos: Solo los que están en 'modulos' y tienen valor true en 'modulos-ofertados-academia'
-            const selectModulos = document.getElementById('moduloPostulacion');
-            const listaModulos = data.modulos || [];
-            const estados = data['modulos-ofertados-academia'] || {};
+            // Renderizar Checkboxes
+            const contenedor = document.getElementById('contenedorModulos');
+            const listaAdquirida = data.modulos || [];
+            const estadosVisibilidad = data['modulos-ofertados-academia'] || {};
 
-            const modulosActivos = listaModulos.filter(m => estados[m] === true);
+            // Filtramos solo los que el profesor activó (true)
+            const modulosPublicos = listaAdquirida.filter(m => estadosVisibilidad[m] === true);
 
-            if (modulosActivos.length > 0) {
-                selectModulos.innerHTML = '<option value="" selected disabled>Selecciona el módulo...</option>';
-                modulosActivos.forEach(mod => {
-                    const opt = document.createElement('option');
-                    opt.value = mod;
-                    opt.innerText = mod;
-                    selectModulos.appendChild(opt);
+            if (modulosPublicos.length > 0) {
+                contenedor.innerHTML = ''; // Limpiar mensaje de carga
+                modulosPublicos.forEach(mod => {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-6';
+                    col.innerHTML = `
+                        <div class="form-check modulo-item">
+                            <input class="form-check-input check-modulo" type="checkbox" value="${mod}" id="check_${mod}">
+                            <label class="form-check-label ms-2 w-100" style="cursor:pointer;" for="check_${mod}">
+                                ${mod}
+                            </label>
+                        </div>
+                    `;
+                    contenedor.appendChild(col);
                 });
             } else {
-                selectModulos.innerHTML = '<option value="">No hay módulos disponibles actualmente</option>';
+                contenedor.innerHTML = '<div class="col-12 text-warning small text-center">No hay módulos disponibles en inscripción abierta.</div>';
             }
         }
     }
@@ -177,16 +202,23 @@
         e.preventDefault();
         const btn = document.getElementById('btnSubmit');
         
+        // Recoger módulos marcados
+        const seleccionados = Array.from(document.querySelectorAll('.check-modulo:checked')).map(cb => cb.value);
+
+        if (seleccionados.length === 0) {
+            return Swal.fire("Módulos requeridos", "Por favor, selecciona al menos un módulo para tu postulación.", "warning");
+        }
+
         if (!e.target.checkValidity()) {
             e.target.classList.add('was-validated');
-            return Swal.fire("Error", "Completa todos los campos obligatorios.", "error");
+            return Swal.fire("Datos incompletos", "Verifica los campos marcados en rojo.", "error");
         }
 
         btn.disabled = true;
-        btn.innerText = "REGISTRANDO...";
+        btn.innerText = "ENVIANDO POSTULACIÓN...";
 
         const datos = {
-            modulo: document.getElementById('moduloPostulacion').value,
+            modulosInscritos: seleccionados,
             nombreResponsable: document.getElementById('nombreResponsable').value,
             dniEstudiante: document.getElementById('dniEstudiante').value,
             email: document.getElementById('email').value,
@@ -195,7 +227,7 @@
             edadEstudiante: document.getElementById('edadEstudiante').value,
             entidad: sedeRef, 
             perfil: "Estudiante Academia",
-            fecha: new Date().toLocaleString()
+            fechaInscripcion: new Date().toLocaleString()
         };
 
         if (datos.edadEstudiante < 18) {
@@ -208,14 +240,14 @@
             await addDoc(collection(db, "postulaciones"), datos);
             await Swal.fire({
                 icon: 'success',
-                title: '¡Registro Exitoso!',
-                text: 'Tus datos han sido enviados a la academia.',
+                title: '¡Postulación Exitosa!',
+                text: 'Tus datos han sido registrados. La academia se pondrá en contacto contigo.',
                 confirmButtonColor: '#c5a059'
             });
             location.reload();
         } catch (err) {
             console.error(err);
-            Swal.fire("Error", "No se pudo procesar el registro.", "error");
+            Swal.fire("Error", "No pudimos conectar con el servidor. Intenta de nuevo.", "error");
             btn.disabled = false;
             btn.innerText = "COMPLETAR POSTULACIÓN";
         }
