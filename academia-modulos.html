@@ -56,10 +56,12 @@
             height: 65px;
             width: auto;
             filter: drop-shadow(0 0 12px rgba(197, 160, 89, 0.3));
-            transition: transform 0.3s ease;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+            opacity: 0; /* Invisible por defecto */
         }
 
         .logo-sidebar:hover { transform: scale(1.05); }
+        .logo-sidebar.ready { opacity: 1; }
 
         .sistema-label {
             font-size: 0.7rem;
@@ -194,7 +196,7 @@
         <div class="row">
             <aside class="col-md-3 col-lg-2 sidebar d-none d-md-flex">
                 <div class="logo-container">
-                    <img id="logoAcademia" src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" class="logo-sidebar">
+                    <img id="logoAcademia" src="" class="logo-sidebar" alt="Logo">
                     <div id="nombreEntidad" class="sistema-label">Cargando...</div>
                 </div>
 
@@ -225,7 +227,8 @@
 
                 <div id="dynamic-content">
                     <div class="list-container" id="modules-container">
-                        </div>
+                        <!-- Aquí se cargan los módulos -->
+                    </div>
                 </div>
 
                 <footer class="footer-system">
@@ -241,10 +244,10 @@
     import { db } from './firebase-config.js';
     import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Limpiamos y aseguramos el ID del usuario
+    // Variables de estado
     let rawUserId = localStorage.getItem('userId');
     const userId = rawUserId ? rawUserId.toLowerCase().trim() : null;
-    const userRole = localStorage.getItem('userRole'); // Añade esto aquí
+    const userRole = localStorage.getItem('userRole'); 
     const contenedor = document.getElementById('modules-container');
     const sectionTitle = document.getElementById('section-title');
     const sectionSubtitle = document.getElementById('section-subtitle');
@@ -262,30 +265,24 @@
 
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                if (docSnap.exists()) {
-    const data = docSnap.data();
-    
-    // NUEVA LÓGICA: Actualizar nombre de la entidad
-    const labelEntidad = document.getElementById('nombreEntidad');
-    if (data.entidad) {
-        labelEntidad.innerText = data.entidad;
-    } else {
-        labelEntidad.innerText = "Sistema Maestro"; // Valor por defecto si no existe 'entidad'
-    }
+                
+                // Actualizar nombre de la entidad
+                const labelEntidad = document.getElementById('nombreEntidad');
+                labelEntidad.innerText = data.entidad || "Sistema Maestro";
 
-    // ... (El resto de tu código de logos y módulos sigue igual)
-}
+                // Gestión de Módulos
                 const misModulos = data.modulos || [];
                 const estados = data['modulos-ofertados-academia'] || {};
 
+                // Gestión de Logo e Interfaz
                 const logoElement = document.getElementById('logoAcademia');
                 if (data.logoCustom) {
-                    // Si existe un logo personalizado en Base64 en Firestore, lo usamos
                     logoElement.src = data.logoCustom;
-                } else if (localStorage.getItem('userRole') === 'Profesor independiente') {
-                    // Si no hay logo personalizado pero es Profesor Independiente, usamos el de Star
+                } else if (userRole === 'Profesor independiente') {
                     logoElement.src = 'https://universitariodematematica-star.github.io/UCMI/logo-star.png';
                 }
+
+                logoElement.classList.add('ready'); // Activa visibilidad suave
                 sectionTitle.innerText = "Módulos Académicos";
 
                 if (misModulos.length === 0) {
@@ -313,8 +310,9 @@
                             </div>
                         </div>`;
                 }).join('');
+
             } else {
-                contenedor.innerHTML = `<p class="text-center opacity-50">Usuario [${userId}] no encontrado en la base de datos.</p>`;
+                contenedor.innerHTML = `<p class="text-center opacity-50">Usuario [${userId}] no encontrado.</p>`;
             }
         } catch (error) {
             console.error("Error Firebase:", error);
@@ -322,42 +320,34 @@
         }
     };
 
-    // --- 2. Lógica de Interfaz y Navegación ---
-
+    // --- 2. Lógica de Navegación ---
     document.querySelectorAll('.nav-link-custom').forEach(link => {
-    link.addEventListener('click', (e) => {
-        // Bloqueamos la recarga SIEMPRE para manejarlo con JS
-        e.preventDefault(); 
-        
-        const texto = link.innerText.trim();
-        
-        // Actualización visual de la pestaña activa
-        document.querySelectorAll('.nav-link-custom').forEach(l => l.classList.remove('active'));
-        link.classList.add('active');
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const texto = link.innerText.trim();
+            
+            document.querySelectorAll('.nav-link-custom').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            sectionSubtitle.innerText = "Gestión de " + texto;
 
-        // Limpieza de subtítulo para secciones nuevas
-        sectionSubtitle.innerText = "Gestión de " + texto;
-
-        if (texto === 'Módulos') {
-            cargarDatos();
-        } else {
-            sectionTitle.innerText = texto;
-            contenedor.innerHTML = `
-                <div class="text-center opacity-50 mt-5">
-                    <i class="bi bi-gear-wide-connected display-1"></i>
-                    <p class="mt-3">Sección "${texto}" en fase de implementación...</p>
-                </div>`;
-        }
+            if (texto === 'Módulos') {
+                cargarDatos();
+            } else {
+                sectionTitle.innerText = texto;
+                contenedor.innerHTML = `
+                    <div class="text-center opacity-50 mt-5">
+                        <i class="bi bi-gear-wide-connected display-1"></i>
+                        <p class="mt-3">Sección "${texto}" en fase de implementación...</p>
+                    </div>`;
+            }
+        });
     });
-});
 
-    // --- 3. Función de Sincronización Global (Expuesta a window) ---
+    // --- 3. Función de Sincronización Global ---
     window.actualizarVisibilidad = async (index, nombreModulo) => {
         const sw = document.getElementById(`switch-${index}`);
         const label = document.getElementById(`label-${index}`);
         
-        console.log("Sincronizando estado para:", nombreModulo);
-
         label.innerText = sw.checked ? "Público" : "Oculto";
         label.className = sw.checked ? "status-label text-publico" : "status-label text-oculto";
 
@@ -366,14 +356,12 @@
             await updateDoc(userRef, {
                 [`modulos-ofertados-academia.${nombreModulo}`]: sw.checked
             });
-            console.log("Sincronización Supralógica exitosa.");
         } catch (error) {
-            console.error("Error detallado:", error);
-            // Reversión por error
-            sw.checked = !sw.checked;
+            console.error("Error sincronización:", error);
+            sw.checked = !sw.checked; // Reversión visual si falla
             label.innerText = sw.checked ? "Público" : "Oculto";
             label.className = sw.checked ? "status-label text-publico" : "status-label text-oculto";
-            alert("Error: No tienes permisos para editar o la sesión expiró.");
+            alert("Error: No se pudo actualizar el estado en la base de datos.");
         }
     };
 
