@@ -2,232 +2,410 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Postulación Académica UCMI</title>
-    <!-- Librerías Externas -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <title>UCMI | Inscripción de Idiomas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
-        /* Estilos personalizados UCMI */
-        .bg-ucmi-dark { background-color: #1a252f; }
-        .text-ucmi-gold { color: #c5a059; }
-        .border-ucmi-gold { border-color: #c5a059; }
-        .focus-ring-ucmi:focus { --tw-ring-color: #c5a059; border-color: #c5a059; }
+        :root { 
+            --dorado-ucmi: #c5a059; 
+            --dark-bg: #0a0c10;
+            --glass-bg: rgba(15, 18, 25, 0.85);
+            --border-glow: rgba(197, 160, 89, 0.3);
+        }
+
+        body {
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover; 
+            font-family: 'Inter', sans-serif; 
+            color: #e0e0e0; 
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 40px 0;
+        }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: linear-gradient(180deg, rgba(10, 12, 16, 0.7) 0%, #0a0c10 100%);
+            z-index: -1; 
+        }
+
+        .card-form {
+            border: 1px solid rgba(197, 160, 89, 0.15); 
+            border-radius: 24px; 
+            box-shadow: 0 25px 80px rgba(0,0,0,0.8);
+            background: var(--glass-bg); 
+            backdrop-filter: blur(25px);
+            max-width: 750px; 
+            margin: auto; 
+            overflow: hidden;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-institucional { 
+            text-align: center; 
+            padding: 60px 20px; 
+            background: rgba(0, 0, 0, 0.4); 
+            border-bottom: 1px solid var(--border-glow); 
+        }
+
+        .inst-logo { height: 100px; margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--border-glow)); transition: 0.8s; }
+        .inst-nombre { font-family: 'Cinzel', serif; color: #f3f0df; font-size: 0.9rem; letter-spacing: 5px; opacity: 0.8; }
+        .inst-titulo { color: var(--dorado-ucmi); font-weight: 700; font-size: 1.8rem; margin-top: 10px; text-shadow: 0 0 20px rgba(197, 160, 89, 0.2); }
+
+        .form-label { color: var(--dorado-ucmi); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        
+        .form-control, .form-select { 
+            border-radius: 10px; padding: 14px; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            background: rgba(255, 255, 255, 0.03); 
+            color: #fff; 
+            transition: 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus { 
+            background: rgba(255, 255, 255, 0.07); 
+            border-color: var(--dorado-ucmi); 
+            color: #fff; 
+            box-shadow: 0 0 0 4px rgba(197, 160, 89, 0.15); 
+        }
+
+        .form-select option { background: #12151a; color: white; }
+
+        .modulo-item { 
+            background: rgba(255,255,255,0.02); 
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 12px 15px; 
+            margin-bottom: 8px;
+            transition: 0.3s; 
+        }
+        .modulo-item:hover { background: rgba(197, 160, 89, 0.05); border-color: var(--border-glow); }
+
+        .form-check-input { width: 1.2em; height: 1.2em; border: 2px solid var(--dorado-ucmi); background-color: transparent; }
+        .form-check-input:checked { background-color: var(--dorado-ucmi); }
+
+        .seccion-representante { 
+            background: rgba(197, 160, 89, 0.03); 
+            padding: 25px; 
+            border-radius: 18px; 
+            border: 1px dashed var(--border-glow); 
+            margin-top: 30px; 
+        }
+
+        .btn-enviar { 
+            background: var(--dorado-ucmi);
+            color: #000; 
+            font-weight: 700; 
+            padding: 18px; 
+            border-radius: 12px; 
+            border: none; 
+            letter-spacing: 1px;
+            margin-top: 40px; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .btn-enviar:hover { transform: scale(1.02); background: #d4b475; box-shadow: 0 15px 30px rgba(197, 160, 89, 0.3); }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0c10; }
+        ::-webkit-scrollbar-thumb { background: var(--dorado-ucmi); border-radius: 10px; }
     </style>
 </head>
-<body class="bg-gray-100 p-4 md:p-8">
+<body>
 
-    <div id="app" class="max-w-4xl mx-auto bg-white shadow-xl rounded-lg overflow-hidden">
-        
-        <!-- Encabezado Institucional -->
-        <div class="bg-ucmi-dark p-6 flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center overflow-hidden border-2 border-ucmi-gold">
-                    <span class="text-xs font-bold text-gray-400">LOGO</span>
-                </div>
-                <div>
-                    <h1 class="text-ucmi-gold text-2xl font-bold">UCMI</h1>
-                    <p class="text-white text-sm">Portal de Postulaciones Académicas</p>
-                </div>
-            </div>
-            <div class="text-right text-gray-400 text-xs hidden sm:block">
-                Presiona <b class="text-ucmi-gold">Ctrl + Q</b> para autocompletar
-            </div>
+<div class="overlay"></div>
+
+<div class="container">
+    <div class="card-form shadow-lg">
+        <div class="header-institucional">
+            <img src="" id="logoDinamico" class="inst-logo" style="opacity: 0;">
+            <div id="nombreSede" class="inst-nombre">IDENTIFICANDO ACADEMIA...</div>
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA</h1>
         </div>
 
-        <!-- Formulario Principal -->
-        <form @submit.prevent="enviarFormulario" class="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <!-- Bloque 1: Datos Personales -->
-            <div class="space-y-4">
-                <h2 class="font-bold border-b-2 border-ucmi-gold pb-1 text-ucmi-dark">Datos del Postulante</h2>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Nombre Completo</label>
-                    <input v-model="formData.nombreResponsable" type="text" class="w-full border rounded p-2 focus:ring-2 focus-ring-ucmi outline-none" required>
+        <form id="formIdiomas" class="p-4 p-md-5 pt-4" novalidate>
+            <div class="row g-4">
+                <div class="col-12">
+                    <label class="form-label">Nombre Completo del Estudiante</label>
+                    <input type="text" id="nombreResponsable" class="form-control" placeholder="Ej: Juan Pérez" required>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">DNI / Cédula</label>
-                    <input v-model="formData.dniEstudiante" type="text" class="w-full border rounded p-2 focus:ring-2 focus-ring-ucmi outline-none" required>
+                <div class="col-md-6">
+                    <label class="form-label">DNI / Documento</label>
+                    <input type="text" id="dniEstudiante" class="form-control" required>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
-                    <input v-model="formData.fechaNacimiento" type="date" @change="calcularEdad" class="w-full border rounded p-2 focus:ring-2 focus-ring-ucmi outline-none" required>
+                <div class="col-md-6">
+                    <label class="form-label">Género</label>
+                    <select id="genero" class="form-select" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                        <option value="Otro">Otro</option>
+                    </select>
                 </div>
-            </div>
-
-            <!-- Bloque 2: Contacto -->
-            <div class="space-y-4">
-                <h2 class="font-bold border-b-2 border-ucmi-gold pb-1 text-ucmi-dark">Información de Contacto</h2>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-                    <input v-model="formData.email" type="email" class="w-full border rounded p-2 focus:ring-2 focus-ring-ucmi outline-none" required>
+                <div class="col-md-6">
+                    <label class="form-label">Fecha de Nacimiento</label>
+                    <input type="date" id="fechaNacimiento" class="form-control" required>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">WhatsApp</label>
-                    <input v-model="formData.whatsapp" type="tel" class="w-full border rounded p-2 focus:ring-2 focus-ring-ucmi outline-none" required>
+                <div class="col-md-6">
+                    <label class="form-label">Edad</label>
+                    <input type="number" id="edadEstudiante" class="form-control" required min="1">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Ubicación (Ciudad/País)</label>
-                    <input v-model="formData.ubicacion" type="text" class="w-full border rounded p-2 focus:ring-2 focus-ring-ucmi outline-none" required>
+                <div class="col-12">
+                    <label class="form-label">Ciudad / País de Residencia</label>
+                    <input type="text" id="ubicacion" class="form-control" placeholder="Ej: Caracas, Venezuela" required>
                 </div>
-            </div>
-
-            <!-- Bloque 3: Representante (Dinámico) -->
-            <div v-if="formData.edadEstudiante !== null && formData.edadEstudiante < 18" class="md:col-span-2 bg-red-50 p-4 rounded-md border border-red-200">
-                <h2 class="font-bold text-red-800 mb-3 text-sm">DATOS DEL REPRESENTANTE (Menor de edad: {{formData.edadEstudiante}} años)</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <input v-model="formData.nombreRepresentante" placeholder="Nombre del Tutor" class="p-2 border rounded focus:ring-1 focus:ring-red-400 outline-none">
-                    <input v-model="formData.dniRepresentante" placeholder="DNI del Tutor" class="p-2 border rounded focus:ring-1 focus:ring-red-400 outline-none">
-                    <input v-model="formData.whatsappRepresentante" placeholder="WhatsApp del Tutor" class="p-2 border rounded focus:ring-1 focus:ring-red-400 outline-none">
+                <div class="col-md-6">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" id="email" class="form-control" placeholder="usuario@ejemplo.com" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">WhatsApp</label>
+                    <input type="text" id="whatsapp" class="form-control" placeholder="+58 412..." required>
                 </div>
             </div>
 
-            <!-- Bloque 4: Selección Académica -->
-            <div class="md:col-span-2">
-                <h2 class="font-bold border-b-2 border-ucmi-gold pb-1 mb-3 text-ucmi-dark">Módulos Académicos</h2>
-                <div class="flex flex-wrap gap-4 bg-gray-50 p-4 rounded border">
-                    <label v-for="mod in opcionesModulos" :key="mod" class="flex items-center space-x-2 cursor-pointer hover:text-ucmi-gold transition">
-                        <input type="checkbox" :value="mod" v-model="formData.modulosInscritos" class="w-4 h-4 accent-ucmi-dark">
-                        <span class="text-sm font-medium uppercase">{{mod}}</span>
-                    </label>
+            <div id="panelRepresentante" class="seccion-representante" style="display: none;">
+                <h6 class="text-warning fw-bold mb-4 small"><i class="bi bi-shield-lock me-2"></i>REQUERIDO: DATOS DEL REPRESENTANTE LEGAL</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Nombre del Representante</label>
+                        <input type="text" id="nombreRepresentante" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">DNI Representante</label>
+                        <input type="text" id="dniRepresentante" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">WhatsApp Rep.</label>
+                        <input type="text" id="whatsappRepresentante" class="form-control">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Correo del Representante</label>
+                        <input type="email" id="correoRepresentante" class="form-control">
+                    </div>
                 </div>
             </div>
 
-            <!-- Botón de Envío -->
-            <button type="submit" class="md:col-span-2 bg-ucmi-dark text-ucmi-gold font-bold py-4 rounded shadow-lg hover:bg-slate-800 transform active:scale-95 transition-all">
-                FINALIZAR REGISTRO Y DESCARGAR PDF
-            </button>
+            <div class="mt-5">
+                <label class="form-label d-block mb-3">Módulos disponibles para postulación:</label>
+                <div id="contenedorModulos" class="row g-2">
+                    <div class="col-12 text-center opacity-50 py-4">
+                        <div class="spinner-border spinner-border-sm text-warning me-2"></div>
+                        <small>Sincronizando con el servidor...</small>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" id="btnSubmit" class="btn btn-enviar w-100">FINALIZAR Y GENERAR COMPROBANTE</button>
         </form>
-
-        <!-- Modal de Confirmación -->
-        <div v-if="mostrarModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-            <div class="bg-white rounded-xl p-8 max-sm w-full text-center shadow-2xl border-t-4 border-ucmi-gold">
-                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span class="text-green-600 text-3xl">✓</span>
-                </div>
-                <h2 class="text-2xl font-bold text-ucmi-dark mb-2">¡Registro Exitoso!</h2>
-                <p class="text-gray-600 mb-6">Se ha generado tu comprobante oficial de postulación.</p>
-                <button @click="mostrarModal = false" class="w-full bg-ucmi-dark text-white font-bold py-2 rounded hover:bg-gray-700 transition"> Entendido </button>
-            </div>
-        </div>
     </div>
+</div>
 
-    <script>
-        const { createApp, ref, reactive, onMounted } = Vue;
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        createApp({
-            setup() {
-                const mostrarModal = ref(false);
-                const opcionesModulos = ["Matemáticas", "Física", "Programación", "Lógica", "Inglés"];
-                
-                const formData = reactive({
-                    entidad: "UCMI - Universidad de Ciencias Modernas",
-                    nombreResponsable: "",
-                    dniEstudiante: "",
-                    fechaNacimiento: "",
-                    edadEstudiante: null,
-                    email: "",
-                    whatsapp: "",
-                    ubicacion: "",
-                    nombreRepresentante: "",
-                    dniRepresentante: "",
-                    whatsappRepresentante: "",
-                    modulosInscritos: [],
-                    fechaInscripcion: ""
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const sedeRef = urlParams.get('ref') || "UCMI";
+    let logoBase64 = "";
+
+    async function cargarConfiguracion() {
+        const q = query(collection(db, "usuarios"), where("entidad", "==", sedeRef));
+        const snap = await getDocs(q);
+        
+        if (!snap.empty) {
+            const data = snap.docs[0].data();
+            const imgUrl = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+            
+            const img = document.getElementById('logoDinamico');
+            img.src = imgUrl;
+            img.style.opacity = "1";
+            document.getElementById('nombreSede').innerText = data.entidad.toUpperCase();
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const tempImg = new Image();
+            tempImg.crossOrigin = "Anonymous";
+            tempImg.onload = () => {
+                canvas.width = tempImg.width;
+                canvas.height = tempImg.height;
+                ctx.drawImage(tempImg, 0, 0);
+                logoBase64 = canvas.toDataURL('image/png');
+            };
+            tempImg.src = imgUrl;
+
+            const contenedor = document.getElementById('contenedorModulos');
+            const listaAdquirida = data.modulos || [];
+            const estadosVisibilidad = data['modulos-ofertados-academia'] || {};
+            contenedor.innerHTML = '';
+
+            const modulosPublicos = listaAdquirida.filter(m => estadosVisibilidad[m] === true);
+
+            if (modulosPublicos.length > 0) {
+                modulosPublicos.forEach(mod => {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-6';
+                    const idSeguro = mod.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
+                    col.innerHTML = `
+                        <div class="form-check modulo-item">
+                            <input class="form-check-input check-modulo" type="checkbox" value="${mod}" id="check_${idSeguro}">
+                            <label class="form-check-label ms-2 text-white-50" for="check_${idSeguro}">${mod}</label>
+                        </div>
+                    `;
+                    contenedor.appendChild(col);
                 });
-
-                const calcularEdad = () => {
-                    if (!formData.fechaNacimiento) return;
-                    const hoy = new Date();
-                    const cumple = new Date(formData.fechaNacimiento);
-                    let edad = hoy.getFullYear() - cumple.getFullYear();
-                    const m = hoy.getMonth() - cumple.getMonth();
-                    if (m < 0 || (m === 0 && hoy.getDate() < cumple.getDate())) edad--;
-                    formData.edadEstudiante = edad;
-                };
-
-                const enviarFormulario = () => {
-                    formData.fechaInscripcion = new Date().toLocaleString();
-                    imprimirComprobante(formData);
-                    mostrarModal.value = true;
-                };
-
-                const imprimirComprobante = (datos) => {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
-                    const pageWidth = doc.internal.pageSize.getWidth();
-
-                    doc.setFillColor(26, 37, 47);
-                    doc.rect(0, 0, pageWidth, 45, 'F');
-
-                    doc.setTextColor(197, 160, 89);
-                    doc.setFont("helvetica", "bold");
-                    doc.setFontSize(24);
-                    doc.text("UCMI", 20, 28);
-                    doc.setFontSize(10);
-                    doc.text("COMPROBANTE OFICIAL DE POSTULACIÓN", 20, 36);
-
-                    doc.setTextColor(50, 50, 50);
-                    doc.setFontSize(12);
-                    let y = 65;
-
-                    const row = (label, value) => {
-                        doc.setFont("helvetica", "bold");
-                        doc.text(label, 20, y);
-                        doc.setFont("helvetica", "normal");
-                        doc.text(String(value).toUpperCase(), 75, y);
-                        y += 10;
-                    };
-
-                    row("POSTULANTE:", datos.nombreResponsable);
-                    row("DOCUMENTO:", datos.dniEstudiante);
-                    row("EDAD:", datos.edadEstudiante + " AÑOS");
-                    row("CONTACTO:", datos.whatsapp);
-                    row("EMAIL:", datos.email.toLowerCase());
-                    
-                    if (datos.edadEstudiante < 18) {
-                        doc.setDrawColor(197, 160, 89);
-                        doc.line(20, y-5, 190, y-5);
-                        y += 5;
-                        doc.setTextColor(150, 0, 0);
-                        row("TUTOR LEGAL:", datos.nombreRepresentante);
-                        row("ID TUTOR:", datos.dniRepresentante);
-                        doc.setTextColor(50, 50, 50);
-                    }
-
-                    row("ASIGNATURAS:", datos.modulosInscritos.join(", "));
-                    row("FECHA REGISTRO:", datos.fechaInscripcion);
-
-                    doc.save(`Postulacion_${datos.dniEstudiante}.pdf`);
-                };
-
-                // Lógica para Ctrl + Q integrada
-                onMounted(() => {
-                    document.addEventListener('keydown', (e) => {
-                        if (e.ctrlKey && e.key === 'q') {
-                            e.preventDefault();
-                            
-                            // Datos de autollenado
-                            formData.nombreResponsable = "Juan Carlos Riera";
-                            formData.dniEstudiante = "1712345678";
-                            formData.fechaNacimiento = "2010-06-20";
-                            formData.email = "jcriera.dev@ucmi.edu";
-                            formData.whatsapp = "+593 987 654 321";
-                            formData.ubicacion = "Quito, Ecuador";
-                            formData.nombreRepresentante = "Nory Romero";
-                            formData.dniRepresentante = "1709876543";
-                            formData.whatsappRepresentante = "+593 912 345 678";
-                            formData.modulosInscritos = ["Matemáticas", "Programación", "Lógica"];
-                            
-                            calcularEdad();
-                        }
-                    });
-                });
-
-                return { formData, opcionesModulos, calcularEdad, enviarFormulario, mostrarModal };
+            } else {
+                contenedor.innerHTML = '<div class="col-12 text-warning small text-center">No hay módulos habilitados actualmente.</div>';
             }
-        }).mount('#app');
-    </script>
+        }
+    }
+    cargarConfiguracion();
+
+    document.getElementById('edadEstudiante').addEventListener('input', (e) => {
+        const panel = document.getElementById('panelRepresentante');
+        const esMenor = e.target.value > 0 && e.target.value < 18;
+        panel.style.display = esMenor ? 'block' : 'none';
+        ['nombreRepresentante', 'dniRepresentante', 'whatsappRepresentante', 'correoRepresentante'].forEach(id => {
+            document.getElementById(id).required = esMenor;
+        });
+    });
+
+    function imprimirComprobante(datos) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        doc.setFillColor(10, 12, 16);
+        doc.rect(0, 0, pageWidth, 45, 'F');
+        if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 7, 30, 30);
+        doc.setTextColor(197, 160, 89);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text(datos.entidad.toUpperCase(), 55, 22);
+        doc.setFontSize(22);
+        doc.text(datos.entidad.substring(0, 4).toUpperCase(), 55, 35);
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(16);
+        doc.text("COMPROBANTE DE REGISTRO", pageWidth / 2, 60, { align: 'center' });
+
+        const dibujarSeccion = (titulo, y, color = [0, 0, 0]) => {
+            doc.setFontSize(11);
+            doc.setTextColor(color[0], color[1], color[2]);
+            doc.setFont("helvetica", "bold");
+            doc.text(titulo, 20, y);
+            doc.setDrawColor(200, 200, 200);
+            doc.line(20, y + 2, 190, y + 2);
+            return y + 12;
+        };
+
+        const fila = (label, valor, y) => {
+            doc.setFont("helvetica", "bold");
+            doc.text(label, 20, y);
+            doc.setFont("helvetica", "normal");
+            doc.text(String(valor).toUpperCase(), 75, y);
+        };
+
+        let currentY = dibujarSeccion("1. DATOS DE IDENTIDAD", 75);
+        fila("Estudiante:", datos.nombreResponsable, currentY);
+        fila("ID:", datos.dniEstudiante, currentY + 7);
+        fila("Fecha Nac.:", datos.fechaNacimiento, currentY + 14);
+        fila("Género:", datos.genero, currentY + 21);
+
+        currentY = dibujarSeccion("2. CONTACTO", currentY + 35);
+        fila("Correo:", datos.email, currentY);
+        fila("WhatsApp:", datos.whatsapp, currentY + 7);
+        
+        if (datos.edadEstudiante < 18) {
+            currentY = dibujarSeccion("3. REPRESENTANTE LEGAL", currentY + 28, [150, 0, 0]);
+            fila("Nombre:", datos.nombreRepresentante, currentY);
+            fila("WhatsApp:", datos.whatsappRepresentante, currentY + 7);
+        }
+
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text("UCMI SYSTEM - " + datos.fechaInscripcion, 20, 285);
+        doc.save(`Inscripcion_${datos.dniEstudiante}.pdf`);
+    }
+
+    document.getElementById('formIdiomas').onsubmit = async (e) => {
+        e.preventDefault();
+        const seleccionados = Array.from(document.querySelectorAll('.check-modulo:checked')).map(cb => cb.value);
+
+        if (seleccionados.length === 0) {
+            return Swal.fire("Atención", "Debes seleccionar al menos un curso.", "warning");
+        }
+
+        if (!e.target.checkValidity()) {
+            e.target.classList.add('was-validated');
+            return Swal.fire("Campos incompletos", "Por favor completa todos los campos requeridos.", "error");
+        }
+
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>PROCESANDO...';
+
+        const datos = {
+            modulosInscritos: seleccionados,
+            nombreResponsable: document.getElementById('nombreResponsable').value,
+            dniEstudiante: document.getElementById('dniEstudiante').value,
+            genero: document.getElementById('genero').value,
+            fechaNacimiento: document.getElementById('fechaNacimiento').value,
+            email: document.getElementById('email').value,
+            whatsapp: document.getElementById('whatsapp').value,
+            ubicacion: document.getElementById('ubicacion').value,
+            edadEstudiante: document.getElementById('edadEstudiante').value,
+            entidad: sedeRef,
+            perfil: "Estudiante Academia",
+            fechaInscripcion: new Date().toLocaleString()
+        };
+
+        if (datos.edadEstudiante < 18) {
+            datos.nombreRepresentante = document.getElementById('nombreRepresentante').value;
+            datos.dniRepresentante = document.getElementById('dniRepresentante').value;
+            datos.whatsappRepresentante = document.getElementById('whatsappRepresentante').value;
+            datos.correoRepresentante = document.getElementById('correoRepresentante').value;
+        }
+
+        try {
+            await addDoc(collection(db, "postulaciones"), datos);
+            imprimirComprobante(datos);
+            await Swal.fire({
+                icon: 'success',
+                title: '¡Registro Exitoso!',
+                text: 'Se ha generado tu comprobante PDF.',
+                confirmButtonColor: '#c5a059',
+                background: '#12151a',
+                color: '#fff'
+            });
+            location.reload();
+        } catch (err) {
+            Swal.fire("Error", "Error de conexión con la base de datos.", "error");
+            btn.disabled = false;
+            btn.innerText = "FINALIZAR Y GENERAR COMPROBANTE";
+        }
+    };
+</script>
 </body>
 </html>
