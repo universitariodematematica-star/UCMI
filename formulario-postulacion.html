@@ -28,16 +28,30 @@
         .form-control { border-radius: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.08); color: white; }
         .form-control:focus { background: rgba(255, 255, 255, 0.15); border-color: var(--dorado-ucmi); color: white; box-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
         
+        /* Estilos de Checkboxes Limpios */
         .modulo-item {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 12px 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(197, 160, 89, 0.15);
+            padding: 8px 10px;
             transition: all 0.3s ease;
-            cursor: pointer;
         }
-        .modulo-item:hover { background: rgba(197, 160, 89, 0.1); border-color: var(--dorado-ucmi); }
-        .form-check-input:checked { background-color: var(--dorado-ucmi); border-color: var(--dorado-ucmi); }
+        .form-check-label {
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.85);
+            transition: 0.3s;
+        }
+        .form-check-input {
+            cursor: pointer;
+            background-color: transparent;
+            border: 1px solid var(--dorado-ucmi);
+        }
+        .form-check-input:checked {
+            background-color: var(--dorado-ucmi);
+            border-color: var(--dorado-ucmi);
+        }
+        .form-check-input:checked + .form-check-label {
+            color: var(--dorado-ucmi);
+            font-weight: bold;
+        }
         
         .seccion-representante { display: none; background: rgba(197, 160, 89, 0.05); padding: 20px; border-radius: 20px; border: 1px solid rgba(197, 160, 89, 0.2); margin-top: 20px; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -105,7 +119,7 @@
             </div>
 
             <div class="mt-5">
-                <label class="form-label d-block mb-3">SELECCIONE LOS MÓDULOS A LOS QUE DESEA POSTULAR:</label>
+                <label class="form-label d-block mb-3">MÓDULOS DISPONIBLES PARA POSTULACIÓN:</label>
                 <div id="contenedorModulos" class="row g-2">
                     <div class="col-12 text-center opacity-50">
                         <small>Sincronizando oferta académica...</small>
@@ -143,7 +157,6 @@
         
         if (!snap.empty) {
             const data = snap.docs[0].data();
-            
             document.getElementById('logoDinamico').src = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
             document.getElementById('logoDinamico').style.opacity = "1";
             document.getElementById('nombreSede').innerText = data.entidad.toUpperCase();
@@ -151,7 +164,6 @@
             const contenedor = document.getElementById('contenedorModulos');
             const listaAdquirida = data.modulos || [];
             const estadosVisibilidad = data['modulos-ofertados-academia'] || {};
-
             contenedor.innerHTML = '';
 
             const modulosPublicos = listaAdquirida.filter(m => estadosVisibilidad[m] === true);
@@ -160,13 +172,12 @@
                 modulosPublicos.forEach(mod => {
                     const col = document.createElement('div');
                     col.className = 'col-md-6';
-                    // Normalización para ID: elimina tildes para evitar errores en el selector HTML
                     const idSeguro = mod.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
                     
                     col.innerHTML = `
                         <div class="form-check modulo-item">
                             <input class="form-check-input check-modulo" type="checkbox" value="${mod}" id="check_${idSeguro}">
-                            <label class="form-check-label ms-2 w-100" style="cursor:pointer;" for="check_${idSeguro}">
+                            <label class="form-check-label ms-2" for="check_${idSeguro}">
                                 ${mod}
                             </label>
                         </div>
@@ -174,7 +185,7 @@
                     contenedor.appendChild(col);
                 });
             } else {
-                contenedor.innerHTML = '<div class="col-12 text-warning small text-center">No hay módulos disponibles en inscripción abierta.</div>';
+                contenedor.innerHTML = '<div class="col-12 text-warning small">No hay módulos habilitados actualmente.</div>';
             }
         }
     }
@@ -182,32 +193,29 @@
 
     document.getElementById('edadEstudiante').addEventListener('input', (e) => {
         const panel = document.getElementById('panelRepresentante');
-        const inputs = panel.querySelectorAll('input');
         if (e.target.value > 0 && e.target.value < 18) {
             panel.style.display = 'block';
-            inputs.forEach(i => i.required = true);
         } else {
             panel.style.display = 'none';
-            inputs.forEach(i => i.required = false);
         }
     });
 
     document.getElementById('formIdiomas').onsubmit = async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('btnSubmit');
         const seleccionados = Array.from(document.querySelectorAll('.check-modulo:checked')).map(cb => cb.value);
 
         if (seleccionados.length === 0) {
-            return Swal.fire("Módulos requeridos", "Por favor, selecciona al menos un módulo.", "warning");
+            return Swal.fire("Módulos requeridos", "Selecciona al menos un curso.", "warning");
         }
 
         if (!e.target.checkValidity()) {
             e.target.classList.add('was-validated');
-            return Swal.fire("Datos incompletos", "Verifica los campos marcados en rojo.", "error");
+            return Swal.fire("Campos incompletos", "Verifica la información personal.", "error");
         }
 
+        const btn = document.getElementById('btnSubmit');
         btn.disabled = true;
-        btn.innerText = "ENVIANDO...";
+        btn.innerText = "REGISTRANDO...";
 
         const datos = {
             modulosInscritos: seleccionados,
@@ -232,14 +240,13 @@
             await addDoc(collection(db, "postulaciones"), datos);
             await Swal.fire({
                 icon: 'success',
-                title: '¡Postulación Exitosa!',
-                text: 'Tus datos han sido registrados correctamente.',
+                title: '¡Recibido!',
+                text: 'Tu postulación ha sido enviada con éxito.',
                 confirmButtonColor: '#c5a059'
             });
             location.reload();
         } catch (err) {
-            console.error(err);
-            Swal.fire("Error", "Ocurrió un error al enviar. Intenta de nuevo.", "error");
+            Swal.fire("Error", "No se pudo completar el envío.", "error");
             btn.disabled = false;
             btn.innerText = "COMPLETAR POSTULACIÓN";
         }
