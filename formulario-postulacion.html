@@ -222,62 +222,85 @@
 
      // Función de impresión PDF
      function imprimirComprobante(datos) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        // Encabezado con Logo Dinámico
-        if(logoBase64) doc.addImage(logoBase64, 'PNG', 85, 15, 40, 40);
-        
-        doc.setFont("Cinzel", "bold");
-        doc.setFontSize(18);
-        doc.text(datos.entidad.toUpperCase(), 105, 65, { align: 'center' });
-        doc.setFontSize(14);
-        doc.text("COMPROBANTE DE POSTULACIÓN", 105, 75, { align: 'center' });
-        
-        // Tabla de Datos
-        const infoGeneral = [
-            ["Campo", "Información"],
-            ["Nombre del Estudiante", datos.nombreResponsable],
-            ["DNI/Cédula", datos.dniEstudiante],
-            ["Género", datos.genero],
-            ["Fecha Nac.", datos.fechaNacimiento],
-            ["Edad", datos.edadEstudiante + " años"],
-            ["Ubicación", datos.ubicacion],
-            ["Email", datos.email],
-            ["WhatsApp", datos.whatsapp]
-        ];
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
 
-        if(datos.edadEstudiante < 18) {
-            infoGeneral.push(
-                ["Representante", datos.nombreRepresentante],
-                ["DNI Representante", datos.dniRepresentante],
-                ["WhatsApp Rep.", datos.whatsappRepresentante],
-                ["Correo Rep.", datos.correoRepresentante]
-            );
-        }
+    // 1. CABECERA INSTITUCIONAL (Fondo azul oscuro)
+    doc.setFillColor(26, 37, 47); // Color azul muy oscuro similar a image_e6b4e4.png
+    doc.rect(0, 0, pageWidth, 45, 'F');
 
-        doc.autoTable({
-            startY: 85,
-            head: [infoGeneral[0]],
-            body: infoGeneral.slice(1),
-            theme: 'striped',
-            headStyles: { fillStyle: '#c5a059', textColor: '#000' }
-        });
+    // Logo Dinámico (Si existe)
+    if (logoBase64) {
+        doc.addImage(logoBase64, 'PNG', 15, 7, 30, 30);
+    }
 
-        // Tabla de Módulos
-        doc.autoTable({
-            startY: doc.lastAutoTable.finalY + 10,
-            head: [["Módulos Inscritos"]],
-            body: datos.modulosInscritos.map(m => [m]),
-            theme: 'grid',
-            headStyles: { fillStyle: '#333', textColor: '#fff' }
-        });
+    // Nombre de la Academia y Siglas
+    doc.setTextColor(197, 160, 89); // Tono dorado/amarillo
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text(datos.entidad.toUpperCase(), 55, 22);
+    
+    doc.setFontSize(22);
+    const siglas = datos.entidad.substring(0, 4).toUpperCase();
+    doc.text(siglas, 55, 35);
 
-        doc.setFontSize(10);
-        doc.text("Fecha de Registro: " + datos.fechaInscripcion, 20, doc.lastAutoTable.finalY + 20);
-        
-        doc.save(`Postulacion_${datos.dniEstudiante}.pdf`);
-     }
+    // 2. TÍTULO DEL DOCUMENTO
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(16);
+    doc.text("COMPROBANTE OFICIAL DE REGISTRO", pageWidth / 2, 60, { align: 'center' });
+
+    // Función auxiliar para dibujar líneas de sección
+    const dibujarSeccion = (titulo, y, color = [0, 0, 0]) => {
+        doc.setFontSize(11);
+        doc.setTextColor(color[0], color[1], color[2]);
+        doc.setFont("helvetica", "bold");
+        doc.text(titulo, 20, y);
+        doc.setDrawColor(200, 200, 200);
+        doc.line(20, y + 2, 190, y + 2);
+        return y + 12;
+    };
+
+    // 3. DATOS DE IDENTIDAD
+    let currentY = dibujarSeccion("1. DATOS DE IDENTIDAD", 75);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    
+    const fila = (label, valor, y) => {
+        doc.setFont("helvetica", "bold");
+        doc.text(label, 20, y);
+        doc.setFont("helvetica", "normal");
+        doc.text(String(valor).toUpperCase(), 65, y);
+    };
+
+    fila("Nombre Responsable:", datos.nombreResponsable, currentY);
+    fila("ID (Cédula/RIF):", datos.dniEstudiante, currentY + 7);
+    fila("Fecha de Nacimiento:", datos.fechaNacimiento, currentY + 14);
+    fila("Género:", datos.genero, currentY + 21);
+
+    // 4. CONTACTO
+    currentY = dibujarSeccion("2. CONTACTO", currentY + 35);
+    fila("Correo:", datos.email, currentY);
+    fila("WhatsApp:", datos.whatsapp, currentY + 7);
+    fila("Ubicación:", datos.ubicacion, currentY + 14);
+
+    // 5. INFORMACIÓN DEL REPRESENTANTE (Solo si es menor)
+    if (datos.edadEstudiante < 18) {
+        currentY = dibujarSeccion("3. INFORMACIÓN DEL REPRESENTANTE LEGAL", currentY + 28, [128, 0, 0]); // Rojo vino
+        fila("Nombre Rep.:", datos.nombreRepresentante, currentY);
+        fila("ID Rep.:", datos.dniRepresentante, currentY + 7);
+        fila("Correo Rep.:", datos.correoRepresentante, currentY + 14);
+        fila("WhatsApp Rep.:", datos.whatsappRepresentante, currentY + 21);
+    }
+
+    // Pie de página con fecha
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text("Generado automáticamente por el sistema UCMI - " + datos.fechaInscripcion, 20, 285);
+
+    // Guardar
+    doc.save(`Comprobante_${datos.dniEstudiante}.pdf`);
+}
 
      document.getElementById('formIdiomas').onsubmit = async (e) => {
           e.preventDefault();
