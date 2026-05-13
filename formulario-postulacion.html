@@ -10,22 +10,23 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         :root { --dorado-ucmi: #c5a059; }
-        body { 
+        body {
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
             background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; padding: 40px 0;
         }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.9) 100%); z-index: -1; }
-        .card-form { 
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); 
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); max-width: 700px; margin: auto; overflow: hidden; 
+        .card-form {
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); max-width: 700px; margin: auto; overflow: hidden;
         }
         .header-institucional { text-align: center; padding: 50px 20px; background: rgba(0, 0, 0, 0.3); border-bottom: 1px solid rgba(197, 160, 89, 0.2); }
         .inst-logo { height: 110px; margin-bottom: 15px; opacity: 0; transition: 0.5s; }
         .inst-nombre { font-family: 'Cinzel', serif; color: #f3f0df; font-size: 1rem; letter-spacing: 4px; text-transform: uppercase; }
         .inst-titulo { color: var(--dorado-ucmi); font-weight: 800; font-size: 2.2rem; }
         .form-label { color: var(--dorado-ucmi); font-size: 0.85rem; font-weight: bold; margin-top: 10px; }
-        .form-control { border-radius: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.08); color: white; }
-        .form-control:focus { background: rgba(255, 255, 255, 0.15); border-color: var(--dorado-ucmi); color: white; box-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
+        .form-control, .form-select { border-radius: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.08); color: white; }
+        .form-control:focus, .form-select:focus { background: rgba(255, 255, 255, 0.15); border-color: var(--dorado-ucmi); color: white; box-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
+        .form-select option { background: #1a2a3a; color: white; }
         .seccion-representante { display: none; background: rgba(197, 160, 89, 0.05); padding: 20px; border-radius: 20px; border: 1px solid rgba(197, 160, 89, 0.2); margin-top: 20px; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; border: none; width: 100%; margin-top: 30px; transition: 0.3s; }
@@ -46,6 +47,14 @@
 
         <form id="formIdiomas" class="p-4 p-md-5 pt-3" novalidate>
             <div class="row g-3">
+                <!-- SELECCIÓN DE MÓDULO DINÁMICO -->
+                <div class="col-12">
+                    <label class="form-label">MÓDULO AL QUE POSTULA:</label>
+                    <select id="moduloPostulacion" class="form-select" required>
+                        <option value="" selected disabled>Cargando módulos disponibles...</option>
+                    </select>
+                </div>
+
                 <div class="col-12">
                     <label class="form-label">NOMBRE COMPLETO DEL ESTUDIANTE:</label>
                     <input type="text" id="nombreResponsable" class="form-control" required>
@@ -112,21 +121,43 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 1. CARGAR IDENTIDAD DINÁMICA (LOGO Y NOMBRE)
     const urlParams = new URLSearchParams(window.location.search);
     const sedeRef = urlParams.get('ref') || "UCMI";
 
-    async function cargarSede() {
+    // 1. CARGAR IDENTIDAD Y MÓDULOS FILTRADOS
+    async function cargarConfiguracion() {
         const q = query(collection(db, "usuarios"), where("entidad", "==", sedeRef));
         const snap = await getDocs(q);
+        
         if (!snap.empty) {
             const data = snap.docs[0].data();
+            
+            // Cargar Logo y Nombre
             document.getElementById('logoDinamico').src = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
             document.getElementById('logoDinamico').style.opacity = "1";
             document.getElementById('nombreSede').innerText = data.entidad.toUpperCase();
+
+            // Filtrar Módulos: Solo los que están en 'modulos' y tienen valor true en 'modulos-ofertados-academia'
+            const selectModulos = document.getElementById('moduloPostulacion');
+            const listaModulos = data.modulos || [];
+            const estados = data['modulos-ofertados-academia'] || {};
+
+            const modulosActivos = listaModulos.filter(m => estados[m] === true);
+
+            if (modulosActivos.length > 0) {
+                selectModulos.innerHTML = '<option value="" selected disabled>Selecciona el módulo...</option>';
+                modulosActivos.forEach(mod => {
+                    const opt = document.createElement('option');
+                    opt.value = mod;
+                    opt.innerText = mod;
+                    selectModulos.appendChild(opt);
+                });
+            } else {
+                selectModulos.innerHTML = '<option value="">No hay módulos disponibles actualmente</option>';
+            }
         }
     }
-    cargarSede();
+    cargarConfiguracion();
 
     // 2. LÓGICA DE MENOR DE EDAD
     document.getElementById('edadEstudiante').addEventListener('input', (e) => {
@@ -154,19 +185,19 @@
         btn.disabled = true;
         btn.innerText = "REGISTRANDO...";
 
-const datos = {
+        const datos = {
+            modulo: document.getElementById('moduloPostulacion').value,
             nombreResponsable: document.getElementById('nombreResponsable').value,
             dniEstudiante: document.getElementById('dniEstudiante').value,
             email: document.getElementById('email').value,
             whatsapp: document.getElementById('whatsapp').value,
-            ubicacion: document.getElementById('ubicacion').value, // <--- AGREGAR ESTA LÍNEA
+            ubicacion: document.getElementById('ubicacion').value,
             edadEstudiante: document.getElementById('edadEstudiante').value,
             entidad: sedeRef, 
             perfil: "Estudiante Academia",
             fecha: new Date().toLocaleString()
         };
 
-        // Agregar datos de representante si es menor
         if (datos.edadEstudiante < 18) {
             datos.nombreRepresentante = document.getElementById('nombreRepresentante').value;
             datos.dniRepresentante = document.getElementById('dniRepresentante').value;
@@ -186,7 +217,7 @@ const datos = {
             console.error(err);
             Swal.fire("Error", "No se pudo procesar el registro.", "error");
             btn.disabled = false;
-            btn.innerText = "COMPLETAR INSCRIPCIÓN";
+            btn.innerText = "COMPLETAR POSTULACIÓN";
         }
     };
 </script>
