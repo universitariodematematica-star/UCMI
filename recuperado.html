@@ -138,7 +138,7 @@
 
 <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
       const firebaseConfig = {
            apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -191,6 +191,7 @@
            });
       });
 
+      // Atajos de autocompletado (Mantenidos según tu versión)
       window.addEventListener('keydown', (e) => {
           if (e.ctrlKey && e.key.toLowerCase() === 'q') {
               e.preventDefault();
@@ -233,6 +234,9 @@
           if (modulos.length === 0) return Swal.fire("Módulos", "Selecciona al menos uno.", "warning");
 
           const edad = parseInt(document.getElementById('edadEstudiante').value);
+          const categoria = edad < 18 ? "Junior" : "Adulto";
+
+          // ESTRUCTURA CORREGIDA PARA EL PANEL DE CONTROL
           datosGlobales = {
               nombreResponsable: document.getElementById('nombreResponsable').value,
               dniEstudiante: document.getElementById('dniEstudiante').value,
@@ -244,7 +248,11 @@
               whatsapp: document.getElementById('whatsapp').value,
               modulos: modulos,
               entidad: sedeRef,
-              timestamp: new Date()
+              
+              // Ajustes críticos para el Panel:
+              perfil: "Estudiante Academia", 
+              categoriaEdad: categoria,
+              timestamp: serverTimestamp()
           };
 
           let html = `
@@ -253,17 +261,9 @@
                 <div class="row">
                     <div class="col-md-6"><span class="resumen-label">Estudiante</span><div class="resumen-valor">${datosGlobales.nombreResponsable}</div></div>
                     <div class="col-md-6"><span class="resumen-label">DNI</span><div class="resumen-valor">${datosGlobales.dniEstudiante}</div></div>
-                    <div class="col-md-4"><span class="resumen-label">Edad</span><div class="resumen-valor">${datosGlobales.edadEstudiante}</div></div>
+                    <div class="col-md-4"><span class="resumen-label">Edad</span><div class="resumen-valor">${datosGlobales.edadEstudiante} (${categoria})</div></div>
                     <div class="col-md-4"><span class="resumen-label">Género</span><div class="resumen-valor">${datosGlobales.genero}</div></div>
                     <div class="col-md-4"><span class="resumen-label">Nacimiento</span><div class="resumen-valor">${datosGlobales.fechaNacimiento}</div></div>
-                </div>
-            </div>
-            <div class="resumen-card">
-                <h6 class="text-warning mb-3 fw-bold">CONTACTO</h6>
-                <div class="row">
-                    <div class="col-12"><span class="resumen-label">Ubicación</span><div class="resumen-valor">${datosGlobales.ubicacion}</div></div>
-                    <div class="col-md-6"><span class="resumen-label">Email</span><div class="resumen-valor">${datosGlobales.email}</div></div>
-                    <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsapp}</div></div>
                 </div>
             </div>`;
 
@@ -295,7 +295,7 @@
           try {
               await addDoc(collection(db, "postulaciones"), datosGlobales);
               modalBootstrap.hide();
-              await Swal.fire({ icon: 'success', title: '¡Enviado!', text: 'Los datos se guardaron en Firebase.', confirmButtonColor: '#c5a059' });
+              await Swal.fire({ icon: 'success', title: '¡Enviado!', text: 'Postulación registrada correctamente.', confirmButtonColor: '#c5a059' });
               location.reload();
           } catch (e) {
               Swal.fire("Error", "No se pudo subir la información.", "error");
