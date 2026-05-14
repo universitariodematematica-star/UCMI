@@ -223,70 +223,85 @@
       });
 
       document.getElementById('formIdiomas').onsubmit = (e) => {
-          e.preventDefault();
-          const form = e.target;
-          const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(cb => cb.value);
-          
-          if (!form.checkValidity()) {
-              form.classList.add('was-validated');
-              return;
-          }
-          if (modulos.length === 0) return Swal.fire("Módulos", "Selecciona al menos uno.", "warning");
+            e.preventDefault();
+            const form = e.target;
+            const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(cb => cb.value);
+            
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            if (modulos.length === 0) return Swal.fire("Módulos", "Por favor, selecciona al menos un idioma.", "warning");
 
-          const edad = parseInt(document.getElementById('edadEstudiante').value);
-          const categoria = edad < 18 ? "Junior" : "Adulto";
+            const edad = parseInt(document.getElementById('edadEstudiante').value);
+            const categoria = edad < 18 ? "Junior" : "Adulto";
 
-          // ESTRUCTURA CORREGIDA PARA EL PANEL DE CONTROL
-          datosGlobales = {
-              nombreResponsable: document.getElementById('nombreResponsable').value,
-              dniEstudiante: document.getElementById('dniEstudiante').value,
-              genero: document.getElementById('genero').value,
-              fechaNacimiento: document.getElementById('fechaNacimiento').value,
-              edadEstudiante: edad,
-              ubicacion: document.getElementById('ubicacion').value,
-              email: document.getElementById('email').value,
-              whatsapp: document.getElementById('whatsapp').value,
-              modulos: modulos,
-              entidad: sedeRef,
+            // Captura de datos completa para Firebase
+            datosGlobales = {
+                nombreResponsable: document.getElementById('nombreResponsable').value,
+                dniEstudiante: document.getElementById('dniEstudiante').value,
+                genero: document.getElementById('genero').value,
+                fechaNacimiento: document.getElementById('fechaNacimiento').value,
+                edadEstudiante: edad,
+                ubicacion: document.getElementById('ubicacion').value,
+                email: document.getElementById('email').value,
+                whatsapp: document.getElementById('whatsapp').value,
+                modulos: modulos,
+                entidad: sedeRef,
+                perfil: "Estudiante Academia", 
+                categoriaEdad: categoria,
+                timestamp: serverTimestamp()
+            };
+
+            // Construcción del HTML para el Modal (Espejo de datos)
+            let html = `
+              <div class="resumen-card">
+                  <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-person-badge me-2"></i>DATOS DEL ASPIRANTE</h6>
+                  <div class="row">
+                      <div class="col-md-12"><span class="resumen-label">Nombre Completo</span><div class="resumen-valor">${datosGlobales.nombreResponsable}</div></div>
+                      <div class="col-md-6"><span class="resumen-label">DNI / ID</span><div class="resumen-valor">${datosGlobales.dniEstudiante}</div></div>
+                      <div class="col-md-6"><span class="resumen-label">Género</span><div class="resumen-valor">${datosGlobales.genero}</div></div>
+                      <div class="col-md-6"><span class="resumen-label">Fecha de Nacimiento</span><div class="resumen-valor">${datosGlobales.fechaNacimiento}</div></div>
+                      <div class="col-md-6"><span class="resumen-label">Edad / Categoría</span><div class="resumen-valor">${datosGlobales.edadEstudiante} años (${categoria})</div></div>
+                  </div>
+              </div>
               
-              // Ajustes críticos para el Panel:
-              perfil: "Estudiante Academia", 
-              categoriaEdad: categoria,
-              timestamp: serverTimestamp()
-          };
+              <div class="resumen-card">
+                  <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-geo-alt me-2"></i>CONTACTO Y UBICACIÓN</h6>
+                  <div class="row">
+                      <div class="col-12"><span class="resumen-label">Dirección / Ubicación</span><div class="resumen-valor">${datosGlobales.ubicacion}</div></div>
+                      <div class="col-md-6"><span class="resumen-label">Correo Electrónico</span><div class="resumen-valor">${datosGlobales.email}</div></div>
+                      <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsapp}</div></div>
+                  </div>
+              </div>`;
 
-          let html = `
-            <div class="resumen-card">
-                <h6 class="text-warning mb-3 fw-bold">DATOS PERSONALES</h6>
-                <div class="row">
-                    <div class="col-md-6"><span class="resumen-label">Estudiante</span><div class="resumen-valor">${datosGlobales.nombreResponsable}</div></div>
-                    <div class="col-md-6"><span class="resumen-label">DNI</span><div class="resumen-valor">${datosGlobales.dniEstudiante}</div></div>
-                    <div class="col-md-4"><span class="resumen-label">Edad</span><div class="resumen-valor">${datosGlobales.edadEstudiante} (${categoria})</div></div>
-                    <div class="col-md-4"><span class="resumen-label">Género</span><div class="resumen-valor">${datosGlobales.genero}</div></div>
-                    <div class="col-md-4"><span class="resumen-label">Nacimiento</span><div class="resumen-valor">${datosGlobales.fechaNacimiento}</div></div>
-                </div>
-            </div>`;
+            if (edad < 18) {
+                datosGlobales.nombreRepresentante = document.getElementById('nombreRepresentante').value;
+                datosGlobales.dniRepresentante = document.getElementById('dniRepresentante').value;
+                datosGlobales.whatsappRepresentante = document.getElementById('whatsappRepresentante').value;
+                
+                html += `
+                  <div class="resumen-card" style="border-left-color: #ffc107;">
+                      <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-shield-check me-2"></i>REPRESENTANTE LEGAL</h6>
+                      <div class="row">
+                          <div class="col-12"><span class="resumen-label">Nombre del Tutor</span><div class="resumen-valor">${datosGlobales.nombreRepresentante}</div></div>
+                          <div class="col-md-6"><span class="resumen-label">DNI Representante</span><div class="resumen-valor">${datosGlobales.dniRepresentante}</div></div>
+                          <div class="col-md-6"><span class="resumen-label">WhatsApp Representante</span><div class="resumen-valor">${datosGlobales.whatsappRepresentante}</div></div>
+                      </div>
+                  </div>`;
+            }
 
-          if (edad < 18) {
-              datosGlobales.nombreRepresentante = document.getElementById('nombreRepresentante').value;
-              datosGlobales.dniRepresentante = document.getElementById('dniRepresentante').value;
-              datosGlobales.whatsappRepresentante = document.getElementById('whatsappRepresentante').value;
-              html += `
-                <div class="resumen-card" style="border-left-color: #ffc107;">
-                    <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
-                    <div class="row">
-                        <div class="col-12"><span class="resumen-label">Nombre</span><div class="resumen-valor">${datosGlobales.nombreRepresentante}</div></div>
-                        <div class="col-md-6"><span class="resumen-label">DNI</span><div class="resumen-valor">${datosGlobales.dniRepresentante}</div></div>
-                        <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsappRepresentante}</div></div>
-                    </div>
-                </div>`;
-          }
-
-          html += `<div class="resumen-card"><span class="resumen-label">Módulos</span><div class="resumen-valor text-info">${datosGlobales.modulos.join(' • ')}</div></div>`;
-          
-          document.getElementById('cuerpoRevision').innerHTML = html;
-          modalBootstrap.show();
-      };
+            html += `
+              <div class="resumen-card">
+                  <span class="resumen-label">PROGRAMAS SELECCIONADOS</span>
+                  <div class="resumen-valor text-info">
+                      <i class="bi bi-check2-all me-2"></i>${datosGlobales.modulos.join(' — ')}
+                  </div>
+              </div>`;
+            
+            document.getElementById('cuerpoRevision').innerHTML = html;
+            modalBootstrap.show();
+        };
 
       document.getElementById('confirmarEnvio').onclick = async () => {
           const btn = document.getElementById('confirmarEnvio');
