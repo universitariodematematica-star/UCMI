@@ -19,7 +19,7 @@
            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.9) 100%); z-index: -1; }
            .card-form {
                border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-               background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); max-width: 700px; margin: auto; overflow: hidden;
+               background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); max-width: 750px; margin: auto; overflow: hidden;
            }
            .header-institucional { text-align: center; padding: 40px 20px; background: rgba(0, 0, 0, 0.3); border-bottom: 1px solid rgba(197, 160, 89, 0.2); }
            .inst-logo { height: 100px; margin-bottom: 15px; opacity: 0; transition: 0.5s; }
@@ -33,26 +33,33 @@
            .seccion-representante { display: none; background: rgba(197, 160, 89, 0.05); padding: 20px; border-radius: 20px; border: 1px solid rgba(197, 160, 89, 0.2); margin-top: 20px; }
            .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; border: none; width: 100%; margin-top: 30px; transition: 0.3s; }
            
-           .modal-content { background: #06090f; border: 1px solid var(--dorado-ucmi); color: white; border-radius: 20px; }
-           .resumen-label { color: var(--dorado-ucmi); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
+           /* MODAL STYLES */
+           .modal-content { background: #0b0f1a; border: 1px solid var(--dorado-ucmi); color: white; border-radius: 25px; }
+           .modal-header { border-bottom: 1px solid rgba(197, 160, 89, 0.2); }
+           .modal-footer { border-top: 1px solid rgba(197, 160, 89, 0.2); }
+           .resumen-card { background: rgba(255, 255, 255, 0.03); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--dorado-ucmi); }
+           .resumen-label { color: var(--dorado-ucmi); font-weight: bold; font-size: 0.75rem; text-transform: uppercase; display: block; margin-bottom: 2px; }
+           .resumen-valor { font-size: 1rem; color: #fff; margin-bottom: 10px; }
       </style>
 </head>
 <body>
 
 <div class="overlay"></div>
 
-<!-- MODAL DE REVISIÓN -->
+<!-- MODAL DE REVISIÓN INTEGRAL -->
 <div class="modal fade" id="modalRevision" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
-      <div class="modal-header border-bottom border-secondary">
-        <h5 class="modal-title"><i class="bi bi-shield-check me-2 text-warning"></i>CONFIRMAR REGISTRO</h5>
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-check me-2 text-warning"></i>REVISIÓN FINAL DE DATOS</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body" id="cuerpoRevision"></div>
-      <div class="modal-footer border-top border-secondary">
-        <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">VOLVER A EDITAR</button>
-        <button type="button" id="confirmarEnvio" class="btn btn-warning px-4 fw-bold">SÍ, ENVIAR DATOS</button>
+      <div class="modal-body px-4" id="cuerpoRevision">
+        <!-- Contenido generado por JS -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-link text-white text-decoration-none" data-bs-dismiss="modal">Corregir campos</button>
+        <button type="button" id="confirmarEnvio" class="btn btn-warning px-5 fw-bold" style="background: var(--dorado-ucmi); border-radius: 10px;">ENVIAR AHORA</button>
       </div>
     </div>
   </div>
@@ -62,8 +69,8 @@
       <div class="card-form">
            <div class="header-institucional">
                <img src="" id="logoDinamico" class="inst-logo">
-               <div id="nombreSede" class="inst-nombre">Cargando Academia...</div>
-               <h1 class="inst-titulo">FORMULARIO DE POSTULACIÓN</h1>
+               <div id="nombreSede" class="inst-nombre">Cargando...</div>
+               <h1 class="inst-titulo">POSTULACIÓN UCMI</h1>
            </div>
 
            <form id="formIdiomas" class="p-4 p-md-5 pt-3" novalidate>
@@ -73,7 +80,7 @@
                        <input type="text" id="nombreResponsable" class="form-control" required>
                    </div>
                    <div class="col-md-6">
-                       <label class="form-label">DNI DEL ESTUDIANTE:</label>
+                       <label class="form-label">DNI / IDENTIFICACIÓN:</label>
                        <input type="text" id="dniEstudiante" class="form-control" required>
                    </div>
                    <div class="col-md-6">
@@ -90,49 +97,48 @@
                        <input type="date" id="fechaNacimiento" class="form-control" required>
                    </div>
                    <div class="col-md-4">
-                       <label class="form-label">EDAD:</label>
-                       <input type="text" id="edadEstudiante" class="form-control" readonly style="background: rgba(197,160,89,0.15);">
+                       <label class="form-label">EDAD CALCULADA:</label>
+                       <input type="text" id="edadEstudiante" class="form-control" readonly style="background: rgba(197, 160, 89, 0.1);">
                    </div>
                    <div class="col-12">
-                       <label class="form-label">UBICACIÓN:</label>
+                       <label class="form-label">DIRECCIÓN / UBICACIÓN:</label>
                        <input type="text" id="ubicacion" class="form-control" required>
                    </div>
                    <div class="col-md-6">
-                       <label class="form-label">CORREO:</label>
+                       <label class="form-label">CORREO ELECTRÓNICO:</label>
                        <input type="email" id="email" class="form-control" required>
                    </div>
                    <div class="col-md-6">
-                       <label class="form-label">WHATSAPP:</label>
+                       <label class="form-label">TELÉFONO WHATSAPP:</label>
                        <input type="text" id="whatsapp" class="form-control" required>
                    </div>
                </div>
 
+               <!-- PANEL REPRESENTANTE -->
                <div id="panelRepresentante" class="seccion-representante">
-                   <h6 class="text-warning fw-bold mb-3"><i class="bi bi-person-badge me-2"></i>DATOS DEL REPRESENTANTE</h6>
+                   <h6 class="text-warning fw-bold mb-3">INFORMACIÓN DEL REPRESENTANTE LEGAL</h6>
                    <div class="row g-3">
                        <div class="col-12">
-                           <label class="form-label">NOMBRE REPRESENTANTE:</label>
+                           <label class="form-label">NOMBRE DEL REPRESENTANTE:</label>
                            <input type="text" id="nombreRepresentante" class="form-control">
                        </div>
                        <div class="col-md-6">
-                           <label class="form-label">DNI REPRESENTANTE:</label>
+                           <label class="form-label">DNI DEL REPRESENTANTE:</label>
                            <input type="text" id="dniRepresentante" class="form-control">
                        </div>
                        <div class="col-md-6">
-                           <label class="form-label">WHATSAPP REPRESENTANTE:</label>
+                           <label class="form-label">WHATSAPP DEL REPRESENTANTE:</label>
                            <input type="text" id="whatsappRepresentante" class="form-control">
                        </div>
                    </div>
                </div>
 
                <div class="mt-4">
-                   <label class="form-label d-block mb-3">MÓDULOS ACTIVOS:</label>
-                   <div id="contenedorModulos" class="row g-2">
-                       <div class="col-12 text-center py-3"><div class="spinner-border text-warning spinner-border-sm"></div></div>
-                   </div>
+                   <label class="form-label d-block mb-3">SELECCIONE LOS MÓDULOS:</label>
+                   <div id="contenedorModulos" class="row g-2"></div>
                </div>
 
-               <button type="submit" class="btn btn-enviar">REVISAR Y ENVIAR</button>
+               <button type="submit" class="btn btn-enviar">COMPLETAR POSTULACIÓN</button>
            </form>
       </div>
 </div>
@@ -155,134 +161,200 @@
       const urlParams = new URLSearchParams(window.location.search);
       const sedeRef = urlParams.get('ref') || "UCMI";
       let datosGlobales = {};
-      const modalRevision = new bootstrap.Modal(document.getElementById('modalRevision'));
+      const modalBootstrap = new bootstrap.Modal(document.getElementById('modalRevision'));
 
-      // CARGA DINÁMICA FILTRADA
+      // Carga dinámica con filtro de visibilidad
       async function cargarConfiguracion() {
            const q = query(collection(db, "usuarios"), where("entidad", "==", sedeRef));
            const snap = await getDocs(q);
-           
            if (!snap.empty) {
                const data = snap.docs[0].data();
                document.getElementById('logoDinamico').src = data.logoCustom || "";
                document.getElementById('logoDinamico').style.opacity = "1";
                document.getElementById('nombreSede').innerText = data.entidad.toUpperCase();
-
+               
                const contenedor = document.getElementById('contenedorModulos');
-               contenedor.innerHTML = '';
-
-               // FILTRO CRÍTICO: Cruzar lista de módulos con su estado de oferta
-               const listaModulos = data.modulos || [];
                const visibilidad = data['modulos-ofertados-academia'] || {};
-
-               const modulosActivos = listaModulos.filter(m => visibilidad[m] === true);
-
-               if (modulosActivos.length === 0) {
-                   contenedor.innerHTML = '<div class="col-12 text-warning small">No hay módulos habilitados por la academia actualmente.</div>';
-                   return;
-               }
-
-               modulosActivos.forEach(mod => {
-                   const col = document.createElement('div');
-                   col.className = 'col-md-6';
-                   col.innerHTML = `
-                       <div class="form-check p-2 border border-secondary rounded-3 mb-2" style="background:rgba(255,255,255,0.03)">
-                           <input class="form-check-input ms-0 me-2 check-modulo" type="checkbox" value="${mod}" id="${mod}">
-                           <label class="form-check-label text-white small" for="${mod}">${mod}</label>
-                       </div>`;
-                   contenedor.appendChild(col);
+               
+               (data.modulos || []).forEach(mod => {
+                   if(visibilidad[mod] === true) {
+                       const col = document.createElement('div');
+                       col.className = 'col-md-6';
+                       col.innerHTML = `<div class="form-check"><input class="form-check-input check-modulo" type="checkbox" value="${mod}" id="${mod}"><label class="form-check-label ms-2" for="${mod}">${mod}</label></div>`;
+                       contenedor.appendChild(col);
+                   }
                });
            }
       }
       cargarConfiguracion();
 
-      // Cálculo de Edad
+      // Edad y lógica de menor
       document.getElementById('fechaNacimiento').addEventListener('change', (e) => {
-           const naci = new Date(e.target.value);
            const hoy = new Date();
+           const naci = new Date(e.target.value);
            let edad = hoy.getFullYear() - naci.getFullYear();
            if (hoy.getMonth() < naci.getMonth() || (hoy.getMonth() === naci.getMonth() && hoy.getDate() < naci.getDate())) edad--;
-           
            document.getElementById('edadEstudiante').value = edad;
-           const esMenor = edad < 18 && edad > 0;
-           document.getElementById('panelRepresentante').style.display = esMenor ? 'block' : 'none';
+           document.getElementById('panelRepresentante').style.display = (edad < 18) ? 'block' : 'none';
       });
 
-      // ATAJOS CTRL + Q (Adulto) y CTRL + M (Menor)
+      // Atajos de teclado (Ctrl+Q / Ctrl+M)
       window.addEventListener('keydown', (e) => {
           if (e.ctrlKey && e.key.toLowerCase() === 'q') {
               e.preventDefault();
               document.getElementById('nombreResponsable').value = "Juan Carlos Riera";
-              document.getElementById('dniEstudiante').value = "V-12345678";
+              document.getElementById('dniEstudiante').value = "V-11222333";
               document.getElementById('genero').value = "Masculino";
-              document.getElementById('fechaNacimiento').value = "1985-03-10";
+              document.getElementById('fechaNacimiento').value = "1988-10-15";
               document.getElementById('fechaNacimiento').dispatchEvent(new Event('change'));
-              document.getElementById('ubicacion').value = "Caracas, Venezuela";
-              document.getElementById('email').value = "j.riera@ucmi.edu.ve";
-              document.getElementById('whatsapp').value = "04121234567";
+              document.getElementById('ubicacion').value = "Distrito Capital, Caracas";
+              document.getElementById('email').value = "jc.riera@math.edu";
+              document.getElementById('whatsapp').value = "04125555555";
           }
           if (e.ctrlKey && e.key.toLowerCase() === 'm') {
               e.preventDefault();
               document.getElementById('nombreResponsable').value = "Abril Riera";
-              document.getElementById('dniEstudiante').value = "V-30888999";
-              document.getElementById('fechaNacimiento').value = "2015-05-12";
+              document.getElementById('dniEstudiante').value = "V-33444555";
+              document.getElementById('fechaNacimiento').value = "2016-04-20";
               document.getElementById('fechaNacimiento').dispatchEvent(new Event('change'));
               setTimeout(() => {
                   document.getElementById('nombreRepresentante').value = "Nory Romero";
-                  document.getElementById('dniRepresentante').value = "V-15111222";
-                  document.getElementById('whatsappRepresentante').value = "04149998877";
+                  document.getElementById('dniRepresentante').value = "V-15666777";
+                  document.getElementById('whatsappRepresentante').value = "04147778899";
               }, 50);
           }
       });
 
-      // Lógica de Modal
+      // CONSTRUCCIÓN DEL MODAL CON TODA LA INFORMACIÓN
       document.getElementById('formIdiomas').onsubmit = (e) => {
           e.preventDefault();
-          const seleccionados = Array.from(document.querySelectorAll('.check-modulo:checked')).map(cb => cb.value);
-          if (seleccionados.length === 0) return Swal.fire("Módulos", "Selecciona al menos uno.", "warning");
+          const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(cb => cb.value);
+          if (modulos.length === 0) return Swal.fire("Error", "Debes seleccionar al menos un módulo.", "error");
           if (!e.target.checkValidity()) return e.target.classList.add('was-validated');
 
+          const edad = parseInt(document.getElementById('edadEstudiante').value);
+
+          // Recopilamos absolutamente todo
           datosGlobales = {
               nombreResponsable: document.getElementById('nombreResponsable').value,
               dniEstudiante: document.getElementById('dniEstudiante').value,
-              edadEstudiante: document.getElementById('edadEstudiante').value,
-              modulos: seleccionados,
+              genero: document.getElementById('genero').value,
+              fechaNacimiento: document.getElementById('fechaNacimiento').value,
+              edadEstudiante: edad,
+              ubicacion: document.getElementById('ubicacion').value,
+              email: document.getElementById('email').value,
+              whatsapp: document.getElementById('whatsapp').value,
+              modulos: modulos,
               entidad: sedeRef,
               perfil: "UCMI Student",
-              fechaInscripcion: new Date().toLocaleString()
+              timestamp: new Date()
           };
 
-          let html = `
-            <div class="p-2">
-                <p class="mb-1"><span class="resumen-label">Estudiante:</span> ${datosGlobales.nombreResponsable}</p>
-                <p class="mb-1"><span class="resumen-label">DNI:</span> ${datosGlobales.dniEstudiante}</p>
-                <p class="mb-3"><span class="resumen-label">Módulos:</span> <span class="text-warning">${datosGlobales.modulos.join(' | ')}</span></p>
-            </div>`;
+          // Construcción estética del HTML para el Modal
+          let htmlResumen = `
+            <div class="resumen-card">
+                <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-person-fill me-2"></i>DATOS DEL POSTULANTE</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <span class="resumen-label">Nombre Completo</span>
+                        <div class="resumen-valor">${datosGlobales.nombreResponsable}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="resumen-label">DNI / ID</span>
+                        <div class="resumen-valor">${datosGlobales.dniEstudiante}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="resumen-label">Edad</span>
+                        <div class="resumen-valor">${datosGlobales.edadEstudiante} años</div>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="resumen-label">Género</span>
+                        <div class="resumen-valor">${datosGlobales.genero}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="resumen-label">Nacimiento</span>
+                        <div class="resumen-valor">${datosGlobales.fechaNacimiento}</div>
+                    </div>
+                </div>
+            </div>
 
-          if (datosGlobales.edadEstudiante < 18) {
+            <div class="resumen-card">
+                <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-geo-alt-fill me-2"></i>CONTACTO Y UBICACIÓN</h6>
+                <div class="row">
+                    <div class="col-md-12">
+                        <span class="resumen-label">Dirección</span>
+                        <div class="resumen-valor">${datosGlobales.ubicacion}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="resumen-label">Email</span>
+                        <div class="resumen-valor">${datosGlobales.email}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="resumen-label">WhatsApp</span>
+                        <div class="resumen-valor">${datosGlobales.whatsapp}</div>
+                    </div>
+                </div>
+            </div>
+          `;
+
+          // Si es menor de edad, agregamos TODA la info del representante
+          if (edad < 18) {
               datosGlobales.nombreRepresentante = document.getElementById('nombreRepresentante').value;
-              html += `<div class="bg-dark p-2 rounded"><span class="resumen-label text-warning">Representante:</span> ${datosGlobales.nombreRepresentante}</div>`;
+              datosGlobales.dniRepresentante = document.getElementById('dniRepresentante').value;
+              datosGlobales.whatsappRepresentante = document.getElementById('whatsappRepresentante').value;
+
+              htmlResumen += `
+                <div class="resumen-card" style="border-left-color: #ffc107; background: rgba(255, 193, 7, 0.05);">
+                    <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-shield-shaded me-2"></i>REPRESENTANTE LEGAL</h6>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <span class="resumen-label">Nombre del Representante</span>
+                            <div class="resumen-valor">${datosGlobales.nombreRepresentante}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="resumen-label">DNI Representante</span>
+                            <div class="resumen-valor">${datosGlobales.dniRepresentante}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="resumen-label">WhatsApp Representante</span>
+                            <div class="resumen-valor">${datosGlobales.whatsappRepresentante}</div>
+                        </div>
+                    </div>
+                </div>
+              `;
           }
 
-          document.getElementById('cuerpoRevision').innerHTML = html;
-          modalRevision.show();
+          htmlResumen += `
+            <div class="resumen-card">
+                <h6 class="text-warning mb-2 fw-bold"><i class="bi bi-book-half me-2"></i>MÓDULOS SELECCIONADOS</h6>
+                <div class="resumen-valor text-info fw-bold">${datosGlobales.modulos.join(' • ')}</div>
+            </div>
+          `;
+
+          document.getElementById('cuerpoRevision').innerHTML = htmlResumen;
+          modalBootstrap.show();
       };
 
-      // Envío Final a Firestore
+      // Confirmar y Enviar a Firebase
       document.getElementById('confirmarEnvio').onclick = async () => {
           const btn = document.getElementById('confirmarEnvio');
           btn.disabled = true;
-          btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+          btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> PROCESANDO...`;
 
           try {
               await addDoc(collection(db, "postulaciones"), datosGlobales);
-              modalRevision.hide();
-              await Swal.fire({ icon: 'success', title: '¡Registrado!', confirmButtonColor: '#c5a059' });
+              modalBootstrap.hide();
+              await Swal.fire({ 
+                  icon: 'success', 
+                  title: '¡Postulación Recibida!', 
+                  text: 'Tu información ha sido enviada con éxito.',
+                  confirmButtonColor: '#c5a059'
+              });
               location.reload();
           } catch (e) {
-              Swal.fire("Error", "No se pudo guardar.", "error");
+              Swal.fire("Error", "No pudimos conectar con el servidor.", "error");
               btn.disabled = false;
-              btn.innerText = "SÍ, ENVIAR DATOS";
+              btn.innerText = "ENVIAR AHORA";
           }
       };
 </script>
