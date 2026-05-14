@@ -31,7 +31,7 @@
            .form-control:focus, .form-select:focus { background: rgba(255, 255, 255, 0.15); border-color: var(--dorado-ucmi); color: white; box-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
            
            .seccion-representante { display: none; background: rgba(197, 160, 89, 0.05); padding: 20px; border-radius: 20px; border: 1px solid rgba(197, 160, 89, 0.2); margin-top: 20px; }
-           .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; border: none; width: 100%; margin-top: 30px; transition: 0.3s; }
+           .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; border: none; width: 100%; margin-top: 30px; transition: 0.3s; cursor: pointer; }
            
            .modal-content { background: #0b0f1a; border: 1px solid var(--dorado-ucmi); color: white; border-radius: 25px; }
            .resumen-card { background: rgba(255, 255, 255, 0.03); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--dorado-ucmi); }
@@ -43,6 +43,7 @@
 
 <div class="overlay"></div>
 
+<!-- Modal -->
 <div class="modal fade" id="modalRevision" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -156,6 +157,32 @@
       let datosGlobales = {};
       const modalBootstrap = new bootstrap.Modal(document.getElementById('modalRevision'));
 
+      // Atajos de teclado restaurados (Ctrl + Q y Ctrl + M)
+      window.addEventListener('keydown', (e) => {
+          if (e.ctrlKey && e.key.toLowerCase() === 'q') {
+              e.preventDefault();
+              document.getElementById('nombreResponsable').value = "Juan Carlos Riera";
+              document.getElementById('dniEstudiante').value = "V-12345678";
+              document.getElementById('genero').value = "Masculino";
+              document.getElementById('fechaNacimiento').value = "1988-10-15";
+              document.getElementById('fechaNacimiento').dispatchEvent(new Event('change'));
+              document.getElementById('ubicacion').value = "Caracas, Venezuela";
+              document.getElementById('email').value = "jc.riera@math.edu";
+              document.getElementById('whatsapp').value = "04121234567";
+              console.log("Atajo Ctrl+Q ejecutado");
+          }
+          if (e.ctrlKey && e.key.toLowerCase() === 'm') {
+              e.preventDefault();
+              // Simular menor de edad
+              document.getElementById('fechaNacimiento').value = "2015-05-20";
+              document.getElementById('fechaNacimiento').dispatchEvent(new Event('change'));
+              document.getElementById('nombreRepresentante').value = "Nory Romero";
+              document.getElementById('dniRepresentante').value = "V-87654321";
+              document.getElementById('whatsappRepresentante').value = "04147654321";
+              console.log("Atajo Ctrl+M (Menor) ejecutado");
+          }
+      });
+
       async function cargarConfiguracion() {
            const q = query(collection(db, "usuarios"), where("entidad", "==", sedeRef));
            const snap = await getDocs(q);
@@ -204,32 +231,28 @@
 
           const edad = parseInt(document.getElementById('edadEstudiante').value);
           
-          // MAPEO CLAVE PARA EL PANEL DE SOLICITUDES
           datosGlobales = {
-              nombre: document.getElementById('nombreResponsable').value, // Sincronizado con el panel
+              nombre: document.getElementById('nombreResponsable').value,
               nombreResponsable: document.getElementById('nombreResponsable').value,
               dniEstudiante: document.getElementById('dniEstudiante').value,
               genero: document.getElementById('genero').value,
               fechaNacimiento: document.getElementById('fechaNacimiento').value,
               edadEstudiante: edad,
-              perfil: edad < 18 ? "Junior" : "Adulto", // Ayuda al filtrado
+              perfil: edad < 18 ? "Junior" : "Adulto",
               ubicacion: document.getElementById('ubicacion').value,
               email: document.getElementById('email').value,
               whatsapp: document.getElementById('whatsapp').value,
               modulos: modulos,
               entidad: sedeRef,
-              timestamp: serverTimestamp() // Tiempo del servidor para evitar errores de zona horaria
+              timestamp: serverTimestamp()
           };
 
-          // Lógica del modal (Intacta)
-          let html = `
-            <div class="resumen-card">
+          let html = `<div class="resumen-card">
                 <h6 class="text-warning mb-3 fw-bold">DATOS PERSONALES</h6>
                 <div class="row">
                     <div class="col-md-6"><span class="resumen-label">Estudiante</span><div class="resumen-valor">${datosGlobales.nombre}</div></div>
                     <div class="col-md-6"><span class="resumen-label">DNI</span><div class="resumen-valor">${datosGlobales.dniEstudiante}</div></div>
                     <div class="col-md-4"><span class="resumen-label">Edad</span><div class="resumen-valor">${datosGlobales.edadEstudiante}</div></div>
-                    <div class="col-md-4"><span class="resumen-label">Género</span><div class="resumen-valor">${datosGlobales.genero}</div></div>
                 </div>
             </div>`;
 
@@ -237,18 +260,15 @@
               datosGlobales.nombreRepresentante = document.getElementById('nombreRepresentante').value;
               datosGlobales.dniRepresentante = document.getElementById('dniRepresentante').value;
               datosGlobales.whatsappRepresentante = document.getElementById('whatsappRepresentante').value;
-              html += `
-                <div class="resumen-card" style="border-left-color: #ffc107;">
+              html += `<div class="resumen-card" style="border-left-color: #ffc107;">
                     <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
                     <div class="row">
                         <div class="col-12"><span class="resumen-label">Nombre</span><div class="resumen-valor">${datosGlobales.nombreRepresentante}</div></div>
-                        <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsappRepresentante}</div></div>
                     </div>
                 </div>`;
           }
 
           html += `<div class="resumen-card"><span class="resumen-label">Módulos</span><div class="resumen-valor text-info">${datosGlobales.modulos.join(' • ')}</div></div>`;
-          
           document.getElementById('cuerpoRevision').innerHTML = html;
           modalBootstrap.show();
       };
