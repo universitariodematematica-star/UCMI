@@ -9,7 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <!-- Librería para generar PDFs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
@@ -42,18 +41,17 @@
 
 <div class="overlay"></div>
 
-<!-- Modal de Revisión -->
 <div class="modal fade" id="modalRevision" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header border-bottom border-secondary">
-        <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-check me-2 text-warning"></i>CONFIRMACIÓN DE DATOS</h5>
+        <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-check me-2 text-warning"></i>REVISIÓN FINAL DE DATOS</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body px-4" id="cuerpoRevision"></div>
       <div class="modal-footer border-top border-secondary">
         <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">CORREGIR</button>
-        <button type="button" id="confirmarEnvio" class="btn btn-warning px-5 fw-bold" style="background: var(--dorado-ucmi);">ENVIAR A FIREBASE</button>
+        <button type="button" id="confirmarEnvio" class="btn btn-warning px-5 fw-bold" style="background: var(--dorado-ucmi);">CONFIRMAR Y DESCARGAR PDF</button>
       </div>
     </div>
   </div>
@@ -71,7 +69,7 @@
             <div class="row g-3">
                 <div class="col-12">
                     <label class="form-label">NOMBRE COMPLETO DEL ESTUDIANTE:</label>
-                    <input type="text" id="nombreResponsable" class="form-control" required>
+                    <input type="text" id="nombreEstudiante" class="form-control" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">DNI / IDENTIFICACIÓN:</label>
@@ -95,11 +93,11 @@
                     <input type="text" id="edadEstudiante" class="form-control" readonly style="background: rgba(197, 160, 89, 0.1);">
                 </div>
                 <div class="col-12">
-                    <label class="form-label">UBICACIÓN:</label>
+                    <label class="form-label">UBICACIÓN (CIUDAD/ESTADO):</label>
                     <input type="text" id="ubicacion" class="form-control" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">CORREO:</label>
+                    <label class="form-label">CORREO ELECTRÓNICO:</label>
                     <input type="email" id="email" class="form-control" required>
                 </div>
                 <div class="col-md-6">
@@ -109,10 +107,10 @@
             </div>
 
             <div id="panelRepresentante" class="seccion-representante">
-                <h6 class="text-warning fw-bold mb-3">DATOS DEL REPRESENTANTE</h6>
+                <h6 class="text-warning fw-bold mb-3"><i class="bi bi-shield-shaded me-2"></i>DATOS DEL REPRESENTANTE</h6>
                 <div class="row g-3">
                     <div class="col-12">
-                        <label class="form-label">NOMBRE REPRESENTANTE:</label>
+                        <label class="form-label">NOMBRE DEL REPRESENTANTE:</label>
                         <input type="text" id="nombreRepresentante" class="form-control">
                     </div>
                     <div class="col-md-6">
@@ -127,11 +125,11 @@
             </div>
 
             <div class="mt-4">
-                <label class="form-label d-block mb-3">MÓDULOS DISPONIBLES:</label>
+                <label class="form-label d-block mb-3">MÓDULOS DE INTERÉS:</label>
                 <div id="contenedorModulos" class="row g-2"></div>
             </div>
 
-            <button type="submit" class="btn btn-enviar">COMPLETAR POSTULACIÓN</button>
+            <button type="submit" class="btn btn-enviar">REVISAR POSTULACIÓN</button>
         </form>
     </div>
 </div>
@@ -191,54 +189,17 @@
         });
     });
 
-    // Atajos (Ctrl+Q / Ctrl+M)
-    window.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key.toLowerCase() === 'q') {
-            e.preventDefault();
-            document.getElementById('nombreResponsable').value = "Juan Carlos Riera";
-            document.getElementById('dniEstudiante').value = "V-11222333";
-            document.getElementById('genero').value = "Masculino";
-            document.getElementById('fechaNacimiento').value = "1988-10-15";
-            document.getElementById('fechaNacimiento').dispatchEvent(new Event('change'));
-            document.getElementById('ubicacion').value = "Distrito Capital, Caracas";
-            document.getElementById('email').value = "jc.riera@math.edu";
-            document.getElementById('whatsapp').value = "04125555555";
-        }
-        if (e.ctrlKey && e.key.toLowerCase() === 'm') {
-            e.preventDefault();
-            document.getElementById('nombreResponsable').value = "Abril Riera";
-            document.getElementById('dniEstudiante').value = "V-33444555";
-            document.getElementById('genero').value = "Femenino";
-            document.getElementById('fechaNacimiento').value = "2016-04-20";
-            document.getElementById('fechaNacimiento').dispatchEvent(new Event('change'));
-            document.getElementById('ubicacion').value = "Miranda, Venezuela";
-            document.getElementById('email').value = "nory.romero@gmail.com";
-            document.getElementById('whatsapp').value = "04120001122";
-            setTimeout(() => {
-                document.getElementById('nombreRepresentante').value = "Nory Romero";
-                document.getElementById('dniRepresentante').value = "V-15666777";
-                document.getElementById('whatsappRepresentante').value = "04147778899";
-            }, 100);
-        }
-    });
-
-    // Lógica de Formulario y Modal
     document.getElementById('formIdiomas').onsubmit = (e) => {
         e.preventDefault();
-        const form = e.target;
         const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(cb => cb.value);
-        
-        if (!form.checkValidity()) {
-            form.classList.add('was-validated');
-            return;
-        }
+        if (!e.target.checkValidity()) { e.target.classList.add('was-validated'); return; }
         if (modulos.length === 0) return Swal.fire("Módulos", "Selecciona al menos uno.", "warning");
 
         const edad = parseInt(document.getElementById('edadEstudiante').value);
         const categoria = edad < 18 ? "Junior" : "Adulto";
 
         datosGlobales = {
-            nombreResponsable: document.getElementById('nombreResponsable').value,
+            nombreEstudiante: document.getElementById('nombreEstudiante').value,
             dniEstudiante: document.getElementById('dniEstudiante').value,
             genero: document.getElementById('genero').value,
             fechaNacimiento: document.getElementById('fechaNacimiento').value,
@@ -253,125 +214,148 @@
             timestamp: serverTimestamp()
         };
 
-        let html = `
-          <div class="resumen-card">
-              <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-person-badge me-2"></i>DATOS PERSONALES</h6>
-              <div class="row">
-                  <div class="col-md-12"><span class="resumen-label">Estudiante</span><div class="resumen-valor">${datosGlobales.nombreResponsable}</div></div>
-                  <div class="col-md-6"><span class="resumen-label">DNI</span><div class="resumen-valor">${datosGlobales.dniEstudiante}</div></div>
-                  <div class="col-md-6"><span class="resumen-label">Edad</span><div class="resumen-valor">${datosGlobales.edadEstudiante} (${categoria})</div></div>
-              </div>
-          </div>
-          <div class="resumen-card">
-              <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-geo-alt me-2"></i>CONTACTO Y UBICACIÓN</h6>
-              <div class="row">
-                  <div class="col-12"><span class="resumen-label">Ubicación</span><div class="resumen-valor">${datosGlobales.ubicacion}</div></div>
-                  <div class="col-md-6"><span class="resumen-label">Correo</span><div class="resumen-valor">${datosGlobales.email}</div></div>
-                  <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsapp}</div></div>
-              </div>
-          </div>`;
-
         if (edad < 18) {
             datosGlobales.nombreRepresentante = document.getElementById('nombreRepresentante').value;
             datosGlobales.dniRepresentante = document.getElementById('dniRepresentante').value;
             datosGlobales.whatsappRepresentante = document.getElementById('whatsappRepresentante').value;
-            html += `
-              <div class="resumen-card" style="border-left-color: #ffc107;">
-                  <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
-                  <div class="row">
-                      <div class="col-12"><span class="resumen-label">Nombre</span><div class="resumen-valor">${datosGlobales.nombreRepresentante}</div></div>
-                      <div class="col-md-6"><span class="resumen-label">DNI</span><div class="resumen-valor">${datosGlobales.dniRepresentante}</div></div>
-                      <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsappRepresentante}</div></div>
-                  </div>
-              </div>`;
         }
-        html += `<div class="resumen-card"><span class="resumen-label">Módulos</span><div class="resumen-valor text-info">${datosGlobales.modulos.join(' • ')}</div></div>`;
+
+        let html = `
+            <div class="resumen-card">
+                <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-person-circle me-2"></i>IDENTIDAD DEL ESTUDIANTE</h6>
+                <div class="row">
+                    <div class="col-md-12"><span class="resumen-label">Nombre Completo</span><div class="resumen-valor">${datosGlobales.nombreEstudiante}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">DNI / ID</span><div class="resumen-valor">${datosGlobales.dniEstudiante}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">Género</span><div class="resumen-valor">${datosGlobales.genero}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">Nacimiento</span><div class="resumen-valor">${datosGlobales.fechaNacimiento}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">Edad</span><div class="resumen-valor">${datosGlobales.edadEstudiante} años (${categoria})</div></div>
+                </div>
+            </div>
+            <div class="resumen-card">
+                <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-geo-alt-fill me-2"></i>UBICACIÓN Y CONTACTO</h6>
+                <div class="row">
+                    <div class="col-12"><span class="resumen-label">Ubicación</span><div class="resumen-valor">${datosGlobales.ubicacion}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">Email</span><div class="resumen-valor">${datosGlobales.email}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsapp}</div></div>
+                </div>
+            </div>`;
+
+        if (edad < 18) {
+            html += `
+            <div class="resumen-card" style="border-left-color: #ffc107;">
+                <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-shield-check me-2"></i>REPRESENTANTE LEGAL</h6>
+                <div class="row">
+                    <div class="col-12"><span class="resumen-label">Nombre Tutor</span><div class="resumen-valor">${datosGlobales.nombreRepresentante}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">DNI Tutor</span><div class="resumen-valor">${datosGlobales.dniRepresentante}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">WhatsApp Tutor</span><div class="resumen-valor">${datosGlobales.whatsappRepresentante}</div></div>
+                </div>
+            </div>`;
+        }
+
+        html += `<div class="resumen-card"><span class="resumen-label">Módulos Seleccionados</span><div class="resumen-valor text-info"><i class="bi bi-book me-2"></i>${datosGlobales.modulos.join(' • ')}</div></div>`;
         
         document.getElementById('cuerpoRevision').innerHTML = html;
         modalBootstrap.show();
     };
 
-    // Envío a Firebase + PDF
     document.getElementById('confirmarEnvio').onclick = async () => {
         const btn = document.getElementById('confirmarEnvio');
         btn.disabled = true;
-        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>SUBIENDO...`;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>PROCESANDO...`;
         
         try {
             await addDoc(collection(db, "postulaciones"), datosGlobales);
-            
-            // Generar PDF
-            generarComprobantePDF(datosGlobales);
-
+            generarPDFCompleto(datosGlobales);
             modalBootstrap.hide();
-            await Swal.fire({ icon: 'success', title: '¡Enviado!', text: 'Se ha descargado tu comprobante PDF.', confirmButtonColor: '#c5a059' });
+            await Swal.fire({ icon: 'success', title: '¡Postulación Exitosa!', text: 'Se ha guardado tu información y descargado el comprobante PDF.', confirmButtonColor: '#c5a059' });
             location.reload();
         } catch (e) {
-            Swal.fire("Error", "No se pudo subir la información.", "error");
+            Swal.fire("Error", "Error al conectar con la base de datos.", "error");
             btn.disabled = false;
-            btn.innerText = "ENVIAR A FIREBASE";
+            btn.innerText = "CONFIRMAR Y DESCARGAR PDF";
         }
     };
 
-    function generarComprobantePDF(datos) {
+    function generarPDFCompleto(d) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         let y = 20;
 
+        // Cabecera
+        doc.setFillColor(11, 15, 26);
+        doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(197, 160, 89);
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.text("COMPROBANTE DE POSTULACIÓN - UCMI", 20, y);
-        
+        doc.setFontSize(22);
+        doc.text("COMPROBANTE DE POSTULACIÓN", 20, 25);
         doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        y += 10;
-        doc.text(`Fecha: ${new Date().toLocaleString()}`, 20, y);
-        doc.text(`Sede: ${datos.entidad.toUpperCase()}`, 140, y);
-        
-        y += 10;
+        doc.text(`UCMI - SEDE: ${d.entidad.toUpperCase()}`, 20, 32);
+
+        // Cuerpo
+        doc.setTextColor(0, 0, 0);
+        y = 50;
+        doc.setFontSize(12);
+        doc.text("DETALLES DEL ESTUDIANTE", 20, y);
         doc.setLineWidth(0.5);
-        doc.line(20, y, 190, y);
-
-        y += 15;
-        doc.setFont("helvetica", "bold");
-        doc.text("DATOS DEL ASPIRANTE", 20, y);
-        y += 7;
-        doc.setFont("helvetica", "normal");
-        doc.text(`Nombre: ${datos.nombreResponsable}`, 20, y);
-        doc.text(`DNI: ${datos.dniEstudiante}`, 120, y);
-        y += 7;
-        doc.text(`Edad: ${datos.edadEstudiante} (${datos.categoriaEdad})`, 20, y);
-        doc.text(`Género: ${datos.genero}`, 120, y);
+        doc.line(20, y+2, 190, y+2);
         
+        y += 12;
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold"); doc.text("Nombre Completo:", 20, y); 
+        doc.setFont("helvetica", "normal"); doc.text(`${d.nombreEstudiante}`, 60, y);
+        
+        y += 7;
+        doc.setFont("helvetica", "bold"); doc.text("DNI / Identificación:", 20, y); 
+        doc.setFont("helvetica", "normal"); doc.text(`${d.dniEstudiante}`, 60, y);
+        
+        y += 7;
+        doc.setFont("helvetica", "bold"); doc.text("Fecha Nac. / Edad:", 20, y); 
+        doc.setFont("helvetica", "normal"); doc.text(`${d.fechaNacimiento} (${d.edadEstudiante} años - ${d.categoriaEdad})`, 60, y);
+
+        y += 7;
+        doc.setFont("helvetica", "bold"); doc.text("Género:", 20, y); 
+        doc.setFont("helvetica", "normal"); doc.text(`${d.genero}`, 60, y);
+
         y += 15;
         doc.setFont("helvetica", "bold");
-        doc.text("CONTACTO Y UBICACIÓN", 20, y);
-        y += 7;
-        doc.setFont("helvetica", "normal");
-        doc.text(`Ubicación: ${datos.ubicacion}`, 20, y);
-        y += 7;
-        doc.text(`Correo: ${datos.email}`, 20, y);
-        doc.text(`WhatsApp: ${datos.whatsapp}`, 120, y);
+        doc.text("UBICACIÓN Y CONTACTO", 20, y);
+        doc.line(20, y+2, 190, y+2);
 
-        if (datos.nombreRepresentante) {
+        y += 10;
+        doc.setFont("helvetica", "bold"); doc.text("Ubicación:", 20, y); 
+        doc.setFont("helvetica", "normal"); doc.text(`${d.ubicacion}`, 60, y);
+        y += 7;
+        doc.setFont("helvetica", "bold"); doc.text("Correo:", 20, y); 
+        doc.setFont("helvetica", "normal"); doc.text(`${d.email}`, 60, y);
+        y += 7;
+        doc.setFont("helvetica", "bold"); doc.text("WhatsApp:", 20, y); 
+        doc.setFont("helvetica", "normal"); doc.text(`${d.whatsapp}`, 60, y);
+
+        if (d.nombreRepresentante) {
             y += 15;
             doc.setFont("helvetica", "bold");
-            doc.text("REPRESENTANTE LEGAL", 20, y);
+            doc.text("INFORMACIÓN DEL REPRESENTANTE", 20, y);
+            doc.line(20, y+2, 190, y+2);
+            y += 10;
+            doc.text(`Nombre Tutor: ${d.nombreRepresentante}`, 20, y);
             y += 7;
-            doc.setFont("helvetica", "normal");
-            doc.text(`Tutor: ${datos.nombreRepresentante}`, 20, y);
-            y += 7;
-            doc.text(`DNI: ${datos.dniRepresentante} | WhatsApp: ${datos.whatsappRepresentante}`, 20, y);
+            doc.text(`DNI Tutor: ${d.dniRepresentante} | WhatsApp: ${d.whatsappRepresentante}`, 20, y);
         }
 
         y += 15;
         doc.setFont("helvetica", "bold");
         doc.text("MÓDULOS REGISTRADOS", 20, y);
-        y += 7;
-        doc.setFont("helvetica", "italic");
-        doc.text(datos.modulos.join(" — "), 20, y);
+        doc.line(20, y+2, 190, y+2);
+        y += 10;
+        doc.setFont("helvetica", "normal");
+        doc.text(d.modulos.join(" — "), 20, y);
 
-        doc.save(`Postulacion_${datos.dniEstudiante}.pdf`);
+        // Footer
+        doc.setFontSize(8);
+        doc.text(`Generado el: ${new Date().toLocaleString()}`, 20, 285);
+        doc.text("Este documento certifica la intención de postulación a los programas de UCMI.", 110, 285);
+
+        doc.save(`UCMI_Postulacion_${d.dniEstudiante}.pdf`);
     }
 </script>
 </body>
