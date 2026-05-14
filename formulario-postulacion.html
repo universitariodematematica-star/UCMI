@@ -31,7 +31,7 @@
            .form-control:focus, .form-select:focus { background: rgba(255, 255, 255, 0.15); border-color: var(--dorado-ucmi); color: white; box-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
            
            .seccion-representante { display: none; background: rgba(197, 160, 89, 0.05); padding: 20px; border-radius: 20px; border: 1px solid rgba(197, 160, 89, 0.2); margin-top: 20px; }
-           .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; border: none; width: 100%; margin-top: 30px; transition: 0.3s; cursor: pointer; }
+           .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; border: none; width: 100%; margin-top: 30px; transition: 0.3s; }
            
            .modal-content { background: #0b0f1a; border: 1px solid var(--dorado-ucmi); color: white; border-radius: 25px; }
            .resumen-card { background: rgba(255, 255, 255, 0.03); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--dorado-ucmi); }
@@ -43,7 +43,6 @@
 
 <div class="overlay"></div>
 
-<!-- Modal -->
 <div class="modal fade" id="modalRevision" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -139,7 +138,7 @@
 
 <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
       const firebaseConfig = {
            apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -156,32 +155,6 @@
       const sedeRef = urlParams.get('ref') || "UCMI";
       let datosGlobales = {};
       const modalBootstrap = new bootstrap.Modal(document.getElementById('modalRevision'));
-
-      // Atajos de teclado restaurados (Ctrl + Q y Ctrl + M)
-      window.addEventListener('keydown', (e) => {
-          if (e.ctrlKey && e.key.toLowerCase() === 'q') {
-              e.preventDefault();
-              document.getElementById('nombreResponsable').value = "Juan Carlos Riera";
-              document.getElementById('dniEstudiante').value = "V-12345678";
-              document.getElementById('genero').value = "Masculino";
-              document.getElementById('fechaNacimiento').value = "1988-10-15";
-              document.getElementById('fechaNacimiento').dispatchEvent(new Event('change'));
-              document.getElementById('ubicacion').value = "Caracas, Venezuela";
-              document.getElementById('email').value = "jc.riera@math.edu";
-              document.getElementById('whatsapp').value = "04121234567";
-              console.log("Atajo Ctrl+Q ejecutado");
-          }
-          if (e.ctrlKey && e.key.toLowerCase() === 'm') {
-              e.preventDefault();
-              // Simular menor de edad
-              document.getElementById('fechaNacimiento').value = "2015-05-20";
-              document.getElementById('fechaNacimiento').dispatchEvent(new Event('change'));
-              document.getElementById('nombreRepresentante').value = "Nory Romero";
-              document.getElementById('dniRepresentante').value = "V-87654321";
-              document.getElementById('whatsappRepresentante').value = "04147654321";
-              console.log("Atajo Ctrl+M (Menor) ejecutado");
-          }
-      });
 
       async function cargarConfiguracion() {
            const q = query(collection(db, "usuarios"), where("entidad", "==", sedeRef));
@@ -218,6 +191,36 @@
            });
       });
 
+      window.addEventListener('keydown', (e) => {
+          if (e.ctrlKey && e.key.toLowerCase() === 'q') {
+              e.preventDefault();
+              document.getElementById('nombreResponsable').value = "Juan Carlos Riera";
+              document.getElementById('dniEstudiante').value = "V-11222333";
+              document.getElementById('genero').value = "Masculino";
+              document.getElementById('fechaNacimiento').value = "1988-10-15";
+              document.getElementById('fechaNacimiento').dispatchEvent(new Event('change'));
+              document.getElementById('ubicacion').value = "Distrito Capital, Caracas";
+              document.getElementById('email').value = "jc.riera@math.edu";
+              document.getElementById('whatsapp').value = "04125555555";
+          }
+          if (e.ctrlKey && e.key.toLowerCase() === 'm') {
+              e.preventDefault();
+              document.getElementById('nombreResponsable').value = "Abril Riera";
+              document.getElementById('dniEstudiante').value = "V-33444555";
+              document.getElementById('genero').value = "Femenino";
+              document.getElementById('fechaNacimiento').value = "2016-04-20";
+              document.getElementById('fechaNacimiento').dispatchEvent(new Event('change'));
+              document.getElementById('ubicacion').value = "Miranda, Venezuela";
+              document.getElementById('email').value = "nory.romero@gmail.com";
+              document.getElementById('whatsapp').value = "04120001122";
+              setTimeout(() => {
+                  document.getElementById('nombreRepresentante').value = "Nory Romero";
+                  document.getElementById('dniRepresentante').value = "V-15666777";
+                  document.getElementById('whatsappRepresentante').value = "04147778899";
+              }, 100);
+          }
+      });
+
       document.getElementById('formIdiomas').onsubmit = (e) => {
           e.preventDefault();
           const form = e.target;
@@ -230,29 +233,37 @@
           if (modulos.length === 0) return Swal.fire("Módulos", "Selecciona al menos uno.", "warning");
 
           const edad = parseInt(document.getElementById('edadEstudiante').value);
-          
           datosGlobales = {
-              nombre: document.getElementById('nombreResponsable').value,
               nombreResponsable: document.getElementById('nombreResponsable').value,
               dniEstudiante: document.getElementById('dniEstudiante').value,
               genero: document.getElementById('genero').value,
               fechaNacimiento: document.getElementById('fechaNacimiento').value,
               edadEstudiante: edad,
-              perfil: edad < 18 ? "Junior" : "Adulto",
               ubicacion: document.getElementById('ubicacion').value,
               email: document.getElementById('email').value,
               whatsapp: document.getElementById('whatsapp').value,
               modulos: modulos,
               entidad: sedeRef,
-              timestamp: serverTimestamp()
+              timestamp: new Date()
           };
 
-          let html = `<div class="resumen-card">
+          let html = `
+            <div class="resumen-card">
                 <h6 class="text-warning mb-3 fw-bold">DATOS PERSONALES</h6>
                 <div class="row">
-                    <div class="col-md-6"><span class="resumen-label">Estudiante</span><div class="resumen-valor">${datosGlobales.nombre}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">Estudiante</span><div class="resumen-valor">${datosGlobales.nombreResponsable}</div></div>
                     <div class="col-md-6"><span class="resumen-label">DNI</span><div class="resumen-valor">${datosGlobales.dniEstudiante}</div></div>
                     <div class="col-md-4"><span class="resumen-label">Edad</span><div class="resumen-valor">${datosGlobales.edadEstudiante}</div></div>
+                    <div class="col-md-4"><span class="resumen-label">Género</span><div class="resumen-valor">${datosGlobales.genero}</div></div>
+                    <div class="col-md-4"><span class="resumen-label">Nacimiento</span><div class="resumen-valor">${datosGlobales.fechaNacimiento}</div></div>
+                </div>
+            </div>
+            <div class="resumen-card">
+                <h6 class="text-warning mb-3 fw-bold">CONTACTO</h6>
+                <div class="row">
+                    <div class="col-12"><span class="resumen-label">Ubicación</span><div class="resumen-valor">${datosGlobales.ubicacion}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">Email</span><div class="resumen-valor">${datosGlobales.email}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsapp}</div></div>
                 </div>
             </div>`;
 
@@ -260,15 +271,19 @@
               datosGlobales.nombreRepresentante = document.getElementById('nombreRepresentante').value;
               datosGlobales.dniRepresentante = document.getElementById('dniRepresentante').value;
               datosGlobales.whatsappRepresentante = document.getElementById('whatsappRepresentante').value;
-              html += `<div class="resumen-card" style="border-left-color: #ffc107;">
+              html += `
+                <div class="resumen-card" style="border-left-color: #ffc107;">
                     <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
                     <div class="row">
                         <div class="col-12"><span class="resumen-label">Nombre</span><div class="resumen-valor">${datosGlobales.nombreRepresentante}</div></div>
+                        <div class="col-md-6"><span class="resumen-label">DNI</span><div class="resumen-valor">${datosGlobales.dniRepresentante}</div></div>
+                        <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsappRepresentante}</div></div>
                     </div>
                 </div>`;
           }
 
           html += `<div class="resumen-card"><span class="resumen-label">Módulos</span><div class="resumen-valor text-info">${datosGlobales.modulos.join(' • ')}</div></div>`;
+          
           document.getElementById('cuerpoRevision').innerHTML = html;
           modalBootstrap.show();
       };
@@ -280,7 +295,7 @@
           try {
               await addDoc(collection(db, "postulaciones"), datosGlobales);
               modalBootstrap.hide();
-              await Swal.fire({ icon: 'success', title: '¡Enviado!', text: 'Los datos se guardaron correctamente.', confirmButtonColor: '#c5a059' });
+              await Swal.fire({ icon: 'success', title: '¡Enviado!', text: 'Los datos se guardaron en Firebase.', confirmButtonColor: '#c5a059' });
               location.reload();
           } catch (e) {
               Swal.fire("Error", "No se pudo subir la información.", "error");
