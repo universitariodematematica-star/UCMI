@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --dorado-ucmi: #c5a059; --azul-profundo: #06090f; }
         body {
@@ -290,17 +290,105 @@
     };
 
     // --- ENVÍO FINAL ---
+    const generarPDF = async (datos) => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const logoImg = document.getElementById('logoDinamico');
+        const nombreEntidad = document.getElementById('nombreSede').innerText;
+
+        // Encabezado: Logo y Nombre
+        if (logoImg.src && logoImg.src !== window.location.href) {
+            try {
+                doc.addImage(logoImg.src, 'PNG', 15, 10, 25, 25);
+            } catch (e) { console.warn("No se pudo cargar el logo en el PDF"); }
+        }
+        
+        doc.setFont("Cinzel", "bold");
+        doc.setFontSize(14);
+        doc.text(nombreEntidad, 45, 20);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text("COMPROBANTE DE POSTULACIÓN", 45, 27);
+        doc.line(15, 38, 195, 38); // Línea divisoria
+
+        // Cuerpo del documento
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("DATOS DEL ESTUDIANTE", 15, 48);
+        
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        let y = 58;
+        const filas = [
+            ["Nombre Completo:", datos.nombreResponsable],
+            ["DNI / ID:", datos.dniEstudiante],
+            ["Género:", datos.genero],
+            ["Fecha de Nacimiento:", datos.fechaNacimiento],
+            ["Edad:", `${datos.edadEstudiante} años`],
+            ["Ubicación:", datos.ubicacion],
+            ["Email:", datos.email],
+            ["WhatsApp:", datos.whatsapp],
+            ["Módulos:", datos.modulos.join(', ')]
+        ];
+
+        filas.forEach(fila => {
+            doc.setFont("helvetica", "bold");
+            doc.text(fila[0], 15, y);
+            doc.setFont("helvetica", "normal");
+            doc.text(String(fila[1]), 60, y);
+            y += 8;
+        });
+
+        // Si es menor, añadir los 3 datos del representante (Total 12)
+        if (datos.edadEstudiante < 18) {
+            y += 5;
+            doc.setFont("helvetica", "bold");
+            doc.text("DATOS DEL REPRESENTANTE", 15, y);
+            y += 10;
+            const filasRep = [
+                ["Nombre Tutor:", datos.nombreRepresentante],
+                ["DNI Tutor:", datos.dniRepresentante],
+                ["WhatsApp Tutor:", datos.whatsappRepresentante]
+            ];
+            filasRep.forEach(fila => {
+                doc.setFont("helvetica", "bold");
+                doc.text(fila[0], 15, y);
+                doc.setFont("helvetica", "normal");
+                doc.text(String(fila[1]), 60, y);
+                y += 8;
+            });
+        }
+
+        doc.setFontSize(8);
+        doc.text(`Fecha de emisión: ${new Date().toLocaleString()}`, 15, 280);
+        
+        doc.save(`Comprobante_${datos.dniEstudiante}.pdf`);
+    };
+
+    // --- ENVÍO FINAL (ACTUALIZADO) ---
     document.getElementById('confirmarEnvio').onclick = async () => {
         const btn = document.getElementById('confirmarEnvio');
         btn.disabled = true;
         btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>SUBIENDO...`;
+        
         try {
+            // 1. Guardar en Firebase
             await addDoc(collection(db, "postulaciones"), datosGlobales);
+            
+            // 2. Generar y descargar PDF automáticamente
+            await generarPDF(datosGlobales);
+
             modalBootstrap.hide();
-            await Swal.fire({ icon: 'success', title: '¡Postulación Exitosa!', text: 'Los datos se han guardado correctamente.', confirmButtonColor: '#c5a059' });
+            await Swal.fire({ 
+                icon: 'success', 
+                title: '¡Postulación Exitosa!', 
+                text: 'Datos guardados y comprobante generado.', 
+                confirmButtonColor: '#c5a059' 
+            });
             location.reload();
         } catch (e) {
-            Swal.fire("Error", "No se pudo conectar con el servidor.", "error");
+            console.error(e);
+            Swal.fire("Error", "No se pudo procesar la solicitud.", "error");
             btn.disabled = false;
             btn.innerText = "ENVIAR A FIREBASE";
         }
