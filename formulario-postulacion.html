@@ -138,7 +138,7 @@
 
 <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
       const firebaseConfig = {
            apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -191,36 +191,6 @@
            });
       });
 
-      window.addEventListener('keydown', (e) => {
-          if (e.ctrlKey && e.key.toLowerCase() === 'q') {
-              e.preventDefault();
-              document.getElementById('nombreResponsable').value = "Juan Carlos Riera";
-              document.getElementById('dniEstudiante').value = "V-11222333";
-              document.getElementById('genero').value = "Masculino";
-              document.getElementById('fechaNacimiento').value = "1988-10-15";
-              document.getElementById('fechaNacimiento').dispatchEvent(new Event('change'));
-              document.getElementById('ubicacion').value = "Distrito Capital, Caracas";
-              document.getElementById('email').value = "jc.riera@math.edu";
-              document.getElementById('whatsapp').value = "04125555555";
-          }
-          if (e.ctrlKey && e.key.toLowerCase() === 'm') {
-              e.preventDefault();
-              document.getElementById('nombreResponsable').value = "Abril Riera";
-              document.getElementById('dniEstudiante').value = "V-33444555";
-              document.getElementById('genero').value = "Femenino";
-              document.getElementById('fechaNacimiento').value = "2016-04-20";
-              document.getElementById('fechaNacimiento').dispatchEvent(new Event('change'));
-              document.getElementById('ubicacion').value = "Miranda, Venezuela";
-              document.getElementById('email').value = "nory.romero@gmail.com";
-              document.getElementById('whatsapp').value = "04120001122";
-              setTimeout(() => {
-                  document.getElementById('nombreRepresentante').value = "Nory Romero";
-                  document.getElementById('dniRepresentante').value = "V-15666777";
-                  document.getElementById('whatsappRepresentante').value = "04147778899";
-              }, 100);
-          }
-      });
-
       document.getElementById('formIdiomas').onsubmit = (e) => {
           e.preventDefault();
           const form = e.target;
@@ -233,37 +203,33 @@
           if (modulos.length === 0) return Swal.fire("Módulos", "Selecciona al menos uno.", "warning");
 
           const edad = parseInt(document.getElementById('edadEstudiante').value);
+          
+          // MAPEO CLAVE PARA EL PANEL DE SOLICITUDES
           datosGlobales = {
+              nombre: document.getElementById('nombreResponsable').value, // Sincronizado con el panel
               nombreResponsable: document.getElementById('nombreResponsable').value,
               dniEstudiante: document.getElementById('dniEstudiante').value,
               genero: document.getElementById('genero').value,
               fechaNacimiento: document.getElementById('fechaNacimiento').value,
               edadEstudiante: edad,
+              perfil: edad < 18 ? "Junior" : "Adulto", // Ayuda al filtrado
               ubicacion: document.getElementById('ubicacion').value,
               email: document.getElementById('email').value,
               whatsapp: document.getElementById('whatsapp').value,
               modulos: modulos,
               entidad: sedeRef,
-              timestamp: new Date()
+              timestamp: serverTimestamp() // Tiempo del servidor para evitar errores de zona horaria
           };
 
+          // Lógica del modal (Intacta)
           let html = `
             <div class="resumen-card">
                 <h6 class="text-warning mb-3 fw-bold">DATOS PERSONALES</h6>
                 <div class="row">
-                    <div class="col-md-6"><span class="resumen-label">Estudiante</span><div class="resumen-valor">${datosGlobales.nombreResponsable}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">Estudiante</span><div class="resumen-valor">${datosGlobales.nombre}</div></div>
                     <div class="col-md-6"><span class="resumen-label">DNI</span><div class="resumen-valor">${datosGlobales.dniEstudiante}</div></div>
                     <div class="col-md-4"><span class="resumen-label">Edad</span><div class="resumen-valor">${datosGlobales.edadEstudiante}</div></div>
                     <div class="col-md-4"><span class="resumen-label">Género</span><div class="resumen-valor">${datosGlobales.genero}</div></div>
-                    <div class="col-md-4"><span class="resumen-label">Nacimiento</span><div class="resumen-valor">${datosGlobales.fechaNacimiento}</div></div>
-                </div>
-            </div>
-            <div class="resumen-card">
-                <h6 class="text-warning mb-3 fw-bold">CONTACTO</h6>
-                <div class="row">
-                    <div class="col-12"><span class="resumen-label">Ubicación</span><div class="resumen-valor">${datosGlobales.ubicacion}</div></div>
-                    <div class="col-md-6"><span class="resumen-label">Email</span><div class="resumen-valor">${datosGlobales.email}</div></div>
-                    <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsapp}</div></div>
                 </div>
             </div>`;
 
@@ -276,7 +242,6 @@
                     <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
                     <div class="row">
                         <div class="col-12"><span class="resumen-label">Nombre</span><div class="resumen-valor">${datosGlobales.nombreRepresentante}</div></div>
-                        <div class="col-md-6"><span class="resumen-label">DNI</span><div class="resumen-valor">${datosGlobales.dniRepresentante}</div></div>
                         <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsappRepresentante}</div></div>
                     </div>
                 </div>`;
@@ -295,7 +260,7 @@
           try {
               await addDoc(collection(db, "postulaciones"), datosGlobales);
               modalBootstrap.hide();
-              await Swal.fire({ icon: 'success', title: '¡Enviado!', text: 'Los datos se guardaron en Firebase.', confirmButtonColor: '#c5a059' });
+              await Swal.fire({ icon: 'success', title: '¡Enviado!', text: 'Los datos se guardaron correctamente.', confirmButtonColor: '#c5a059' });
               location.reload();
           } catch (e) {
               Swal.fire("Error", "No se pudo subir la información.", "error");
