@@ -33,10 +33,7 @@
            .seccion-representante { display: none; background: rgba(197, 160, 89, 0.05); padding: 20px; border-radius: 20px; border: 1px solid rgba(197, 160, 89, 0.2); margin-top: 20px; }
            .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; border: none; width: 100%; margin-top: 30px; transition: 0.3s; }
            
-           /* MODAL STYLES */
            .modal-content { background: #0b0f1a; border: 1px solid var(--dorado-ucmi); color: white; border-radius: 25px; }
-           .modal-header { border-bottom: 1px solid rgba(197, 160, 89, 0.2); }
-           .modal-footer { border-top: 1px solid rgba(197, 160, 89, 0.2); }
            .resumen-card { background: rgba(255, 255, 255, 0.03); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--dorado-ucmi); }
            .resumen-label { color: var(--dorado-ucmi); font-weight: bold; font-size: 0.75rem; text-transform: uppercase; display: block; margin-bottom: 2px; }
            .resumen-valor { font-size: 1rem; color: #fff; margin-bottom: 10px; }
@@ -46,20 +43,17 @@
 
 <div class="overlay"></div>
 
-<!-- MODAL DE REVISIÓN INTEGRAL -->
 <div class="modal fade" id="modalRevision" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-check me-2 text-warning"></i>REVISIÓN FINAL DE DATOS</h5>
+      <div class="modal-header border-bottom border-secondary">
+        <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-check me-2 text-warning"></i>CONFIRMACIÓN DE DATOS</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body px-4" id="cuerpoRevision">
-        <!-- Contenido generado por JS -->
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-link text-white text-decoration-none" data-bs-dismiss="modal">Corregir campos</button>
-        <button type="button" id="confirmarEnvio" class="btn btn-warning px-5 fw-bold" style="background: var(--dorado-ucmi); border-radius: 10px;">ENVIAR AHORA</button>
+      <div class="modal-body px-4" id="cuerpoRevision"></div>
+      <div class="modal-footer border-top border-secondary">
+        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">CORREGIR</button>
+        <button type="button" id="confirmarEnvio" class="btn btn-warning px-5 fw-bold" style="background: var(--dorado-ucmi);">ENVIAR A FIREBASE</button>
       </div>
     </div>
   </div>
@@ -97,44 +91,43 @@
                        <input type="date" id="fechaNacimiento" class="form-control" required>
                    </div>
                    <div class="col-md-4">
-                       <label class="form-label">EDAD CALCULADA:</label>
+                       <label class="form-label">EDAD:</label>
                        <input type="text" id="edadEstudiante" class="form-control" readonly style="background: rgba(197, 160, 89, 0.1);">
                    </div>
                    <div class="col-12">
-                       <label class="form-label">DIRECCIÓN / UBICACIÓN:</label>
+                       <label class="form-label">UBICACIÓN:</label>
                        <input type="text" id="ubicacion" class="form-control" required>
                    </div>
                    <div class="col-md-6">
-                       <label class="form-label">CORREO ELECTRÓNICO:</label>
+                       <label class="form-label">CORREO:</label>
                        <input type="email" id="email" class="form-control" required>
                    </div>
                    <div class="col-md-6">
-                       <label class="form-label">TELÉFONO WHATSAPP:</label>
+                       <label class="form-label">WHATSAPP:</label>
                        <input type="text" id="whatsapp" class="form-control" required>
                    </div>
                </div>
 
-               <!-- PANEL REPRESENTANTE -->
                <div id="panelRepresentante" class="seccion-representante">
-                   <h6 class="text-warning fw-bold mb-3">INFORMACIÓN DEL REPRESENTANTE LEGAL</h6>
+                   <h6 class="text-warning fw-bold mb-3">DATOS DEL REPRESENTANTE</h6>
                    <div class="row g-3">
                        <div class="col-12">
-                           <label class="form-label">NOMBRE DEL REPRESENTANTE:</label>
+                           <label class="form-label">NOMBRE REPRESENTANTE:</label>
                            <input type="text" id="nombreRepresentante" class="form-control">
                        </div>
                        <div class="col-md-6">
-                           <label class="form-label">DNI DEL REPRESENTANTE:</label>
+                           <label class="form-label">DNI REPRESENTANTE:</label>
                            <input type="text" id="dniRepresentante" class="form-control">
                        </div>
                        <div class="col-md-6">
-                           <label class="form-label">WHATSAPP DEL REPRESENTANTE:</label>
+                           <label class="form-label">WHATSAPP REPRESENTANTE:</label>
                            <input type="text" id="whatsappRepresentante" class="form-control">
                        </div>
                    </div>
                </div>
 
                <div class="mt-4">
-                   <label class="form-label d-block mb-3">SELECCIONE LOS MÓDULOS:</label>
+                   <label class="form-label d-block mb-3">MÓDULOS DISPONIBLES:</label>
                    <div id="contenedorModulos" class="row g-2"></div>
                </div>
 
@@ -163,7 +156,6 @@
       let datosGlobales = {};
       const modalBootstrap = new bootstrap.Modal(document.getElementById('modalRevision'));
 
-      // Carga dinámica con filtro de visibilidad
       async function cargarConfiguracion() {
            const q = query(collection(db, "usuarios"), where("entidad", "==", sedeRef));
            const snap = await getDocs(q);
@@ -172,10 +164,8 @@
                document.getElementById('logoDinamico').src = data.logoCustom || "";
                document.getElementById('logoDinamico').style.opacity = "1";
                document.getElementById('nombreSede').innerText = data.entidad.toUpperCase();
-               
                const contenedor = document.getElementById('contenedorModulos');
                const visibilidad = data['modulos-ofertados-academia'] || {};
-               
                (data.modulos || []).forEach(mod => {
                    if(visibilidad[mod] === true) {
                        const col = document.createElement('div');
@@ -188,17 +178,19 @@
       }
       cargarConfiguracion();
 
-      // Edad y lógica de menor
       document.getElementById('fechaNacimiento').addEventListener('change', (e) => {
            const hoy = new Date();
            const naci = new Date(e.target.value);
            let edad = hoy.getFullYear() - naci.getFullYear();
            if (hoy.getMonth() < naci.getMonth() || (hoy.getMonth() === naci.getMonth() && hoy.getDate() < naci.getDate())) edad--;
            document.getElementById('edadEstudiante').value = edad;
-           document.getElementById('panelRepresentante').style.display = (edad < 18) ? 'block' : 'none';
+           const esMenor = edad < 18;
+           document.getElementById('panelRepresentante').style.display = esMenor ? 'block' : 'none';
+           ['nombreRepresentante', 'dniRepresentante', 'whatsappRepresentante'].forEach(id => {
+               document.getElementById(id).required = esMenor;
+           });
       });
 
-      // Atajos de teclado (Ctrl+Q / Ctrl+M)
       window.addEventListener('keydown', (e) => {
           if (e.ctrlKey && e.key.toLowerCase() === 'q') {
               e.preventDefault();
@@ -215,26 +207,32 @@
               e.preventDefault();
               document.getElementById('nombreResponsable').value = "Abril Riera";
               document.getElementById('dniEstudiante').value = "V-33444555";
+              document.getElementById('genero').value = "Femenino";
               document.getElementById('fechaNacimiento').value = "2016-04-20";
               document.getElementById('fechaNacimiento').dispatchEvent(new Event('change'));
+              document.getElementById('ubicacion').value = "Miranda, Venezuela";
+              document.getElementById('email').value = "nory.romero@gmail.com";
+              document.getElementById('whatsapp').value = "04120001122";
               setTimeout(() => {
                   document.getElementById('nombreRepresentante').value = "Nory Romero";
                   document.getElementById('dniRepresentante').value = "V-15666777";
                   document.getElementById('whatsappRepresentante').value = "04147778899";
-              }, 50);
+              }, 100);
           }
       });
 
-      // CONSTRUCCIÓN DEL MODAL CON TODA LA INFORMACIÓN
       document.getElementById('formIdiomas').onsubmit = (e) => {
           e.preventDefault();
+          const form = e.target;
           const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(cb => cb.value);
-          if (modulos.length === 0) return Swal.fire("Error", "Debes seleccionar al menos un módulo.", "error");
-          if (!e.target.checkValidity()) return e.target.classList.add('was-validated');
+          
+          if (!form.checkValidity()) {
+              form.classList.add('was-validated');
+              return;
+          }
+          if (modulos.length === 0) return Swal.fire("Módulos", "Selecciona al menos uno.", "warning");
 
           const edad = parseInt(document.getElementById('edadEstudiante').value);
-
-          // Recopilamos absolutamente todo
           datosGlobales = {
               nombreResponsable: document.getElementById('nombreResponsable').value,
               dniEstudiante: document.getElementById('dniEstudiante').value,
@@ -246,115 +244,63 @@
               whatsapp: document.getElementById('whatsapp').value,
               modulos: modulos,
               entidad: sedeRef,
-              perfil: "UCMI Student",
               timestamp: new Date()
           };
 
-          // Construcción estética del HTML para el Modal
-          let htmlResumen = `
+          let html = `
             <div class="resumen-card">
-                <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-person-fill me-2"></i>DATOS DEL POSTULANTE</h6>
+                <h6 class="text-warning mb-3 fw-bold">DATOS PERSONALES</h6>
                 <div class="row">
-                    <div class="col-md-6">
-                        <span class="resumen-label">Nombre Completo</span>
-                        <div class="resumen-valor">${datosGlobales.nombreResponsable}</div>
-                    </div>
-                    <div class="col-md-6">
-                        <span class="resumen-label">DNI / ID</span>
-                        <div class="resumen-valor">${datosGlobales.dniEstudiante}</div>
-                    </div>
-                    <div class="col-md-4">
-                        <span class="resumen-label">Edad</span>
-                        <div class="resumen-valor">${datosGlobales.edadEstudiante} años</div>
-                    </div>
-                    <div class="col-md-4">
-                        <span class="resumen-label">Género</span>
-                        <div class="resumen-valor">${datosGlobales.genero}</div>
-                    </div>
-                    <div class="col-md-4">
-                        <span class="resumen-label">Nacimiento</span>
-                        <div class="resumen-valor">${datosGlobales.fechaNacimiento}</div>
-                    </div>
+                    <div class="col-md-6"><span class="resumen-label">Estudiante</span><div class="resumen-valor">${datosGlobales.nombreResponsable}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">DNI</span><div class="resumen-valor">${datosGlobales.dniEstudiante}</div></div>
+                    <div class="col-md-4"><span class="resumen-label">Edad</span><div class="resumen-valor">${datosGlobales.edadEstudiante}</div></div>
+                    <div class="col-md-4"><span class="resumen-label">Género</span><div class="resumen-valor">${datosGlobales.genero}</div></div>
+                    <div class="col-md-4"><span class="resumen-label">Nacimiento</span><div class="resumen-valor">${datosGlobales.fechaNacimiento}</div></div>
                 </div>
             </div>
-
             <div class="resumen-card">
-                <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-geo-alt-fill me-2"></i>CONTACTO Y UBICACIÓN</h6>
+                <h6 class="text-warning mb-3 fw-bold">CONTACTO</h6>
                 <div class="row">
-                    <div class="col-md-12">
-                        <span class="resumen-label">Dirección</span>
-                        <div class="resumen-valor">${datosGlobales.ubicacion}</div>
-                    </div>
-                    <div class="col-md-6">
-                        <span class="resumen-label">Email</span>
-                        <div class="resumen-valor">${datosGlobales.email}</div>
-                    </div>
-                    <div class="col-md-6">
-                        <span class="resumen-label">WhatsApp</span>
-                        <div class="resumen-valor">${datosGlobales.whatsapp}</div>
-                    </div>
+                    <div class="col-12"><span class="resumen-label">Ubicación</span><div class="resumen-valor">${datosGlobales.ubicacion}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">Email</span><div class="resumen-valor">${datosGlobales.email}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsapp}</div></div>
                 </div>
-            </div>
-          `;
+            </div>`;
 
-          // Si es menor de edad, agregamos TODA la info del representante
           if (edad < 18) {
               datosGlobales.nombreRepresentante = document.getElementById('nombreRepresentante').value;
               datosGlobales.dniRepresentante = document.getElementById('dniRepresentante').value;
               datosGlobales.whatsappRepresentante = document.getElementById('whatsappRepresentante').value;
-
-              htmlResumen += `
-                <div class="resumen-card" style="border-left-color: #ffc107; background: rgba(255, 193, 7, 0.05);">
-                    <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-shield-shaded me-2"></i>REPRESENTANTE LEGAL</h6>
+              html += `
+                <div class="resumen-card" style="border-left-color: #ffc107;">
+                    <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
                     <div class="row">
-                        <div class="col-md-12">
-                            <span class="resumen-label">Nombre del Representante</span>
-                            <div class="resumen-valor">${datosGlobales.nombreRepresentante}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <span class="resumen-label">DNI Representante</span>
-                            <div class="resumen-valor">${datosGlobales.dniRepresentante}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <span class="resumen-label">WhatsApp Representante</span>
-                            <div class="resumen-valor">${datosGlobales.whatsappRepresentante}</div>
-                        </div>
+                        <div class="col-12"><span class="resumen-label">Nombre</span><div class="resumen-valor">${datosGlobales.nombreRepresentante}</div></div>
+                        <div class="col-md-6"><span class="resumen-label">DNI</span><div class="resumen-valor">${datosGlobales.dniRepresentante}</div></div>
+                        <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsappRepresentante}</div></div>
                     </div>
-                </div>
-              `;
+                </div>`;
           }
 
-          htmlResumen += `
-            <div class="resumen-card">
-                <h6 class="text-warning mb-2 fw-bold"><i class="bi bi-book-half me-2"></i>MÓDULOS SELECCIONADOS</h6>
-                <div class="resumen-valor text-info fw-bold">${datosGlobales.modulos.join(' • ')}</div>
-            </div>
-          `;
-
-          document.getElementById('cuerpoRevision').innerHTML = htmlResumen;
+          html += `<div class="resumen-card"><span class="resumen-label">Módulos</span><div class="resumen-valor text-info">${datosGlobales.modulos.join(' • ')}</div></div>`;
+          
+          document.getElementById('cuerpoRevision').innerHTML = html;
           modalBootstrap.show();
       };
 
-      // Confirmar y Enviar a Firebase
       document.getElementById('confirmarEnvio').onclick = async () => {
           const btn = document.getElementById('confirmarEnvio');
           btn.disabled = true;
-          btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> PROCESANDO...`;
-
+          btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>SUBIENDO...`;
           try {
               await addDoc(collection(db, "postulaciones"), datosGlobales);
               modalBootstrap.hide();
-              await Swal.fire({ 
-                  icon: 'success', 
-                  title: '¡Postulación Recibida!', 
-                  text: 'Tu información ha sido enviada con éxito.',
-                  confirmButtonColor: '#c5a059'
-              });
+              await Swal.fire({ icon: 'success', title: '¡Enviado!', text: 'Los datos se guardaron en Firebase.', confirmButtonColor: '#c5a059' });
               location.reload();
           } catch (e) {
-              Swal.fire("Error", "No pudimos conectar con el servidor.", "error");
+              Swal.fire("Error", "No se pudo subir la información.", "error");
               btn.disabled = false;
-              btn.innerText = "ENVIAR AHORA";
+              btn.innerText = "ENVIAR A FIREBASE";
           }
       };
 </script>
