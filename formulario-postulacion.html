@@ -12,7 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        :root { --dorado-ucmi: #c5a059; }
+        :root { --dorado-ucmi: #c5a059; --azul-profundo: #06090f; }
         body {
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
             background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; padding: 40px 0;
@@ -41,6 +41,7 @@
 
 <div class="overlay"></div>
 
+<!-- Modal de Revisión -->
 <div class="modal fade" id="modalRevision" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -152,8 +153,10 @@
     const urlParams = new URLSearchParams(window.location.search);
     const sedeRef = urlParams.get('ref') || "UCMI";
     let datosGlobales = {};
-    const modalBootstrap = new bootstrap.Modal(document.getElementById('modalRevision'));
+    const modalElement = document.getElementById('modalRevision');
+    const modalBootstrap = new bootstrap.Modal(modalElement);
 
+    // --- CARGA DE CONFIGURACIÓN ---
     async function cargarConfiguracion() {
         const q = query(collection(db, "usuarios"), where("entidad", "==", sedeRef));
         const snap = await getDocs(q);
@@ -176,6 +179,7 @@
     }
     cargarConfiguracion();
 
+    // --- CÁLCULO DE EDAD ---
     document.getElementById('fechaNacimiento').addEventListener('change', (e) => {
         const hoy = new Date();
         const naci = new Date(e.target.value);
@@ -189,15 +193,25 @@
         });
     });
 
-    document.getElementById('formIdiomas').onsubmit = (e) => {
-        e.preventDefault();
+    // --- PROCESAR FORMULARIO Y MOSTRAR MODAL ---
+    function procesarYMostrarModal() {
+        const form = document.getElementById('formIdiomas');
         const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(cb => cb.value);
-        if (!e.target.checkValidity()) { e.target.classList.add('was-validated'); return; }
-        if (modulos.length === 0) return Swal.fire("Módulos", "Selecciona al menos uno.", "warning");
+        
+        if (!form.checkValidity()) { 
+            form.classList.add('was-validated'); 
+            Swal.fire("Incompleto", "Por favor llena todos los campos requeridos.", "info");
+            return; 
+        }
+        if (modulos.length === 0) {
+            Swal.fire("Módulos", "Selecciona al menos un idioma/módulo.", "warning");
+            return;
+        }
 
         const edad = parseInt(document.getElementById('edadEstudiante').value);
         const categoria = edad < 18 ? "Junior" : "Adulto";
 
+        // Recolección total de datos
         datosGlobales = {
             nombreEstudiante: document.getElementById('nombreEstudiante').value,
             dniEstudiante: document.getElementById('dniEstudiante').value,
@@ -220,6 +234,7 @@
             datosGlobales.whatsappRepresentante = document.getElementById('whatsappRepresentante').value;
         }
 
+        // Construcción del Modal con TODOS los campos
         let html = `
             <div class="resumen-card">
                 <h6 class="text-warning mb-3 fw-bold"><i class="bi bi-person-circle me-2"></i>IDENTIDAD DEL ESTUDIANTE</h6>
@@ -256,21 +271,54 @@
         
         document.getElementById('cuerpoRevision').innerHTML = html;
         modalBootstrap.show();
+    }
+
+    document.getElementById('formIdiomas').onsubmit = (e) => {
+        e.preventDefault();
+        procesarYMostrarModal();
     };
 
+    // --- ATAJOS DE TECLADO ---
+    window.addEventListener('keydown', (e) => {
+        // Ctrl + Q: Limpiar Formulario
+        if (e.ctrlKey && e.key.toLowerCase() === 'q') {
+            e.preventDefault();
+            Swal.fire({
+                title: '¿Limpiar formulario?',
+                text: "Se borrarán todos los datos ingresados.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#c5a059',
+                confirmButtonText: 'Sí, limpiar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('formIdiomas').reset();
+                    document.getElementById('panelRepresentante').style.display = 'none';
+                    document.getElementById('formIdiomas').classList.remove('was-validated');
+                }
+            });
+        }
+        // Ctrl + M: Mostrar Modal (Si es válido)
+        if (e.ctrlKey && e.key.toLowerCase() === 'm') {
+            e.preventDefault();
+            procesarYMostrarModal();
+        }
+    });
+
+    // --- ENVIO FINAL Y PDF ---
     document.getElementById('confirmarEnvio').onclick = async () => {
         const btn = document.getElementById('confirmarEnvio');
         btn.disabled = true;
-        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>PROCESANDO...`;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>ENVIANDO...`;
         
         try {
             await addDoc(collection(db, "postulaciones"), datosGlobales);
             generarPDFCompleto(datosGlobales);
             modalBootstrap.hide();
-            await Swal.fire({ icon: 'success', title: '¡Postulación Exitosa!', text: 'Se ha guardado tu información y descargado el comprobante PDF.', confirmButtonColor: '#c5a059' });
+            await Swal.fire({ icon: 'success', title: '¡Postulación Exitosa!', text: 'Se ha descargado tu comprobante PDF.', confirmButtonColor: '#c5a059' });
             location.reload();
         } catch (e) {
-            Swal.fire("Error", "Error al conectar con la base de datos.", "error");
+            Swal.fire("Error", "Error al guardar los datos.", "error");
             btn.disabled = false;
             btn.innerText = "CONFIRMAR Y DESCARGAR PDF";
         }
@@ -281,79 +329,71 @@
         const doc = new jsPDF();
         let y = 20;
 
-        // Cabecera
-        doc.setFillColor(11, 15, 26);
-        doc.rect(0, 0, 210, 40, 'F');
+        // Estilo Cabecera
+        doc.setFillColor(6, 9, 15);
+        doc.rect(0, 0, 210, 45, 'F');
         doc.setTextColor(197, 160, 89);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
-        doc.text("COMPROBANTE DE POSTULACIÓN", 20, 25);
-        doc.setFontSize(10);
-        doc.text(`UCMI - SEDE: ${d.entidad.toUpperCase()}`, 20, 32);
+        doc.text("COMPROBANTE DE POSTULACIÓN", 20, 28);
+        doc.setFontSize(11);
+        doc.text(`UCMI - SEDE: ${d.entidad.toUpperCase()}`, 20, 36);
 
-        // Cuerpo
+        // Datos Personales
         doc.setTextColor(0, 0, 0);
-        y = 50;
-        doc.setFontSize(12);
-        doc.text("DETALLES DEL ESTUDIANTE", 20, y);
-        doc.setLineWidth(0.5);
+        y = 60;
+        doc.setFontSize(14);
+        doc.text("1. DATOS DEL ESTUDIANTE", 20, y);
+        doc.setDrawColor(197, 160, 89);
         doc.line(20, y+2, 190, y+2);
         
         y += 12;
         doc.setFontSize(10);
-        doc.setFont("helvetica", "bold"); doc.text("Nombre Completo:", 20, y); 
-        doc.setFont("helvetica", "normal"); doc.text(`${d.nombreEstudiante}`, 60, y);
-        
-        y += 7;
-        doc.setFont("helvetica", "bold"); doc.text("DNI / Identificación:", 20, y); 
-        doc.setFont("helvetica", "normal"); doc.text(`${d.dniEstudiante}`, 60, y);
-        
-        y += 7;
-        doc.setFont("helvetica", "bold"); doc.text("Fecha Nac. / Edad:", 20, y); 
-        doc.setFont("helvetica", "normal"); doc.text(`${d.fechaNacimiento} (${d.edadEstudiante} años - ${d.categoriaEdad})`, 60, y);
+        const campos = [
+            ["Nombre:", d.nombreEstudiante],
+            ["DNI / ID:", d.dniEstudiante],
+            ["Fecha Nac:", d.fechaNacimiento],
+            ["Edad:", `${d.edadEstudiante} años (${d.categoriaEdad})`],
+            ["Género:", d.genero],
+            ["Ubicación:", d.ubicacion],
+            ["Email:", d.email],
+            ["WhatsApp:", d.whatsapp]
+        ];
 
-        y += 7;
-        doc.setFont("helvetica", "bold"); doc.text("Género:", 20, y); 
-        doc.setFont("helvetica", "normal"); doc.text(`${d.genero}`, 60, y);
-
-        y += 15;
-        doc.setFont("helvetica", "bold");
-        doc.text("UBICACIÓN Y CONTACTO", 20, y);
-        doc.line(20, y+2, 190, y+2);
-
-        y += 10;
-        doc.setFont("helvetica", "bold"); doc.text("Ubicación:", 20, y); 
-        doc.setFont("helvetica", "normal"); doc.text(`${d.ubicacion}`, 60, y);
-        y += 7;
-        doc.setFont("helvetica", "bold"); doc.text("Correo:", 20, y); 
-        doc.setFont("helvetica", "normal"); doc.text(`${d.email}`, 60, y);
-        y += 7;
-        doc.setFont("helvetica", "bold"); doc.text("WhatsApp:", 20, y); 
-        doc.setFont("helvetica", "normal"); doc.text(`${d.whatsapp}`, 60, y);
+        campos.forEach(campo => {
+            doc.setFont("helvetica", "bold"); doc.text(campo[0], 25, y);
+            doc.setFont("helvetica", "normal"); doc.text(String(campo[1]), 65, y);
+            y += 7;
+        });
 
         if (d.nombreRepresentante) {
-            y += 15;
-            doc.setFont("helvetica", "bold");
-            doc.text("INFORMACIÓN DEL REPRESENTANTE", 20, y);
-            doc.line(20, y+2, 190, y+2);
             y += 10;
-            doc.text(`Nombre Tutor: ${d.nombreRepresentante}`, 20, y);
-            y += 7;
-            doc.text(`DNI Tutor: ${d.dniRepresentante} | WhatsApp: ${d.whatsappRepresentante}`, 20, y);
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("2. DATOS DEL REPRESENTANTE", 20, y);
+            doc.line(20, y+2, 190, y+2);
+            y += 12;
+            doc.setFontSize(10);
+            doc.text(`Nombre Tutor: ${d.nombreRepresentante}`, 25, y); y += 7;
+            doc.text(`DNI Tutor: ${d.dniRepresentante}`, 25, y); y += 7;
+            doc.text(`WhatsApp Tutor: ${d.whatsappRepresentante}`, 25, y);
         }
 
         y += 15;
+        doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
-        doc.text("MÓDULOS REGISTRADOS", 20, y);
+        doc.text("3. MÓDULOS DE INTERÉS", 20, y);
         doc.line(20, y+2, 190, y+2);
-        y += 10;
+        y += 12;
         doc.setFont("helvetica", "normal");
-        doc.text(d.modulos.join(" — "), 20, y);
+        doc.setFontSize(11);
+        doc.text(d.modulos.join(" • "), 25, y);
 
-        // Footer
-        doc.setFontSize(8);
-        doc.text(`Generado el: ${new Date().toLocaleString()}`, 20, 285);
-        doc.text("Este documento certifica la intención de postulación a los programas de UCMI.", 110, 285);
+        // Pie de página
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        doc.text(`ID Transacción: ${Math.random().toString(36).substr(2, 9).toUpperCase()}`, 20, 280);
+        doc.text(`Fecha de Registro: ${new Date().toLocaleString()}`, 130, 280);
 
         doc.save(`UCMI_Postulacion_${d.dniEstudiante}.pdf`);
     }
