@@ -107,48 +107,87 @@
         }
     });
 
-    async function cargarAlumnos(filtroEntidad) {
-        const tbody = document.getElementById('tabla-alumnos-body');
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // ... (Tu firebaseConfig se mantiene igual)
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            try {
+                // 1. Buscamos PRIMERO el documento de la ACADEMIA logueada
+                const qAcademia = query(collection(db, "usuarios"), where("email", "==", user.email));
+                const snapAcademia = await getDocs(qAcademia);
+                
+                if (!snapAcademia.empty) {
+                    const datosAcademia = snapAcademia.docs[0].data();
+                    
+                    // IMPORTANTE: Obtenemos el nombre exacto de la entidad de la academia
+                    const miEntidad = datosAcademia.entidad; 
+                    document.getElementById('nombre-academia-display').innerText = miEntidad;
+                    
+                    // 2. Llamamos a la función de carga pasando el nombre de la entidad
+                    cargarAlumnosPorEntidad(miEntidad);
+                }
+            } catch (e) { console.error("Error al identificar academia:", e); }
+        } else {
+            window.location.href = 'index.html';
+        }
+    });
+
+    async function cargarAlumnosPorEntidad(nombreEntidad) {
+        const tbody = document.getElementById('tabla-body');
+        const alertaVacia = document.getElementById('alerta-vacia');
+        
         try {
-            // Traemos los usuarios con rol estudiante
-            const q = query(collection(db, "usuarios"), where("rol", "==", "estudiante"));
+            // FILTRO DIRECTO EN FIREBASE:
+            // Solo trae documentos donde rol sea estudiante Y entidad sea igual a la de la academia
+            const q = query(
+                collection(db, "usuarios"), 
+                where("rol", "==", "estudiante"),
+                where("entidad", "==", nombreEntidad)
+            );
+
             const querySnapshot = await getDocs(q);
-            
             tbody.innerHTML = '';
-            let contador = 0;
+            
+            if (querySnapshot.empty) {
+                alertaVacia.classList.remove('d-none');
+                return;
+            }
 
             querySnapshot.forEach((doc) => {
                 const d = doc.data();
-
-                // COMPARACIÓN CLAVE: El campo "entidad" del estudiante debe ser igual al de la academia
-                if (d.entidad && d.entidad.trim() === filtroEntidad.trim()) {
-                    contador++;
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>
-                            <div class="student-name">${d.nombreResponsable || 'Sin Nombre'}</div>
-                            <div class="info-sub">${d.dniEstudiante || 'S/D'}</div>
-                        </td>
-                        <td>
-                            <div class="small">${d.email || ''}</div>
-                            <div class="small text-success">${d.whatsapp || ''}</div>
-                        </td>
-                        <td>
-                            <div class="small">${d.nombreRepresentante || 'N/A'}</div>
-                            <div class="info-sub">${d.categoriaEdad || ''}</div>
-                        </td>
-                        <td><span class="badge badge-modulo">Inscrito</span></td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-primary" onclick="alert('ID: ${doc.id}')">Gestionar</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                }
+                const tr = document.createElement('tr');
+                tr.className = 'student-row';
+                tr.innerHTML = `
+                    <td>
+                        <div class="fw-bold">${d.nombreResponsable || 'Sin nombre'}</div>
+                        <div class="small text-muted">${d.dniEstudiante || d.cedulaResponsable || ''}</div>
+                    </td>
+                    <td>${d.email}</td>
+                    <td>${d.nombreRepresentante || 'N/A'}</td>
+                    <td><span class="badge bg-info text-dark">${d.entidad}</span></td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-primary" onclick="gestionar('${doc.id}')">Gestionar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
             });
 
-            if (contador === 0) document.getElementById('sin-resultados').classList.remove('d-none');
+            alertaVacia.classList.add('d-none');
 
-        } catch (error) { console.error(error); }
+        } catch (error) {
+            console.error("Error en la consulta filtrada:", error);
+            // Si sale un error de "Index", lee la nota de abajo
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error: Es posible que falte un Índice en Firebase.</td></tr>';
+        }
     }
 </script>
 </body>
