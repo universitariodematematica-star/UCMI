@@ -548,19 +548,86 @@
          window.location.href = "index.html";
      };
 
-     document.getElementById('btnConfirmarAcceso').onclick = async () => {
-         if(!currentId || !currentData) return;
-         await setDoc(doc(db, "usuarios", currentData.email), { ...currentData, estado: "activo" });
-         await deleteDoc(doc(db, "postulaciones", currentId));
-         location.reload();
-     };
+     // --- LÓGICA DE ACEPTACIÓN (ADMISIÓN) ---
+    document.getElementById('btnConfirmarAcceso').onclick = async () => {
+        if(!currentId || !currentData) return;
 
-     document.getElementById('btnEliminar').onclick = async () => {
-         if (confirm("¿Rechazar?")) {
-             await deleteDoc(doc(db, "postulaciones", currentId));
-             location.reload();
-         }
-     };
+        const resultado = await Swal.fire({
+            title: '¿Confirmar Admisión?',
+            text: `El estudiante ${currentData.nombreResponsable} será dado de alta en el sistema.`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, admitir',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (resultado.isConfirmed) {
+            try {
+                Swal.showLoading();
+                
+                // 1. Mover a la colección 'usuarios' (Acceso al sistema)
+                // Agregamos metadata de control
+                await setDoc(doc(db, "usuarios", currentData.email), { 
+                    ...currentData, 
+                    estado: "activo",
+                    fechaAdmision: new Date().toISOString(),
+                    rol: "estudiante" 
+                });
+
+                // 2. Mover a 'historial_postulaciones'
+                await setDoc(doc(db, "historial_postulaciones", currentId), {
+                    ...currentData,
+                    resultado: "admitido",
+                    fechaProcesado: new Date().toISOString()
+                });
+
+                // 3. Eliminar de 'postulaciones' (limpieza)
+                await deleteDoc(doc(db, "postulaciones", currentId));
+
+                await Swal.fire('¡Admitido!', 'El estudiante ha sido movido a la base de datos oficial.', 'success');
+                location.reload();
+            } catch (error) {
+                console.error("Error en admisión:", error);
+                Swal.fire('Error', 'No se pudo completar la operación.', 'error');
+            }
+        }
+    };
+
+    // --- LÓGICA DE RECHAZO ---
+    document.getElementById('btnEliminar').onclick = async () => {
+        if(!currentId || !currentData) return;
+
+        const resultado = await Swal.fire({
+            title: '¿Rechazar Postulación?',
+            text: "Esta acción enviará al aspirante al historial de rechazados.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e74c3c',
+            confirmButtonText: 'Sí, rechazar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (resultado.isConfirmed) {
+            try {
+                Swal.showLoading();
+
+                // 1. Mover a 'historial_postulaciones' con status rechazado
+                await setDoc(doc(db, "historial_postulaciones", currentId), {
+                    ...currentData,
+                    resultado: "rechazado",
+                    fechaProcesado: new Date().toISOString()
+                });
+
+                // 2. Eliminar de 'postulaciones'
+                await deleteDoc(doc(db, "postulaciones", currentId));
+
+                await Swal.fire('Procesado', 'La postulación ha sido rechazada y archivada.', 'info');
+                location.reload();
+            } catch (error) {
+                Swal.fire('Error', 'Ocurrió un problema al procesar el rechazo.', 'error');
+            }
+        }
+    };
  </script>
  </body>
  </html>
