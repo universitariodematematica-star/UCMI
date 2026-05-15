@@ -1,1 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Directorio de Alumnos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root { --primary-color: #2c3e50; --secondary-color: #34495e; }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar-ucmi { background-color: var(--primary-color); color: white; }
+        .card-header { background-color: var(--secondary-color); color: white; font-weight: bold; }
+        .badge-modulo { background-color: #e9ecef; color: #495057; margin-right: 5px; border: 1px solid #dee2e6; }
+    </style>
+</head>
+<body>
 
+<nav class="navbar navbar-expand-lg navbar-ucmi mb-4">
+    <div class="container">
+        <span class="navbar-brand mb-0 h1">UCMI - Panel de Academia</span>
+        <div class="d-flex">
+            <span id="nombre-academia-display" class="navbar-text text-white me-3"></span>
+            <button class="btn btn-outline-light btn-sm" onclick="location.href='dashboard.html'">Volver</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="display-6"><i class="bi bi-people-fill"></i> Alumnos Admitidos</h2>
+            <p class="text-muted">Gestiona los estudiantes que ya forman parte de tu institución.</p>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="buscador-alumnos" class="form-control" placeholder="Buscar por nombre o correo...">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-success w-100" onclick="recargarTabla()">
+                        <i class="bi bi-arrow-clockwise"></i> Actualizar Lista
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Directorio de Estudiantes</span>
+            <span id="contador-alumnos" class="badge bg-light text-dark">0 Alumnos</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre del Alumno</th>
+                        <th>Correo Electrónico</th>
+                        <th>Módulos Asignados</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-alumnos-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // CONFIGURACIÓN DE FIREBASE (Asegúrate de que coincida con tu proyecto)
+    const firebaseConfig = {
+        // Pega aquí tus credenciales de Firebase
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let miEmailAcademia = "";
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            miEmailAcademia = user.email;
+            document.getElementById('nombre-academia-display').innerText = miEmailAcademia;
+            cargarAlumnos();
+        } else {
+            window.location.href = "login.html";
+        }
+    });
+
+    async function cargarAlumnos() {
+        const tbody = document.getElementById('tabla-alumnos-body');
+        const contador = document.getElementById('contador-alumnos');
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">Cargando alumnos...</td></tr>';
+
+        try {
+            // CONSULTA FILTRADA: Solo alumnos de ESTA academia
+            const q = query(
+                collection(db, "usuarios"), 
+                where("academia_pertenencia", "==", miEmailAcademia)
+            );
+
+            const querySnapshot = await getDocs(q);
+            tbody.innerHTML = '';
+            let total = 0;
+
+            querySnapshot.forEach((doc) => {
+                total++;
+                const data = doc.data();
+                
+                // Formatear los módulos como etiquetas (Badges)
+                const modulosHtml = data.modulos_asignados ? 
+                    data.modulos_asignados.map(m => `<span class="badge badge-modulo">${m}</span>`).join('') : 
+                    '<span class="text-muted">Sin módulos</span>';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="fw-bold">${data.nombre || 'Sin nombre'}</td>
+                    <td>${data.email || doc.id}</td>
+                    <td>${modulosHtml}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="gestionarAula('${doc.id}')">
+                                <i class="bi bi-door-open"></i> Asignar Aula
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="verPerfil('${doc.id}')">
+                                <i class="bi bi-person-vcard"></i> Perfil
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            contador.innerText = `${total} Alumnos`;
+            if (total === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No tienes alumnos admitidos todavía.</td></tr>';
+            }
+
+        } catch (error) {
+            console.error("Error cargando alumnos:", error);
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar los datos. Revisa la consola.</td></tr>';
+        }
+    }
+
+    // Funciones globales para botones
+    window.recargarTabla = cargarAlumnos;
+    window.gestionarAula = (id) => { console.log("Asignar aula a:", id); /* Próxima fase */ };
+    window.verPerfil = (id) => { console.log("Ver perfil de:", id); /* Próxima fase */ };
+
+    // Buscador en tiempo real (Lado cliente)
+    document.getElementById('buscador-alumnos').addEventListener('input', (e) => {
+        const busqueda = e.target.value.toLowerCase();
+        const filas = document.querySelectorAll('#tabla-alumnos-body tr');
+        filas.forEach(fila => {
+            const texto = fila.innerText.toLowerCase();
+            fila.style.display = texto.includes(busqueda) ? '' : 'none';
+        });
+    });
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
