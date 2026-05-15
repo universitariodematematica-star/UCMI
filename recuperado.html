@@ -3,35 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Panel Dinámico</title>
+    <title>UCMI - Gestión de Módulos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root { --ucmi-dark: #2c3e50; }
         body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
         .navbar-ucmi { background: var(--ucmi-dark); color: white; }
         .table-container { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .badge-academia { background: #e9ecef; color: #495057; font-weight: bold; text-transform: uppercase; border: 1px solid #dee2e6; }
+        .badge-modulo { 
+            background-color: #e3f2fd; 
+            color: #0d47a1; 
+            border: 1px solid #bbdefb; 
+            margin-right: 4px; 
+            font-size: 0.75rem;
+        }
+        .student-name { font-weight: 600; color: var(--ucmi-dark); }
     </style>
 </head>
 <body>
 
 <nav class="navbar navbar-ucmi mb-4">
     <div class="container">
-        <span class="navbar-brand mb-0 h1 text-white">UCMI - Gestión Académica</span>
-        <div id="user-display" class="small opacity-75">Verificando sesión...</div>
+        <span class="navbar-brand mb-0 h1 text-white">UCMI - Panel Académico</span>
+        <div id="user-display" class="small opacity-75">Sesión activa...</div>
     </div>
 </nav>
 
 <div class="container">
     <div class="row mb-4 align-items-center">
         <div class="col-md-8">
-            <h3 class="fw-bold m-0"><i class="bi bi-people-fill text-primary"></i> Directorio de Alumnos</h3>
-            <p class="text-muted">Academia en sesión: <span id="label-academia" class="badge badge-academia">Cargando...</span></p>
+            <h3 class="fw-bold m-0"><i class="bi bi-journal-check text-primary"></i> Módulos por Estudiante</h3>
+            <p class="text-muted">Institución: <span id="label-academia" class="fw-bold text-dark">...</span></p>
         </div>
         <div class="col-md-4">
-            <input type="text" id="buscador" class="form-control" placeholder="Buscar por nombre o ID...">
+            <input type="text" id="buscador" class="form-control" placeholder="Buscar alumno...">
         </div>
     </div>
 
@@ -43,7 +49,7 @@
                         <th>Estudiante / DNI</th>
                         <th>Contacto</th>
                         <th>Representante</th>
-                        <th>Estado</th>
+                        <th style="width: 30%;">Módulos Activados</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -51,15 +57,11 @@
                     <tr>
                         <td colspan="5" class="text-center py-5">
                             <div class="spinner-border text-primary" role="status"></div>
-                            <p class="mt-2">Sincronizando con tu academia...</p>
+                            <p class="mt-2">Cargando registros...</p>
                         </td>
                     </tr>
                 </tbody>
             </table>
-        </div>
-        <div id="sin-datos" class="text-center py-5 d-none">
-            <i class="bi bi-person-exclamation display-4 text-muted"></i>
-            <p class="mt-2 text-muted">No se encontraron estudiantes para esta institución.</p>
         </div>
     </div>
 </div>
@@ -86,90 +88,87 @@
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             document.getElementById('user-display').innerText = user.email;
-            await obtenerConfiguracionSesion(user.email);
+            await obtenerSesion(user.email);
         } else {
             window.location.href = 'index.html';
         }
     });
 
-    async function obtenerConfiguracionSesion(emailUsuario) {
-        try {
-            // Buscamos los datos de quien está logueado
-            const q = query(collection(db, "usuarios"), where("email", "==", emailUsuario));
-            const snap = await getDocs(q);
-            
-            if (!snap.empty) {
-                const adminData = snap.docs[0].data();
-                const academiaSesion = adminData.entidad; // Aquí capturamos la academia dinámica
-                
-                document.getElementById('label-academia').innerText = academiaSesion || "Sin Entidad";
-                
-                if (academiaSesion) {
-                    cargarAlumnosDinamicos(academiaSesion);
-                }
-            }
-        } catch (error) {
-            console.error("Error al obtener sesión:", error);
+    async function obtenerSesion(email) {
+        const q = query(collection(db, "usuarios"), where("email", "==", email));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+            const miEntidad = snap.docs[0].data().entidad;
+            document.getElementById('label-academia').innerText = miEntidad;
+            cargarAlumnos(miEntidad);
         }
     }
 
-    async function cargarAlumnosDinamicos(nombreEntidad) {
+    async function cargarAlumnos(entidad) {
         const tbody = document.getElementById('tabla-body');
-        const alertaVacia = document.getElementById('sin-datos');
-        
         try {
-            // FILTRO DINÁMICO: Solo estudiantes de la entidad en sesión
             const q = query(
                 collection(db, "usuarios"), 
                 where("perfil", "==", "Estudiante Academia"),
-                where("entidad", "==", nombreEntidad)
+                where("entidad", "==", entidad)
             );
 
             const snap = await getDocs(q);
             tbody.innerHTML = '';
-            
-            if (snap.empty) {
-                alertaVacia.classList.remove('d-none');
-                return;
-            }
 
             snap.forEach((doc) => {
                 const d = doc.data();
+                
+                // --- Lógica para detectar Módulos ---
+                // Suponiendo que tus módulos están en d.modulos (array) o d.modulo1, d.modulo2...
+                let htmlModulos = '';
+                
+                // Ejemplo si es un array llamado 'modulos'
+                if (d.modulos && Array.isArray(d.modulos)) {
+                    d.modulos.forEach(m => {
+                        htmlModulos += `<span class="badge badge-modulo">${m}</span>`;
+                    });
+                } else if (d.nivel) { 
+                    // Ejemplo si solo tiene un nivel o curso asignado
+                    htmlModulos = `<span class="badge badge-modulo">${d.nivel}</span>`;
+                } else {
+                    htmlModulos = '<span class="text-muted small">Sin módulos</span>';
+                }
+
                 const tr = document.createElement('tr');
-                tr.className = 'fila-alumno';
+                tr.className = 'fila-estudiante';
                 tr.innerHTML = `
                     <td>
-                        <div class="fw-bold">${d.nombreResponsable || 'N/A'}</div>
-                        <div class="small text-muted">ID: ${d.dniEstudiante || d.cedulaResponsable || 'S/D'}</div>
+                        <div class="student-name">${d.nombreResponsable || 'N/A'}</div>
+                        <div class="small text-muted">${d.dniEstudiante || d.cedulaResponsable || ''}</div>
                     </td>
                     <td>
                         <div class="small">${d.email || ''}</div>
-                        <div class="small text-success"><i class="bi bi-whatsapp"></i> ${d.whatsapp || ''}</div>
+                        <div class="small text-success">${d.whatsapp || ''}</div>
                     </td>
-                    <td>${d.nombreRepresentante || 'N/A'}</td>
-                    <td><span class="badge bg-success">Activo</span></td>
+                    <td>
+                        <div class="small">${d.nombreRepresentante || 'N/A'}</div>
+                    </td>
+                    <td>${htmlModulos}</td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-primary" onclick="console.log('ID: ${doc.id}')">
-                            <i class="bi bi-pencil-square"></i> Gestionar
+                        <button class="btn btn-sm btn-primary" onclick="alert('ID Alumno: ${doc.id}')">
+                            <i class="bi bi-plus-circle"></i> Gestionar
                         </button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-
-            alertaVacia.classList.add('d-none');
-
-        } catch (error) {
-            console.error("Error en la consulta filtrada:", error);
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error de carga. Revisa los índices en la consola de Firebase (F12).</td></tr>';
+        } catch (e) {
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error de carga. Verifique índices en F12.</td></tr>';
         }
     }
 
-    // Buscador local
+    // Buscador
     document.getElementById('buscador').addEventListener('input', (e) => {
         const busqueda = e.target.value.toLowerCase();
-        document.querySelectorAll('.fila-alumno').forEach(fila => {
-            fila.style.display = fila.innerText.toLowerCase().includes(busqueda) ? '' : 'none';
+        document.querySelectorAll('.fila-estudiante').forEach(f => {
+            f.style.display = f.innerText.toLowerCase().includes(busqueda) ? '' : 'none';
         });
     });
 </script>
