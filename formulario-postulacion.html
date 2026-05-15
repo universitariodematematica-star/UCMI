@@ -22,12 +22,7 @@
 <nav class="navbar navbar-ucmi mb-4">
     <div class="container">
         <span class="navbar-brand mb-0 h1 text-white">UCMI - Panel Académico</span>
-        <div class="d-flex align-items-center">
-            <span id="user-email" class="me-3 small opacity-75 text-white">Identificando...</span>
-            <button class="btn btn-outline-light btn-sm" onclick="window.location.href='dashboard.html'">
-                <i class="bi bi-house"></i> Inicio
-            </button>
-        </div>
+        <div id="user-email" class="small opacity-75 text-white">Identificando...</div>
     </div>
 </nav>
 
@@ -35,13 +30,10 @@
     <div class="row mb-4 align-items-end">
         <div class="col-md-8">
             <h2 class="fw-bold"><i class="bi bi-mortarboard-fill text-primary"></i> Estudiantes Admitidos</h2>
-            <p class="text-muted mb-0">Institución: <span id="nombre-entidad-actual" class="fw-bold text-dark text-uppercase">Cargando...</span></p>
+            <p class="text-muted mb-0">Institución: <span id="nombre-entidad-actual" class="fw-bold text-dark">Cargando...</span></p>
         </div>
         <div class="col-md-4">
-            <div class="input-group shadow-sm">
-                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-primary"></i></span>
-                <input type="text" id="buscador" class="form-control border-start-0" placeholder="Nombre o DNI...">
-            </div>
+            <input type="text" id="buscador" class="form-control shadow-sm" placeholder="Buscar alumno...">
         </div>
     </div>
 
@@ -61,7 +53,7 @@
                     <tr>
                         <td colspan="5" class="text-center py-5">
                             <div class="spinner-border text-primary" role="status"></div>
-                            <p class="mt-2 text-muted">Sincronizando con su academia...</p>
+                            <p class="mt-2 text-muted">Sincronizando alumnos...</p>
                         </td>
                     </tr>
                 </tbody>
@@ -70,7 +62,7 @@
         <div id="sin-resultados" class="text-center py-5 d-none">
             <i class="bi bi-person-x display-1 text-muted opacity-25"></i>
             <h4 class="mt-3">Sin resultados</h4>
-            <p class="text-muted">No encontramos estudiantes vinculados a su cuenta.</p>
+            <p class="text-muted">No encontramos alumnos vinculados a esta institución.</p>
         </div>
     </div>
 </div>
@@ -98,92 +90,66 @@
         if (user) {
             document.getElementById('user-email').innerText = user.email;
             try {
-                // 1. Identificar a qué academia pertenece el email logueado
+                // Buscamos el documento de la ACADEMIA logueada
                 const qAcademia = query(collection(db, "usuarios"), where("email", "==", user.email));
                 const snapAcademia = await getDocs(qAcademia);
                 
                 if (!snapAcademia.empty) {
-                    const datosAcademia = snapAcademia.docs[0].data();
-                    // Usamos nombreResponsable porque es el campo que identifica a la academia
-                    const miNombreEntidad = datosAcademia.nombreResponsable;
-                    document.getElementById('nombre-entidad-actual').innerText = miNombreEntidad;
+                    const datos = snapAcademia.docs[0].data();
                     
-                    // 2. Cargar y filtrar
-                    cargarYFiltrar(miNombreEntidad);
-                } else {
-                    document.getElementById('nombre-entidad-actual').innerText = "Perfil no encontrado";
+                    // SEGÚN TU ESTRUCTURA: El nombre de la academia está en el campo "entidad"
+                    const nombreAcademia = datos.entidad; 
+                    
+                    document.getElementById('nombre-entidad-actual').innerText = nombreAcademia;
+                    cargarAlumnos(nombreAcademia);
                 }
             } catch (e) { console.error(e); }
-        } else { window.location.href = "index.html"; }
+        }
     });
 
-    async function cargarYFiltrar(nombreAcademia) {
+    async function cargarAlumnos(filtroEntidad) {
         const tbody = document.getElementById('tabla-alumnos-body');
         try {
-            // Traemos todos los estudiantes (Filtro por Rol solamente)
+            // Traemos los usuarios con rol estudiante
             const q = query(collection(db, "usuarios"), where("rol", "==", "estudiante"));
             const querySnapshot = await getDocs(q);
             
             tbody.innerHTML = '';
-            let contadorAlumnos = 0;
+            let contador = 0;
 
             querySnapshot.forEach((doc) => {
                 const d = doc.data();
-                
-                // --- FILTRO CRÍTICO ---
-                // Solo mostramos si el campo 'entidad' del alumno coincide con el nombre de la academia
-                // Usamos trim() y toUpperCase() para ignorar errores de escritura
-                if (d.entidad && d.entidad.trim().toUpperCase() === nombreAcademia.trim().toUpperCase()) {
-                    contadorAlumnos++;
-                    
-                    const modulos = d.modulos && Array.isArray(d.modulos) 
-                        ? d.modulos.map(m => `<span class="badge badge-modulo me-1">${m}</span>`).join('')
-                        : '<span class="text-muted small">Sin asignar</span>';
 
+                // COMPARACIÓN CLAVE: El campo "entidad" del estudiante debe ser igual al de la academia
+                if (d.entidad && d.entidad.trim() === filtroEntidad.trim()) {
+                    contador++;
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>
-                            <div class="student-name">${d.nombreResponsable || 'Sin nombre'}</div>
-                            <div class="info-sub"><i class="bi bi-card-text"></i> ${d.dniEstudiante || 'S/D'}</div>
+                            <div class="student-name">${d.nombreResponsable || 'Sin Nombre'}</div>
+                            <div class="info-sub">${d.dniEstudiante || 'S/D'}</div>
                         </td>
                         <td>
-                            <div class="small"><i class="bi bi-envelope"></i> ${d.email || ''}</div>
-                            <div class="small text-success"><i class="bi bi-whatsapp"></i> ${d.whatsapp || ''}</div>
+                            <div class="small">${d.email || ''}</div>
+                            <div class="small text-success">${d.whatsapp || ''}</div>
                         </td>
                         <td>
-                            <div class="small"><strong>Rep:</strong> ${d.nombreRepresentante || 'N/A'}</div>
-                            <div class="info-sub">${d.categoriaEdad || ''} (${d.edadEstudiante || '?'} años)</div>
+                            <div class="small">${d.nombreRepresentante || 'N/A'}</div>
+                            <div class="info-sub">${d.categoriaEdad || ''}</div>
                         </td>
-                        <td>${modulos}</td>
+                        <td><span class="badge badge-modulo">Inscrito</span></td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-primary" onclick="crearAula('${doc.id}')">Aula</button>
+                            <button class="btn btn-sm btn-primary" onclick="alert('ID: ${doc.id}')">Gestionar</button>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 }
             });
 
-            if (contadorAlumnos === 0) {
-                document.getElementById('sin-resultados').classList.remove('d-none');
-            } else {
-                document.getElementById('sin-resultados').classList.add('d-none');
-            }
+            if (contador === 0) document.getElementById('sin-resultados').classList.remove('d-none');
 
-        } catch (error) {
-            console.error(error);
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar datos.</td></tr>';
-        }
+        } catch (error) { console.error(error); }
     }
-
-    // Buscador visual
-    document.getElementById('buscador').addEventListener('input', (e) => {
-        const val = e.target.value.toLowerCase();
-        document.querySelectorAll('#tabla-alumnos-body tr').forEach(fila => {
-            fila.style.display = fila.textContent.toLowerCase().includes(val) ? '' : 'none';
-        });
-    });
-
-    window.crearAula = (id) => { Swal.fire('UCMI', 'Abriendo módulo...', 'info'); };
 </script>
 </body>
 </html>
