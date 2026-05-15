@@ -21,11 +21,11 @@
 
 <nav class="navbar navbar-ucmi mb-4">
     <div class="container">
-        <span class="navbar-brand mb-0 h1 text-white">UCMI - Panel de Control</span>
+        <span class="navbar-brand mb-0 h1 text-white">UCMI - Panel Académico</span>
         <div class="d-flex align-items-center">
-            <span id="user-email" class="me-3 small opacity-75 text-white">Cargando sesión...</span>
-            <button class="btn btn-outline-light btn-sm" onclick="window.location.href='dashboard.html'">
-                <i class="bi bi-house"></i> Dashboard
+            <span id="user-email" class="me-3 small opacity-75 text-white">Verificando sesión...</span>
+            <button class="btn btn-outline-light btn-sm" onclick="window.history.back()">
+                <i class="bi bi-arrow-left"></i> Volver
             </button>
         </div>
     </div>
@@ -34,13 +34,13 @@
 <div class="container">
     <div class="row mb-4 align-items-end">
         <div class="col-md-8">
-            <h2 class="fw-bold"><i class="bi bi-mortarboard-fill text-primary"></i> Directorio de Alumnos</h2>
-            <p class="text-muted mb-0">Institución: <span id="nombre-entidad-actual" class="fw-bold text-dark">Identificando...</span></p>
+            <h2 class="fw-bold"><i class="bi bi-mortarboard-fill text-primary"></i> Gestión de Estudiantes</h2>
+            <p class="text-muted mb-0">Visualizando alumnos registrados en el sistema.</p>
         </div>
         <div class="col-md-4">
-            <div class="input-group">
+            <div class="input-group shadow-sm">
                 <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-primary"></i></span>
-                <input type="text" id="buscador" class="form-control border-start-0" placeholder="Nombre o DNI...">
+                <input type="text" id="buscador" class="form-control border-start-0" placeholder="Buscar por nombre o DNI...">
             </div>
         </div>
     </div>
@@ -53,7 +53,7 @@
                         <th>Estudiante / DNI</th>
                         <th>Contacto</th>
                         <th>Representante / Edad</th>
-                        <th>Módulos</th>
+                        <th>Módulos Inscritos</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -61,16 +61,17 @@
                     <tr>
                         <td colspan="5" class="text-center py-5">
                             <div class="spinner-border text-primary" role="status"></div>
-                            <p class="mt-2 text-muted">Sincronizando alumnos autorizados...</p>
+                            <p class="mt-2 text-muted">Conectando con la base de datos de UCMI...</p>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
+        
         <div id="sin-resultados" class="text-center py-5 d-none">
             <i class="bi bi-person-x display-1 text-muted opacity-25"></i>
-            <h4 class="mt-3">No hay alumnos registrados</h4>
-            <p id="mensaje-vacio" class="text-muted">No se encontraron estudiantes para esta academia.</p>
+            <h4 class="mt-3">Sin registros</h4>
+            <p class="text-muted">No hay alumnos que coincidan con los criterios de búsqueda.</p>
         </div>
     </div>
 </div>
@@ -94,72 +95,57 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    onAuthStateChanged(auth, async (user) => {
-        const tbody = document.getElementById('tabla-alumnos-body');
+    onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById('user-email').innerText = user.email;
-            try {
-                // Buscamos el perfil de la academia
-                const qAcademia = query(collection(db, "usuarios"), where("email", "==", user.email));
-                const snapAcademia = await getDocs(qAcademia);
-                
-                if (!snapAcademia.empty) {
-                    const datosAcademia = snapAcademia.docs[0].data();
-                    const nombreEntidad = datosAcademia.entidad || datosAcademia.nombreResponsable;
-                    document.getElementById('nombre-entidad-actual').innerText = nombreEntidad;
-                    cargarAlumnos(nombreEntidad);
-                } else {
-                    console.error("No se encontró el perfil para:", user.email);
-                    document.getElementById('nombre-entidad-actual').innerText = "Perfil no encontrado";
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-warning py-4">Su usuario no tiene una entidad asociada en la base de datos.</td></tr>';
-                }
-            } catch (e) {
-                console.error("Error en autenticación:", e);
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Error al verificar perfil.</td></tr>';
-            }
+            cargarDatos();
         } else {
-            window.location.href = "index.html";
+            console.warn("Sesión no detectada");
+            // Puedes redirigir a index.html aquí si lo prefieres
         }
     });
 
-    async function cargarAlumnos(filtroEntidad) {
+    async function cargarDatos() {
         const tbody = document.getElementById('tabla-alumnos-body');
+        const emptyState = document.getElementById('sin-resultados');
+        
         try {
-            const q = query(
-                collection(db, "usuarios"),
-                where("rol", "==", "estudiante"),
-                where("entidad", "==", filtroEntidad)
-            );
-
+            // Traemos todos los estudiantes de la colección usuarios
+            const q = query(collection(db, "usuarios"), where("rol", "==", "estudiante"));
             const querySnapshot = await getDocs(q);
-            tbody.innerHTML = '';
             
+            tbody.innerHTML = '';
+            let contador = 0;
+
             if (querySnapshot.empty) {
-                document.getElementById('sin-resultados').classList.remove('d-none');
+                emptyState.classList.remove('d-none');
                 return;
             }
 
             querySnapshot.forEach((doc) => {
                 const d = doc.data();
-                const modulosLabels = d.modulos && Array.isArray(d.modulos)
+                contador++;
+
+                // Módulos en formato badge
+                const modulosHtml = d.modulos && Array.isArray(d.modulos)
                     ? d.modulos.map(m => `<span class="badge badge-modulo me-1">${m}</span>`).join('')
-                    : '<span class="text-muted small">Sin módulos</span>';
+                    : '<span class="text-muted small">Sin asignar</span>';
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
-                        <div class="student-name">${d.nombreResponsable || 'N/A'}</div>
-                        <div class="info-sub"><i class="bi bi-card-heading"></i> ${d.dniEstudiante || 'S/D'}</div>
+                        <div class="student-name">${d.nombreResponsable || 'Sin Nombre'}</div>
+                        <div class="info-sub"><i class="bi bi-card-text"></i> ${d.dniEstudiante || 'S/D'}</div>
                     </td>
                     <td>
-                        <div class="small"><i class="bi bi-envelope-fill text-secondary"></i> ${d.email}</div>
+                        <div class="small"><i class="bi bi-envelope-at text-secondary"></i> ${d.email || ''}</div>
                         <div class="small text-success"><i class="bi bi-whatsapp"></i> ${d.whatsapp || ''}</div>
                     </td>
                     <td>
                         <div class="small"><strong>Rep:</strong> ${d.nombreRepresentante || 'N/A'}</div>
                         <div class="info-sub">${d.categoriaEdad || ''} (${d.edadEstudiante || '?'} años)</div>
                     </td>
-                    <td>${modulosLabels}</td>
+                    <td>${modulosHtml}</td>
                     <td class="text-center">
                         <button class="btn btn-sm btn-primary" onclick="crearAula('${doc.id}')">
                             <i class="bi bi-plus-circle"></i> Aula
@@ -168,21 +154,37 @@
                 `;
                 tbody.appendChild(tr);
             });
-            document.getElementById('sin-resultados').classList.add('d-none');
+
+            emptyState.classList.add('d-none');
+
         } catch (error) {
-            console.error("Error cargando alumnos:", error);
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Error de permisos o índices. Revise la consola de Firebase.</td></tr>';
+            console.error("Error en carga:", error);
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">
+                <i class="bi bi-exclamation-triangle"></i> Error al conectar con Firestore.
+            </td></tr>`;
         }
     }
 
+    // Buscador instantáneo en la tabla
     document.getElementById('buscador').addEventListener('input', (e) => {
-        const val = e.target.value.toLowerCase();
-        document.querySelectorAll('#tabla-alumnos-body tr').forEach(fila => {
-            fila.style.display = fila.textContent.toLowerCase().includes(val) ? '' : 'none';
+        const term = e.target.value.toLowerCase();
+        const filas = document.querySelectorAll('#tabla-alumnos-body tr');
+        filas.forEach(f => {
+            f.style.display = f.textContent.toLowerCase().includes(term) ? '' : 'none';
         });
     });
 
-    window.crearAula = (id) => { Swal.fire('UCMI', 'Abriendo módulo de aula...', 'info'); };
+    window.crearAula = (id) => {
+        Swal.fire({
+            title: 'Asignar Aula',
+            text: '¿Deseas iniciar el proceso de asignación para este estudiante?',
+            icon: 'question',
+            confirmButtonText: 'Continuar'
+        });
+    };
+
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
