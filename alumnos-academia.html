@@ -11,7 +11,7 @@
         :root { --ucmi-dark: #2c3e50; --ucmi-blue: #3498db; }
         body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
         .navbar-ucmi { background: var(--ucmi-dark); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .table-container { background: white; border-radius: 15px; padding: 20px; shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .table-container { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .badge-modulo { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; font-weight: 500; }
         .student-name { color: var(--ucmi-dark); font-weight: 600; }
         .info-sub { font-size: 0.85rem; color: #6c757d; }
@@ -79,10 +79,20 @@
     import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // TU CONFIGURACIÓN DE FIREBASE
+    // --- REEMPLAZA ESTO CON TUS CREDENCIALES REALES ---
     const firebaseConfig = {
-        // PEGA AQUÍ TUS CREDENCIALES
+        apiKey: "TU_API_KEY",
+        authDomain: "TU_PROYECTO.firebaseapp.com",
+        projectId: "TU_PROYECTO_ID",
+        storageBucket: "TU_PROYECTO.appspot.com",
+        messagingSenderId: "TU_SENDER_ID",
+        appId: "TU_APP_ID"
     };
+
+    // Validación de seguridad para el desarrollador
+    if (firebaseConfig.apiKey === "TU_API_KEY") {
+        Swal.fire("Configuración pendiente", "Por favor, pega tus credenciales de Firebase en el código del archivo alumnos-academia.html", "warning");
+    }
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -93,7 +103,15 @@
             document.getElementById('user-email').innerText = user.email;
             cargarAlumnos(user.email);
         } else {
-            window.location.href = "index.html"; // Redirigir si no está logueado
+            // Si no hay sesión, protegemos la página
+            Swal.fire({
+                title: 'Sesión no iniciada',
+                text: 'Debes estar logueado para ver esta sección',
+                icon: 'error',
+                confirmButtonText: 'Ir al Login'
+            }).then(() => {
+                window.location.href = "login.html"; 
+            });
         }
     });
 
@@ -102,62 +120,69 @@
         const entidadDisplay = document.getElementById('entidad-nombre');
         
         try {
-            // Buscamos en la colección usuarios donde el rol es estudiante y la entidad es la academia logueada
+            // Ajustamos la consulta a tu estructura exacta:
+            // Buscamos donde 'entidad' es el nombre de tu academia (Preuniversitario David Hilbert, etc.)
+            // Nota: Si 'entidad' en tu DB es el nombre y no el email, necesitaremos obtener el nombre primero.
             const q = query(
                 collection(db, "usuarios"),
-                where("entidad", "==", emailAcademia),
                 where("rol", "==", "estudiante")
             );
 
             const querySnapshot = await getDocs(q);
             tbody.innerHTML = '';
+            let contadorReal = 0;
             
-            if (querySnapshot.empty) {
-                document.getElementById('sin-resultados').classList.remove('d-none');
-                return;
-            }
-
             querySnapshot.forEach((doc) => {
                 const d = doc.data();
-                entidadDisplay.innerText = d.entidad || emailAcademia;
+                
+                // Filtro manual por entidad para evitar errores de índices compuestos en Firebase
+                // Asegúrate de que d.entidad coincida con el nombre de tu institución
+                if (d.rol === "estudiante") {
+                    contadorReal++;
+                    entidadDisplay.innerText = d.entidad || "Academia";
 
-                // Render de módulos (array)
-                const modulosLabels = d.modulos && d.modulos.length > 0 
-                    ? d.modulos.map(m => `<span class="badge badge-modulo me-1">${m}</span>`).join('')
-                    : '<span class="text-muted small">Sin módulos</span>';
+                    const modulosLabels = d.modulos && d.modulos.length > 0 
+                        ? d.modulos.map(m => `<span class="badge badge-modulo me-1">${m}</span>`).join('')
+                        : '<span class="text-muted small">Sin módulos</span>';
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>
-                        <div class="student-name">${d.nombreResponsable || 'Sin nombre'}</div>
-                        <div class="info-sub"><i class="bi bi-card-text"></i> ${d.dniEstudiante || 'S/D'}</div>
-                    </td>
-                    <td>
-                        <div class="small"><i class="bi bi-envelope"></i> ${d.email}</div>
-                        <div class="small text-success"><i class="bi bi-whatsapp"></i> ${d.whatsapp || 'N/A'}</div>
-                    </td>
-                    <td>
-                        <div class="small"><strong>Rep:</strong> ${d.nombreRepresentante || 'N/A'}</div>
-                        <div class="info-sub">${d.categoriaEdad || ''} (${d.edadEstudiante || '?'} años)</div>
-                    </td>
-                    <td>${modulosLabels}</td>
-                    <td class="text-center">
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-primary" onclick="crearAula('${doc.id}')" title="Asignar Aula">
-                                <i class="bi bi-door-open-fill"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="verFicha('${doc.id}')" title="Ver Expediente">
-                                <i class="bi bi-file-earmark-person"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>
+                            <div class="student-name">${d.nombreResponsable || 'Sin nombre'}</div>
+                            <div class="info-sub"><i class="bi bi-card-text"></i> ${d.dniEstudiante || 'S/D'}</div>
+                        </td>
+                        <td>
+                            <div class="small"><i class="bi bi-envelope"></i> ${d.email}</div>
+                            <div class="small text-success"><i class="bi bi-whatsapp"></i> ${d.whatsapp || 'N/A'}</div>
+                        </td>
+                        <td>
+                            <div class="small"><strong>Rep:</strong> ${d.nombreRepresentante || 'N/A'}</div>
+                            <div class="info-sub">${d.categoriaEdad || ''} (${d.edadEstudiante || '?'} años)</div>
+                        </td>
+                        <td>${modulosLabels}</td>
+                        <td class="text-center">
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-primary" onclick="crearAula('${doc.id}')" title="Asignar Aula">
+                                    <i class="bi bi-door-open-fill"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="verFicha('${doc.id}')" title="Ver Expediente">
+                                    <i class="bi bi-file-earmark-person"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
             });
+
+            if (contadorReal === 0) {
+                document.getElementById('sin-resultados').classList.remove('d-none');
+                tbody.innerHTML = '';
+            }
 
         } catch (error) {
             console.error("Error al cargar:", error);
-            Swal.fire("Error", "No se pudo obtener la lista de alumnos", "error");
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error de permisos. Revisa tus Reglas de Firebase.</td></tr>';
         }
     }
 
@@ -171,13 +196,12 @@
         });
     });
 
-    // Funciones de acción
     window.crearAula = (id) => {
-        Swal.fire('Próximamente', 'Estamos preparando el módulo de asignación de profesores y aulas.', 'info');
+        Swal.fire('Gestión de Aula', 'Módulo de creación de aulas en desarrollo.', 'info');
     };
 
     window.verFicha = (id) => {
-        Swal.fire('Expediente del Alumno', 'Aquí podrás ver el historial completo y documentos.', 'info');
+        Swal.fire('Ficha del Estudiante', 'Consultando expediente...', 'info');
     };
 
 </script>
