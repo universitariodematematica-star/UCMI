@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Panel de Gestión</title>
+    <title>UCMI - Panel Dinámico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -12,26 +12,26 @@
         body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
         .navbar-ucmi { background: var(--ucmi-dark); color: white; }
         .table-container { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .student-row:hover { background-color: #f1f8ff; }
+        .badge-academia { background: #e9ecef; color: #495057; font-weight: bold; text-transform: uppercase; border: 1px solid #dee2e6; }
     </style>
 </head>
 <body>
 
 <nav class="navbar navbar-ucmi mb-4">
     <div class="container">
-        <span class="navbar-brand mb-0 h1 text-white">UCMI - Sistema de Academias</span>
-        <div id="user-display" class="small opacity-75">Sesión activa...</div>
+        <span class="navbar-brand mb-0 h1 text-white">UCMI - Gestión Académica</span>
+        <div id="user-display" class="small opacity-75">Verificando sesión...</div>
     </div>
 </nav>
 
 <div class="container">
     <div class="row mb-4 align-items-center">
         <div class="col-md-8">
-            <h3 class="fw-bold m-0"><i class="bi bi-shield-check text-primary"></i> Estudiantes de la Academia</h3>
-            <p class="text-muted">Filtrando por: <span class="badge bg-secondary">Learning Bridge</span></p>
+            <h3 class="fw-bold m-0"><i class="bi bi-people-fill text-primary"></i> Directorio de Alumnos</h3>
+            <p class="text-muted">Academia en sesión: <span id="label-academia" class="badge badge-academia">Cargando...</span></p>
         </div>
         <div class="col-md-4">
-            <input type="text" id="buscadorRapido" class="form-control" placeholder="Buscar por nombre o DNI...">
+            <input type="text" id="buscador" class="form-control" placeholder="Buscar por nombre o ID...">
         </div>
     </div>
 
@@ -43,7 +43,7 @@
                         <th>Estudiante / DNI</th>
                         <th>Contacto</th>
                         <th>Representante</th>
-                        <th>Entidad</th>
+                        <th>Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -51,15 +51,15 @@
                     <tr>
                         <td colspan="5" class="text-center py-5">
                             <div class="spinner-border text-primary" role="status"></div>
-                            <p class="mt-2">Consultando base de datos...</p>
+                            <p class="mt-2">Sincronizando con tu academia...</p>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
         <div id="sin-datos" class="text-center py-5 d-none">
-            <i class="bi bi-search display-4 text-muted"></i>
-            <p class="mt-2 text-muted">No hay estudiantes registrados para esta entidad.</p>
+            <i class="bi bi-person-exclamation display-4 text-muted"></i>
+            <p class="mt-2 text-muted">No se encontraron estudiantes para esta institución.</p>
         </div>
     </div>
 </div>
@@ -86,22 +86,43 @@
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             document.getElementById('user-display').innerText = user.email;
-            cargarDatos();
+            await obtenerConfiguracionSesion(user.email);
         } else {
             window.location.href = 'index.html';
         }
     });
 
-    async function cargarDatos() {
+    async function obtenerConfiguracionSesion(emailUsuario) {
+        try {
+            // Buscamos los datos de quien está logueado
+            const q = query(collection(db, "usuarios"), where("email", "==", emailUsuario));
+            const snap = await getDocs(q);
+            
+            if (!snap.empty) {
+                const adminData = snap.docs[0].data();
+                const academiaSesion = adminData.entidad; // Aquí capturamos la academia dinámica
+                
+                document.getElementById('label-academia').innerText = academiaSesion || "Sin Entidad";
+                
+                if (academiaSesion) {
+                    cargarAlumnosDinamicos(academiaSesion);
+                }
+            }
+        } catch (error) {
+            console.error("Error al obtener sesión:", error);
+        }
+    }
+
+    async function cargarAlumnosDinamicos(nombreEntidad) {
         const tbody = document.getElementById('tabla-body');
         const alertaVacia = document.getElementById('sin-datos');
         
         try {
-            // AQUÍ ESTÁN TUS VARIABLES: perfil y entidad
+            // FILTRO DINÁMICO: Solo estudiantes de la entidad en sesión
             const q = query(
                 collection(db, "usuarios"), 
                 where("perfil", "==", "Estudiante Academia"),
-                where("entidad", "==", "Learning Bridge")
+                where("entidad", "==", nombreEntidad)
             );
 
             const snap = await getDocs(q);
@@ -113,22 +134,24 @@
             }
 
             snap.forEach((doc) => {
-                const data = doc.data();
+                const d = doc.data();
                 const tr = document.createElement('tr');
-                tr.className = 'student-row';
+                tr.className = 'fila-alumno';
                 tr.innerHTML = `
                     <td>
-                        <div class="fw-bold">${data.nombreResponsable || 'N/A'}</div>
-                        <div class="small text-muted">${data.dniEstudiante || data.cedulaResponsable || ''}</div>
+                        <div class="fw-bold">${d.nombreResponsable || 'N/A'}</div>
+                        <div class="small text-muted">ID: ${d.dniEstudiante || d.cedulaResponsable || 'S/D'}</div>
                     </td>
                     <td>
-                        <div class="small">${data.email || ''}</div>
-                        <div class="small text-success">${data.whatsapp || ''}</div>
+                        <div class="small">${d.email || ''}</div>
+                        <div class="small text-success"><i class="bi bi-whatsapp"></i> ${d.whatsapp || ''}</div>
                     </td>
-                    <td>${data.nombreRepresentante || 'N/A'}</td>
-                    <td><span class="badge bg-info text-dark">${data.entidad}</span></td>
+                    <td>${d.nombreRepresentante || 'N/A'}</td>
+                    <td><span class="badge bg-success">Activo</span></td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-primary" onclick="console.log('${doc.id}')">Gestionar</button>
+                        <button class="btn btn-sm btn-primary" onclick="console.log('ID: ${doc.id}')">
+                            <i class="bi bi-pencil-square"></i> Gestionar
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -137,17 +160,16 @@
             alertaVacia.classList.add('d-none');
 
         } catch (error) {
-            console.error("Error filtrando:", error);
-            // SI ESTO DA ERROR, REVISA LA CONSOLA (F12) PARA HACER CLIC EN EL LINK DEL ÍNDICE
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error de consulta. Verifique los índices de Firebase.</td></tr>';
+            console.error("Error en la consulta filtrada:", error);
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error de carga. Revisa los índices en la consola de Firebase (F12).</td></tr>';
         }
     }
 
-    // Buscador
-    document.getElementById('buscadorRapido').addEventListener('input', (e) => {
-        const val = e.target.value.toLowerCase();
-        document.querySelectorAll('.student-row').forEach(row => {
-            row.style.display = row.innerText.toLowerCase().includes(val) ? '' : 'none';
+    // Buscador local
+    document.getElementById('buscador').addEventListener('input', (e) => {
+        const busqueda = e.target.value.toLowerCase();
+        document.querySelectorAll('.fila-alumno').forEach(fila => {
+            fila.style.display = fila.innerText.toLowerCase().includes(busqueda) ? '' : 'none';
         });
     });
 </script>
