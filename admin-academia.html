@@ -115,28 +115,42 @@
     let entidadActual = "";
 
     onAuthStateChanged(auth, async (user) => {
-        if (!user) { window.location.href = "index.html"; return; }
+        console.log("Estado de Auth:", user ? "Usuario detectado: " + user.email : "Sin usuario");
+        
+        if (!user) { 
+            console.warn("Redirigiendo al index por falta de sesión.");
+            window.location.href = "index.html"; 
+            return; 
+        }
+
         try {
             const userRef = doc(db, "usuarios", user.email);
             const userSnap = await getDoc(userRef);
+
             if (userSnap.exists()) {
                 const data = userSnap.data();
                 entidadActual = data.entidad || "Sede";
+                
                 document.getElementById('navEntidad').innerText = entidadActual;
                 document.getElementById('sideNombreEntidad').innerText = entidadActual;
                 
                 const finalLogo = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-                
                 const navLogo = document.getElementById('navLogo');
                 const logoPrev = document.getElementById('logoPreview');
+                
                 navLogo.src = finalLogo;
                 logoPrev.src = finalLogo;
                 navLogo.onload = () => navLogo.style.opacity = "1";
                 logoPrev.onload = () => logoPrev.style.opacity = "1";
+            } else {
+                console.error("El correo no está registrado en la colección 'usuarios' de Firestore.");
+                alert("Acceso denegado: Usuario no registrado en la base de datos.");
+                // window.location.href = "index.html"; // Descomenta esto si quieres forzar la salida
             }
-        } catch (e) { console.error("Error al cargar perfil:", e); }
+        } catch (e) { 
+            console.error("Error al cargar perfil:", e); 
+        }
     });
-
     // REDUCTOR DE TAMAÑO ANTES DE SUBIR
     const processImage = (file) => {
         return new Promise((resolve, reject) => {
