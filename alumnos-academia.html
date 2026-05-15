@@ -12,8 +12,8 @@
         body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
         .navbar-ucmi { background: var(--ucmi-dark); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .table-container { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .badge-modulo { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; font-weight: 500; }
-        .student-name { color: var(--ucmi-dark); font-weight: 600; }
+        .badge-modulo { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; font-weight: 500; padding: 5px 10px; }
+        .student-name { color: var(--ucmi-dark); font-weight: 600; font-size: 1.1rem; }
         .info-sub { font-size: 0.85rem; color: #6c757d; }
     </style>
 </head>
@@ -23,24 +23,24 @@
     <div class="container">
         <span class="navbar-brand mb-0 h1 text-white">UCMI - Panel de Control</span>
         <div class="d-flex align-items-center">
-            <span id="user-email" class="me-3 small opacity-75"></span>
-            <button class="btn btn-outline-light btn-sm" onclick="window.history.back()">
-                <i class="bi bi-arrow-left"></i> Volver
+            <span id="user-email" class="me-3 small opacity-75">Cargando sesión...</span>
+            <button class="btn btn-outline-light btn-sm" onclick="window.location.href='dashboard.html'">
+                <i class="bi bi-house"></i> Dashboard
             </button>
         </div>
     </div>
 </nav>
 
 <div class="container">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2 class="fw-bold"><i class="bi bi-mortarboard-fill me-2"></i>Alumnos Admitidos</h2>
-            <p class="text-muted">Listado oficial de estudiantes de tu entidad académica.</p>
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-7">
+            <h2 class="fw-bold m-0"><i class="bi bi-mortarboard-fill me-2 text-primary"></i>Directorio de Alumnos</h2>
+            <p class="text-muted mb-0">Gestión de estudiantes admitidos en la institución.</p>
         </div>
-        <div class="col-md-4 text-md-end">
-            <div class="input-group">
-                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                <input type="text" id="buscador" class="form-control" placeholder="Buscar por nombre, email o DNI...">
+        <div class="col-md-5">
+            <div class="input-group shadow-sm">
+                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-primary"></i></span>
+                <input type="text" id="buscador" class="form-control border-start-0" placeholder="Buscar por nombre, DNI o correo...">
             </div>
         </div>
     </div>
@@ -50,7 +50,7 @@
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>Estudiante / DNI</th>
+                        <th>Estudiante / ID</th>
                         <th>Contacto</th>
                         <th>Representante / Edad</th>
                         <th>Módulos</th>
@@ -59,17 +59,18 @@
                 </thead>
                 <tbody id="tabla-alumnos-body">
                     <tr>
-                        <td colspan="5" class="text-center py-4">
+                        <td colspan="5" class="text-center py-5">
                             <div class="spinner-border text-primary" role="status"></div>
-                            <br><span class="mt-2 d-block">Consultando base de datos...</span>
+                            <p class="mt-2 mb-0">Sincronizando con la base de datos...</p>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
         <div id="sin-resultados" class="text-center py-5 d-none">
-            <i class="bi bi-person-exclamation display-4 text-muted"></i>
-            <p class="mt-2 text-muted">No se encontraron alumnos para esta academia.</p>
+            <i class="bi bi-person-exclamation display-1 text-muted opacity-25"></i>
+            <h4 class="mt-3 text-muted">No hay alumnos para mostrar</h4>
+            <p>Verifica que los alumnos tengan el rol "estudiante" en la base de datos.</p>
         </div>
     </div>
 </div>
@@ -79,68 +80,67 @@
     import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // 1. REEMPLAZA ESTO CON TUS CREDENCIALES REALES
+    // --- CONFIGURACIÓN (Pega tus datos aquí) ---
     const firebaseConfig = {
         apiKey: "TU_API_KEY",
-        authDomain: "TU_PROYECTO.firebaseapp.com",
-        projectId: "TU_PROYECTO_ID",
-        storageBucket: "TU_PROYECTO.appspot.com",
+        authDomain: "TU_DOMINIO.firebaseapp.com",
+        projectId: "TU_PROJECT_ID",
+        storageBucket: "TU_BUCKET.appspot.com",
         messagingSenderId: "TU_SENDER_ID",
         appId: "TU_APP_ID"
     };
 
-    // Inicialización
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // Verificación de sesión
+    // CONTROL DE SESIÓN
     onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById('user-email').innerText = user.email;
-            cargarAlumnos(user.email);
+            cargarAlumnos();
         } else {
-            Swal.fire({
-                title: 'Sesión no iniciada',
-                text: 'Debes estar logueado para acceder.',
-                icon: 'warning',
-                confirmButtonText: 'Ir al Login'
-            }).then(() => { window.location.href = "login.html"; });
+            console.log("No hay sesión activa, redirigiendo...");
+            // Si te está enviando al login por error, comenta la línea de abajo para debuggear
+            window.location.href = "index.html"; 
         }
     });
 
-    async function cargarAlumnos(emailAcademia) {
+    async function cargarAlumnos() {
         const tbody = document.getElementById('tabla-alumnos-body');
         
         try {
-            // Consulta: Rol estudiante y que pertenezca a la entidad logueada
+            // Consulta AMPLIA: Traemos todos los estudiantes primero para asegurar que veas algo
             const q = query(
                 collection(db, "usuarios"),
                 where("rol", "==", "estudiante")
-                // Si deseas filtrar estrictamente por entidad, añade: 
-                // where("entidad", "==", "Nombre De Tu Entidad")
             );
 
             const querySnapshot = await getDocs(q);
             tbody.innerHTML = '';
-            let contador = 0;
+            let count = 0;
+
+            if (querySnapshot.empty) {
+                document.getElementById('sin-resultados').classList.remove('d-none');
+                return;
+            }
 
             querySnapshot.forEach((doc) => {
                 const d = doc.data();
-                
-                // Mapeo de módulos (array)
-                const modulosHtml = d.modulos && d.modulos.length > 0 
+                count++;
+
+                const modulosHtml = d.modulos && Array.isArray(d.modulos)
                     ? d.modulos.map(m => `<span class="badge badge-modulo me-1">${m}</span>`).join('')
-                    : '<span class="text-muted small">Sin módulos</span>';
+                    : '<span class="text-muted small">Sin asignar</span>';
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
                         <div class="student-name">${d.nombreResponsable || 'Sin nombre'}</div>
-                        <div class="info-sub"><i class="bi bi-card-text"></i> ${d.dniEstudiante || 'S/D'}</div>
+                        <div class="info-sub"><i class="bi bi-fingerprint"></i> ${d.dniEstudiante || 'N/A'}</div>
                     </td>
                     <td>
-                        <div class="small"><i class="bi bi-envelope"></i> ${d.email}</div>
+                        <div class="small"><i class="bi bi-envelope-at text-primary"></i> ${d.email}</div>
                         <div class="small text-success"><i class="bi bi-whatsapp"></i> ${d.whatsapp || ''}</div>
                     </td>
                     <td>
@@ -149,41 +149,35 @@
                     </td>
                     <td>${modulosHtml}</td>
                     <td class="text-center">
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-primary" title="Asignar Aula" onclick="asignarAula('${doc.id}')">
-                                <i class="bi bi-door-open-fill"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-secondary" title="Detalles" onclick="verFicha('${doc.id}')">
-                                <i class="bi bi-eye"></i>
-                            </button>
+                        <div class="btn-group shadow-sm">
+                            <button class="btn btn-sm btn-primary" onclick="crearAula('${doc.id}')"><i class="bi bi-plus-circle"></i> Aula</button>
+                            <button class="btn btn-sm btn-outline-dark" onclick="verFicha('${doc.id}')"><i class="bi bi-eye"></i></button>
                         </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
-                contador++;
             });
 
-            if (contador === 0) {
-                document.getElementById('sin-resultados').classList.remove('d-none');
-            }
+            document.getElementById('sin-resultados').classList.add('d-none');
 
         } catch (error) {
-            console.error("Error:", error);
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar datos. Verifica tus reglas de Firebase.</td></tr>';
+            console.error("Error crítico:", error);
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">
+                <i class="bi bi-exclamation-triangle"></i> Error de conexión: ${error.message}
+            </td></tr>`;
         }
     }
 
-    // Buscador en tiempo real
-    document.getElementById('buscador').addEventListener('keyup', (e) => {
+    // Buscador
+    document.getElementById('buscador').addEventListener('input', (e) => {
         const val = e.target.value.toLowerCase();
         document.querySelectorAll('#tabla-alumnos-body tr').forEach(fila => {
             fila.style.display = fila.textContent.toLowerCase().includes(val) ? '' : 'none';
         });
     });
 
-    // Funciones globales
-    window.asignarAula = (id) => { Swal.fire('Gestión de Aula', 'Módulo de asignación en construcción.', 'info'); };
-    window.verFicha = (id) => { Swal.fire('Ficha Alumno', 'Consultando expediente...', 'info'); };
+    window.crearAula = (id) => { Swal.fire('UCMI', 'Abriendo gestor de aulas...', 'info'); };
+    window.verFicha = (id) => { Swal.fire('UCMI', 'Cargando expediente del alumno...', 'info'); };
 
 </script>
 
