@@ -15,7 +15,6 @@
         .badge-modulo { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; font-weight: 500; padding: 4px 8px; font-size: 0.8rem; }
         .student-name { color: var(--ucmi-dark); font-weight: 600; }
         .info-sub { font-size: 0.85rem; color: #6c757d; }
-        .sidebar-info { border-left: 3px solid var(--ucmi-blue); padding-left: 15px; }
     </style>
 </head>
 <body>
@@ -26,7 +25,7 @@
         <div class="d-flex align-items-center">
             <span id="user-email" class="me-3 small opacity-75 text-white">Cargando sesión...</span>
             <button class="btn btn-outline-light btn-sm" onclick="window.location.href='dashboard.html'">
-                <i class="bi bi-house"></i> Volver al Inicio
+                <i class="bi bi-house"></i> Dashboard
             </button>
         </div>
     </div>
@@ -36,14 +35,12 @@
     <div class="row mb-4 align-items-end">
         <div class="col-md-8">
             <h2 class="fw-bold"><i class="bi bi-mortarboard-fill text-primary"></i> Directorio de Alumnos</h2>
-            <div class="sidebar-info">
-                <p class="text-muted mb-0">Institución: <span id="nombre-entidad-actual" class="fw-bold text-dark">Identificando...</span></p>
-            </div>
+            <p class="text-muted mb-0">Institución: <span id="nombre-entidad-actual" class="fw-bold text-dark">Identificando...</span></p>
         </div>
         <div class="col-md-4">
             <div class="input-group">
                 <span class="input-group-text bg-white"><i class="bi bi-search text-primary"></i></span>
-                <input type="text" id="buscador" class="form-control" placeholder="Filtrar por nombre o DNI...">
+                <input type="text" id="buscador" class="form-control" placeholder="Nombre o DNI...">
             </div>
         </div>
     </div>
@@ -56,8 +53,8 @@
                         <th>Estudiante / DNI</th>
                         <th>Contacto</th>
                         <th>Representante / Edad</th>
-                        <th>Módulos Inscritos</th>
-                        <th class="text-center">Gestión</th>
+                        <th>Módulos</th>
+                        <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-alumnos-body">
@@ -70,21 +67,20 @@
                 </tbody>
             </table>
         </div>
-        
         <div id="sin-resultados" class="text-center py-5 d-none">
             <i class="bi bi-person-x display-1 text-muted opacity-25"></i>
             <h4 class="mt-3">No hay alumnos registrados</h4>
-            <p class="text-muted">No se encontraron estudiantes asociados a esta academia.</p>
+            <p class="text-muted">No se encontraron estudiantes asociados a tu academia.</p>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // --- CONFIGURACIÓN DE FIREBASE (PEGA TUS DATOS AQUÍ) ---
+    // --- CONFIGURACIÓN DE FIREBASE ---
 const firebaseConfig = {
   apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
   authDomain: "ucmi-13796634.firebaseapp.com",
@@ -102,26 +98,24 @@ const firebaseConfig = {
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             document.getElementById('user-email').innerText = user.email;
-            
             try {
-                // PASO 1: Obtener el perfil de la academia para saber su nombre de ENTIDAD
-                const academiaRef = doc(db, "usuarios", user.email);
-                const academiaSnap = await getDoc(academiaRef);
+                // CAMBIO CLAVE: Buscamos el perfil de la academia por el campo EMAIL
+                const qAcademia = query(collection(db, "usuarios"), where("email", "==", user.email));
+                const snapAcademia = await getDocs(qAcademia);
                 
-                if (academiaSnap.exists()) {
-                    const datosAcademia = academiaSnap.data();
-                    // Usamos el campo 'nombreResponsable' o 'nombreAcademia' que identifica a la institución
-                    const nombreEntidad = datosAcademia.nombreResponsable || datosAcademia.entidad;
+                if (!snapAcademia.empty) {
+                    const datosAcademia = snapAcademia.docs[0].data();
+                    const nombreEntidad = datosAcademia.entidad || datosAcademia.nombreResponsable;
                     document.getElementById('nombre-entidad-actual').innerText = nombreEntidad;
-                    
-                    // PASO 2: Cargar solo los alumnos que pertenecen a esa entidad
                     cargarAlumnos(nombreEntidad);
                 } else {
-                    console.error("No se encontró el perfil de la academia.");
-                    Swal.fire("Error", "No se pudo identificar tu institución.", "error");
+                    console.error("No se encontró el perfil para:", user.email);
+                    // Como plan B, intentamos cargar por el nombre de la entidad directamente si es conocido
+                    document.getElementById('nombre-entidad-actual').innerText = "Entidad no identificada";
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-warning">Error: No se encontró el perfil de la academia.</td></tr>';
                 }
             } catch (e) {
-                console.error("Error de autenticación:", e);
+                console.error("Error al identificar academia:", e);
             }
         } else {
             window.location.href = "index.html";
@@ -130,9 +124,8 @@ const firebaseConfig = {
 
     async function cargarAlumnos(filtroEntidad) {
         const tbody = document.getElementById('tabla-alumnos-body');
-        
         try {
-            // PASO 3: CONSULTA FILTRADA PARA SEGURIDAD
+            // Filtramos alumnos por ROL y por ENTIDAD exacta
             const q = query(
                 collection(db, "usuarios"),
                 where("rol", "==", "estudiante"),
@@ -141,8 +134,7 @@ const firebaseConfig = {
 
             const querySnapshot = await getDocs(q);
             tbody.innerHTML = '';
-            let contador = 0;
-
+            
             if (querySnapshot.empty) {
                 document.getElementById('sin-resultados').classList.remove('d-none');
                 return;
@@ -150,8 +142,6 @@ const firebaseConfig = {
 
             querySnapshot.forEach((doc) => {
                 const d = doc.data();
-                contador++;
-
                 const modulosLabels = d.modulos && Array.isArray(d.modulos)
                     ? d.modulos.map(m => `<span class="badge badge-modulo me-1">${m}</span>`).join('')
                     : '<span class="text-muted small">Pendiente</span>';
@@ -159,43 +149,31 @@ const firebaseConfig = {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
-                        <div class="student-name">${d.nombreResponsable}</div>
-                        <div class="info-sub"><i class="bi bi-card-heading"></i> ${d.dniEstudiante}</div>
+                        <div class="student-name">${d.nombreResponsable || 'Sin nombre'}</div>
+                        <div class="info-sub"><i class="bi bi-card-heading"></i> ${d.dniEstudiante || 'S/D'}</div>
                     </td>
                     <td>
                         <div class="small"><i class="bi bi-envelope-fill text-secondary"></i> ${d.email}</div>
                         <div class="small text-success"><i class="bi bi-whatsapp"></i> ${d.whatsapp || ''}</div>
                     </td>
                     <td>
-                        <div class="small"><strong>Rep:</strong> ${d.nombreRepresentante}</div>
-                        <div class="info-sub">${d.categoriaEdad} (${d.edadEstudiante} años)</div>
+                        <div class="small"><strong>Rep:</strong> ${d.nombreRepresentante || 'N/A'}</div>
+                        <div class="info-sub">${d.categoriaEdad || ''} (${d.edadEstudiante || '?'} años)</div>
                     </td>
                     <td>${modulosLabels}</td>
                     <td class="text-center">
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-primary" onclick="crearAula('${doc.id}')" title="Asignar Aula">
-                                <i class="bi bi-person-plus-fill"></i> Aula
-                            </button>
-                            <button class="btn btn-sm btn-outline-dark" onclick="verPerfil('${doc.id}')">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
+                        <button class="btn btn-sm btn-primary" onclick="crearAula('${doc.id}')">Aula</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-
             document.getElementById('sin-resultados').classList.add('d-none');
-
         } catch (error) {
             console.error("Error en Firestore:", error);
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">
-                Error al cargar datos. Verifica los índices de Firebase.
-            </td></tr>`;
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error de permisos o índices.</td></tr>';
         }
     }
 
-    // Buscador Local
     document.getElementById('buscador').addEventListener('input', (e) => {
         const val = e.target.value.toLowerCase();
         document.querySelectorAll('#tabla-alumnos-body tr').forEach(fila => {
@@ -203,11 +181,7 @@ const firebaseConfig = {
         });
     });
 
-    window.crearAula = (id) => { Swal.fire('UCMI', 'Abriendo gestor de asignación...', 'info'); };
-    window.verPerfil = (id) => { Swal.fire('UCMI', 'Consultando ficha del alumno...', 'info'); };
-
+    window.crearAula = (id) => { Swal.fire('UCMI', 'Asignando aula...', 'info'); };
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
