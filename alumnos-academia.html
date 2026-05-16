@@ -264,6 +264,9 @@
               const data = snap.data();
               miEntidad = data.entidad || "Sede";
               
+              // Extraer cantidad de cupos comprados asignados al administrador
+              const cuposMaximos = data.cupos || 0;
+              
               document.getElementById('label-academia').innerText = miEntidad;
               document.getElementById('sidebarNombreEntidad').innerText = miEntidad;
               
@@ -278,32 +281,35 @@
                   window.open(url, '_blank');
               };
 
-              // --- NUEVA LOGICA: Consulta y renderizado de cupos en tiempo real ---
+              // --- LÓGICA DE CONTEO DINÁMICO DE CUPOS UTILIZADOS ---
               try {
-                  const academiaRef = doc(db, "academias", miEntidad);
-                  const academiaSnap = await getDoc(academiaRef);
+                  const qCupos = query(
+                      collection(db, "usuarios"),
+                      where("perfil", "==", "Estudiante Academia"),
+                      where("entidad", "==", miEntidad)
+                  );
                   
-                  if (academiaSnap.exists()) {
-                      const infoAcademia = academiaSnap.data();
-                      const usados = infoAcademia.cuposUtilizados || 0;
-                      const maximos = infoAcademia.cuposMaximos || 0;
-                      
-                      // Inyectamos valores en el HTML
-                      document.getElementById('cupos-utilizados').innerText = usados;
-                      document.getElementById('cupos-maximos').innerText = maximos;
-                      
-                      // Modificación dinámica del color según criticidad del cupo
-                      const badge = document.getElementById('badge-cupos');
-                      if (usados >= maximos) {
-                          badge.className = "badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1";
-                      } else if (usados >= maximos * 0.9) {
-                          badge.className = "badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1";
-                      }
+                  const snapCupos = await getDocs(qCupos);
+                  const cuposUtilizados = snapCupos.size; // Cantidad de estudiantes activos
+
+                  // Renderizar métricas reales en el frontend
+                  document.getElementById('cupos-utilizados').innerText = cuposUtilizados;
+                  document.getElementById('cupos-maximos').innerText = cuposMaximos;
+                  
+                  // Manejo de alertas y estados de color del indicador
+                  const badge = document.getElementById('badge-cupos');
+                  if (cuposUtilizados >= cuposMaximos && cuposMaximos > 0) {
+                      badge.className = "badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1";
+                  } else if (cuposUtilizados >= cuposMaximos * 0.9 && cuposMaximos > 0) {
+                      badge.className = "badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1";
+                  } else {
+                      badge.className = "badge bg-success-subtle text-success border border-success-subtle px-2 py-1";
                   }
+
               } catch (err) {
-                  console.error("Error al mapear cupos operativos:", err);
+                  console.error("Error al procesar conteo de cupos dinámicos:", err);
               }
-              // -----------------------------------------------------------------
+              // ----------------------------------------------------
 
               cargarAlumnos(miEntidad);
           }
