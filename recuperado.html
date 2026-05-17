@@ -1,341 +1,702 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-     <meta charset="UTF-8">
-     <style>html { display: none; }</style>
-     <script type="module" src="auth-guard.js"></script>
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>UCMI - Historial de Solicitudes</title>
-     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-     
-     <style>
-         :root {
-             --dorado-ucmi: #c5a059;
-             --dorado-neon: #ffcc66;
-             --azul-sidebar: #1a2a3a;
-             --cian-tech: #00f2ff;
-             --rojo-neon: #ff3131;
-             --blanco-neon: #ffffff;
-         }
- 
-         body {
-             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-             background-size: cover;
-             font-family: 'Segoe UI', sans-serif;
-             color: white;
-             overflow-x: hidden;
-         }
- 
-         .super-overlay {
-             background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.95) 100%);
-             min-height: 100vh;
-         }
- 
-         /* --- SIDEBAR --- */
-         .sidebar {
-             background: rgba(26, 42, 58, 0.95);
-             backdrop-filter: blur(10px);
-             min-height: 100vh;
-             padding: 25px 15px;
-             border-right: 1px solid rgba(197, 160, 89, 0.3);
-             display: flex;
-             flex-direction: column;
-             position: sticky;
-             top: 0;
-         }
- 
-         .nav-section-title {
-             color: rgba(255, 255, 255, 0.3);
-             font-size: 0.65rem;
-             text-transform: uppercase;
-             letter-spacing: 2px;
-             margin-bottom: 15px;
-             padding-left: 10px;
-         }
- 
-         .nav-link-custom {
-             display: flex;
-             align-items: center;
-             width: 100%;
-             background: transparent;
-             border: none;
-             padding: 12px 15px;
-             color: rgba(255, 255, 255, 0.6);
-             text-align: left;
-             border-radius: 12px;
-             font-size: 0.85rem;
-             transition: all 0.3s ease;
-             margin-bottom: 5px;
-             cursor: pointer;
-         }
- 
-         .nav-link-custom i { font-size: 1.1rem; margin-right: 12px; width: 20px; text-align: center; }
- 
-         .nav-link-custom:hover {
-             background: rgba(255, 255, 255, 0.05);
-             color: var(--cian-tech);
-             transform: translateX(5px);
-         }
- 
-         .nav-link-custom.active {
-             background: rgba(188, 19, 254, 0.1);
-             color: #d880ff;
-             border: 1px solid rgba(188, 19, 254, 0.2);
-             box-shadow: 0 0 15px rgba(188, 19, 254, 0.1);
-             text-shadow: 0 0 8px rgba(188, 19, 254, 0.6);
-         }
- 
-         /* --- BOTONES NEÓN --- */
-         .btn-super-admin {
-             background: rgba(255, 255, 255, 0.05);
-             border: 1px solid var(--blanco-neon);
-             color: var(--blanco-neon);
-             padding: 12px;
-             border-radius: 12px;
-             width: 100%;
-             text-align: center;
-             font-weight: bold;
-             text-transform: uppercase;
-             font-size: 0.75rem;
-             cursor: pointer;
-             transition: all 0.3s ease;
-             box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-             margin-bottom: 10px;
-         }
- 
-         .btn-super-admin:hover {
-             background: var(--blanco-neon);
-             color: black;
-             box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-         }
- 
-         .btn-logout {
-             background: rgba(255, 49, 49, 0.05);
-             border: 1px solid var(--rojo-neon);
-             color: var(--rojo-neon);
-             padding: 10px;
-             border-radius: 12px;
-             width: 100%;
-             text-align: center;
-             font-weight: bold;
-             text-transform: uppercase;
-             font-size: 0.75rem;
-             cursor: pointer;
-             transition: all 0.3s ease;
-             box-shadow: 0 0 10px rgba(255, 49, 49, 0.2);
-         }
- 
-         .btn-logout:hover {
-             background: var(--rojo-neon);
-             color: white;
-             box-shadow: 0 0 20px rgba(255, 49, 49, 0.8);
-         }
- 
-         /* --- PANEL DE TABLA --- */
-         .glass-panel {
-             background: rgba(255, 255, 255, 0.02);
-             border: 1px solid rgba(255, 255, 255, 0.1);
-             backdrop-filter: blur(25px);
-             border-radius: 30px;
-             padding: 30px;
-             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-         }
- 
-         .table-historial { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
-         .table-historial tr { background: rgba(255, 255, 255, 0.03); border-radius: 15px; }
-         .table-historial td { padding: 15px 20px; vertical-align: middle; border: none; }
- 
-         .badge-status { padding: 6px 14px; border-radius: 100px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
-         .status-aprobado { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid #00ff8844; }
-         .status-rechazado { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d44; }
-         .status-pendiente { background: rgba(255, 204, 0, 0.1); color: #ffcc00; border: 1px solid #ffcc0044; }
- 
-         .neon-gold { color: var(--dorado-neon); font-weight: bold; }
-         .date-chip { font-family: 'Courier New', monospace; background: rgba(0, 242, 255, 0.05); color: var(--cian-tech); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(0, 242, 255, 0.2); }
- 
-     </style>
- </head>
- <body>
- 
- <div class="super-overlay">
-     <div class="container-fluid">
-         <div class="row">
-             <div class="col-md-2 sidebar d-none d-md-flex">
-                 <div class="text-center mb-4">
-                     <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" style="height: 50px;" alt="Logo">
-                     <p class="small mt-2 neon-gold">SISTEMA UCMI</p>
-                 </div>
-                  
-                 <nav class="nav flex-column mb-auto">
-                     <p class="nav-section-title">Protocolos</p>
-                     <button class="nav-link-custom" onclick="location.href='master-postulaciones.html'">
-                         <i class="bi bi-person-badge"></i> Solicitudes
-                     </button>
-                     <button class="nav-link-custom" onclick="location.href='master-vigencia.html'">
-                         <i class="bi bi-clock-history"></i> Vigencia
-                     </button>
-                     <button class="nav-link-custom" onclick="location.href='master-usuarios.html'">
-                         <i class="bi bi-people"></i> Usuarios
-                     </button>
-                     <button class="nav-link-custom active" onclick="location.href='historial-postulaciones.html'">
-                         <i class="bi bi-archive"></i> Historial
-                     </button>
-                     <button class="nav-link-custom" onclick="location.href='directorio.html'">
-                         <i class="bi bi-journal-text"></i> Directorio
-                     </button>
-                     <button class="nav-link-custom" onclick="location.href='ofertas-academicas.html'">
-                         <i class="bi bi-mortarboard"></i> Ofertas
-                     </button>
-                     <button class="nav-link-custom" onclick="location.href='master-repositorio.html'">
-                         <i class="bi bi-grid-1x2"></i> Módulos
-                     </button>
-                     <button class="nav-link-custom" onclick="location.href='papelera.html'">
-                         <i class="bi bi-trash3"></i> Papelera
-                     </button>
-                 </nav>
- 
-                 <div class="mt-4">
-                     <p class="nav-section-title">Sistema</p>
-                     <button onclick="location.href='super-admin.html'" class="btn-super-admin">
-                         <i class="bi bi-shield-lock me-2"></i> Panel Maestro
-                     </button>
-                     <button id="btnCerrarSesion" class="btn-logout">
-                         <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
-                     </button>
-                 </div>
-             </div>
- 
-             <div class="col-md-10 p-5">
-                 <h2 class="neon-gold text-uppercase mb-4">Historial de Solicitudes 2</h2>
-                 <div class="glass-panel">
-                     <div class="table-responsive">
-                         <table class="table-historial text-white">
-                             <thead>
-                                 <tr class="text-white-50 small text-uppercase">
-                                     <th class="ps-4">Solicitante</th>
-                                     <th>Fecha</th>
-                                     <th>Perfil</th>
-                                     <th>Estado</th>
-                                     <th>WhatsApp</th>
-                                     </tr>
-                             </thead>
-                             <tbody id="tablaCuerpo">
-                                 </tbody>
-                         </table>
-                     </div>
-                 </div>
-             </div>
-         </div>
-     </div>
- </div>
- 
- <script type="module">
-     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-     import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-     import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
- 
-     const firebaseConfig = {
-         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-         authDomain: "ucmi-13796634.firebaseapp.com",
-         projectId: "ucmi-13796634",
-         storageBucket: "ucmi-13796634.firebasestorage.app",
-         messagingSenderId: "1090719609536",
-         appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-     };
- 
-     const app = initializeApp(firebaseConfig);
-     const db = getFirestore(app);
-     const auth = getAuth(app);
-     const tablaCuerpo = document.getElementById('tablaCuerpo');
- 
-     // --- LÓGICA DE CIERRE DE SESIÓN ---
-     document.getElementById('btnCerrarSesion').addEventListener('click', () => {
-         Swal.fire({
-             title: '¿Cerrar sesión?',
-             text: "Se finalizará tu acceso administrativo actual.",
-             icon: 'warning',
-             showCancelButton: true,
-             confirmButtonColor: '#ff3131',
-             cancelButtonColor: '#1a2a3a',
-             confirmButtonText: 'Sí, Salir',
-             cancelButtonText: 'Cancelar',
-             background: '#1a2a3a',
-             color: '#ffffff'
-         }).then((result) => {
-             if (result.isConfirmed) {
-                 signOut(auth).then(() => {
-                     window.location.href = 'index.html';
-                 }).catch((error) => {
-                     console.error("Error al cerrar sesión:", error);
-                     window.location.href = 'index.html';
-                 });
-             }
-         });
-     });
- 
-     // --- CARGA DE DATOS ---
-     const q = query(collection(db, "historial_postulaciones"), orderBy("timestamp", "desc"));
+    <meta charset="UTF-8">
+    <style>html { display: none; }</style>
+    <script type="module" src="auth-guard.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Control de Postulaciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
-      onSnapshot(q, (snapshot) => {
-          tablaCuerpo.innerHTML = '';
-          if (snapshot.empty) {
-              tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros.</td></tr>`;
-              return;
-          }
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+    :root {
+        --azul-ucmi: #06090f;
+        --azul-sidebar: #1a2a3a;
+        --verde-exito: #27ae60;
+        --dorado-ucmi: #c5a059;
+        --rojo-logout: #e74c3c;
+        --indigo-ucmi: #4b0082;
+    }
+    
+    body { 
+        background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+        background-size: cover; font-family: 'Segoe UI', sans-serif; margin: 0; color: white;
+    }
 
-          snapshot.forEach((doc) => {
-              const p = doc.data();
-              
-              // 1. Mapeo del estado (Prioriza 'decisionFinal', luego evalúa 'estado' o 'resultado')
-              let estadoRaw = "PENDIENTE";
-              if (p.decisionFinal) {
-                  estadoRaw = p.decisionFinal;
-              } else if (p.estado) {
-                  estadoRaw = p.estado; // Aquí captura con éxito el "activo" de tu estudiante
-              } else if (p.resultado) {
-                  estadoRaw = p.resultado;
-              }
-              
-              const estado = estadoRaw.toUpperCase().trim();
+    .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); min-height: 100vh; transition: filter 0.3s ease; }
+    
+    .sidebar { 
+        background: rgba(26, 42, 58, 0.95); backdrop-filter: blur(10px); min-height: 100vh; padding: 25px 15px; position: sticky; top: 0; border-right: 1px solid rgba(197, 160, 89, 0.3); display: flex; flex-direction: column;
+    }
 
-              let statusClass = 'status-pendiente';
-              let estadoTextoMostrar = 'PENDIENTE';
+    .logo-sidebar { height: 55px; border-radius: 12px; margin-bottom: 10px; }
+    
+    .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; margin-bottom: 5px; text-decoration: none; padding: 10px; display: block; }
+    .nav-link:hover { color: white; background: rgba(255,255,255,0.1); border-radius: 8px; }
+    .nav-link.active { color: var(--dorado-ucmi); font-weight: bold; background: rgba(197, 160, 89, 0.1); border-radius: 8px; }
 
-              // Asignación de estilos visuales correctos
-              if (estado === 'ACTIVO' || estado === 'ACEPTADO') {
-                  statusClass = 'status-aprobado';
-                  estadoTextoMostrar = 'ACEPTADO';
-              } else if (estado === 'RECHAZADO') {
-                  statusClass = 'status-rechazado';
-                  estadoTextoMostrar = 'RECHAZADO';
-              }
-          
-              // 2. Formateo de fecha
-              const fechaLegible = p.timestamp && typeof p.timestamp.toDate === 'function'
-                  ? p.timestamp.toDate().toLocaleDateString()
-                  : (p.fechaProcesado || p.fechaActivacion || '---');
-          
-              // 3. Inyección limpia en la tabla
-              tablaCuerpo.innerHTML += `
-                  <tr>
-                      <td class="ps-4">
-                          <div class="fw-bold text-white">${p.entidad || 'Sin Entidad'}</div>
-                          <div class="text-white-50 small">${p.nombreResponsable || '---'}</div>
-                      </td>
-                      <td><span class="date-chip">${fechaLegible}</span></td>
-                      <td><div class="small fw-bold text-warning">${(p.perfil || 'Academia').toUpperCase()}</div></td>
-                      <td><span class="badge-status ${statusClass}">${estadoTextoMostrar}</span></td>
-                      <td class="text-end pe-4">
-                          <a href="https://wa.me/${p.whatsapp}" target="_blank" class="text-info text-decoration-none small">
-                              <i class="bi bi-whatsapp me-1"></i> ${p.whatsapp || 'Sin WhatsApp'}
-                          </a>
-                      </td>
-                  </tr>
-              `;
-          });
-      }); 
- </script>
- </body>
- </html>
+         .sidebar-nav { flex-grow: 1; }
+
+    .nav-item-ucmi {
+        display: flex; align-items: center;
+        color: rgba(255,255,255,0.6);
+        text-decoration: none;
+        padding: 10px 15px;
+        margin-bottom: 5px;
+        border-radius: 10px;
+        transition: 0.3s all ease;
+        font-size: 0.85rem;
+    }
+
+    .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
+    
+    .nav-item-ucmi:hover { 
+        color: white; 
+        background: rgba(255,255,255,0.1);
+        transform: translateX(5px);
+    }
+
+    .nav-item-ucmi.active {
+        background: rgba(197, 160, 89, 0.15);
+        color: var(--dorado-ucmi);
+        font-weight: 600;
+        box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1);
+    }   
+
+    /* --- BOTONES LATERALES --- */
+    .btn-sidebar-action {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        color: white !important;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        border-radius: 50px;
+        padding: 10px;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease-in-out;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .btn-sidebar-action:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #ffffff !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+    }
+
+    .btn-logout {
+        border-color: rgba(231, 76, 60, 0.4) !important;
+        color: rgba(231, 76, 60, 0.8) !important;
+    }
+
+    .btn-logout:hover {
+        background: rgba(231, 76, 60, 0.1) !important;
+        border-color: var(--rojo-logout) !important;
+        color: white !important;
+        box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+    }
+
+    /* --- CONTENEDOR TRASLÚCIDO (TABLA) --- */
+    .table-container { 
+        background: rgba(255, 255, 255, 0.03) !important;
+        backdrop-filter: blur(15px) saturate(150%);
+        -webkit-backdrop-filter: blur(15px) saturate(150%);
+        border-radius: 28px; 
+        padding: 30px; 
+        color: white; 
+        box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .table {
+        --bs-table-bg: transparent !important; 
+        --bs-table-color: white !important;
+        background-color: transparent !important;
+        color: white !important;
+        margin-bottom: 0;
+        border-collapse: separate;
+        border-spacing: 0 5px;
+    }
+
+    .table th, .table td {
+        background-color: transparent !important; 
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        padding: 18px 12px;
+        vertical-align: middle;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .table thead th {
+        background-color: transparent !important;
+        color: rgba(255, 255, 255, 0.6) !important;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        border: none;
+    }
+
+    .table td .fw-bold { color: #ffffff !important; font-size: 1rem; }
+    .table td .text-muted, .table td .small, .table td span { 
+        color: rgba(255, 255, 255, 0.5) !important; 
+        transition: all 0.3s ease-in-out;
+    }
+
+    .table-hover tbody tr:hover td {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .table-hover tbody tr:hover td,
+    .table-hover tbody tr:hover td * { 
+        color: #ffffff !important;
+        opacity: 1 !important;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+        filter: brightness(1.2);
+    }
+
+    .btn-dark.btn-sm {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
+        color: white !important;
+        border-radius: 50px;
+        padding: 6px 15px;
+        transition: 0.3s;
+    }
+
+    .btn-dark.btn-sm:hover {
+        background-color: white !important;
+        color: black !important;
+    }
+
+    /* --- MODAL EXPEDIENTE --- */
+    .modal-content { 
+        background: rgba(255, 255, 255, 0.03) !important;
+        backdrop-filter: blur(15px) saturate(150%) !important;
+        -webkit-backdrop-filter: blur(15px) saturate(150%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 32px; 
+        color: white !important;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+    }
+
+    .modal-header, .modal-footer { border: none !important; background: transparent !important; }
+    .modal-header .btn-close { filter: invert(1) grayscale(1) brightness(2); }
+
+    /* --- BOTONES DEL MODAL --- */
+    .btn-activar-acceso {
+        background: rgba(39, 174, 96, 0.2) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(39, 174, 96, 0.5) !important;
+        color: #ffffff !important;
+        text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    .btn-activar-acceso:hover {
+        background: rgba(39, 174, 96, 0.4) !important;
+        border-color: rgba(39, 174, 96, 0.9) !important;
+        box-shadow: 0 0 20px rgba(39, 174, 96, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-danger {
+        background: rgba(231, 76, 60, 0.1) !important;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(231, 76, 60, 0.4) !important;
+        color: #e74c3c !important;
+        border-radius: 50px;
+        padding: 12px 25px;
+        transition: 0.3s;
+    }
+
+    .btn-outline-danger:hover {
+        background: rgba(231, 76, 60, 0.3) !important;
+        color: white !important;
+        border-color: rgba(231, 76, 60, 0.8) !important;
+    }
+
+    /* --- SWEETALERT2 (CRISTAL EFFECT) --- */
+    .swal2-popup {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(20px) saturate(160%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 32px !important;
+        color: white !important;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.8) !important;
+    }
+
+    .swal2-title, .swal2-html-container { color: white !important; }
+
+    /* Botón de Confirmación en SweetAlert (Verde traslúcido) */
+    .swal2-confirm {
+        background: rgba(39, 174, 96, 0.3) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(39, 174, 96, 0.6) !important;
+        border-radius: 50px !important;
+        padding: 12px 30px !important;
+        font-weight: 700 !important;
+        transition: 0.3s !important;
+    }
+    .swal2-confirm:hover {
+        background: rgba(39, 174, 96, 0.5) !important;
+        box-shadow: 0 0 15px rgba(39, 174, 96, 0.5) !important;
+    }
+
+    /* Botón de Cancelar/Rechazar en SweetAlert (Rojo traslúcido) */
+    .swal2-cancel {
+        background: rgba(231, 76, 60, 0.15) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(231, 76, 60, 0.4) !important;
+        border-radius: 50px !important;
+        padding: 12px 30px !important;
+        color: white !important;
+        transition: 0.3s !important;
+    }
+    .swal2-cancel:hover {
+        background: rgba(231, 76, 60, 0.4) !important;
+        box-shadow: 0 0 15px rgba(231, 76, 60, 0.5) !important;
+    }
+
+    /* Estilos de tabla y detalles */
+    .label-exp { color: var(--dorado-ucmi) !important; font-size: 0.7rem; text-transform: uppercase; font-weight: 800; margin-bottom: 2px; display: block; opacity: 0.9; }
+    .val-exp { color: #ffffff !important; font-size: 1rem; font-weight: 500; margin-bottom: 15px; display: block; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px; }
+    .badge-perfil { font-size: 0.7rem; padding: 5px 10px; border-radius: 50px; color: white; font-weight: 700; }
+    #contenidoModal .bg-white { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: rgba(255, 255, 255, 0.8) !important; border-radius: 12px; }
+
+    /* --- CATEGORÍAS MAESTRAS (FONDOS OSCUROS) --- */
+
+/* Academia (Verde Oscuro) */
+.bg-categoria-academia { 
+    background-color: #0a3d1d !important; 
+    color: #ffffff !important; 
+}
+
+/* Profesores (Azul Oscuro) */
+.bg-categoria-profesor { 
+    background-color: #0d2e5e !important; 
+    color: #ffffff !important; 
+}
+
+/* Estudiantes (Índigo) */
+.bg-categoria-estudiante { 
+    background-color: #311b92 !important; 
+    color: #ffffff !important; 
+}
+
+/* Otros / Pendientes */
+.bg-categoria-default { 
+    background-color: #455a64 !important; 
+    color: #ffffff !important; 
+}
+
+    /* --- EFECTO DE ENFOQUE AL ABRIR MODAL --- */
+    body.modal-open .super-overlay { filter: blur(8px) brightness(0.7); }
+    .modal-backdrop.show { opacity: 0.4; backdrop-filter: blur(4px); }
+    .modal.fade .modal-dialog { transform: scale(0.95); transition: transform 0.3s ease-out; }
+    .modal.show .modal-dialog { transform: scale(1); }
+</style>
+</head>
+
+<body>
+
+<div class="super-overlay">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 sidebar d-none d-md-flex">
+                <div class="text-center mb-4">
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" class="logo-sidebar">
+                    <h5 class="fw-bold mt-2 text-white">UCMI ADMIN</h5>
+                </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item-ucmi active">
+                <i class="bi bi-person-badge"></i> SOLICITUDES
+            </a>
+            <a href="master-vigencia.html" class="nav-item-ucmi">
+                <i class="bi bi-shield-check"></i> VIGENCIA
+            </a>
+            <a href="master-usuarios.html" class="nav-item-ucmi">
+                <i class="bi bi-people"></i> USUARIOS
+            </a>
+            <a href="historial-postulaciones.html" class="nav-item-ucmi">
+                <i class="bi bi-clock-history"></i> HISTORIAL
+            </a>
+            <a href="directorio.html" class="nav-item-ucmi">
+                <i class="bi bi-person-vcard"></i> DIRECTORIO
+            </a>
+            <a href="ofertas-academicas.html" class="nav-item-ucmi">
+                <i class="bi bi-tags"></i> OFERTAS
+            </a>
+            <a href="master-repositorio.html" class="nav-item-ucmi">
+                <i class="bi bi-grid-1x2"></i> MÓDULOS
+            </a>
+            <a href="papelera.html" class="nav-item-ucmi">
+                        <i class="bi bi-trash3"></i> PAPELERA
+                    </a>
+        </nav>
+
+                <div class="mt-4 pt-4 border-top border-secondary">
+    <a href="super-admin.html" class="btn-sidebar-action w-100">
+        <i class="bi bi-shield-lock"></i> Panel Maestro
+    </a>
+    <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100">
+        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+    </a>
+</div>
+            </div>
+            <div class="col-md-10 p-4">
+                <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
+                <div class="row mt-4">
+    <div class="col-md-4">
+        <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
+            <label class="small text-muted fw-bold mb-2 d-block text-uppercase" style="letter-spacing: 1px;">Filtrar por Perfil</label>
+            <select id="filtroPerfil" class="form-select bg-dark text-white border-0 rounded-pill px-3 shadow-sm">
+                <option value="todos">Mostrar todos</option>
+                <option value="Academia">Academia</option>
+                <option value="Profesor independiente">Profesor independiente</option>
+                <option value="Estudiante UCMI">Estudiante UCMI</option>
+            </select>
+        </div>
+    </div>
+</div>
+                <div class="table-container mt-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                 <tr class="text-muted small">
+                                    <th>ENTIDAD</th>
+                                    <th>NOMBRE</th> <!-- Nueva columna -->
+                                    <th>PERFIL</th>
+                                    <th>LOCALIZACIÓN</th>
+                                    <th class="text-center">ACCIÓN</th>
+    </tr>
+</thead>
+                            <tbody id="listaMaestra"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h4 class="fw-bold"><i class="bi bi-file-earmark-person me-2"></i>Expediente del Aspirante</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="row" id="contenidoModal">
+                    </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-outline-danger rounded-pill px-4" id="btnEliminar">Rechazar</button>
+                <button class="btn btn-activar-acceso rounded-pill px-4 fw-bold" id="btnConfirmarAcceso">Activar Acceso</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // Inicializar EmailJS (REEMPLAZA CON TU PUBLIC KEY)
+    emailjs.init("TU_PUBLIC_KEY_AQUÍ");
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    let currentId = null;
+    let currentData = null;
+
+    // --- FUNCIÓN DE CORREO ELECTRÓNICO (AUTOMÁTICA) ---
+    const enviarEmailAutomatico = (data, decision) => {
+        const templateParams = {
+            to_name: data.nombreResponsable,
+            to_email: data.email,
+            status: decision,
+            message: decision === "ACEPTADO" 
+                ? "Tu solicitud en UCMI ha sido aprobada. Tus credenciales de acceso son tu correo y la clave UCMI2026." 
+                : "Lamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión."
+        };
+
+        // REEMPLAZA 'YOUR_SERVICE_ID' y 'YOUR_TEMPLATE_ID'
+        emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+            .then(() => console.log("Email enviado correctamente"))
+            .catch((err) => console.error("Error Email:", err));
+    };
+
+   // --- FUNCIÓN DE WHATSAPP DEFINITIVA (REPLAZA LÍNEAS 426-445) ---
+    const prepararMensajeWhatsApp = (data, decision) => {
+        const nombre = data.nombreResponsable || "Postulante";
+        const telefono = data.whatsapp || "";
+        if (!telefono || telefono === "N/A") return;
+
+        let textoMensaje = "";
+
+        if (decision === "ACEPTADO") {
+            // Extraemos los datos calculados en dataFinal
+            const meses = data.mesesAprobados || "1";
+            const expiracion = data.expiracionLicencia || "Ver panel";
+
+            textoMensaje = `¡Hola *${nombre}*! Te saluda UCMI. %0A%0A` +
+               `Tu solicitud ha sido *ACEPTADA*. ✅%0A%0A` +
+               `*Detalles de acceso:*%0A` +
+               `📧 *Usuario:* ${data.email}%0A` + // Añadí espacio y negrita
+               `🔑 *Clave:* UCMI2026%0A%0A` +
+               `*Vigencia:*%0A` +
+               `📅 *Duración:* ${data.duracionLicencia || data.mesesAprobados + ' mes(es)'}%0A` + 
+               `⏳ *Expira el:* ${expiracion}%0A%0A` +
+               `¡Bienvenido!`;
+        } else {
+            textoMensaje = `Hola *${nombre}*. Gracias por tu interés en UCMI. %0A%0ALamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión.`;
+        }
+
+        const telLimpio = telefono.toString().replace(/\D/g, '');
+        const url = `https://api.whatsapp.com/send?phone=${telLimpio}&text=${textoMensaje}`;
+        
+        window.open(url, '_blank');
+    };
+    // --- LÓGICA DE FILTRADO Y TABLA (SIN CAMBIOS) ---
+    const selectorFiltro = document.getElementById('filtroPerfil');
+    let registrosLocales = [];
+
+function renderizarTabla() {
+    const tbody = document.getElementById('listaMaestra');
+    const valorFiltro = selectorFiltro.value; 
+    tbody.innerHTML = '';
+
+    registrosLocales.forEach((d) => {
+        const data = d.data();
+        const id = d.id;
+        const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
+        const pLow = perfilOriginal.toLowerCase().trim();
+
+        // --- 1. MOTOR DE BÚSQUEDA ACTUALIZADO ---
+        let pasaFiltro = false;
+        if (valorFiltro === "todos") {
+            pasaFiltro = true;
+        } else {
+            // Compara el valor del selector directamente con el perfil almacenado
+            pasaFiltro = (perfilOriginal === valorFiltro);
+        }
+        
+        if (!pasaFiltro) return;
+
+        // --- 2. MOTOR DE COLOR ACTUALIZADO ---
+        let colorClass = "";
+        if (perfilOriginal === "Academia") {
+            colorClass = "bg-categoria-academia";
+        } else if (perfilOriginal === "Profesor independiente") {
+            colorClass = "bg-categoria-profesor";
+        } else if (perfilOriginal === "Estudiante UCMI") {
+            colorClass = "bg-categoria-estudiante";
+        } else {
+            colorClass = "bg-categoria-default";
+        }
+
+        // --- 3. LÓGICA DE INHABILITACIÓN DEL BOTÓN (NUEVA) ---
+        // Lista de perfiles que NO pueden ser revisados (se bloquean)
+        const perfilesBloqueados = [
+            "profesora academia", 
+            "estudiante academia", 
+            "estudiante asociado", 
+            "estudiante embajador"
+        ];
+        
+        // Si el perfil está en la lista negra, el botón se deshabilita
+        const estaInhabilitado = perfilesBloqueados.includes(pLow) ? "disabled" : "";
+
+        // --- 4. RENDERIZADO ---
+        tbody.innerHTML += `
+            <tr>
+                <td>
+                    <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : "---"}</div>
+                    <div class="small text-muted">${data.email}</div>
+                </td>
+                <td class="small">
+                    ${data.nombreResponsable || '---'}
+                </td>
+                <td>
+                    <span class="badge-perfil ${colorClass}">${perfilOriginal}</span>
+                </td>
+                <td class="small">
+                    ${data.ubicacion || '---'}
+                </td>
+                <td class="text-center">
+                    <button onclick="verExpediente('${id}')" 
+                            class="btn btn-dark btn-sm rounded-pill px-3" 
+                            ${estaInhabilitado}> <!-- Atributo dinámico -->
+                        ${estaInhabilitado ? 'Bloqueado' : 'Revisar'}
+                    </button>
+                </td>
+            </tr>`;
+    });
+}
+
+    selectorFiltro.addEventListener('change', renderizarTabla);
+
+    window.verExpediente = async (id) => {
+        currentId = id;
+        const snap = await getDoc(doc(db, "postulaciones", id));
+        if (snap.exists()) {
+            currentData = snap.data();
+            const d = currentData;
+            document.getElementById('contenidoModal').innerHTML = `
+                <div class="col-md-12 mb-4 border-bottom pb-2">
+                    <label class="label-exp">Fecha de Solicitud</label>
+<span class="val-exp text-primary fw-bold"><i class="bi bi-calendar3 me-2"></i>${d.timestamp && typeof d.timestamp.toDate === 'function' ? d.timestamp.toDate().toLocaleString() : (d.timestamp || 'N/A')}</span>
+                </div>
+                <div class="col-md-6">
+                    <label class="label-exp">Entidad / Institución</label><span class="val-exp">${d.entidad || 'N/A'}</span>
+                    <label class="label-exp">Nombres y apellidos</label><span class="val-exp">${d.nombreResponsable || 'N/A'}</span>
+                    <label class="label-exp">ID (Cédula/RIF)</label><span class="val-exp">${d.cedulaResponsable || d.rif || 'N/A'}</span>
+                    <label class="label-exp">Email</label><span class="val-exp text-lowercase">${d.email || 'N/A'}</span>
+                    <label class="label-exp">WhatsApp</label><span class="val-exp">${d.whatsapp || 'N/A'}</span>
+                </div>
+                <div class="col-md-6" style="background: rgba(0,0,0,0.03); border-radius: 15px; padding: 15px;">
+                    <label class="label-exp">Perfil</label><span class="val-exp fw-bold text-success">${d.tipoSolicitante || d.perfil || 'N/A'}</span>
+                    <label class="label-exp">LICENCIA EN MESES</label><span class="val-exp">${d.mesesLicencia || 'N/A'}</span>
+                    <label class="label-exp">Cupos</label><span class="val-exp">${d.cupos || '0'}</span>
+                    <label class="label-exp">Ubicación</label><span class="val-exp">${d.ubicacion || 'N/A'}</span>
+                    <label class="label-exp">Programas</label>
+                    <div class="small p-2 bg-white border rounded" style="max-height: 100px; overflow-y: auto;">${d.modulos || 'No especificados'}</div>
+                </div>`;
+            new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+        }
+    };
+
+    // --- ACCIÓN: ACTIVAR ACCESO (CON CÁLCULO DE EXPIRACIÓN REAL) ---
+    document.getElementById('btnConfirmarAcceso').onclick = async () => {
+        if(!currentId || !currentData) return;
+        
+        try {
+            // 1. Intentar crear el usuario en Firebase Auth
+            try {
+                await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
+            } catch (authError) {
+                if (authError.code !== 'auth/email-already-in-use') throw authError;
+            }
+
+            // 2. LÓGICA DE FECHAS (CORREGIDA)
+            const fechaAceptacion = new Date();
+            
+            // Usamos una expresión regular para extraer SOLO los números. 
+            // Esto convierte "12 meses" o "6 meses" en el número puro.
+            const duracionTexto = currentData.duracionLicencia ? String(currentData.duracionLicencia) : "1";
+            const mesesSolicitados = parseInt(duracionTexto.replace(/\D/g, '')) || 1;
+            
+            // Creamos el objeto de expiración sumando los meses
+            const fechaExpiracion = new Date();
+            fechaExpiracion.setMonth(fechaAceptacion.getMonth() + mesesSolicitados);
+
+            // 3. Preparamos el objeto final (Asegurando nombres de campos exactos)
+            const dataFinal = { 
+                ...currentData, 
+                estado: "activo", 
+                fechaActivacion: new Date(), // Guarda el objeto Date que Firebase convierte a Timestamp
+                expiracionLicencia: fechaExpiracion.toLocaleString(), 
+                expiracionTimestamp: fechaExpiracion.getTime(), 
+                mesesAprobados: mesesSolicitados
+            };
+
+            // 4. Guardar en la colección de usuarios activos y en el historial
+            await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
+            await setDoc(doc(db, "historial_postulaciones", currentId), { 
+                ...dataFinal, 
+                decisionFinal: "ACEPTADO", 
+                fechaProceso: fechaAceptacion.toLocaleString() 
+            });
+
+            // 5. Borrar la postulación pendiente
+            await deleteDoc(doc(db, "postulaciones", currentId));
+
+            // ACCIONES DE COMUNICACIÓN
+            enviarEmailAutomatico(currentData, "ACEPTADO"); 
+            
+            await Swal.fire({ 
+                title: "¡Acceso Activado!", 
+                text: `Licencia válida hasta: ${fechaExpiracion.toLocaleDateString()}`, 
+                icon: "success",
+                confirmButtonColor: "#27ae60"
+            });
+
+            prepararMensajeWhatsApp(dataFinal, "ACEPTADO"); 
+            location.reload();
+
+        } catch (e) { 
+            console.error(e);
+            Swal.fire("Error", "No se pudo procesar la activación: " + e.message, "error"); 
+        }
+    };
+
+    // --- ACCIÓN: RECHAZAR ---
+    document.getElementById('btnEliminar').onclick = async () => {
+        if(!currentId || !currentData) return;
+        const confirmacion = await Swal.fire({
+            title: '¿Rechazar solicitud?',
+            text: "Se notificará por Email y WhatsApp.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, rechazar'
+        });
+
+        if (confirmacion.isConfirmed) {
+            try {
+                await setDoc(doc(db, "historial_postulaciones", currentId), { ...currentData, decisionFinal: "RECHAZADO", fechaProceso: new Date().toLocaleString() });
+                await deleteDoc(doc(db, "postulaciones", currentId));
+                
+                enviarEmailAutomatico(currentData, "RECHAZADO"); // Email automático
+                prepararMensajeWhatsApp(currentData, "RECHAZADO"); // WhatsApp manual
+                
+                location.reload();
+            } catch (e) {
+                Swal.fire("Error", e.message, "error");
+            }
+        }
+    };
+
+    // --- LOGOUT ---
+    document.getElementById('btnLogout').onclick = async (e) => {
+        e.preventDefault();
+        const result = await Swal.fire({ title: '¿Cerrar sesión?', icon: 'question', showCancelButton: true });
+        if (result.isConfirmed) {
+            await signOut(auth);
+            window.location.href = "index.html"; 
+        }
+    };
+    // --- ESCUCHADOR EN TIEMPO REAL ---
+    onSnapshot(collection(db, "postulaciones"), (snapshot) => {
+        registrosLocales = snapshot.docs;
+        renderizarTabla();
+    }, (error) => {
+        console.error("Error al obtener postulaciones: ", error);
+    });
+</script>
+</body>
+
+</html>
