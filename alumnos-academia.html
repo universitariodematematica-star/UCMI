@@ -264,7 +264,6 @@
               const data = snap.data();
               miEntidad = data.entidad || "Sede";
               
-              // Extraer cantidad de cupos comprados asignados al administrador
               const cuposMaximos = data.cupos || 0;
               
               document.getElementById('label-academia').innerText = miEntidad;
@@ -281,6 +280,24 @@
                   window.open(url, '_blank');
               };
 
+              // --- CORRECCIÓN CLAVE: Cargar módulos ofertados por la academia desde su perfil (UCMI) ---
+              const selectorModulo = document.getElementById('filtroModulo');
+              selectorModulo.innerHTML = '<option value="">Todos los Módulos</option>';
+
+              // Validamos el mapa dinámico "modulos-ofertados-academia" visible en tu consola
+              const modulosOfertados = data["modulos-ofertados-academia"];
+              if (modulosOfertados && typeof modulosOfertados === 'object') {
+                  Object.keys(modulosOfertados).forEach(modulo => {
+                      // Solo agregamos si el valor es true (lo que indica que fue seleccionado)
+                      if (modulosOfertados[modulo] === true) {
+                          const opt = document.createElement('option');
+                          opt.value = modulo.toLowerCase();
+                          opt.textContent = modulo;
+                          selectorModulo.appendChild(opt);
+                      }
+                  });
+              }
+
               // --- LÓGICA DE CONTEO DINÁMICO DE CUPOS UTILIZADOS ---
               try {
                   const qCupos = query(
@@ -290,13 +307,11 @@
                   );
                   
                   const snapCupos = await getDocs(qCupos);
-                  const cuposUtilizados = snapCupos.size; // Cantidad de estudiantes activos
+                  const cuposUtilizados = snapCupos.size;
 
-                  // Renderizar métricas reales en el frontend
                   document.getElementById('cupos-utilizados').innerText = cuposUtilizados;
                   document.getElementById('cupos-maximos').innerText = cuposMaximos;
                   
-                  // Manejo de alertas y estados de color del indicador
                   const badge = document.getElementById('badge-cupos');
                   if (cuposUtilizados >= cuposMaximos && cuposMaximos > 0) {
                       badge.className = "badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1";
@@ -309,7 +324,6 @@
               } catch (err) {
                   console.error("Error al procesar conteo de cupos dinámicos:", err);
               }
-              // ----------------------------------------------------
 
               cargarAlumnos(miEntidad);
           }
@@ -317,8 +331,6 @@
 
       async function cargarAlumnos(entidad) {
           const tbody = document.getElementById('tabla-body');
-          const selectorModulo = document.getElementById('filtroModulo');
-          const modulosDetectados = new Set();
 
           try {
               const q = query(
@@ -338,12 +350,10 @@
                   if (d.modulos && Array.isArray(d.modulos)) {
                       d.modulos.forEach(m => {
                           htmlModulos += `<span class="badge badge-modulo">${m}</span>`;
-                          modulosDetectados.add(m);
                           listaModulosDataAttr.push(m.toLowerCase());
                       });
                   } else if (d.nivel) {
                       htmlModulos = `<span class="badge badge-modulo">${d.nivel}</span>`;
-                      modulosDetectados.add(d.nivel);
                       listaModulosDataAttr.push(d.nivel.toLowerCase());
                   } else {
                       htmlModulos = '<span class="text-muted small">Sin módulos</span>';
@@ -371,14 +381,6 @@
                       </td>
                   `;
                   tbody.appendChild(tr);
-              });
-
-              selectorModulo.innerHTML = '<option value="">Todos los Módulos</option>';
-              modulosDetectados.forEach(modulo => {
-                  const opt = document.createElement('option');
-                  opt.value = modulo.toLowerCase();
-                  opt.textContent = modulo;
-                  selectorModulo.appendChild(opt);
               });
 
           } catch (e) {
