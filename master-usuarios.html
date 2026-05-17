@@ -1,370 +1,448 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <style>html { display: none; }</style>
-    <script type="module" src="auth-guard.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Gestión de Usuarios Oficiales</title>
-    
-    <!-- LIBRERÍAS EXTERNAS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <!-- LIBRERÍAS DE EXPORTACIÓN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+     <meta charset="UTF-8">
+     <style>html { display: none; }</style>
+     <script type="module" src="auth-guard.js"></script>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>UCMI - Gestión de Usuarios Oficiales</title>
+     
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+     
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+ 
+     <style>
+         :root {
+             --dorado-neon: #ffcc66;
+             --azul-neon: #00f2ff;
+             --glow-hover: rgba(197, 160, 89, 0.25);
+             --dorado-ucmi: #c5a059;
+         }
+ 
+         body {
+             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+             background-size: cover;
+             font-family: 'Segoe UI', sans-serif;
+             color: white;
+             overflow-x: hidden;
+         }
+ 
+         .super-overlay {
+             background: radial-gradient(circle, rgba(6, 9, 15, 0.3) 0%, rgba(6, 9, 15, 0.9) 100%);
+             min-height: 100vh;
+         }
+ 
+         .sidebar {
+             background: rgba(26, 42, 58, 0.5);
+             backdrop-filter: blur(15px);
+             min-height: 100vh;
+             padding: 25px 15px;
+             border-right: 1px solid rgba(255, 255, 255, 0.1);
+         }
+ 
+         .glass-panel {
+             background: rgba(255, 255, 255, 0.02) !important;
+             border: 1px solid rgba(255, 255, 255, 0.1);
+             backdrop-filter: blur(25px);
+             border-radius: 30px;
+             padding: 30px;
+             box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+         }
+ 
+         .table-custom {
+             width: 100%;
+             border-collapse: separate;
+             border-spacing: 0 12px;
+         }
+ 
+         #user-table-body tr {
+             background: rgba(255, 255, 255, 0.05);
+             transition: background-color 0.3s ease, box-shadow 0.3s ease;
+         }
+ 
+         #user-table-body tr td:first-child { border-top-left-radius: 15px; border-bottom-left-radius: 15px; padding-left: 20px; }
+         #user-table-body tr td:last-child { border-top-right-radius: 15px; border-bottom-right-radius: 15px; padding-right: 20px; }
+ 
+         #user-table-body tr:hover {
+             background-color: rgba(255, 255, 255, 0.15) !important;
+             box-shadow: 0 0 15px var(--glow-hover);
+         }
+ 
+         .neon-gold {
+             color: var(--dorado-neon);
+             text-shadow: 0 0 10px rgba(255, 204, 102, 0.4);
+             font-weight: bold;
+         }
+ 
+         .neon-blue {
+             color: var(--azul-neon);
+             text-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
+             font-family: monospace;
+         }
+ 
+         .btn-trash {
+             background: rgba(255, 77, 77, 0.1);
+             border: 1px solid rgba(255, 77, 77, 0.3);
+             color: #ff4d4d;
+             border-radius: 10px;
+             padding: 8px 12px;
+             transition: 0.3s;
+         }
+ 
+         .btn-trash:hover {
+             background: #ff4d4d;
+             color: white;
+             transform: scale(1.1);
+         }
+ 
+         .sidebar-nav { flex-grow: 1; }
+ 
+         .nav-item-ucmi {
+             display: flex; align-items: center;
+             color: rgba(255,255,255,0.6);
+             text-decoration: none;
+             padding: 10px 15px;
+             margin-bottom: 5px;
+             border-radius: 10px;
+             transition: 0.3s all ease;
+             font-size: 0.85rem;
+         }
+ 
+         .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
+         
+         .nav-item-ucmi:hover {
+             color: white;
+             background: rgba(255,255,255,0.1);
+             transform: translateX(5px);
+         }
+ 
+         .nav-item-ucmi.active {
+             background: rgba(197, 160, 89, 0.15);
+             color: var(--dorado-ucmi);
+             font-weight: 600;
+             box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1);
+         }
 
-    <style>
-        :root {
-            --dorado-neon: #ffcc66;
-            --azul-neon: #00f2ff;
-            --glow-hover: rgba(197, 160, 89, 0.25);
-            --dorado-ucmi: #c5a059;
-        }
+         /* Estilos personalizados para la barra de búsqueda */
+         .search-container-ucmi {
+             position: relative;
+             max-width: 400px;
+             width: 100%;
+         }
 
-        body {
-            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-            background-size: cover;
-            font-family: 'Segoe UI', sans-serif;
-            color: white;
-            overflow-x: hidden;
-        }
+         .search-input-ucmi {
+             background: rgba(255, 255, 255, 0.05) !important;
+             border: 1px solid rgba(255, 255, 255, 0.1) !important;
+             color: white !important;
+             border-radius: 20px;
+             padding: 8px 20px 8px 40px;
+             transition: all 0.3s ease;
+         }
 
-        .super-overlay {
-            background: radial-gradient(circle, rgba(6, 9, 15, 0.3) 0%, rgba(6, 9, 15, 0.9) 100%);
-            min-height: 100vh;
-        }
+         .search-input-ucmi:focus {
+             background: rgba(255, 255, 255, 0.1) !important;
+             border-color: var(--dorado-neon) !important;
+             box-shadow: 0 0 15px rgba(255, 204, 102, 0.2) !important;
+             outline: none;
+         }
 
-        .sidebar { 
-            background: rgba(26, 42, 58, 0.5); 
-            backdrop-filter: blur(15px);
-            min-height: 100vh; 
-            padding: 25px 15px; 
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-        }
+         .search-icon-ucmi {
+             position: absolute;
+             left: 15px;
+             top: 50%;
+             transform: translateY(-50%);
+             color: rgba(255, 255, 255, 0.4);
+             pointer-events: none;
+             transition: all 0.3s ease;
+         }
 
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.02) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(25px);
-            border-radius: 30px;
-            padding: 30px;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-        }
-
-        .table-custom {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 12px;
-        }
-
-        #user-table-body tr {
-            background: rgba(255, 255, 255, 0.05);
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        #user-table-body tr td:first-child { border-top-left-radius: 15px; border-bottom-left-radius: 15px; padding-left: 20px; }
-        #user-table-body tr td:last-child { border-top-right-radius: 15px; border-bottom-right-radius: 15px; padding-right: 20px; }
-
-        #user-table-body tr:hover {
-            background-color: rgba(255, 255, 255, 0.15) !important;
-            box-shadow: 0 0 15px var(--glow-hover);
-        }
-
-        .neon-gold {
-            color: var(--dorado-neon);
-            text-shadow: 0 0 10px rgba(255, 204, 102, 0.4);
-            font-weight: bold;
-        }
-
-        .neon-blue {
-            color: var(--azul-neon);
-            text-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
-            font-family: monospace;
-        }
-
-        .btn-trash {
-            background: rgba(255, 77, 77, 0.1);
-            border: 1px solid rgba(255, 77, 77, 0.3);
-            color: #ff4d4d;
-            border-radius: 10px;
-            padding: 8px 12px;
-            transition: 0.3s;
-        }
-
-        .btn-trash:hover {
-            background: #ff4d4d;
-            color: white;
-            transform: scale(1.1);
-        }
-
-        .sidebar-nav { flex-grow: 1; }
-
-        .nav-item-ucmi {
-            display: flex; align-items: center;
-            color: rgba(255,255,255,0.6);
-            text-decoration: none;
-            padding: 10px 15px;
-            margin-bottom: 5px;
-            border-radius: 10px;
-            transition: 0.3s all ease;
-            font-size: 0.85rem;
-        }
-
-        .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
-        
-        .nav-item-ucmi:hover { 
-            color: white; 
-            background: rgba(255,255,255,0.1);
-            transform: translateX(5px);
-        }
-
-        .nav-item-ucmi.active {
-            background: rgba(197, 160, 89, 0.15);
-            color: var(--dorado-ucmi);
-            font-weight: 600;
-            box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1);
-        }
-    </style>
+         .search-input-ucmi:focus + .search-icon-ucmi {
+             color: var(--dorado-neon);
+         }
+     </style>
 </head>
 <body>
+ 
+ <div class="super-overlay">
+     <div class="container-fluid">
+         <div class="row">
+             <div class="col-md-2 sidebar d-none d-md-flex flex-column">
+                 <div class="text-center mb-4">
+                     <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" style="height: 50px;" alt="Logo">
+                     <p class="small mt-2 neon-gold">UCMI ADMIN</p>
+                 </div>
+                 <hr class="border-secondary opacity-25">
+                 <nav class="sidebar-nav">
+                     <a href="master-postulaciones.html" class="nav-item-ucmi">
+                         <i class="bi bi-person-badge"></i> SOLICITUDES
+                     </a>
+                     <a href="master-vigencia.html" class="nav-item-ucmi">
+                         <i class="bi bi-shield-check"></i> VIGENCIA
+                     </a>
+                     <a href="master-usuarios.html" class="nav-item-ucmi active">
+                         <i class="bi bi-people"></i> USUARIOS
+                     </a>
+                     <a href="historial-postulaciones.html" class="nav-item-ucmi">
+                         <i class="bi bi-clock-history"></i> HISTORIAL
+                     </a>
+                     <a href="directorio.html" class="nav-item-ucmi">
+                         <i class="bi bi-person-vcard"></i> DIRECTORIO
+                     </a>
+                     <a href="ofertas-academicas.html" class="nav-item-ucmi">
+                         <i class="bi bi-tags"></i> OFERTAS
+                     </a>
+                     <a href="master-repositorio.html" class="nav-item-ucmi">
+                         <i class="bi bi-grid-1x2"></i> MÓDULOS
+                     </a>
+                     <a href="papelera.html" class="nav-item-ucmi">
+                         <i class="bi bi-trash3"></i> PAPELERA
+                     </a>
+                 </nav>
+                 
+                 <div class="mt-auto">
+                     <a href="super-admin.html" class="btn btn-outline-light btn-sm w-100 rounded-pill mb-2">
+                         PANEL MAESTRO
+                     </a>
+                     <button id="btnLogoutSidebar" class="btn btn-outline-danger btn-sm w-100 rounded-pill">
+                         CERRAR SESIÓN
+                     </button>
+                 </div>
+             </div>
+ 
+             <div class="col-md-10 p-5">
+                 <div class="mb-5 d-flex justify-content-between align-items-end flex-wrap gap-4">
+                     <div>
+                         <h2 class="neon-gold text-uppercase mb-1"><i class="bi bi-people me-2"></i>Gestión de Usuarios</h2>
+                         <p class="text-white-50 small mb-0">Protocolos de acceso activo y control de identidades.</p>
+                     </div>
+                     
+                     <div class="search-container-ucmi">
+                         <input type="text" id="inputBuscarAcademia" class="form-control search-input-ucmi" placeholder="Buscar por academia o entidad...">
+                         <i class="bi bi-search search-icon-ucmi"></i>
+                     </div>
 
-<div class="super-overlay">
-    <div class="container-fluid">
-        <div class="row">
-            <!-- SIDEBAR -->
-            <div class="col-md-2 sidebar d-none d-md-flex flex-column">
-                <div class="text-center mb-4">
-                    <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" style="height: 50px;" alt="Logo">
-                    <p class="small mt-2 neon-gold">UCMI ADMIN</p>
-                </div>
-                <hr class="border-secondary opacity-25">
-                <nav class="sidebar-nav">
-                    <a href="master-postulaciones.html" class="nav-item-ucmi">
-                        <i class="bi bi-person-badge"></i> SOLICITUDES
-                    </a>
-                    <a href="master-vigencia.html" class="nav-item-ucmi">
-                        <i class="bi bi-shield-check"></i> VIGENCIA
-                    </a>
-                    <a href="master-usuarios.html" class="nav-item-ucmi active">
-                        <i class="bi bi-people"></i> USUARIOS
-                    </a>
-                    <a href="historial-postulaciones.html" class="nav-item-ucmi">
-                        <i class="bi bi-clock-history"></i> HISTORIAL
-                    </a>
-                    <a href="directorio.html" class="nav-item-ucmi">
-                        <i class="bi bi-person-vcard"></i> DIRECTORIO
-                    </a>
-                    <a href="ofertas-academicas.html" class="nav-item-ucmi">
-                        <i class="bi bi-tags"></i> OFERTAS
-                    </a>
-                    <a href="master-repositorio.html" class="nav-item-ucmi">
-                        <i class="bi bi-grid-1x2"></i> MÓDULOS
-                    </a>
-                    <a href="papelera.html" class="nav-item-ucmi">
-                        <i class="bi bi-trash3"></i> PAPELERA
-                    </a>
-                </nav>
-                
-                <div class="mt-auto">
-                    <a href="super-admin.html" class="btn btn-outline-light btn-sm w-100 rounded-pill mb-2">
-                        PANEL MAESTRO
-                    </a>
-                    <button id="btnLogoutSidebar" class="btn btn-outline-danger btn-sm w-100 rounded-pill">
-                        CERRAR SESIÓN
-                    </button>
-                </div>
-            </div>
-
-            <!-- CONTENIDO PRINCIPAL -->
-            <div class="col-md-10 p-5">
-                <div class="mb-5 d-flex justify-content-between align-items-end">
-                    <div>
-                        <h2 class="neon-gold text-uppercase mb-1"><i class="bi bi-people me-2"></i>Gestión de Usuarios</h2>
-                        <p class="text-white-50 small mb-0">Protocolos de acceso activo y control de identidades.</p>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button onclick="exportarPDF()" class="btn btn-outline-light btn-sm rounded-pill px-3">
-                            <i class="bi bi-file-pdf me-1"></i> PDF
-                        </button>
-                        <button onclick="exportarExcel()" class="btn btn-outline-success btn-sm rounded-pill px-3">
-                            <i class="bi bi-file-earmark-excel me-1"></i> EXCEL
-                        </button>
-                    </div>
-                </div>
-
-                <div class="glass-panel">
-                    <div class="table-responsive">
-                        <table class="table-custom">
-                            <thead>
-                                <tr class="text-white-50 small text-uppercase">
-                                    <th class="pb-3 ps-4">Entidad</th>
-                                    <th class="pb-3">Responsable</th>
-                                    <th class="pb-3">Email Institucional</th>
-                                    <th class="pb-3">Perfil / Rol</th>
-                                    <th class="pb-3 text-end pe-4">Operaciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="user-table-body">
-                                <!-- Datos cargados dinámicamente por Firebase -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-        authDomain: "ucmi-13796634.firebaseapp.com",
-        projectId: "ucmi-13796634",
-        storageBucket: "ucmi-13796634.firebasestorage.app",
-        messagingSenderId: "1090719609536",
-        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    onAuthStateChanged(auth, (user) => {
-        if (!user) window.location.href = "index.html";
-    });
-
-    const tableBody = document.getElementById('user-table-body');
-
-    // Escucha en tiempo real de la colección
-    onSnapshot(collection(db, "usuarios"), (snapshot) => {
-        tableBody.innerHTML = '';
-        snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            const id = docSnap.id;
-
-            if (data.status === "eliminado") return;
-
-            tableBody.innerHTML += `
-                <tr>
-                    <td class="py-4 ps-4">
-                        <span class="neon-gold d-block">${data.entidad || 'Entidad'}</span>
-                    </td>
-                    <td>
-                        <div class="d-flex flex-column">
-                            <span class="fw-bold">${data.nombreResponsable || 'Sin Nombre'}</span>
-                        </div>
-                    </td>
-                    <td><span class="neon-blue small">${data.email || id}</span></td>
-                    <td>
-                        <span class="badge" style="border: 1px solid #c5a059; color: #c5a059; background: rgba(197, 160, 89, 0.05);">
-                            ${(data.perfil || 'Usuario').toUpperCase()}
-                        </span>
-                    </td>
-                    <td class="text-end pe-4">
-                        <button onclick="enviarAPapelera('${id}', '${data.nombreResponsable || data.entidad}')" class="btn btn-trash" title="Enviar a Papelera">
-                            <i class="bi bi-trash3-fill"></i>
-                        </button>
-                    </td>
-                </tr>`;
-        });
-    });
-
-    // Función de borrado lógico
-    window.enviarAPapelera = async (id, nombre) => {
-        const result = await Swal.fire({
-            title: '¿ENVIAR A PAPELERA?',
-            text: `El usuario "${nombre}" será desactivado. Podrás restituirlo desde la papelera durante los próximos 30 días.`,
-            icon: 'warning',
-            showCancelButton: true,
-            background: '#0a0e14',
-            color: '#fff',
-            confirmButtonColor: '#ffcc66',
-            confirmButtonText: 'Mover a Papelera',
-            cancelButtonText: 'Cancelar',
-            cancelButtonColor: '#333'
-        });
-
-        if (result.isConfirmed) {
-            try {
-                const userRef = doc(db, "usuarios", id);
-                await updateDoc(userRef, {
-                    status: "eliminado",
-                    fechaEliminacion: serverTimestamp()
-                });
-                
-                Swal.fire({ 
-                    title: 'Movido con éxito', 
-                    text: 'El usuario ha sido enviado a la papelera.',
-                    icon: 'success', 
-                    background: '#0a0e14', 
-                    color: '#fff',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            } catch (error) {
-                console.error("Error al mover a papelera:", error);
-                Swal.fire({ title: 'Error', text: 'No se pudo procesar la solicitud', icon: 'error' });
-            }
-        }
-    };
-
-    document.getElementById('btnLogoutSidebar').addEventListener('click', () => {
-        signOut(auth).then(() => { window.location.href = "index.html"; });
-    });
-
-    // --- FUNCIONES DE EXPORTACIÓN ---
-
-    window.exportarPDF = () => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l', 'pt', 'a4');
-
-        doc.autoTable({
-            html: '.table-custom',
-            startY: 60,
-            theme: 'grid',
-            headStyles: { fillColor: [197, 160, 89], textColor: [255, 255, 255] },
-            columnStyles: {
-                4: { display: 'none' } 
-            },
-            didDrawPage: function (data) {
-                doc.setFontSize(18);
-                doc.setTextColor(197, 160, 89);
-                doc.text("UCMI - REPORTE DE USUARIOS ACTIVOS", data.settings.margin.left, 40);
-            }
-        });
-
-        doc.save(`UCMI_Usuarios_${new Date().toLocaleDateString()}.pdf`);
-    };
-
-    window.exportarExcel = () => {
-        const tableBody = document.getElementById('user-table-body');
-        const rows = tableBody.querySelectorAll('tr');
-        const datos = [];
-
-        rows.forEach(row => {
-            const cols = row.querySelectorAll('td');
-            datos.push({
-                "ENTIDAD": cols[0].innerText.trim(),
-                "RESPONSABLE": cols[1].innerText.trim(),
-                "EMAIL": cols[2].innerText.trim(),
-                "PERFIL": cols[3].innerText.trim()
-            });
-        });
-
-        const ws = XLSX.utils.json_to_sheet(datos);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Usuarios");
-        XLSX.writeFile(wb, "UCMI_Base_Usuarios.xlsx");
-    };
-
-</script>
+                     <div class="d-flex gap-2">
+                         <button onclick="exportarPDF()" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                             <i class="bi bi-file-pdf me-1"></i> PDF
+                         </button>
+                         <button onclick="exportarExcel()" class="btn btn-outline-success btn-sm rounded-pill px-3">
+                             <i class="bi bi-file-earmark-excel me-1"></i> EXCEL
+                         </button>
+                     </div>
+                 </div>
+ 
+                 <div class="glass-panel">
+                     <div class="table-responsive">
+                         <table class="table-custom" id="tablaUsuariosUcmi">
+                             <thead>
+                                 <tr class="text-white-50 small text-uppercase">
+                                     <th class="pb-3 ps-4">Entidad</th>
+                                     <th class="pb-3">Responsable</th>
+                                     <th class="pb-3">Email Institucional</th>
+                                     <th class="pb-3">Perfil / Rol</th>
+                                     <th class="pb-3 text-end pe-4">Operaciones</th>
+                                 </tr>
+                             </tbody>
+                             <tbody id="user-table-body">
+                                 </tbody>
+                         </table>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
+ 
+ <script type="module">
+     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+     import { getFirestore, collection, onSnapshot, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+ 
+     const firebaseConfig = {
+         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+         authDomain: "ucmi-13796634.firebaseapp.com",
+         projectId: "ucmi-13796634",
+         storageBucket: "ucmi-13796634.firebasestorage.app",
+         messagingSenderId: "1090719609536",
+         appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+     };
+ 
+     const app = initializeApp(firebaseConfig);
+     const db = getFirestore(app);
+     const auth = getAuth(app);
+ 
+     onAuthStateChanged(auth, (user) => {
+         if (!user) window.location.href = "index.html";
+     });
+ 
+     const tableBody = document.getElementById('user-table-body');
+     const inputBuscar = document.getElementById('inputBuscarAcademia');
+     
+     // Memoria local para almacenar los registros de Firebase y permitir búsquedas instantáneas
+     let registrosUsuarios = [];
+ 
+     // Escucha en tiempo real de la colección
+     onSnapshot(collection(db, "usuarios"), (snapshot) => {
+         registrosUsuarios = [];
+         snapshot.forEach((docSnap) => {
+             const data = docSnap.data();
+             const id = docSnap.id;
+             
+             if (data.status === "eliminado") return;
+             
+             registrosUsuarios.push({ id, ...data });
+         });
+         
+         // Ejecuta el renderizado inicial con los datos limpios
+         renderizarTablaFiltrada();
+     });
+ 
+     // Función encargada de dibujar las filas en la tabla basándose en el filtro
+     function renderizarTablaFiltrada() {
+         const criterio = inputBuscar.value.toLowerCase().trim();
+         tableBody.innerHTML = '';
+ 
+         const usuariosFiltrados = registrosUsuarios.filter(usuario => {
+             const nombreEntidad = (usuario.entidad || '').toLowerCase();
+             const nombreResponsable = (usuario.nombreResponsable || '').toLowerCase();
+             
+             // Permite buscar tanto por el nombre de la academia/entidad como por el responsable
+             return nombreEntidad.includes(criterio) || nombreResponsable.includes(criterio);
+         });
+ 
+         if (usuariosFiltrados.length === 0) {
+             tableBody.innerHTML = `
+                 <tr>
+                     <td colspan="5" class="text-center py-5 text-white-50 small">
+                         <i class="bi bi-exclamation-circle me-2"></i> No se encontraron academias o usuarios que coincidan.
+                     </td>
+                 </tr>`;
+             return;
+         }
+ 
+         usuariosFiltrados.forEach((usuario) => {
+             tableBody.innerHTML += `
+                 <tr>
+                     <td class="py-4 ps-4">
+                         <span class="neon-gold d-block">${usuario.entidad || 'Entidad'}</span>
+                     </td>
+                     <td>
+                         <div class="d-flex flex-column">
+                             <span class="fw-bold">${usuario.nombreResponsable || 'Sin Nombre'}</span>
+                         </div>
+                     </td>
+                     <td><span class="neon-blue small">${usuario.email || usuario.id}</span></td>
+                     <td>
+                         <span class="badge" style="border: 1px solid #c5a059; color: #c5a059; background: rgba(197, 160, 89, 0.05);">
+                             ${(usuario.perfil || 'Usuario').toUpperCase()}
+                         </span>
+                     </td>
+                     <td class="text-end pe-4">
+                         <button onclick="enviarAPapelera('${usuario.id}', '${usuario.nombreResponsable || usuario.entidad}')" class="btn btn-trash" title="Enviar a Papelera">
+                             <i class="bi bi-trash3-fill"></i>
+                         </button>
+                     </td>
+                 </tr>`;
+         });
+     }
+ 
+     // Escuchador de teclado para filtrar en tiempo real mientras el administrador escribe
+     inputBuscar.addEventListener('input', renderizarTablaFiltrada);
+ 
+     // Función de borrado lógico
+     window.enviarAPapelera = async (id, nombre) => {
+         const result = await Swal.fire({
+             title: '¿ENVIAR A PAPELERA?',
+             text: `El usuario "${nombre}" será desactivado. Podrás restituirlo desde la papelera durante los próximos 30 días.`,
+             icon: 'warning',
+             showCancelButton: true,
+             background: '#0a0e14',
+             color: '#fff',
+             confirmButtonColor: '#ffcc66',
+             confirmButtonText: 'Mover a Papelera',
+             cancelButtonText: 'Cancelar',
+             cancelButtonColor: '#333'
+         });
+ 
+         if (result.isConfirmed) {
+             try {
+                 const userRef = doc(db, "usuarios", id);
+                 await updateDoc(userRef, {
+                     status: "eliminado",
+                     fechaEliminacion: serverTimestamp()
+                 });
+                 
+                 Swal.fire({
+                     title: 'Movido con éxito',
+                     text: 'El usuario ha sido enviado a la papelera.',
+                     icon: 'success',
+                     background: '#0a0e14',
+                     color: '#fff',
+                     timer: 2000,
+                     showConfirmButton: false
+                 });
+             } catch (error) {
+                 console.error("Error al mover a papelera:", error);
+                 Swal.fire({ title: 'Error', text: 'No se pudo procesar la solicitud', icon: 'error' });
+             }
+         }
+     };
+ 
+     document.getElementById('btnLogoutSidebar').addEventListener('click', () => {
+         signOut(auth).then(() => { window.location.href = "index.html"; });
+     });
+ 
+     // --- FUNCIONES DE EXPORTACIÓN ---
+ 
+     window.exportarPDF = () => {
+         const { jsPDF } = window.jspdf;
+         const doc = new jsPDF('l', 'pt', 'a4');
+ 
+         doc.autoTable({
+             html: '.table-custom',
+             startY: 60,
+             theme: 'grid',
+             headStyles: { fillColor: [197, 160, 89], textColor: [255, 255, 255] },
+             columnStyles: {
+                 4: { display: 'none' }
+             },
+             didDrawPage: function (data) {
+                 doc.setFontSize(18);
+                 doc.setTextColor(197, 160, 89);
+                 doc.text("UCMI - REPORTE DE USUARIOS ACTIVOS", data.settings.margin.left, 40);
+             }
+         });
+ 
+         doc.save(`UCMI_Usuarios_${new Date().toLocaleDateString()}.pdf`);
+     };
+ 
+     window.exportarExcel = () => {
+         const tableBody = document.getElementById('user-table-body');
+         const rows = tableBody.querySelectorAll('tr');
+         const datos = [];
+ 
+         rows.forEach(row => {
+             const cols = row.querySelectorAll('td');
+             // Si la tabla muestra el mensaje de "No se encontraron resultados", evitamos exportar celdas vacías
+             if(cols.length >= 4 && !cols[0].classList.contains('text-center')) {
+                 datos.push({
+                     "ENTIDAD": cols[0].innerText.trim(),
+                     "RESPONSABLE": cols[1].innerText.trim(),
+                     "EMAIL": cols[2].innerText.trim(),
+                     "PERFIL": cols[3].innerText.trim()
+                 });
+             }
+         });
+ 
+         const ws = XLSX.utils.json_to_sheet(datos);
+         const wb = XLSX.utils.book_new();
+         XLSX.utils.book_append_sheet(wb, ws, "Usuarios");
+         XLSX.writeFile(wb, "UCMI_Base_Usuarios.xlsx");
+     };
+ </script>
 </body>
 </html>
