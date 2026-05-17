@@ -1,329 +1,326 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <style>html { display: none; }</style>
-    <script type="module" src="auth-guard.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Historial de Solicitudes</title>
-    <!-- Frameworks y Estilos -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <style>
-        :root {
-            --dorado-ucmi: #c5a059;
-            --dorado-neon: #ffcc66;
-            --azul-sidebar: #1a2a3a;
-            --cian-tech: #00f2ff;
-            --rojo-neon: #ff3131;
-            --blanco-neon: #ffffff;
-        }
-
-        body {
-            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-            background-size: cover;
-            font-family: 'Segoe UI', sans-serif;
-            color: white;
-            overflow-x: hidden;
-        }
-
-        .super-overlay {
-            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.95) 100%);
-            min-height: 100vh;
-        }
-
-        /* --- SIDEBAR --- */
-        .sidebar { 
-            background: rgba(26, 42, 58, 0.95); 
-            backdrop-filter: blur(10px);
-            min-height: 100vh; 
-            padding: 25px 15px; 
-            border-right: 1px solid rgba(197, 160, 89, 0.3);
-            display: flex;
-            flex-direction: column;
-            position: sticky;
-            top: 0;
-        }
-
-        .nav-section-title {
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 15px;
-            padding-left: 10px;
-        }
-
-        .nav-link-custom {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            background: transparent;
-            border: none;
-            padding: 12px 15px;
-            color: rgba(255, 255, 255, 0.6);
-            text-align: left;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            margin-bottom: 5px;
-            cursor: pointer;
-        }
-
-        .nav-link-custom i { font-size: 1.1rem; margin-right: 12px; width: 20px; text-align: center; }
-
-        .nav-link-custom:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--cian-tech);
-            transform: translateX(5px);
-        }
-
-        .nav-link-custom.active {
-            background: rgba(188, 19, 254, 0.1);
-            color: #d880ff;
-            border: 1px solid rgba(188, 19, 254, 0.2);
-            box-shadow: 0 0 15px rgba(188, 19, 254, 0.1);
-            text-shadow: 0 0 8px rgba(188, 19, 254, 0.6);
-        }
-
-        /* --- BOTONES NEÓN --- */
-        .btn-super-admin {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--blanco-neon);
-            color: var(--blanco-neon);
-            padding: 12px;
-            border-radius: 12px;
-            width: 100%;
-            text-align: center;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-            margin-bottom: 10px;
-        }
-
-        .btn-super-admin:hover {
-            background: var(--blanco-neon);
-            color: black;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-        }
-
-        .btn-logout {
-            background: rgba(255, 49, 49, 0.05);
-            border: 1px solid var(--rojo-neon);
-            color: var(--rojo-neon);
-            padding: 10px;
-            border-radius: 12px;
-            width: 100%;
-            text-align: center;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(255, 49, 49, 0.2);
-        }
-
-        .btn-logout:hover {
-            background: var(--rojo-neon);
-            color: white;
-            box-shadow: 0 0 20px rgba(255, 49, 49, 0.8);
-        }
-
-        /* --- PANEL DE TABLA --- */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(25px);
-            border-radius: 30px;
-            padding: 30px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-
-        .table-historial { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
-        .table-historial tr { background: rgba(255, 255, 255, 0.03); border-radius: 15px; }
-        .table-historial td { padding: 15px 20px; vertical-align: middle; border: none; }
-
-        .badge-status { padding: 6px 14px; border-radius: 100px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
-        .status-aprobado { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid #00ff8844; }
-        .status-rechazado { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d44; }
-        .status-pendiente { background: rgba(255, 204, 0, 0.1); color: #ffcc00; border: 1px solid #ffcc0044; }
-
-        .neon-gold { color: var(--dorado-neon); font-weight: bold; }
-        .date-chip { font-family: 'Courier New', monospace; background: rgba(0, 242, 255, 0.05); color: var(--cian-tech); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(0, 242, 255, 0.2); }
-
-    </style>
-</head>
-<body>
-
-<div class="super-overlay">
-    <div class="container-fluid">
-        <div class="row">
-            <!-- SIDEBAR -->
-            <div class="col-md-2 sidebar d-none d-md-flex">
-                <div class="text-center mb-4">
-                    <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" style="height: 50px;" alt="Logo">
-                    <p class="small mt-2 neon-gold">SISTEMA UCMI</p>
-                </div>
-                
-                <nav class="nav flex-column mb-auto">
-                    <p class="nav-section-title">Protocolos</p>
-                    <button class="nav-link-custom" onclick="location.href='master-postulaciones.html'">
-                        <i class="bi bi-person-badge"></i> Solicitudes
-                    </button>
-                    <button class="nav-link-custom" onclick="location.href='master-vigencia.html'">
-                        <i class="bi bi-clock-history"></i> Vigencia
-                    </button>
-                    <button class="nav-link-custom" onclick="location.href='master-usuarios.html'">
-                        <i class="bi bi-people"></i> Usuarios
-                    </button>
-                    <button class="nav-link-custom active" onclick="location.href='historial-postulaciones.html'">
-                        <i class="bi bi-archive"></i> Historial
-                    </button>
-                    <button class="nav-link-custom" onclick="location.href='directorio.html'">
-                        <i class="bi bi-journal-text"></i> Directorio
-                    </button>
-                    <button class="nav-link-custom" onclick="location.href='ofertas-academicas.html'">
-                        <i class="bi bi-mortarboard"></i> Ofertas
-                    </button>
-                    <button class="nav-link-custom" onclick="location.href='master-repositorio.html'">
-                        <i class="bi bi-grid-1x2"></i> Módulos
-                    </button>
-                    <button class="nav-link-custom" onclick="location.href='papelera.html'">
-                        <i class="bi bi-trash3"></i> Papelera
-                    </button>
-                </nav>
-
-                <div class="mt-4">
-                    <p class="nav-section-title">Sistema</p>
-                    <button onclick="location.href='super-admin.html'" class="btn-super-admin">
-                        <i class="bi bi-shield-lock me-2"></i> Panel Maestro
-                    </button>
-                    <!-- ID añadido para controlar el evento desde el script module -->
-                    <button id="btnCerrarSesion" class="btn-logout">
-                        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
-                    </button>
-                </div>
-            </div>
-
-            <!-- CONTENIDO -->
-            <div class="col-md-10 p-5">
-                <h2 class="neon-gold text-uppercase mb-4">Historial de Solicitudes 2</h2>
-                <div class="glass-panel">
-                    <div class="table-responsive">
-                        <table class="table-historial text-white">
-                            <thead>
-                                <tr class="text-white-50 small text-uppercase">
-                                    <th class="ps-4">Solicitante</th>
-                                    <th>Fecha</th>
-                                    <th>Perfil</th>
-                                    <th>Estado</th>
-                                    <th class="text-end pe-4">WhatsApp</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaCuerpo">
-                                <!-- Inyección de datos -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-        authDomain: "ucmi-13796634.firebaseapp.com",
-        projectId: "ucmi-13796634",
-        storageBucket: "ucmi-13796634.firebasestorage.app",
-        messagingSenderId: "1090719609536",
-        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    const tablaCuerpo = document.getElementById('tablaCuerpo');
-
-    // --- LÓGICA DE CIERRE DE SESIÓN ---
-    document.getElementById('btnCerrarSesion').addEventListener('click', () => {
-        Swal.fire({
-            title: '¿Cerrar sesión?',
-            text: "Se finalizará tu acceso administrativo actual.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ff3131',
-            cancelButtonColor: '#1a2a3a',
-            confirmButtonText: 'Sí, Salir',
-            cancelButtonText: 'Cancelar',
-            background: '#1a2a3a',
-            color: '#ffffff'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                signOut(auth).then(() => {
-                    // Redirigir al login o index después de cerrar sesión en Firebase
-                    window.location.href = 'index.html';
-                }).catch((error) => {
-                    console.error("Error al cerrar sesión:", error);
-                    // Incluso si hay error, redirigimos por seguridad
-                    window.location.href = 'index.html';
-                });
-            }
-        });
-    });
-
-    // --- CARGA DE DATOS ---
-    const q = query(collection(db, "historial_postulaciones"), orderBy("timestamp", "desc"));
-
-    onSnapshot(q, (snapshot) => {
-        tablaCuerpo.innerHTML = '';
-        if (snapshot.empty) {
-            tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros.</td></tr>`;
-            return;
-        }
-
-        snapshot.forEach((doc) => {
-            const p = doc.data();
-            
-            // 1. Verificación de estado (Tu punto 3)
-            const estado = p.decisionFinal || "PENDIENTE";
-            let statusClass = 'status-pendiente';
-            if(estado === 'ACEPTADO') statusClass = 'status-aprobado';
-            if(estado === 'RECHAZADO') statusClass = 'status-rechazado';
-        
-            // 2. Formateo de fecha (Usando tu campo 'timestamp' de Firebase)
-            const fechaLegible = p.timestamp && typeof p.timestamp.toDate === 'function' 
-                ? p.timestamp.toDate().toLocaleDateString() 
-                : (p.fechaProceso || '---');
-        
-            tablaCuerpo.innerHTML += `
-                <tr>
-                    <td class="ps-4">
-                        <div class="fw-bold text-white">${p.entidad || 'Sin Entidad'}</div>
-                        <div class="text-white-50 small">${p.nombreResponsable || '---'}</div>
-                    </td>
-                    <td><span class="date-chip">${fechaLegible}</span></td>
-                    <td><div class="small fw-bold text-warning">${(p.perfil || 'Academia').toUpperCase()}</div></td>
-                    <td><span class="badge-status ${statusClass}">${estado}</span></td>
-                    <td class="text-end pe-4">
-                        <a href="https://wa.me/${p.whatsapp}" target="_blank" class="text-info text-decoration-none small">
-                            <i class="bi bi-whatsapp me-1"></i> ${p.whatsapp || 'Sin WhatsApp'}
-                        </a>
-                    </td>
-                </tr>
-            `;
-        }); // Cierre del forEach
-    }); // Cierre del onSnapshot (ESTO ES LO QUE FALTABA)
-</script>
-</body>
-</html>
+     <meta charset="UTF-8">
+     <style>html { display: none; }</style>
+     <script type="module" src="auth-guard.js"></script>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>UCMI - Historial de Solicitudes</title>
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+     
+     <style>
+         :root {
+             --dorado-ucmi: #c5a059;
+             --dorado-neon: #ffcc66;
+             --azul-sidebar: #1a2a3a;
+             --cian-tech: #00f2ff;
+             --rojo-neon: #ff3131;
+             --blanco-neon: #ffffff;
+         }
+ 
+         body {
+             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+             background-size: cover;
+             font-family: 'Segoe UI', sans-serif;
+             color: white;
+             overflow-x: hidden;
+         }
+ 
+         .super-overlay {
+             background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.95) 100%);
+             min-height: 100vh;
+         }
+ 
+         /* --- SIDEBAR --- */
+         .sidebar {
+             background: rgba(26, 42, 58, 0.95);
+             backdrop-filter: blur(10px);
+             min-height: 100vh;
+             padding: 25px 15px;
+             border-right: 1px solid rgba(197, 160, 89, 0.3);
+             display: flex;
+             flex-direction: column;
+             position: sticky;
+             top: 0;
+         }
+ 
+         .nav-section-title {
+             color: rgba(255, 255, 255, 0.3);
+             font-size: 0.65rem;
+             text-transform: uppercase;
+             letter-spacing: 2px;
+             margin-bottom: 15px;
+             padding-left: 10px;
+         }
+ 
+         .nav-link-custom {
+             display: flex;
+             align-items: center;
+             width: 100%;
+             background: transparent;
+             border: none;
+             padding: 12px 15px;
+             color: rgba(255, 255, 255, 0.6);
+             text-align: left;
+             border-radius: 12px;
+             font-size: 0.85rem;
+             transition: all 0.3s ease;
+             margin-bottom: 5px;
+             cursor: pointer;
+         }
+ 
+         .nav-link-custom i { font-size: 1.1rem; margin-right: 12px; width: 20px; text-align: center; }
+ 
+         .nav-link-custom:hover {
+             background: rgba(255, 255, 255, 0.05);
+             color: var(--cian-tech);
+             transform: translateX(5px);
+         }
+ 
+         .nav-link-custom.active {
+             background: rgba(188, 19, 254, 0.1);
+             color: #d880ff;
+             border: 1px solid rgba(188, 19, 254, 0.2);
+             box-shadow: 0 0 15px rgba(188, 19, 254, 0.1);
+             text-shadow: 0 0 8px rgba(188, 19, 254, 0.6);
+         }
+ 
+         /* --- BOTONES NEÓN --- */
+         .btn-super-admin {
+             background: rgba(255, 255, 255, 0.05);
+             border: 1px solid var(--blanco-neon);
+             color: var(--blanco-neon);
+             padding: 12px;
+             border-radius: 12px;
+             width: 100%;
+             text-align: center;
+             font-weight: bold;
+             text-transform: uppercase;
+             font-size: 0.75rem;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+             margin-bottom: 10px;
+         }
+ 
+         .btn-super-admin:hover {
+             background: var(--blanco-neon);
+             color: black;
+             box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+         }
+ 
+         .btn-logout {
+             background: rgba(255, 49, 49, 0.05);
+             border: 1px solid var(--rojo-neon);
+             color: var(--rojo-neon);
+             padding: 10px;
+             border-radius: 12px;
+             width: 100%;
+             text-align: center;
+             font-weight: bold;
+             text-transform: uppercase;
+             font-size: 0.75rem;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             box-shadow: 0 0 10px rgba(255, 49, 49, 0.2);
+         }
+ 
+         .btn-logout:hover {
+             background: var(--rojo-neon);
+             color: white;
+             box-shadow: 0 0 20px rgba(255, 49, 49, 0.8);
+         }
+ 
+         /* --- PANEL DE TABLA --- */
+         .glass-panel {
+             background: rgba(255, 255, 255, 0.02);
+             border: 1px solid rgba(255, 255, 255, 0.1);
+             backdrop-filter: blur(25px);
+             border-radius: 30px;
+             padding: 30px;
+             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+         }
+ 
+         .table-historial { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+         .table-historial tr { background: rgba(255, 255, 255, 0.03); border-radius: 15px; }
+         .table-historial td { padding: 15px 20px; vertical-align: middle; border: none; }
+ 
+         .badge-status { padding: 6px 14px; border-radius: 100px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
+         .status-aprobado { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid #00ff8844; }
+         .status-rechazado { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d44; }
+         .status-pendiente { background: rgba(255, 204, 0, 0.1); color: #ffcc00; border: 1px solid #ffcc0044; }
+ 
+         .neon-gold { color: var(--dorado-neon); font-weight: bold; }
+         .date-chip { font-family: 'Courier New', monospace; background: rgba(0, 242, 255, 0.05); color: var(--cian-tech); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(0, 242, 255, 0.2); }
+ 
+     </style>
+ </head>
+ <body>
+ 
+ <div class="super-overlay">
+     <div class="container-fluid">
+         <div class="row">
+             <div class="col-md-2 sidebar d-none d-md-flex">
+                 <div class="text-center mb-4">
+                     <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" style="height: 50px;" alt="Logo">
+                     <p class="small mt-2 neon-gold">SISTEMA UCMI</p>
+                 </div>
+                  
+                 <nav class="nav flex-column mb-auto">
+                     <p class="nav-section-title">Protocolos</p>
+                     <button class="nav-link-custom" onclick="location.href='master-postulaciones.html'">
+                         <i class="bi bi-person-badge"></i> Solicitudes
+                     </button>
+                     <button class="nav-link-custom" onclick="location.href='master-vigencia.html'">
+                         <i class="bi bi-clock-history"></i> Vigencia
+                     </button>
+                     <button class="nav-link-custom" onclick="location.href='master-usuarios.html'">
+                         <i class="bi bi-people"></i> Usuarios
+                     </button>
+                     <button class="nav-link-custom active" onclick="location.href='historial-postulaciones.html'">
+                         <i class="bi bi-archive"></i> Historial
+                     </button>
+                     <button class="nav-link-custom" onclick="location.href='directorio.html'">
+                         <i class="bi bi-journal-text"></i> Directorio
+                     </button>
+                     <button class="nav-link-custom" onclick="location.href='ofertas-academicas.html'">
+                         <i class="bi bi-mortarboard"></i> Ofertas
+                     </button>
+                     <button class="nav-link-custom" onclick="location.href='master-repositorio.html'">
+                         <i class="bi bi-grid-1x2"></i> Módulos
+                     </button>
+                     <button class="nav-link-custom" onclick="location.href='papelera.html'">
+                         <i class="bi bi-trash3"></i> Papelera
+                     </button>
+                 </nav>
+ 
+                 <div class="mt-4">
+                     <p class="nav-section-title">Sistema</p>
+                     <button onclick="location.href='super-admin.html'" class="btn-super-admin">
+                         <i class="bi bi-shield-lock me-2"></i> Panel Maestro
+                     </button>
+                     <button id="btnCerrarSesion" class="btn-logout">
+                         <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+                     </button>
+                 </div>
+             </div>
+ 
+             <div class="col-md-10 p-5">
+                 <h2 class="neon-gold text-uppercase mb-4">Historial de Solicitudes 2</h2>
+                 <div class="glass-panel">
+                     <div class="table-responsive">
+                         <table class="table-historial text-white">
+                             <thead>
+                                 <tr class="text-white-50 small text-uppercase">
+                                     <th class="ps-4">Solicitante</th>
+                                     <th>Fecha</th>
+                                     <th>Perfil</th>
+                                     <th>Estado</th>
+                                     <th>WhatsApp</th>
+                                     </tr>
+                             </thead>
+                             <tbody id="tablaCuerpo">
+                                 </tbody>
+                         </table>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
+ 
+ <script type="module">
+     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+     import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+     import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+ 
+     const firebaseConfig = {
+         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+         authDomain: "ucmi-13796634.firebaseapp.com",
+         projectId: "ucmi-13796634",
+         storageBucket: "ucmi-13796634.firebasestorage.app",
+         messagingSenderId: "1090719609536",
+         appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+     };
+ 
+     const app = initializeApp(firebaseConfig);
+     const db = getFirestore(app);
+     const auth = getAuth(app);
+     const tablaCuerpo = document.getElementById('tablaCuerpo');
+ 
+     // --- LÓGICA DE CIERRE DE SESIÓN ---
+     document.getElementById('btnCerrarSesion').addEventListener('click', () => {
+         Swal.fire({
+             title: '¿Cerrar sesión?',
+             text: "Se finalizará tu acceso administrativo actual.",
+             icon: 'warning',
+             showCancelButton: true,
+             confirmButtonColor: '#ff3131',
+             cancelButtonColor: '#1a2a3a',
+             confirmButtonText: 'Sí, Salir',
+             cancelButtonText: 'Cancelar',
+             background: '#1a2a3a',
+             color: '#ffffff'
+         }).then((result) => {
+             if (result.isConfirmed) {
+                 signOut(auth).then(() => {
+                     window.location.href = 'index.html';
+                 }).catch((error) => {
+                     console.error("Error al cerrar sesión:", error);
+                     window.location.href = 'index.html';
+                 });
+             }
+         });
+     });
+ 
+     // --- CARGA DE DATOS ---
+     const q = query(collection(db, "historial_postulaciones"), orderBy("timestamp", "desc"));
+ 
+     onSnapshot(q, (snapshot) => {
+         tablaCuerpo.innerHTML = '';
+         if (snapshot.empty) {
+             tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros.</td></tr>`;
+             return;
+         }
+ 
+         snapshot.forEach((doc) => {
+             const p = doc.data();
+             
+             // Verificación de estado
+             const estado = p.decisionFinal || "PENDIENTE";
+             let statusClass = 'status-pendiente';
+             if(estado === 'ACEPTADO') statusClass = 'status-aprobado';
+             if(estado === 'RECHAZADO') statusClass = 'status-rechazado';
+          
+             // Formateo de fecha
+             const fechaLegible = p.timestamp && typeof p.timestamp.toDate === 'function'
+                 ? p.timestamp.toDate().toLocaleDateString()
+                 : (p.fechaProceso || '---');
+          
+             // //////////////////////////////////////////////////////////////////
+             // [SI TU BLOQUE ES LÓGICA JAVASCRIPT / CONDICIONALES, PÉGALO AQUÍ]
+             // //////////////////////////////////////////////////////////////////
+ 
+             tablaCuerpo.innerHTML += `
+                 <tr>
+                     <td class="ps-4">
+                         <div class="fw-bold text-white">${p.entidad || 'Sin Entidad'}</div>
+                         <div class="text-white-50 small">${p.nombreResponsable || '---'}</div>
+                     </td>
+                     <td><span class="date-chip">${fechaLegible}</span></td>
+                     <td><div class="small fw-bold text-warning">${(p.perfil || 'Academia').toUpperCase()}</div></td>
+                     <td><span class="badge-status ${statusClass}">${estado}</span></td>
+                     <td class="text-end pe-4">
+                         <a href="https://wa.me/${p.whatsapp}" target="_blank" class="text-info text-decoration-none small">
+                             <i class="bi bi-whatsapp me-1"></i> ${p.whatsapp || 'Sin WhatsApp'}
+                         </a>
+                     </td>
+                     </tr>
+             `;
+         }); 
+     }); 
+ </script>
+ </body>
+ </html>
