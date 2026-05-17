@@ -287,27 +287,24 @@
  
           snapshot.forEach((doc) => {
               const p = doc.data();
+              console.log("Datos del documento extraído:", p); // Log de control para depurar en consola
               
-              // 1. Mapeo del estado (Prioriza 'decisionFinal', luego evalúa 'estado' o 'resultado')
-              let estadoRaw = "PENDIENTE";
-              if (p.decisionFinal) {
-                  estadoRaw = p.decisionFinal;
-              } else if (p.estado) {
-                  estadoRaw = p.estado; 
-              } else if (p.resultado) {
-                  estadoRaw = p.resultado;
-              }
+              // 1. Extracción segura y normalización estricta del string del estado
+              let valorEstado = "";
+              if (p.decisionFinal) valorEstado = String(p.decisionFinal);
+              else if (p.estado) valorEstado = String(p.estado);
+              else if (p.resultado) valorEstado = String(p.resultado);
               
-              const estado = estadoRaw.toUpperCase().trim();
+              const estadoClean = valorEstado.toUpperCase().trim();
   
               let statusClass = 'status-pendiente';
               let estadoTextoMostrar = 'PENDIENTE';
   
-              // Asignación de estilos visuales correctos
-              if (estado === 'ACTIVO' || estado === 'ACEPTADO' || estado === 'APROBADO') {
+              // Verificación exhaustiva de strings aceptados
+              if (estadoClean === 'ACTIVO' || estadoClean === 'ACEPTADO' || estadoClean === 'APROBADO' || estadoClean === 'TRUE') {
                   statusClass = 'status-aprobado';
                   estadoTextoMostrar = 'ACEPTADO';
-              } else if (estado === 'RECHAZADO') {
+              } else if (estadoClean === 'RECHAZADO' || estadoClean === 'INACTIVO' || estadoClean === 'FALSE') {
                   statusClass = 'status-rechazado';
                   estadoTextoMostrar = 'RECHAZADO';
               }
@@ -317,7 +314,7 @@
                   ? p.timestamp.toDate().toLocaleDateString()
                   : (p.fechaProcesado || p.fechaActivacion || p.fechaAdmision || '---');
           
-              // 3. Inyección limpia en la tabla (Soporta nombreResponsable y nombreEstudiante)
+              // 3. Inyección limpia en la tabla
               tablaCuerpo.innerHTML += `
                   <tr>
                       <td class="ps-4">
