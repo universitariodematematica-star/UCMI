@@ -299,9 +299,67 @@
                  ? p.timestamp.toDate().toLocaleDateString()
                  : (p.fechaProceso || '---');
           
-             // //////////////////////////////////////////////////////////////////
-             // [SI TU BLOQUE ES LÓGICA JAVASCRIPT / CONDICIONALES, PÉGALO AQUÍ]
-             // //////////////////////////////////////////////////////////////////
+// --- CARGA DE DATOS CORREGIDA ---
+    const q = query(collection(db, "historial_postulaciones"), orderBy("timestamp", "desc"));
+
+    onSnapshot(q, (snapshot) => {
+        tablaCuerpo.innerHTML = '';
+        if (snapshot.empty) {
+            tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros.</td></tr>`;
+            return;
+        }
+
+        snapshot.forEach((doc) => {
+            const p = doc.data();
+            
+            // 1. Mapeo y normalización del estado según tus 3 estructuras de Firebase
+            let estadoRaw = "PENDIENTE";
+            
+            if (p.resultado) {
+                estadoRaw = p.resultado; // Captura "rechazado"
+            } else if (p.estado) {
+                estadoRaw = p.estado;    // Captura "activo" (Aceptado)
+            }
+            
+            // Convertimos a mayúsculas para evitar fallos de formato
+            const estado = estadoRaw.toUpperCase().trim();
+
+            let statusClass = 'status-pendiente';
+            let estadoTextoMostrar = 'PENDIENTE';
+
+            // Asignación de clases CSS y etiquetas visuales correspondientes
+            if (estado === 'ACTIVO' || estado === 'ACEPTADO') {
+                statusClass = 'status-aprobado';
+                estadoTextoMostrar = 'ACEPTADO';
+            } else if (estado === 'RECHAZADO') {
+                statusClass = 'status-rechazado';
+                estadoTextoMostrar = 'RECHAZADO';
+            }
+        
+            // 2. Formateo de fecha (Maneja tanto objetos Timestamp como strings alternos)
+            const fechaLegible = p.timestamp && typeof p.timestamp.toDate === 'function' 
+                ? p.timestamp.toDate().toLocaleDateString() 
+                : (p.fechaProcesado || p.fechaActivacion || '---');
+        
+            // 3. Inyección en la tabla
+            tablaCuerpo.innerHTML += `
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-bold text-white">${p.entidad || 'Sin Entidad'}</div>
+                        <div class="text-white-50 small">${p.nombreResponsable || '---'}</div>
+                    </td>
+                    <td><span class="date-chip">${fechaLegible}</span></td>
+                    <td><div class="small fw-bold text-warning">${(p.perfil || 'Academia').toUpperCase()}</div></td>
+                    <td><span class="badge-status ${statusClass}">${estadoTextoMostrar}</span></td>
+                    <td class="text-end pe-4">
+                        <a href="https://wa.me/${p.whatsapp}" target="_blank" class="text-info text-decoration-none small">
+                            <i class="bi bi-whatsapp me-1"></i> ${p.whatsapp || 'Sin WhatsApp'}
+                        </a>
+                    </td>
+                </tr>
+            `;
+        });
+    });
  
              tablaCuerpo.innerHTML += `
                  <tr>
