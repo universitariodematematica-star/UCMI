@@ -277,50 +277,65 @@
  
      // --- CARGA DE DATOS ---
      const q = query(collection(db, "historial_postulaciones"), orderBy("timestamp", "desc"));
- 
-     onSnapshot(q, (snapshot) => {
-         tablaCuerpo.innerHTML = '';
-         if (snapshot.empty) {
-             tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros.</td></tr>`;
-             return;
-         }
- 
-         snapshot.forEach((doc) => {
-             const p = doc.data();
-             
-             // Verificación de estado
-             const estado = p.decisionFinal || "PENDIENTE";
-             let statusClass = 'status-pendiente';
-             if(estado === 'ACEPTADO') statusClass = 'status-aprobado';
-             if(estado === 'RECHAZADO') statusClass = 'status-rechazado';
+
+      onSnapshot(q, (snapshot) => {
+          tablaCuerpo.innerHTML = '';
+          if (snapshot.empty) {
+              tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros.</td></tr>`;
+              return;
+          }
+
+          snapshot.forEach((doc) => {
+              const p = doc.data();
+              
+              // 1. Mapeo del estado (Prioriza 'decisionFinal', luego evalúa 'estado' o 'resultado')
+              let estadoRaw = "PENDIENTE";
+              if (p.decisionFinal) {
+                  estadoRaw = p.decisionFinal;
+              } else if (p.estado) {
+                  estadoRaw = p.estado; // Aquí captura con éxito el "activo" de tu estudiante
+              } else if (p.resultado) {
+                  estadoRaw = p.resultado;
+              }
+              
+              const estado = estadoRaw.toUpperCase().trim();
+
+              let statusClass = 'status-pendiente';
+              let estadoTextoMostrar = 'PENDIENTE';
+
+              // Asignación de estilos visuales correctos
+              if (estado === 'ACTIVO' || estado === 'ACEPTADO') {
+                  statusClass = 'status-aprobado';
+                  estadoTextoMostrar = 'ACEPTADO';
+              } else if (estado === 'RECHAZADO') {
+                  statusClass = 'status-rechazado';
+                  estadoTextoMostrar = 'RECHAZADO';
+              }
           
-             // Formateo de fecha
-             const fechaLegible = p.timestamp && typeof p.timestamp.toDate === 'function'
-                 ? p.timestamp.toDate().toLocaleDateString()
-                 : (p.fechaProceso || '---');
+              // 2. Formateo de fecha
+              const fechaLegible = p.timestamp && typeof p.timestamp.toDate === 'function'
+                  ? p.timestamp.toDate().toLocaleDateString()
+                  : (p.fechaProcesado || p.fechaActivacion || '---');
           
-             // //////////////////////////////////////////////////////////////////
-             // [SI TU BLOQUE ES LÓGICA JAVASCRIPT / CONDICIONALES, PÉGALO AQUÍ]
-             // //////////////////////////////////////////////////////////////////
- 
-             tablaCuerpo.innerHTML += `
-                 <tr>
-                     <td class="ps-4">
-                         <div class="fw-bold text-white">${p.entidad || 'Sin Entidad'}</div>
-                         <div class="text-white-50 small">${p.nombreResponsable || '---'}</div>
-                     </td>
-                     <td><span class="date-chip">${fechaLegible}</span></td>
-                     <td><div class="small fw-bold text-warning">${(p.perfil || 'Academia').toUpperCase()}</div></td>
-                     <td><span class="badge-status ${statusClass}">${estado}</span></td>
-                     <td class="text-end pe-4">
-                         <a href="https://wa.me/${p.whatsapp}" target="_blank" class="text-info text-decoration-none small">
-                             <i class="bi bi-whatsapp me-1"></i> ${p.whatsapp || 'Sin WhatsApp'}
-                         </a>
-                     </td>
-                     </tr>
-             `;
-         }); 
-     }); 
+              // 3. Inyección limpia en la tabla
+              tablaCuerpo.innerHTML += `
+                  <tr>
+                      <td class="ps-4">
+                          <div class="fw-bold text-white">${p.entidad || 'Sin Entidad'}</div>
+                          <div class="text-white-50 small">${p.nombreResponsable || '---'}</div>
+                      </td>
+                      <td><span class="date-chip">${fechaLegible}</span></td>
+                      <td><div class="small fw-bold text-warning">${(p.perfil || 'Academia').toUpperCase()}</div></td>
+                      <td><span class="badge-status ${statusClass}">${estadoTextoMostrar}</span></td>
+                      <td class="text-end pe-4">
+                          <a href="https://wa.me/${p.whatsapp}" target="_blank" class="text-info text-decoration-none small">
+                              <i class="bi bi-whatsapp me-1"></i> ${p.whatsapp || 'Sin WhatsApp'}
+                          </a>
+                      </td>
+                  </tr>
+              `;
+          });
+      }); 
  </script>
  </body>
  </html>
