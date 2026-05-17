@@ -231,111 +231,113 @@
      </div>
  </div>
  
- <script type="module">
-     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-     import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-     import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
- 
-     const firebaseConfig = {
-         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-         authDomain: "ucmi-13796634.firebaseapp.com",
-         projectId: "ucmi-13796634",
-         storageBucket: "ucmi-13796634.firebasestorage.app",
-         messagingSenderId: "1090719609536",
-         appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-     };
- 
-     const app = initializeApp(firebaseConfig);
-     const db = getFirestore(app);
-     const auth = getAuth(app);
-     const tablaCuerpo = document.getElementById('tablaCuerpo');
- 
-     // --- LÓGICA DE CIERRE DE SESIÓN ---
-     document.getElementById('btnCerrarSesion').addEventListener('click', () => {
-         Swal.fire({
-             title: '¿Cerrar sesión?',
-             text: "Se finalizará tu acceso administrativo actual.",
-             icon: 'warning',
-             showCancelButton: true,
-             confirmButtonColor: '#ff3131',
-             cancelButtonColor: '#1a2a3a',
-             confirmButtonText: 'Sí, Salir',
-             cancelButtonText: 'Cancelar',
-             background: '#1a2a3a',
-             color: '#ffffff'
-         }).then((result) => {
-             if (result.isConfirmed) {
-                 signOut(auth).then(() => {
-                     window.location.href = 'index.html';
-                 }).catch((error) => {
-                     console.error("Error al cerrar sesión:", error);
-                     window.location.href = 'index.html';
-                 });
-             }
-         });
-     });
- 
-     // --- CARGA DE DATOS ---
-     const q = query(collection(db, "historial_postulaciones"), orderBy("timestamp", "desc"));
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-      onSnapshot(q, (snapshot) => {
-          tablaCuerpo.innerHTML = '';
-          if (snapshot.empty) {
-              tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros.</td></tr>`;
-              return;
-          }
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
 
-          snapshot.forEach((doc) => {
-              const p = doc.data();
-              
-              // 1. Mapeo del estado (Prioriza 'decisionFinal', luego evalúa 'estado' o 'resultado')
-              let estadoRaw = "PENDIENTE";
-              if (p.decisionFinal) {
-                  estadoRaw = p.decisionFinal;
-              } else if (p.estado) {
-                  estadoRaw = p.estado; // Aquí captura con éxito el "activo" de tu estudiante
-              } else if (p.resultado) {
-                  estadoRaw = p.resultado;
-              }
-              
-              const estado = estadoRaw.toUpperCase().trim();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const tablaCuerpo = document.getElementById('tablaCuerpo');
 
-              let statusClass = 'status-pendiente';
-              let estadoTextoMostrar = 'PENDIENTE';
+    // --- LÓGICA DE CIERRE DE SESIÓN ---
+    document.getElementById('btnCerrarSesion').addEventListener('click', () => {
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: "Se finalizará tu acceso administrativo actual.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ff3131',
+            cancelButtonColor: '#1a2a3a',
+            confirmButtonText: 'Sí, Salir',
+            cancelButtonText: 'Cancelar',
+            background: '#1a2a3a',
+            color: '#ffffff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                signOut(auth).then(() => {
+                    window.location.href = 'index.html';
+                }).catch((error) => {
+                    console.error("Error al cerrar sesión:", error);
+                    window.location.href = 'index.html';
+                });
+            }
+        });
+    });
 
-              // Asignación de estilos visuales correctos
-              if (estado === 'ACTIVO' || estado === 'ACEPTADO') {
-                  statusClass = 'status-aprobado';
-                  estadoTextoMostrar = 'ACEPTADO';
-              } else if (estado === 'RECHAZADO') {
-                  statusClass = 'status-rechazado';
-                  estadoTextoMostrar = 'RECHAZADO';
-              }
-          
-              // 2. Formateo de fecha
-              const fechaLegible = p.timestamp && typeof p.timestamp.toDate === 'function'
-                  ? p.timestamp.toDate().toLocaleDateString()
-                  : (p.fechaProcesado || p.fechaActivacion || '---');
-          
-              // 3. Inyección limpia en la tabla
-              tablaCuerpo.innerHTML += `
-                  <tr>
-                      <td class="ps-4">
-                          <div class="fw-bold text-white">${p.entidad || 'Sin Entidad'}</div>
-                          <div class="text-white-50 small">${p.nombreResponsable || '---'}</div>
-                      </td>
-                      <td><span class="date-chip">${fechaLegible}</span></td>
-                      <td><div class="small fw-bold text-warning">${(p.perfil || 'Academia').toUpperCase()}</div></td>
-                      <td><span class="badge-status ${statusClass}">${estadoTextoMostrar}</span></td>
-                      <td class="text-end pe-4">
-                          <a href="https://wa.me/${p.whatsapp}" target="_blank" class="text-info text-decoration-none small">
-                              <i class="bi bi-whatsapp me-1"></i> ${p.whatsapp || 'Sin WhatsApp'}
-                          </a>
-                      </td>
-                  </tr>
-              `;
-          });
-      }); 
- </script>
+    // --- CARGA DE DATOS UNIFICADA (SIN DUPLICADOS) ---
+    const q = query(collection(db, "historial_postulaciones"), orderBy("timestamp", "desc"));
+
+    onSnapshot(q, (snapshot) => {
+        tablaCuerpo.innerHTML = '';
+        
+        if (snapshot.empty) {
+            tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros.</td></tr>`;
+            return;
+        }
+
+        snapshot.forEach((doc) => {
+            const p = doc.data();
+            
+            // 1. Mapeo y Normalización Estricta del Estado
+            let estadoRaw = "PENDIENTE";
+            
+            if (p.decisionFinal) {
+                estadoRaw = p.decisionFinal;
+            } else if (p.estado) {
+                estadoRaw = p.estado; // Captura "activo"
+            } else if (p.resultado) {
+                estadoRaw = p.resultado; // Captura "rechazado" u otros
+            }
+            
+            const estado = estadoRaw.toUpperCase().trim();
+
+            let statusClass = 'status-pendiente';
+            let estadoTextoMostrar = 'PENDIENTE';
+
+            // Evaluación de condiciones para aprobación
+            if (estado === 'ACTIVO' || estado === 'ACEPTADO' || estado === 'APROBADO') {
+                statusClass = 'status-aprobado';
+                estadoTextoMostrar = 'ACEPTADO';
+            } else if (estado === 'RECHAZADO') {
+                statusClass = 'status-rechazado';
+                estadoTextoMostrar = 'RECHAZADO';
+            }
+        
+            // 2. Formateo de Fecha Seguro
+            const fechaLegible = p.timestamp && typeof p.timestamp.toDate === 'function'
+                ? p.timestamp.toDate().toLocaleDateString()
+                : (p.fechaProcesado || p.fechaActivacion || p.fechaAdmision || '---');
+        
+            // 3. ÚNICA Inyección de HTML por cada iteración
+            tablaCuerpo.innerHTML += `
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-bold text-white">${p.entidad || 'Sin Entidad'}</div>
+                        <div class="text-white-50 small">${p.nombreResponsable || p.nombreEstudiante || '---'}</div>
+                    </td>
+                    <td><span class="date-chip">${fechaLegible}</span></td>
+                    <td><div class="small fw-bold text-warning">${(p.perfil || 'Academia').toUpperCase()}</div></td>
+                    <td><span class="badge-status ${statusClass}">${estadoTextoMostrar}</span></td>
+                    <td class="text-end pe-4">
+                        <a href="https://wa.me/${p.whatsapp}" target="_blank" class="text-info text-decoration-none small">
+                            <i class="bi bi-whatsapp me-1"></i> ${p.whatsapp || 'Sin WhatsApp'}
+                        </a>
+                    </td>
+                </tr>
+            `;
+        });
+    });
+</script>
  </body>
  </html>
