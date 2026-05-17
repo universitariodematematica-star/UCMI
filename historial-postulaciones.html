@@ -287,24 +287,39 @@
  
           snapshot.forEach((doc) => {
               const p = doc.data();
-              console.log("Datos del documento extraído:", p); // Log de control para depurar en consola
               
-              // 1. Extracción segura y normalización estricta del string del estado
-                  let valorEstado = "";
-                  if (p.estado) valorEstado = String(p.estado);
-                  else if (p.decisionFinal) valorEstado = String(p.decisionFinal);
-                  else if (p.resultado) valorEstado = String(p.resultado);
-              
-              const estadoClean = valorEstado.toUpperCase().trim();
+              // --- INTERPRETE DE ESTADOS ULTRA-SEGURO ---
+              let esAprobado = false;
+              let esRechazado = false;
+
+              // Analizamos todos los campos potenciales donde guardas el estado
+              const camposAEvaluar = [p.decisionFinal, p.estado, p.resultado];
+
+              camposAEvaluar.forEach(campo => {
+                  if (campo !== undefined && campo !== null) {
+                      // Si es un booleano puro (true)
+                      if (campo === true) esAprobado = true;
+                      if (campo === false) esRechazado = true;
+                      
+                      // Si es texto, limpiamos espacios y pasamos a mayúsculas
+                      const textoClean = String(campo).toUpperCase().trim();
+                      if (['ACTIVO', 'ACEPTADO', 'APROBADO', 'TRUE'].includes(textoClean)) {
+                          esAprobado = true;
+                      }
+                      if (['RECHAZADO', 'INACTIVO', 'FALSE'].includes(textoClean)) {
+                          esRechazado = true;
+                      }
+                  }
+              });
   
               let statusClass = 'status-pendiente';
               let estadoTextoMostrar = 'PENDIENTE';
   
-              // Verificación exhaustiva de strings aceptados
-              if (estadoClean === 'ACTIVO' || estadoClean === 'ACEPTADO' || estadoClean === 'APROBADO' || estadoClean === 'TRUE') {
+              // Priorizamos los flags de evaluación
+              if (esAprobado) {
                   statusClass = 'status-aprobado';
                   estadoTextoMostrar = 'ACEPTADO';
-              } else if (estadoClean === 'RECHAZADO' || estadoClean === 'INACTIVO' || estadoClean === 'FALSE') {
+              } else if (esRechazado) {
                   statusClass = 'status-rechazado';
                   estadoTextoMostrar = 'RECHAZADO';
               }
