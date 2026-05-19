@@ -35,7 +35,7 @@
       .nav-link:hover { color: white; background: rgba(255,255,255,0.1); border-radius: 8px; }
       .nav-link.active { color: var(--dorado-ucmi); font-weight: bold; background: rgba(197, 160, 89, 0.1); border-radius: 8px; }
 
-           .sidebar-nav { flex-grow: 1; }
+      .sidebar-nav { flex-grow: 1; }
 
       .nav-item-ucmi {
           display: flex; align-items: center;
@@ -70,7 +70,7 @@
           color: white !important;
           font-weight: 600;
           text-transform: uppercase;
-          font-size: 0.7------rem;
+          font-size: 0.75rem;
           border-radius: 50px;
           padding: 10px;
           text-decoration: none;
@@ -274,7 +274,7 @@
       .badge-perfil { font-size: 0.7rem; padding: 5px 10px; border-radius: 50px; color: white; font-weight: 700; }
       #contenidoModal .bg-white { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: rgba(255, 255, 255, 0.8) !important; border-radius: 12px; }
 
-      /* --- CATEGORÍAS MAESTRAS (FONDOS OSCUROS) --- */
+      /* --- CATEGORÍAS MAESTRAS --- */
       .bg-categoria-academia { background-color: #0a3d1d !important; color: #ffffff !important; }
       .bg-categoria-profesor { background-color: #0d2e5e !important; color: #ffffff !important; }
       .bg-categoria-estudiante { background-color: #311b92 !important; color: #ffffff !important; }
@@ -401,7 +401,7 @@
       let logoAcademiaGlobal = "";
       const selectorFiltro = document.getElementById('filtroPerfil');
 
-      // 1. IDENTIDAD Y CARGA AUTOMÁTICA
+      // 1. IDENTIDAD Y CARGA EN VIVO
       onAuthStateChanged(auth, async (user) => {
           if (user) {
               const userDoc = await getDoc(doc(db, "usuarios", user.email));
@@ -419,7 +419,7 @@
           }
       });
 
-      // 2. FUNCIÓN DE ESCUCHA
+      // 2. ESCUCHA REALTIME DE POSTULACIONES
       function iniciarEscuchaFiltrada(academiaNombre) {
           const q = query(
               collection(db, "postulaciones"),
@@ -431,7 +431,7 @@
               registrosLocales = snap.docs;
               renderizarTabla();
           }, (error) => {
-              console.error("Error en la consulta de Firebase: ", error);
+              console.error("Error sincronización en tiempo real: ", error);
           });
       }
 
@@ -466,7 +466,7 @@
           });
       }
 
-      // 3. EXPEDIENTE
+      // 3. DESPLEGAR EXPEDIENTE
       window.verExpediente = async (id) => {
           currentId = id;
           const snap = await getDoc(doc(db, "postulaciones", id));
@@ -475,64 +475,64 @@
               const d = currentData;
               document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
               document.getElementById('contenidoModal').innerHTML = `
-          <div class="col-12 mb-2">
-              <h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">Datos del Estudiante</h6>
-          </div>
-          <div class="col-md-6 mb-3">
-              <label class="small d-block" style="color: #2ecc71; font-weight: 800; opacity: 0.9;">NOMBRE COMPLETO</label>
-              <span class="fw-bold">${d.nombreResponsable}</span>
-          </div>
-          <div class="col-md-3 mb-3">
-              <label class="small d-block" style="color: #2ecc71; font-weight: 800;">DNI / ID</label>
-              <span class="dni-label">${d.dniEstudiante}</span>
-          </div>
-          <div class="col-md-3 mb-3">
-              <label class="small d-block" style="color: #2ecc71; font-weight: 800;">GÉNERO</label>
-              <span>${d.genero}</span>
-          </div>
-          <div class="col-md-4 mb-3">
-              <label class="small d-block" style="color: #2ecc71; font-weight: 800;">FECHA DE NACIMIENTO</label>
-              <span>${d.fechaNacimiento}</span>
-          </div>
-          <div class="col-md-4 mb-3">
-              <label class="small d-block" style="color: #2ecc71; font-weight: 800;">EDAD / CATEGORÍA</label>
-              <span>${d.edadEstudiante} años (${d.categoriaEdad})</span>
-          </div>
-          <div class="col-md-4 mb-3">
-              <label class="small d-block" style="color: #2ecc71; font-weight: 800;">UBICACIÓN</label>
-              <span>${d.ubicacion}</span>
-          </div>
-          <div class="col-md-6 mb-3">
-              <label class="small d-block" style="color: #2ecc71; font-weight: 800;">CORREO ELECTRÓNICO</label>
-              <span class="text-info">${d.email}</span>
-          </div>
-          <div class="col-md-6 mb-3">
-              <label class="small d-block" style="color: #2ecc71; font-weight: 800;">WHATSAPP</label>
-              <span class="text-success"><i class="bi bi-whatsapp me-1"></i>${d.whatsapp || 'No provisto'}</span>
-          </div>
-          ${d.nombreRepresentante ? `
-          <div class="col-12 mt-2 mb-2">
-              <h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">Representante Legal</h6>
-          </div>
-          <div class="col-md-6 mb-3">
-              <label class="small d-block" style="color: #2ecc71; font-weight: 800;">NOMBRE DEL TUTOR</label>
-              <span>${d.nombreRepresentante}</span>
-          </div>
-          <div class="col-md-6 mb-3">
-              <label class="small d-block" style="color: #2ecc71; font-weight: 800;">DNI REPRESENTANTE</label>
-              <span>${d.dniRepresentante}</span>
-          </div>
-          ` : ''}
-          <div class="col-12 mt-2 mb-2">
-              <h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">Inscripción Académica</h6>
-          </div>
-          <div class="col-md-12 mb-3">
-              <label class="small d-block" style="color: #2ecc71; font-weight: 800;">MÓDULOS SELECCIONADOS</label>
-              <div class="d-flex flex-wrap gap-2 mt-1">
-                  ${d.modulos ? d.modulos.map(m => `<span class="badge bg-dark border border-secondary">${m}</span>`).join('') : '<span class="text-muted">Ninguno</span>'}
-              </div>
-          </div>
-      `;
+                  <div class="col-12 mb-2">
+                      <h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">Datos del Estudiante</h6>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                      <label class="small d-block" style="color: #2ecc71; font-weight: 800; opacity: 0.9;">NOMBRE COMPLETO</label>
+                      <span class="fw-bold">${d.nombreResponsable}</span>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                      <label class="small d-block" style="color: #2ecc71; font-weight: 800;">DNI / ID</label>
+                      <span class="dni-label">${d.dniEstudiante}</span>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                      <label class="small d-block" style="color: #2ecc71; font-weight: 800;">GÉNERO</label>
+                      <span>${d.genero}</span>
+                  </div>
+                  <div class="col-md-4 mb-3">
+                      <label class="small d-block" style="color: #2ecc71; font-weight: 800;">FECHA DE NACIMIENTO</label>
+                      <span>${d.fechaNacimiento}</span>
+                  </div>
+                  <div class="col-md-4 mb-3">
+                      <label class="small d-block" style="color: #2ecc71; font-weight: 800;">EDAD / CATEGORÍA</label>
+                      <span>${d.edadEstudiante} años (${d.categoriaEdad})</span>
+                  </div>
+                  <div class="col-md-4 mb-3">
+                      <label class="small d-block" style="color: #2ecc71; font-weight: 800;">UBICACIÓN</label>
+                      <span>${d.ubicacion}</span>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                      <label class="small d-block" style="color: #2ecc71; font-weight: 800;">CORREO ELECTRÓNICO</label>
+                      <span class="text-info">${d.email}</span>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                      <label class="small d-block" style="color: #2ecc71; font-weight: 800;">WHATSAPP</label>
+                      <span class="text-success"><i class="bi bi-whatsapp me-1"></i>${d.whatsapp || 'No provisto'}</span>
+                  </div>
+                  ${d.nombreRepresentante ? `
+                  <div class="col-12 mt-2 mb-2">
+                      <h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">Representante Legal</h6>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                      <label class="small d-block" style="color: #2ecc71; font-weight: 800;">NOMBRE DEL TUTOR</label>
+                      <span>${d.nombreRepresentante}</span>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                      <label class="small d-block" style="color: #2ecc71; font-weight: 800;">DNI REPRESENTANTE</label>
+                      <span>${d.dniRepresentante}</span>
+                  </div>
+                  ` : ''}
+                  <div class="col-12 mt-2 mb-2">
+                      <h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">Inscripción Académica</h6>
+                  </div>
+                  <div class="col-md-12 mb-3">
+                      <label class="small d-block" style="color: #2ecc71; font-weight: 800;">MÓDULOS SELECCIONADOS</label>
+                      <div class="d-flex flex-wrap gap-2 mt-1">
+                          ${d.modulos ? d.modulos.map(m => `<span class="badge bg-dark border border-secondary">${m}</span>`).join('') : '<span class="text-muted">Ninguno</span>'}
+                      </div>
+                  </div>
+              `;
               new bootstrap.Modal(document.getElementById('modalDetalles')).show();
           }
       };
@@ -544,7 +544,7 @@
           window.location.href = "index.html";
       };
 
-      // --- LOGICA DE ADMISIÓN CON VALIDACIÓN CRÍTICA DE CUPOS ---
+      // --- LOGICA DE ADMISIÓN BLINDADA CONTRA ERRORES DE PERMISOS ---
       document.getElementById('btnConfirmarAcceso').onclick = async () => {
           if(!currentId || !currentData) return;
 
@@ -570,26 +570,29 @@
               const snapshotEstudiantes = await getDocs(qEstudiantes);
               const totalAlumnosActivos = snapshotEstudiantes.size;
 
-              // Verificación estricta del límite de la licencia
+              // Verificación estricta del límite de la licencia contratada
               if (totalAlumnosActivos >= cuposMaximos) {
                   await Swal.fire({
                       title: 'Cupos Completos',
-                      text: 'No se puede aceptar al alumno porque la cuota de cupos está llena.',
+                      text: `No se puede aceptar al alumno. Has alcanzado el límite estipulado de tu licencia (${totalAlumnosActivos}/${cuposMaximos} cupos).`,
                       icon: 'warning',
                       confirmButtonColor: '#c5a059'
                   });
                   return; 
               }
 
-              // Si hay vacantes se efectúa la migración de colecciones
+              // SE DETIENE EL FLUJO SI ESTA OPERACIÓN EN SERVIDOR DA ERROR DE REGLAS
+              // 1. Crear el usuario en la colección correspondiente
               await setDoc(doc(db, "usuarios", currentData.email), { 
                   ...currentData, 
                   estado: "activo",
                   rol: "estudiante" 
               });
               
+              // 2. Eliminar la postulación de la lista de espera
               await deleteDoc(doc(db, "postulaciones", currentId));
               
+              // Solo tras la confirmación exitosa del servidor se ejecuta el aviso y el reload
               await Swal.fire({
                   title: '¡Admitido!',
                   text: 'El estudiante ha sido dado de alta correctamente.',
@@ -600,15 +603,31 @@
               location.reload();
 
           } catch (error) {
-              console.error("Error en el control de admisión:", error);
-              await Swal.fire('Error', 'Ocurrió un problema de comunicación al verificar la cuota de alumnos.', 'error');
+              console.error("Error crítico detectado en la admisión:", error);
+              
+              // Alerta explícita para fallas de Firebase Rules
+              if (error.message.includes("permissions") || error.code === "permission-denied") {
+                  await Swal.fire({
+                      title: 'Error de Permisos',
+                      text: 'El servidor de Firebase bloqueó la transacción. Por favor revisa y actualiza las Reglas de Seguridad (Security Rules) en la consola de Firestore.',
+                      icon: 'error',
+                      confirmButtonColor: '#e74c3c'
+                  });
+              } else {
+                  await Swal.fire('Error', 'Ocurrió un problema técnico al verificar y guardar la información del alumno.', 'error');
+              }
           }
       };
 
       document.getElementById('btnEliminar').onclick = async () => {
-          if (confirm("¿Rechazar?")) {
-              await deleteDoc(doc(db, "postulaciones", currentId));
-              location.reload();
+          if (confirm("¿Estás seguro de que deseas rechazar y eliminar esta postulación?")) {
+              try {
+                  await deleteDoc(doc(db, "postulaciones", currentId));
+                  location.reload();
+              } catch (error) {
+                  console.error("Error al eliminar postulación:", error);
+                  alert("No se pudo eliminar el documento debido a restricciones de permisos en el servidor.");
+              }
           }
       };
   </script>
