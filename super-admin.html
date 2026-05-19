@@ -392,7 +392,6 @@
     function escucharYListarAcademias() {
         if (desuscribirSelect) desuscribirSelect();
 
-        // Escuchamos la colección completa de usuarios para procesar de forma segura en código local
         const collectionRef = collection(db, "usuarios");
 
         desuscribirSelect = onSnapshot(collectionRef, (snapshot) => {
@@ -406,12 +405,15 @@
             snapshot.forEach((userDoc) => {
                 const datos = userDoc.data();
                 
-                // 🛑 FILTRADO MANUAL SEGURO: Buscamos que el perfil sea "academia" y no esté eliminado
-                if (datos.perfil === "academia" && datos.status !== "eliminado") {
+                // Convertimos el perfil a minúsculas para comparar con seguridad
+                const perfilLimpio = datos.perfil ? datos.perfil.toString().trim().toLowerCase() : "";
+                const statusLimpio = datos.status ? datos.status.toString().trim().toLowerCase() : "";
+
+                // 🛑 EVALUACIÓN COMPLETA: Ahora engancha tanto "academia" como "Academia"
+                if (perfilLimpio === "academia" && statusLimpio !== "eliminado") {
                     contadorAcademias++;
                     const email = userDoc.id;
                     
-                    // Extraemos el nombre desde el objeto "entidad" según tu estructura
                     const nombreAcademia = datos.entidad || "Academia sin nombre descriptivo";
                     const cuposActuales = parseInt(datos.cupos || 0);
 
@@ -453,19 +455,15 @@
             if (docSnap.exists()) {
                 const datosActuales = docSnap.data();
                 
-                // 🛑 REALIZAMOS LA SUMA DEL VALOR ACTUAL CON EL DEL MODAL
                 const cuposActuales = parseInt(datosActuales.cupos || 0);
                 const nuevoTotal = cuposActuales + cuposAsumar;
 
-                // Guardamos el nuevo valor numérico total en Firestore
                 await updateDoc(academiaRef, {
                     cupos: nuevoTotal
                 });
 
                 inputCantidad.value = "";
                 cerrarModalCupos();
-
-                // Detona el banner de aviso con los estilos de la app
                 mostrarNotificacionFlotante(cuposAsumar, nombreAcademia);
             }
         } catch (error) {
