@@ -130,7 +130,6 @@
             font-weight: 300;
         }
 
-        /* Estilo personalizado para el select nativo dentro del modal oscuro */
         .select-dark-custom {
             width: 100%;
             padding: 12px;
@@ -345,8 +344,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    // Agregamos los módulos requeridos de Firestore
-    import { getFirestore, collection, query, where, onSnapshot, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -359,7 +357,7 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app); // Inicialización de la base de datos
+    const db = getFirestore(app); 
     const MI_UID_MAESTRO = "m56REyF19sOsC6BE5sJdJG6eR863";
 
     onAuthStateChanged(auth, (user) => {
@@ -394,34 +392,44 @@
     function escucharYListarAcademias() {
         if (desuscribirSelect) desuscribirSelect();
 
-        // Consulta en tiempo real de usuarios con perfil de academia activos
-        const q = query(collection(db, "usuarios"), where("perfil", "==", "academia"), where("status", "!=", "eliminado"));
+        // Escuchamos la colección completa de usuarios para procesar de forma segura en código local
+        const collectionRef = collection(db, "usuarios");
 
-        desuscribirSelect = onSnapshot(q, (snapshot) => {
+        desuscribirSelect = onSnapshot(collectionRef, (snapshot) => {
             const selectElement = document.getElementById('select-academias');
-            
-            if (snapshot.empty) {
-                selectElement.innerHTML = `<option value="" disabled selected>No hay academias registradas</option>`;
-                return;
-            }
-
             const valorGuardado = selectElement.value;
+            
             selectElement.innerHTML = `<option value="" disabled ${!valorGuardado ? 'selected' : ''}>-- Elige una academia --</option>`;
 
-            snapshot.forEach((academiaDoc) => {
-                const datos = academiaDoc.data();
-                const email = academiaDoc.id;
-                const nombre = datos.nombre_academia || "Academia sin nombre";
-                const cuposActuales = datos.cupos || 0;
+            let contadorAcademias = 0;
 
-                const option = document.createElement('option');
-                option.value = email;
-                option.setAttribute('data-nombre', nombre); 
-                option.textContent = `${nombre} (${email}) — [Actual: ${cuposActuales}]`;
+            snapshot.forEach((userDoc) => {
+                const datos = userDoc.data();
+                
+                // 🛑 FILTRADO MANUAL SEGURO: Buscamos que el perfil sea "academia" y no esté eliminado
+                if (datos.perfil === "academia" && datos.status !== "eliminado") {
+                    contadorAcademias++;
+                    const email = userDoc.id;
+                    
+                    // Extraemos el nombre desde el objeto "entidad" según tu estructura
+                    const nombreAcademia = datos.entidad || "Academia sin nombre descriptivo";
+                    const cuposActuales = parseInt(datos.cupos || 0);
 
-                if (email === valorGuardado) option.selected = true;
-                selectElement.appendChild(option);
+                    const option = document.createElement('option');
+                    option.value = email;
+                    option.setAttribute('data-nombre', nombreAcademia); 
+                    option.textContent = `${nombreAcademia} (${email}) — [Cupos: ${cuposActuales}]`;
+
+                    if (email === valorGuardado) option.selected = true;
+                    selectElement.appendChild(option);
+                }
             });
+
+            if (contadorAcademias === 0) {
+                selectElement.innerHTML = `<option value="" disabled selected>No se encontraron academias activas</option>`;
+            }
+        }, (error) => {
+            console.error("Error en el escuchador de academias:", error);
         });
     }
 
@@ -444,10 +452,12 @@
 
             if (docSnap.exists()) {
                 const datosActuales = docSnap.data();
+                
+                // 🛑 REALIZAMOS LA SUMA DEL VALOR ACTUAL CON EL DEL MODAL
                 const cuposActuales = parseInt(datosActuales.cupos || 0);
                 const nuevoTotal = cuposActuales + cuposAsumar;
 
-                // Actualización del documento en Firestore
+                // Guardamos el nuevo valor numérico total en Firestore
                 await updateDoc(academiaRef, {
                     cupos: nuevoTotal
                 });
