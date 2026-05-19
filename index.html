@@ -164,15 +164,15 @@
                   if (docSnap.exists()) {
                       const datosUsuario = docSnap.data();
                       
-                      // 🛑 ¡EL CANDADO! Validamos si el usuario está en la papelera
+                      // Validación si la lectura pasa pero tiene el campo status en "eliminado"
                       if (datosUsuario.status === "eliminado") {
                           alert("ACCESO SUSPENDIDO: Esta cuenta se encuentra en la papelera de reciclaje. Comunícate con el Superadministrador.");
                           navegando = false;
-                          await cerrarSesionLimpiar(); // Lo expulsamos y limpiamos todo
+                          await cerrarSesionLimpiar();
                           return;
                       }
  
-                      // Si no está eliminado, guardamos sus datos en localStorage y continuamos
+                      // Si todo está bien, guardamos los datos y procedemos al ruteo
                       localStorage.setItem('userId', user.email.toLowerCase().trim());
                       localStorage.setItem('userRole', datosUsuario.perfil || "");
                       
@@ -198,13 +198,23 @@
                       await cerrarSesionLimpiar();
                   }
               } catch (error) {
-                  console.error("Error al verificar perfil:", error);
+                  // 🛑 CAPTURA EL RECHAZO DE LAS REGLAS DE FIREBASE (PERMISOS INSUFICIENTES)
+                  console.warn("Acceso denegado por políticas de seguridad del sistema:", error);
+                  
+                  alert("ACCESO SUSPENDIDO: Esta cuenta se encuentra en la papelera de reciclaje. Comunícate con el Superadministrador.");
+                  
+                  // Desbloqueamos el botón y restablecemos su texto
                   navegando = false;
                   const btn = document.getElementById('btn-submit');
                   if (btn) {
                       btn.disabled = false;
                       btn.innerText = "Entrar a UCMI";
                   }
+                  
+                  // Rompemos la sesión para que no se mantenga logueado de fondo
+                  limpiarTodo();
+                  await signOut(auth);
+                  localStorage.clear();
               }
           }
  
@@ -222,7 +232,7 @@
  
           // Observador de Sesión
           onAuthStateChanged(auth, (user) => {
-              limpiarTodo(); // Limpiamos cada vez que cambia el estado
+              limpiarTodo(); 
               if (user) {
                   document.getElementById('seccion-inputs').style.display = 'none';
                   document.getElementById('card-sesion-activa').style.display = 'block';
@@ -245,11 +255,11 @@
  
               try {
                   const cred = await signInWithEmailAndPassword(auth, email, pass);
-                  limpiarTodo(); // Limpiar al tener éxito
+                  limpiarTodo(); 
                   procesarRedireccion(cred.user);
               } catch (error) {
                   alert("Correo o contraseña incorrectos.");
-                  limpiarTodo(); // Limpiar si falla para mayor seguridad
+                  limpiarTodo(); 
                   btn.disabled = false;
                   btn.innerText = "Entrar a UCMI";
               }
