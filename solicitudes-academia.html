@@ -604,16 +604,34 @@
       };
 
       document.getElementById('btnEliminar').onclick = async () => {
-          if (confirm("¿Estás seguro de rechazar permanentemente este aspirante?")) {
-              try {
-                  await deleteDoc(doc(db, "postulaciones", currentId));
-                  location.reload();
-              } catch (error) {
-                  console.error(error);
-                  alert("Error al eliminar documento.");
-              }
-          }
-      };
+            const result = await Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¡Esta acción eliminará permanentemente la postulación!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, rechazar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    popup: 'swal2-popup' // Usa tu clase de estilo personalizado
+                }
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    await deleteDoc(doc(db, "postulaciones", currentId));
+                    await Swal.fire({
+                        title: 'Rechazado',
+                        text: 'El aspirante ha sido descartado correctamente.',
+                        icon: 'success',
+                        customClass: { popup: 'swal2-popup' }
+                    });
+                    location.reload();
+                } catch (error) {
+                    console.error(error);
+                    Swal.fire('Error', 'No se pudo eliminar el documento del servidor.', 'error');
+                }
+            }
+        };
   </script>
   </body>
   </html>
