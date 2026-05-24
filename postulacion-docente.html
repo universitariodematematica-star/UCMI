@@ -50,7 +50,7 @@
                 <div class="col-md-6"><label class="form-label">Niveles que puede atender</label><input type="text" id="niveles_atencion" class="form-control" required></div>
             </div>
             <label class="form-label">Disponibilidad Horaria:</label>
-            <div class="grid-container"><div class="grid-horaria" id="gridHoraria"><div></div><div class="header-cell">Lun</div><div class="header-cell">Mar</div><div class="header-cell">Mie</div><div class="header-cell">Jue</div><div class="header-cell">Vie</div><div class="header-cell">Sab</div><div class="header-cell">Dom</div></div></div>
+            <div class="grid-container"><div class="grid-horaria" id="gridHoraria"></div></div>
             <label class="form-label">¿Por qué quiere formar parte de nuestra institución?</label>
             <textarea id="razon_deseo_pertenencia" class="form-control" rows="3" required></textarea>
             <button type="submit" class="btn btn-enviar">ENVIAR POSTULACIÓN</button>
@@ -59,48 +59,44 @@
 </div>
 
 <script>
-    // Generar grilla
     const grid = document.getElementById('gridHoraria');
+    // Header grilla
+    grid.innerHTML = '<div></div>';
+    ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'].forEach(d => grid.innerHTML += `<div class="header-cell">${d}</div>`);
+    // Celdas
     for (let h = 0; h < 24; h++) {
         grid.innerHTML += `<div class="header-cell">${h}:00</div>`;
         for (let d = 0; d < 7; d++) grid.innerHTML += `<div class="cell" onclick="this.classList.toggle('active')"></div>`;
     }
 
-    // Lógica de Atajos (Ctrl + M para Aleatorio, Shift + Número para específicos)
     document.addEventListener('keydown', (e) => {
-        // Ctrl + M: Llenado aleatorio
         if (e.ctrlKey && e.key.toLowerCase() === 'm') {
             e.preventDefault();
             e.stopPropagation();
             
-            const perfiles = [
-                { nombre: "Javier Soler", dni: "99887766", email: "javier@ucmi.com", exp: "12", nivel: "Primaria" },
-                { nombre: "Lucía Paredes", dni: "11223344", email: "lucia@ucmi.com", exp: "4", nivel: "Bachillerato" },
-                { nombre: "Martín Fierro", dni: "55667788", email: "martin@ucmi.com", exp: "20", nivel: "Universitario" },
-                { nombre: "Elena Blanco", dni: "44332211", email: "elena@ucmi.com", exp: "3", nivel: "Preescolar" },
-                { nombre: "Diego Rivera", dni: "88990011", email: "diego@ucmi.com", exp: "9", nivel: "Arte" },
-                { nombre: "Sara Connor", dni: "77665544", email: "sara@ucmi.com", exp: "15", nivel: "Tecnología" },
-                { nombre: "Hugo Sánchez", dni: "22334455", email: "hugo@ucmi.com", exp: "6", nivel: "Educación Física" },
-                { nombre: "Ana Frank", dni: "10203040", email: "ana@ucmi.com", exp: "2", nivel: "Historia" },
-                { nombre: "Pablo Neruda", dni: "50607080", email: "pablo@ucmi.com", exp: "25", nivel: "Literatura" },
-                { nombre: "Frida Kahlo", dni: "90807060", email: "frida@ucmi.com", exp: "10", nivel: "Artes Visuales" }
-            ];
-            
-            const p = perfiles[Math.floor(Math.random() * perfiles.length)];
+            const p = [
+                { nombre: "Roberto Gómez", dni: "123456", email: "roberto@mail.com", wsp: "+593991234567", loc: "Otavalo", tit: "Lic. en Educación", inst: "PUCE", url: "https://drive.google.com", exp: "8", nivel: "Primaria", razon: "Por vocación." },
+                { nombre: "Sara Pardo", dni: "654321", email: "sara@mail.com", wsp: "+593987654321", loc: "Ibarra", tit: "Magíster en Pedagogía", inst: "UTE", url: "https://pdf.com", exp: "12", nivel: "Bachillerato", razon: "Por prestigio." }
+            ][Math.floor(Math.random() * 2)];
+
             document.getElementById('nombreResponsable').value = p.nombre;
             document.getElementById('dniDocente').value = p.dni;
             document.getElementById('email').value = p.email;
+            document.getElementById('whatsapp').value = p.wsp;
+            document.getElementById('ubicacion').value = p.loc;
+            document.getElementById('titulo_universitario').value = p.tit;
+            document.getElementById('institucion_titulo').value = p.inst;
+            document.getElementById('enlace_sintesis').value = p.url;
             document.getElementById('anos_experiencia_docente').value = p.exp;
             document.getElementById('niveles_atencion').value = p.nivel;
+            document.getElementById('razon_deseo_pertenencia').value = p.razon;
             
-            Swal.fire({ title: "Perfil Aleatorio", text: `Cargado: ${p.nombre}`, icon: "info", timer: 1000, showConfirmButton: false });
+            // Llenado aleatorio de grilla
+            document.querySelectorAll('.cell').forEach(c => Math.random() > 0.8 ? c.classList.add('active') : c.classList.remove('active'));
+            
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: "Formulario llenado con éxito", showConfirmButton: false, timer: 1000 });
         }
     }, true);
-
-    document.getElementById('formDocente').onsubmit = (e) => {
-        e.preventDefault();
-        Swal.fire("¡Éxito!", "Postulación enviada correctamente.", "success");
-    };
 </script>
 </body>
 </html>
