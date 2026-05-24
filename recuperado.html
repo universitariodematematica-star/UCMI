@@ -275,14 +275,32 @@
     document.getElementById('formIdiomas').onsubmit = (e) => {
         e.preventDefault();
         const form = e.target;
-        const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(cb => cb.value);
         
+        // 1. Validar campos requeridos nativos
         if (!form.checkValidity()) {
             form.classList.add('was-validated');
+            Swal.fire({
+                icon: 'error',
+                title: 'Formulario incompleto',
+                text: 'Por favor, rellena todos los campos obligatorios antes de continuar.',
+                confirmButtonColor: '#c5a059'
+            });
             return;
         }
-        if (modulos.length === 0) return Swal.fire("Módulos", "Selecciona al menos uno.", "warning");
 
+        // 2. Validar selección de al menos un módulo
+        const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(cb => cb.value);
+        if (modulos.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Falta seleccionar módulos',
+                text: 'Debes seleccionar al menos un módulo de interés.',
+                confirmButtonColor: '#c5a059'
+            });
+            return;
+        }
+
+        // 3. Si todo es correcto, construimos el objeto de datos
         const edad = parseInt(document.getElementById('edadEstudiante').value);
         const categoria = edad < 18 ? "Junior" : "Adulto";
 
@@ -294,10 +312,11 @@
             edadEstudiante: edad,
             ubicacion: document.getElementById('ubicacion').value,
             email: document.getElementById('email').value,
-            whatsapp: document.getElementById('whatsapp').value, promediocatualbachillerato: document.getElementById('promediocatualbachillerato').value,
+            whatsapp: document.getElementById('whatsapp').value,
+            promediocatualbachillerato: document.getElementById('promediocatualbachillerato').value,
             modulos: modulos,
             entidad: sedeRef,
-            perfil: "Estudiante Academia", 
+            perfil: "Estudiante Academia",
             categoriaEdad: categoria,
             timestamp: serverTimestamp()
         };
@@ -313,7 +332,8 @@
                     <div class="col-md-6"><span class="resumen-label">Edad</span><div class="resumen-valor">${datosGlobales.edadEstudiante} años</div></div>
                     <div class="col-12"><span class="resumen-label">Ubicación</span><div class="resumen-valor">${datosGlobales.ubicacion}</div></div>
                     <div class="col-md-6"><span class="resumen-label">Email</span><div class="resumen-valor">${datosGlobales.email}</div></div>
-                    <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsapp}</div></div><div class="col-12"><span class="resumen-label">Promedio de Bachillerato</span><div class="resumen-valor text-warning fw-bold">${datosGlobales.promediocatualbachillerato}</div></div>
+                    <div class="col-md-6"><span class="resumen-label">WhatsApp</span><div class="resumen-valor">${datosGlobales.whatsapp}</div></div>
+                    <div class="col-12"><span class="resumen-label">Promedio de Bachillerato</span><div class="resumen-valor text-warning fw-bold">${datosGlobales.promediocatualbachillerato}</div></div>
                 </div>
             </div>`;
 
@@ -337,7 +357,6 @@
         document.getElementById('cuerpoRevision').innerHTML = html;
         modalBootstrap.show();
     };
-
     // --- ENVÍO FINAL ---
     const generarPDF = async (datos) => {
         const { jsPDF } = window.jspdf;
