@@ -10,6 +10,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
+        #bodyModal .grid-container {
+    overflow-x: auto; /* Permite scroll horizontal si es muy ancha */
+    max-width: 100%;
+}
         :root { --dorado-ucmi: #c5a059; --verde-seleccion: #28a745; }
         body { 
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed; 
@@ -33,7 +37,7 @@
 <div class="container">
     <div class="card-form">
         <div class="logo-container"><img id="logoAcademia" src="https://via.placeholder.com/120" alt="Logo"></div>
-        <h2 class="text-center" style="color: var(--dorado-ucmi); font-family: 'Cinzel'; margin-bottom: 30px;">POSTULACIÓN DOCENTE</h2>
+        <h2 class="text-center" style="color: var(--dorado-ucmi); font-family: 'Cinzel'; margin-bottom: 30px;">POSTULACIÓN DOCENTE 2</h2>
         
         <form id="formDocente">
             <div class="row">
@@ -176,10 +180,30 @@ document.getElementById('formDocente').onsubmit = (e) => {
         entidadReferencia: refEntidad || "General"
     };
 
-    // Generar la grilla compacta en el modal
-    let gridHtml = `<div style="display:grid; grid-template-columns:repeat(7, 20px); gap:2px; margin-top:10px;">`;
-    for(let i=0; i<168; i++) {
-        gridHtml += `<div style="width:20px; height:10px; background:${horariosSeleccionados.includes(i) ? '#28a745' : '#444'}; border-radius:2px;"></div>`;
+    // 1. Validar si hay horarios seleccionados
+    if (horariosSeleccionados.length === 0) {
+        Swal.fire("Atención", "Por favor, selecciona al menos un horario.", "warning");
+        return;
+    }
+
+    // 2. Calcular rango de horas (filas de 0 a 23)
+    const filasActivas = horariosSeleccionados.map(i => Math.floor(i / 7));
+    const minH = Math.min(...filasActivas);
+    const maxH = Math.max(...filasActivas);
+
+    // 3. Generar la grilla dinámica
+    let gridHtml = `
+        <div style="display:grid; grid-template-columns: 40px repeat(7, 1fr); gap: 2px; margin-top: 10px; font-size: 0.65rem;">
+            <div style="color:#c5a059;">Hora</div>${['Lun','Mar','Mie','Jue','Vie','Sab','Dom'].map(d => `<div style="text-align:center; font-weight:bold; color:#c5a059;">${d}</div>`).join('')}
+    `;
+
+    for (let h = minH; h <= maxH; h++) {
+        gridHtml += `<div style="display:flex; align-items:center; justify-content:center; color:white; background:rgba(255,255,255,0.1); border-radius:2px;">${h}:00</div>`;
+        for (let d = 0; d < 7; d++) {
+            const index = (h * 7) + d;
+            const esActiva = horariosSeleccionados.includes(index);
+            gridHtml += `<div style="height:15px; background:${esActiva ? '#28a745' : '#444'}; border-radius:2px;"></div>`;
+        }
     }
     gridHtml += `</div>`;
 
@@ -195,7 +219,7 @@ document.getElementById('formDocente').onsubmit = (e) => {
             <strong>Experiencia:</strong> ${datosPostulacion.experienciaDocente} años<br>
             <strong>Niveles:</strong> ${datosPostulacion.niveles_atencion}<br>
             <strong>Razón:</strong> ${datosPostulacion.razon_deseo_pertenencia}<br>
-            <strong>Disponibilidad:</strong> ${gridHtml}
+            <strong>Disponibilidad (Verde = Seleccionado):</strong> ${gridHtml}
         </div>
     `;
     new bootstrap.Modal(document.getElementById('modalRevision')).show();
