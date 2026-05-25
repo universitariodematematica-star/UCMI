@@ -2,103 +2,81 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Postulación Docente - UCMI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         :root { --dorado-ucmi: #c5a059; --verde-seleccion: #28a745; }
-        body { background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed; background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; padding: 40px 0; }
-        .card-form { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); max-width: 950px; margin: auto; padding: 40px; }
-        #logoAcademia { width: 120px; height: 120px; border-radius: 25px; object-fit: cover; border: 2px solid var(--dorado-ucmi); }
-        .form-label { color: var(--dorado-ucmi); font-weight: bold; margin-top: 15px; }
-        .form-control { background: rgba(255,255,255,0.08) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: white !important; border-radius: 12px; padding: 12px; }
-        .grid-container { width: 100%; margin-top: 15px; overflow-x: auto; }
-        .grid-horaria { display: grid; grid-template-columns: 60px repeat(7, 1fr); gap: 3px; min-width: 500px; }
-        .cell { background: rgba(255,255,255,0.1); height: 25px; cursor: pointer; border-radius: 4px; }
-        .cell.active { background: var(--verde-seleccion) !important; }
-        .header-cell { font-weight: bold; padding: 5px; text-align: center; font-size: 0.7rem; color: var(--dorado-ucmi); }
-        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; border: none; width: 100%; margin-top: 30px; }
-        
-        /* Estilo para la grilla dentro del Modal */
-        .modal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; font-size: 0.7rem; }
-        .m-cell { height: 15px; background: #333; border-radius: 2px; }
+        body { background: #1a1a1a; color: white; padding: 40px; font-family: sans-serif; }
+        .card-form { background: #2d2d2d; padding: 30px; border-radius: 20px; max-width: 800px; margin: auto; }
+        .grid-horaria { display: grid; grid-template-columns: 50px repeat(7, 1fr); gap: 2px; }
+        .cell { background: #444; height: 20px; cursor: pointer; }
+        .cell.active { background: var(--verde-seleccion); }
+        .header-cell { font-size: 0.7rem; color: var(--dorado-ucmi); text-align: center; }
+        .modal-grid-recortada { display: grid; grid-template-columns: 40px repeat(7, 1fr); gap: 2px; }
+        .m-cell { height: 18px; background: #555; }
         .m-cell.active { background: var(--verde-seleccion); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="card-form">
-        <div class="text-center"><img id="logoAcademia" src="https://via.placeholder.com/120" alt="Logo"></div>
-        <h2 class="text-center" style="color: var(--dorado-ucmi); font-family: 'Cinzel';">POSTULACIÓN DOCENTE</h2>
-        
-        <form id="formDocente">
-            <div class="row">
-                <div class="col-md-6"><label class="form-label">Nombre</label><input type="text" id="nombreResponsable" class="form-control" required></div>
-                <div class="col-md-6"><label class="form-label">DNI</label><input type="text" id="dniDocente" class="form-control" required></div>
-            </div>
-            <label class="form-label">Disponibilidad Horaria:</label>
-            <div class="grid-container"><div class="grid-horaria" id="gridHoraria"></div></div>
-            <button type="submit" class="btn btn-enviar">REVISAR Y ENVIAR</button>
-        </form>
-    </div>
+<div class="card-form">
+    <h3 style="color: var(--dorado-ucmi);">Postulación Docente</h3>
+    <form id="formDocente">
+        <input type="text" id="nombreResponsable" class="form-control mb-2" placeholder="Nombre del Postulante" required>
+        <div class="grid-horaria" id="gridHoraria"></div>
+        <button type="submit" class="btn btn-warning mt-3 w-100">Revisar Disponibilidad</button>
+    </form>
 </div>
 
 <div class="modal fade" id="modalRevision" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content bg-dark text-white">
-            <div class="modal-header"><h5 class="modal-title">Confirmar Horario</h5></div>
-            <div class="modal-body" id="bodyModal"></div>
-            <div class="modal-footer"><button class="btn btn-success" id="btnFinal">Confirmar</button></div>
-        </div>
-    </div>
+    <div class="modal-dialog"><div class="modal-content bg-dark"><div class="modal-body" id="bodyModal"></div></div></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const firebaseConfig = { apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const urlParams = new URLSearchParams(window.location.search);
-    const ent = urlParams.get('ref');
+    const perfiles = [
+        {nombre:"Roberto Gómez", dni:"1001"}, {nombre:"Sara Pardo", dni:"1002"}, {nombre:"Javier Soler", dni:"1003"},
+        {nombre:"Lucía Paredes", dni:"1004"}, {nombre:"Martín Fierro", dni:"1005"}, {nombre:"Elena Blanco", dni:"1006"},
+        {nombre:"Diego Rivera", dni:"1007"}, {nombre:"Sara Connor", dni:"1008"}, {nombre:"Hugo Sánchez", dni:"1009"},
+        {nombre:"Frida Kahlo", dni:"1010"}, {nombre:"César Vallejo", dni:"1011"}, {nombre:"Gabriela Mistral", dni:"1012"},
+        {nombre:"Isaac Newton", dni:"1013"}, {nombre:"Marie Curie", dni:"1014"}, {nombre:"Pablo Picasso", dni:"1015"},
+        {nombre:"Ada Lovelace", dni:"1016"}, {nombre:"Simón Bolívar", dni:"1017"}, {nombre:"Juana de Arco", dni:"1018"},
+        {nombre:"Nikola Tesla", dni:"1019"}, {nombre:"Virginia Woolf", dni:"1020"}
+    ];
 
-    // Construir Grilla Original
     const grid = document.getElementById('gridHoraria');
-    grid.innerHTML = '<div></div>';
-    ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'].forEach(d => grid.innerHTML += `<div class="header-cell">${d}</div>`);
+    ['','Lun','Mar','Mie','Jue','Vie','Sab','Dom'].forEach(d => grid.innerHTML += `<div class="header-cell">${d}</div>`);
     for (let h = 0; h < 24; h++) {
         grid.innerHTML += `<div class="header-cell">${h}:00</div>`;
         for (let d = 0; d < 7; d++) grid.innerHTML += `<div class="cell" onclick="this.classList.toggle('active')"></div>`;
     }
 
+    // Lógica de llenado de perfiles
+    function cargarPerfil(p) {
+        document.getElementById('nombreResponsable').value = p.nombre;
+        document.querySelectorAll('.cell').forEach(c => Math.random() > 0.8 ? c.classList.add('active') : c.classList.remove('active'));
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if(e.ctrlKey && e.key === 'm') cargarPerfil(perfiles[Math.floor(Math.random()*20)]);
+        if(e.shiftKey && e.code.startsWith('Digit')) cargarPerfil(perfiles[parseInt(e.code.replace('Digit','')) % 20]);
+    });
+
     document.getElementById('formDocente').onsubmit = (e) => {
         e.preventDefault();
-        const activeCells = [];
-        document.querySelectorAll('.cell').forEach((c, i) => { if(c.classList.contains('active')) activeCells.push(i); });
+        const cells = document.querySelectorAll('.cell');
+        let minF = 24, maxF = 0;
+        cells.forEach((c, i) => { if(c.classList.contains('active')) { let f = Math.floor(i/7); if(f < minF) minF = f; if(f > maxF) maxF = f; }});
 
-        // Crear grilla visual para el modal
-        let htmlGrid = '<div class="modal-grid">';
-        for(let i=0; i<168; i++) {
-            htmlGrid += `<div class="m-cell ${activeCells.includes(i) ? 'active' : ''}"></div>`;
+        let html = `<p>Postulante: ${document.getElementById('nombreResponsable').value}</p><div class="modal-grid-recortada">`;
+        for(let h = minF; h <= maxF; h++) {
+            html += `<div class="header-cell">${h}:00</div>`;
+            for(let d = 0; d < 7; d++) html += `<div class="m-cell ${cells[(h*7)+d].classList.contains('active') ? 'active' : ''}"></div>`;
         }
-        htmlGrid += '</div>';
-
-        document.getElementById('bodyModal').innerHTML = `
-            <p><strong>Nombre:</strong> ${document.getElementById('nombreResponsable').value}</p>
-            <p>Disponibilidad seleccionada (verde):</p>
-            ${htmlGrid}
-        `;
+        html += '</div>';
+        document.getElementById('bodyModal').innerHTML = html;
         new bootstrap.Modal(document.getElementById('modalRevision')).show();
-    };
-
-    document.getElementById('btnFinal').onclick = () => {
-        // Lógica de guardado...
-        Swal.fire("Enviado", "Postulación recibida", "success");
-        bootstrap.Modal.getInstance(document.getElementById('modalRevision')).hide();
     };
 </script>
 </body>
