@@ -130,17 +130,24 @@
         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Cargado: ${p.nombre}`, showConfirmButton: false, timer: 1000 });
     }
 
-    let agendaGlobal = {}; // Variable para guardar el horario actual
+    let agendaGlobal = {};
 
     const generarPDF = (datos) => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        
+        // Agregar Logo al PDF
+        const logoImg = document.getElementById('logoAcademia');
+        if (logoImg && logoImg.src && !logoImg.src.includes('placeholder')) {
+            doc.addImage(logoImg.src, 'PNG', 15, 10, 25, 25);
+        }
+
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
-        doc.text("POSTULACIÓN DOCENTE - " + datos.entidadReferencia, 15, 20);
+        doc.text("POSTULACIÓN DOCENTE - " + datos.entidadReferencia, 45, 20);
         doc.setFontSize(10);
-        doc.text("Fecha: " + datos.fecha, 15, 27);
-        doc.line(15, 32, 195, 32);
+        doc.text("Fecha: " + datos.fecha, 45, 27);
+        doc.line(15, 38, 195, 38);
 
         const filas = [
             ["Nombre:", datos.nombreResponsable], ["DNI:", datos.dniDocente],
@@ -150,10 +157,12 @@
             ["Niveles:", datos.niveles_atencion], ["Razón:", datos.razon_deseo_pertenencia]
         ];
 
-        let y = 45;
+        let y = 48;
         filas.forEach(fila => {
-            doc.setFont("helvetica", "bold"); doc.text(fila[0], 15, y);
-            doc.setFont("helvetica", "normal"); doc.text(String(fila[1]), 65, y);
+            doc.setFont("helvetica", "bold");
+            doc.text(fila[0], 15, y);
+            doc.setFont("helvetica", "normal");
+            doc.text(String(fila[1]), 65, y);
             y += 8;
         });
 
