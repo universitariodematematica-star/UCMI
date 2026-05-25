@@ -498,6 +498,7 @@ window.verExpediente = async (id) => {
           document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
 
          // --- INICIO DE PROCESAMIENTO HORARIO ---
+// --- INICIO DE PROCESAMIENTO HORARIO (ORDENADO Y LINEAL) ---
 const diasSemana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
 let htmlHorarios = "";
 
@@ -510,13 +511,20 @@ if (esDocente && d.horarios && Array.isArray(d.horarios)) {
         agrupado[dia].push(`${hora}:00`);
     });
 
-    for (const dia in agrupado) {
-        htmlHorarios += `
-            <div class="col-md-3 col-6 mb-2">
-                <span style="color:var(--dorado-ucmi); font-weight:bold;">${dia}:</span> 
-                <span style="font-size: 0.85rem;">${agrupado[dia].join(', ')}</span>
-            </div>`;
-    }
+    // Construimos la lista respetando el orden de diasSemana
+    diasSemana.forEach(dia => {
+        if (agrupado[dia]) {
+            htmlHorarios += `
+                <div class="col-12 mb-1" style="border-bottom: 1px solid rgba(197, 160, 89, 0.2); padding: 5px 0;">
+                    <span style="color:var(--dorado-ucmi); font-weight:bold; display: inline-block; width: 45px;">${dia}:</span> 
+                    <span style="font-size: 0.85rem; color: #fff;">${agrupado[dia].sort((a, b) => parseInt(a) - parseInt(b)).join(', ')}</span>
+                </div>`;
+        }
+    });
+} else if (esDocente) {
+    htmlHorarios = `<div class="col-12 mt-2" style="font-size:0.8rem; color:#888;">No hay disponibilidad registrada.</div>`;
+}
+// --- FIN DE PROCESAMIENTO HORARIO ---
 } else if (esDocente) {
     htmlHorarios = `<div class="col-12">No se ha registrado disponibilidad horaria.</div>`;
 }
