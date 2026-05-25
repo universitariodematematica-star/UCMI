@@ -130,22 +130,17 @@
         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Cargado: ${p.nombre}`, showConfirmButton: false, timer: 1000 });
     }
 
-    const generarPDF = (datos, agendaAgrupada) => {
+    let agendaGlobal = {}; // Variable para guardar el horario actual
+
+    const generarPDF = (datos) => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
-        // Logo
-        const logoImg = document.getElementById('logoAcademia');
-        if (logoImg.src) doc.addImage(logoImg.src, 'PNG', 15, 10, 20, 20);
-
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
-        doc.text("POSTULACIÓN DOCENTE", 40, 20);
-        doc.setFontSize(12);
-        doc.text("Entidad: " + datos.entidadReferencia, 40, 27);
+        doc.text("POSTULACIÓN DOCENTE - " + datos.entidadReferencia, 15, 20);
         doc.setFontSize(10);
-        doc.text("Fecha: " + datos.fecha, 15, 35);
-        doc.line(15, 38, 195, 38);
+        doc.text("Fecha: " + datos.fecha, 15, 27);
+        doc.line(15, 32, 195, 32);
 
         const filas = [
             ["Nombre:", datos.nombreResponsable], ["DNI:", datos.dniDocente],
@@ -155,20 +150,21 @@
             ["Niveles:", datos.niveles_atencion], ["Razón:", datos.razon_deseo_pertenencia]
         ];
 
-        let y = 48;
+        let y = 45;
         filas.forEach(fila => {
             doc.setFont("helvetica", "bold"); doc.text(fila[0], 15, y);
             doc.setFont("helvetica", "normal"); doc.text(String(fila[1]), 65, y);
             y += 8;
         });
 
+        // Agregar Horario al PDF
         y += 5;
         doc.setFont("helvetica", "bold"); doc.text("DISPONIBILIDAD HORARIA:", 15, y);
         y += 8;
         doc.setFont("helvetica", "normal");
-        Object.keys(agendaAgrupada).forEach(dia => {
-            if (agendaAgrupada[dia].length > 0) {
-                doc.text(`${dia}: ${agendaAgrupada[dia].join(', ')}`, 15, y);
+        Object.keys(agendaGlobal).forEach(dia => {
+            if (agendaGlobal[dia].length > 0) {
+                doc.text(`${dia}: ${agendaGlobal[dia].join(', ')}`, 15, y);
                 y += 7;
             }
         });
@@ -177,18 +173,18 @@
     };
 
     let datosTemporales = {};
-    let agendaActual = {};
 
     document.getElementById('formDocente').onsubmit = (e) => {
         e.preventDefault();
         const dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
-        agendaActual = { Lun: [], Mar: [], Mie: [], Jue: [], Vie: [], Sab: [], Dom: [] };
+        agendaGlobal = { Lun: [], Mar: [], Mie: [], Jue: [], Vie: [], Sab: [], Dom: [] };
         const horariosIndexados = [];
 
         document.querySelectorAll('.cell').forEach((cell, index) => {
             if (cell.classList.contains('active')) {
                 const hora = Math.floor(index / 7);
-                agendaActual[dias[index % 7]].push(`${hora}:00`);
+                const diaNombre = dias[index % 7];
+                agendaGlobal[diaNombre].push(`${hora}:00`);
                 horariosIndexados.push(index);
             }
         });
@@ -207,19 +203,27 @@
             razon_deseo_pertenencia: document.getElementById('razon_deseo_pertenencia').value,
             horarios: horariosIndexados,
             fecha: new Date().toLocaleString(),
+            perfil: "Docente Academia",
             entidadReferencia: refEntidad || "General"
         };
 
         let htmlDisponibilidad = "";
         dias.forEach(dia => {
-            if (agendaActual[dia].length > 0) {
-                htmlDisponibilidad += `<div><strong>${dia}:</strong> ${agendaActual[dia].join(', ')}</div>`;
+            if (agendaGlobal[dia].length > 0) {
+                htmlDisponibilidad += `<div><strong>${dia}:</strong> ${agendaGlobal[dia].join(', ')}</div>`;
             }
         });
 
         document.getElementById('bodyModal').innerHTML = `
             <p><strong>Nombre:</strong> ${datosTemporales.nombreResponsable}</p>
             <p><strong>DNI:</strong> ${datosTemporales.dniDocente}</p>
+            <p><strong>Email:</strong> ${datosTemporales.email}</p>
+            <p><strong>WhatsApp:</strong> ${datosTemporales.whatsapp}</p>
+            <p><strong>Ubicación:</strong> ${datosTemporales.ubicacion}</p>
+            <p><strong>Título:</strong> ${datosTemporales.titulo} (${datosTemporales.institucion_titulo})</p>
+            <p><strong>Experiencia:</strong> ${datosTemporales.experienciaDocente} años</p>
+            <p><strong>Niveles:</strong> ${datosTemporales.niveles_atencion}</p>
+            <p><strong>Razón:</strong> ${datosTemporales.razon_deseo_pertenencia}</p>
             <hr>
             <p><strong>Disponibilidad Horaria:</strong></p>
             ${htmlDisponibilidad || "No seleccionada"}
@@ -231,7 +235,7 @@
         db.collection('postulaciones').add(datosTemporales)
             .then((docRef) => {
                 Swal.fire("¡Éxito!", "Postulación registrada.", "success");
-                generarPDF(datosTemporales, agendaActual);
+                generarPDF(datosTemporales);
                 document.getElementById('formDocente').reset();
                 document.querySelectorAll('.cell.active').forEach(c => c.classList.remove('active'));
                 bootstrap.Modal.getInstance(document.getElementById('modalRevision')).hide();
