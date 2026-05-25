@@ -375,7 +375,7 @@
       let logoAcademiaGlobal = "";
       let academiaNombreGlobal = "";
       let cuposMaximosGlobal = 0;
-      let registrosLocales = []; // Movido hacia arriba para alcance global
+      let registrosLocales = [];
 
       const selectorFiltro = document.getElementById('filtroPerfil');
 
@@ -411,9 +411,8 @@
           document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
       }
 
-      // 2. SINCRONIZACIÓN EN VIVO (Consulta general de la entidad)
       function iniciarEscuchaFiltrada(academiaNombre) {
-          // Eliminamos el filtro de perfil estricto para traer a ambos
+          // Traemos todos los registros de la entidad para procesar Estudiantes y Docentes
           const q = query(
               collection(db, "postulaciones"),
               where("entidad", "==", academiaNombre)
@@ -422,21 +421,23 @@
           onSnapshot(q, (snap) => {
               registrosLocales = snap.docs;
               renderizarTabla();
+          }, (error) => {
+              console.error("Error sincronización: ", error);
           });
       }
 
       function renderizarTabla() {
           const lista = document.getElementById('listaMaestra');
           if (!lista) return;
-          const filtro = selectorFiltro.value; // Asegúrate que tu <select> tenga <option value="docente">Docente</option>
+          const filtro = selectorFiltro.value; 
           lista.innerHTML = "";
 
           registrosLocales.forEach(docSnap => {
               const d = docSnap.data();
               const id = docSnap.id;
               
-              // Lógica de filtrado en cliente
-              if (filtro !== "todos" && !d.perfil.toLowerCase().includes(filtro)) return;
+              // Filtro dinámico según la opción seleccionada
+              if (filtro !== "todos" && !d.perfil.toLowerCase().includes(filtro.toLowerCase())) return;
 
               const tr = document.createElement('tr');
               tr.innerHTML = `
@@ -444,7 +445,7 @@
                       <div class="fw-bold">${d.nombreResponsable || d.nombre || 'Sin nombre'}</div>
                       <div class="small text-muted">${d.email}</div>
                   </td>
-                  <td><span class="badge ${d.perfil.toLowerCase().includes('docente') ? 'bg-warning text-dark' : 'bg-categoria-estudiante'}">${d.perfil}</span></td>
+                  <td><span class="badge ${d.perfil === "Docente Academia" ? 'bg-warning text-dark' : 'bg-categoria-estudiante'}">${d.perfil}</span></td>
                   <td><i class="bi bi-geo-alt me-1"></i>${d.ubicacion || 'No definida'}</td>
                   <td class="text-center">
                       <button class="btn btn-dark btn-sm" onclick="verExpediente('${id}')">
@@ -461,24 +462,36 @@
           const snap = await getDoc(doc(db, "postulaciones", id));
           if (snap.exists()) {
               currentData = snap.data();
-              // ... (aquí mantienes tu lógica de renderizado del modal, es la misma)
-              // NOTA: Como es un bloque largo, simplemente mantenlo igual a como lo tenías.
+              const d = currentData;
+              document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
+              document.getElementById('contenidoModal').innerHTML = `
+                  <div class="col-12 mb-2"><h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">Expediente</h6></div>
+                  <div class="col-md-6 mb-3"><label class="small d-block" style="color: #2ecc71; font-weight: 800;">NOMBRE</label><span class="fw-bold">${d.nombreResponsable}</span></div>
+                  <div class="col-md-6 mb-3"><label class="small d-block" style="color: #2ecc71; font-weight: 800;">PERFIL</label><span>${d.perfil}</span></div>
+                  <div class="col-md-6 mb-3"><label class="small d-block" style="color: #2ecc71; font-weight: 800;">CORREO</label><span class="text-info">${d.email || 'N/A'}</span></div>
+                  <div class="col-md-6 mb-3"><label class="small d-block" style="color: #2ecc71; font-weight: 800;">UBICACIÓN</label><span>${d.ubicacion || 'N/A'}</span></div>
+              `;
               new bootstrap.Modal(document.getElementById('modalDetalles')).show();
           }
       };
 
-      // 3. ADMISIÓN CON LÓGICA DIFERENCIADA
+      selectorFiltro.addEventListener('change', renderizarTabla);
+
+      document.getElementById('btnLogout').onclick = async () => {
+          await signOut(auth);
+          window.location.href = "index.html";
+      };
+
       document.getElementById('btnConfirmarAcceso').onclick = async () => {
           if(!currentId || !currentData) return;
-          const esDocente = currentData.perfil.toLowerCase().includes("docente");
+          const esDocente = currentData.perfil === "Docente Academia";
 
           try {
-              // Validación de cupos solo si NO es docente
               if (!esDocente) {
                   const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
                   const snapshotEstudiantes = await getDocs(qEstudiantes);
                   if (snapshotEstudiantes.size >= cuposMaximosGlobal) {
-                      Swal.fire('Cupos Agotados', 'No hay vacantes para estudiantes.', 'warning');
+                      await Swal.fire('Cupos Agotados', 'No hay vacantes para estudiantes.', 'warning');
                       return; 
                   }
               }
@@ -486,18 +499,27 @@
               await setDoc(doc(db, "usuarios", currentData.email), { 
                   ...currentData, 
                   estado: "activo",
-                  rol: esDocente ? "docente" : "estudiante" // Asignación dinámica
+                  rol: esDocente ? "docente" : "estudiante"
               });
               
               await deleteDoc(doc(db, "postulaciones", currentId));
-              await Swal.fire('¡Admitido!', `El ${esDocente ? 'docente' : 'estudiante'} fue integrado.`, 'success');
+              await Swal.fire('¡Admitido!', `El ${esDocente ? 'docente' : 'estudiante'} fue integrado exitosamente.`, 'success');
               location.reload();
-
           } catch (error) {
-              Swal.fire('Error Técnico', 'No se pudo completar la operación.', 'error');
+              console.error(error);
+              Swal.fire('Error', 'No se pudo sincronizar la transacción.', 'error');
           }
       };
-      // ... (mantén el resto de tu código de cierre e inicialización igual)
+
+      document.getElementById('btnEliminar').onclick = async () => {
+          const result = await Swal.fire({ title: '¿Estás seguro?', text: "¡Esta acción eliminará la postulación!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, rechazar' });
+          if (result.isConfirmed) {
+              try {
+                  await deleteDoc(doc(db, "postulaciones", currentId));
+                  location.reload();
+              } catch (e) { Swal.fire('Error', 'No se pudo eliminar.', 'error'); }
+          }
+      };
   </script>
   </body>
   </html>
