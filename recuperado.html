@@ -460,22 +460,58 @@
           });
       }
 
-      window.verExpediente = async (id) => {
+window.verExpediente = async (id) => {
           currentId = id;
           const snap = await getDoc(doc(db, "postulaciones", id));
-          if (snap.exists()) {
-              currentData = snap.data();
-              const d = currentData;
-              document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
-              document.getElementById('contenidoModal').innerHTML = `
-                  <div class="col-12 mb-2"><h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">Expediente</h6></div>
-                  <div class="col-md-6 mb-3"><label class="small d-block" style="color: #2ecc71; font-weight: 800;">NOMBRE</label><span class="fw-bold">${d.nombreResponsable}</span></div>
-                  <div class="col-md-6 mb-3"><label class="small d-block" style="color: #2ecc71; font-weight: 800;">PERFIL</label><span>${d.perfil}</span></div>
-                  <div class="col-md-6 mb-3"><label class="small d-block" style="color: #2ecc71; font-weight: 800;">CORREO</label><span class="text-info">${d.email || 'N/A'}</span></div>
-                  <div class="col-md-6 mb-3"><label class="small d-block" style="color: #2ecc71; font-weight: 800;">UBICACIÓN</label><span>${d.ubicacion || 'N/A'}</span></div>
+          if (!snap.exists()) return;
+          
+          currentData = snap.data();
+          const d = currentData;
+          const esDocente = d.perfil === "Docente Academia";
+          
+          document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
+          
+          let html = `<div class="col-12 mb-4"><h5 style="color:var(--dorado-ucmi)">Expediente del Aspirante</h5></div>`;
+
+          if (esDocente) {
+              html += `
+                  <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Docente</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE COMPLETO</label><br>${d.nombreResponsable}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniDocente}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">TÍTULO</label><br>${d.titulo}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">INSTITUCIÓN DE EGRESO</label><br>${d.institucion_titulo}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">ENLACE A SÍNTESIS CURRICULAR</label><br>${d.enlaceSintesis}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">AÑOS DE EXPERIENCIA</label><br>${d.experienciaDocente}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div>                  
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NIVELES</label><br>${d.niveles_atencion}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">RAZÓN DE PERTENECIA A NUESTRA INSTITUCIÓN</label><br>${d.razon_deseo_pertenencia}</div>
               `;
-              new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+          } else {
+              // Esta parte mantiene exactamente el diseño de tu imagen para estudiantes
+              html += `
+                  <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Estudiante</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE COMPLETO</label><br>${d.nombre}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniEstudiante}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">GÉNERO</label><br>${d.genero}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">FECHA DE NACIMIENTO</label><br>${d.fechaNacimiento}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">EDAD</label><br>${d.edadEstudiante}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">PROMEDIO</label><br>${d.promediocatualbachillerato}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">MÓDULOS DE INTERÉS</label><br>${d.modulos}</div>
+                  <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold; border-top: 1px solid #333; padding-top:10px;">Información del Representante</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE</label><br>${d.nombreRepresentante}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO</label><br>${d.emailRepresentante}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI</label><br>${d.dniRepresentante}</div>
+                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsappRepresentante}</div>
+              `;
           }
+
+          document.getElementById('contenidoModal').innerHTML = `<div class="row">${html}</div>`;
+          new bootstrap.Modal(document.getElementById('modalDetalles')).show();
       };
 
       selectorFiltro.addEventListener('change', renderizarTabla);
