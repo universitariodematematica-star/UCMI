@@ -301,10 +301,11 @@
                       <div class="col-md-4">
                           <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
                               <label class="small text-muted fw-bold mb-2 d-block text-uppercase">Filtrar por Perfil</label>
-                              <select id="filtroPerfil" class="form-select bg-dark text-white border-0 rounded-pill px-3 shadow-sm">
-                                  <option value="todos">Mostrar todos</option>
-                                  <option value="estudiante">Estudiantes</option>
-                              </select>
+                                    <select id="filtroPerfil" class="form-select bg-dark text-white border-0 rounded-pill px-3 shadow-sm">
+                                        <option value="todos">Mostrar todos</option>
+                                        <option value="estudiante">Estudiantes</option>
+                                        <option value="docente">Docentes</option>
+                                    </select>
                           </div>
                       </div>
                   </div>
@@ -414,11 +415,21 @@
 
       // 2. SINCRONIZACIÓN EN VIVO DE LAS POSTULACIONES
       function iniciarEscuchaFiltrada(academiaNombre) {
-          const q = query(
-              collection(db, "postulaciones"),
-              where("perfil", "==", "Estudiante Academia"),
-              where("entidad", "==", academiaNombre)
-          );
+          // Reemplaza tus líneas 417-421 por esta versión:
+function iniciarEscuchaFiltrada(academiaNombre) {
+    const q = query(
+        collection(db, "postulaciones"),
+        where("perfil", "in", ["Estudiante Academia", "Docente Academia"]),
+        where("entidad", "==", academiaNombre)
+    );
+
+    onSnapshot(q, (snap) => {
+        registrosLocales = snap.docs;
+        renderizarTabla();
+    }, (error) => {
+        console.error("Error sincronización en tiempo real: ", error);
+    });
+}
 
           onSnapshot(q, (snap) => {
               registrosLocales = snap.docs;
@@ -467,171 +478,95 @@
               currentData = snap.data();
               const d = currentData;
               document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
-              document.getElementById('contenidoModal').innerHTML = `
-    <div class="col-12 mb-2">
-        <h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">Datos del Estudiante</h6>
-    </div>
-    <div class="col-md-6 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">NOMBRE COMPLETO</label>
-        <span class="fw-bold">${d.nombreResponsable}</span>
-    </div>
-    <div class="col-md-3 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">DNI / ID</label>
-        <span>${d.dniEstudiante || 'N/A'}</span>
-    </div>
-    <div class="col-md-3 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">GÉNERO</label>
-        <span>${d.genero || 'N/A'}</span>
-    </div>
-    <div class="col-md-4 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">FECHA DE NACIMIENTO</label>
-        <span>${d.fechaNacimiento || 'N/A'}</span>
-    </div>
-    <div class="col-md-4 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">EDAD</label>
-        <span>${d.edadEstudiante || 'N/A'} años</span>
-    </div>
-    <div class="col-md-4 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">PROMEDIO</label>
-        <span>${d.promediocatualbachillerato || 'N/A'}</span>
-    </div>
-    <div class="col-md-6 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">UBICACIÓN</label>
-        <span>${d.ubicacion || 'N/A'}</span>
-    </div>
-    <div class="col-md-6 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">CORREO ELECTRÓNICO</label>
-        <span class="text-info">${d.email || 'No provisto'}</span>
-    </div>
-    <div class="col-md-6 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">WHATSAPP</label>
-        <span class="text-success"><i class="bi bi-whatsapp me-1"></i>${d.whatsapp || 'No provisto'}</span>
-    </div>
-    <div class="col-md-6 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">MÓDULOS DE INTERÉS</label>
-        <span>${d.modulos ? d.modulos.join(', ') : 'Ninguno'}</span>
-    </div>
+ // 3. DESPLEGAR DETALLES DEL ALUMNO
+        window.verExpediente = async (id) => {
+            currentId = id;
+            const snap = await getDoc(doc(db, "postulaciones", id));
+            if (snap.exists()) {
+                currentData = snap.data();
+                const d = currentData;
+                document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
+                
+                const esDocente = d.perfil === "Docente Academia";
+                const tituloSeccion = esDocente ? "Datos del Docente" : "Datos del Estudiante";
 
-    ${d.nombreRepresentante ? `
-    <div class="col-12 mb-2 mt-3 pt-3 border-top border-secondary">
-        <h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">Información del Representante</h6>
-    </div>
-    <div class="col-md-6 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">NOMBRE</label>
-        <span>${d.nombreRepresentante}</span>
-    </div>
-    <div class="col-md-6 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">CORREO ELECTRÓNICO</label>
-        <span class="text-info">${d.email || 'No provisto'}</span>
-    </div>
-    <div class="col-md-6 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">DNI</label>
-        <span>${d.dniRepresentante || 'N/A'}</span>
-    </div>
-    <div class="col-md-6 mb-3">
-        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">WHATSAPP</label>
-        <span class="text-success"><i class="bi bi-whatsapp me-1"></i>${d.whatsappRepresentante || 'No provisto'}</span>
-    </div>
-    ` : ''}
-`;
-              new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-          }
-      };
+                document.getElementById('contenidoModal').innerHTML = `
+                    <div class="col-12 mb-2">
+                        <h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">${tituloSeccion}</h6>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">NOMBRE COMPLETO</label>
+                        <span class="fw-bold">${d.nombreResponsable || d.nombre || 'Sin nombre'}</span>
+                    </div>
+                    ${esDocente ? `
+                        <div class="col-md-6 mb-3">
+                            <label class="small d-block" style="color: #2ecc71; font-weight: 800;">ESPECIALIDAD</label>
+                            <span>${d.especialidad || 'No especificada'}</span>
+                        </div>
+                    ` : `
+                        <div class="col-md-6 mb-3">
+                            <label class="small d-block" style="color: #2ecc71; font-weight: 800;">PROMEDIO</label>
+                            <span>${d.promediocatualbachillerato || 'N/A'}</span>
+                        </div>
+                    `}
+                `;
+                new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+            }
+        };
 
-      selectorFiltro.addEventListener('change', renderizarTabla);
+        selectorFiltro.addEventListener('change', renderizarTabla);
 
-      document.getElementById('btnLogout').onclick = async () => {
-          await signOut(auth);
-          window.location.href = "index.html";
-      };
+        document.getElementById('btnLogout').onclick = async () => {
+            await signOut(auth);
+            window.location.href = "index.html";
+        };
 
-      // --- PROCESAMIENTO QUIRÚRGICO DE ADMISIÓN CON CONTROL DE CUPOS ---
-      document.getElementById('btnConfirmarAcceso').onclick = async () => {
-          if(!currentId || !currentData) return;
+        // --- PROCESAMIENTO DE ADMISIÓN ---
+        document.getElementById('btnConfirmarAcceso').onclick = async () => {
+            if(!currentId || !currentData) return;
+            try {
+                const esDocente = currentData.perfil === "Docente Academia";
+                const rolAsignar = esDocente ? "docente" : "estudiante";
 
-          try {
-              // 1. Re-verificación estricta del total de estudiantes actuales
-              const qEstudiantes = query(
-                  collection(db, "usuarios"),
-                  where("entidad", "==", academiaNombreGlobal),
-                  where("rol", "==", "estudiante")
-              );
-              const snapshotEstudiantes = await getDocs(qEstudiantes);
-              const totalAlumnosActivos = snapshotEstudiantes.size;
+                if (!esDocente) {
+                    const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
+                    const snapEst = await getDocs(qEstudiantes);
+                    if (snapEst.size >= cuposMaximosGlobal) {
+                        Swal.fire('Cupos Agotados', 'No tienes vacantes disponibles.', 'warning');
+                        return;
+                    }
+                }
 
-              if (totalAlumnosActivos >= cuposMaximosGlobal) {
-                  await Swal.fire({
-                      title: 'Cupos Agotados',
-                      text: `No tienes vacantes disponibles (${totalAlumnosActivos}/${cuposMaximosGlobal}). Amplía tu plan de licencia.`,
-                      icon: 'warning',
-                      confirmButtonColor: '#c5a059'
-                  });
-                  return; 
-              }
+                await setDoc(doc(db, "usuarios", currentData.email), { ...currentData, estado: "activo", rol: rolAsignar });
+                await deleteDoc(doc(db, "postulaciones", currentId));
+                await Swal.fire('¡Admitido!', `El ${rolAsignar} ha sido integrado exitosamente.`, 'success');
+                location.reload();
+            } catch (error) {
+                console.error("Error al admitir:", error);
+                Swal.fire('Error', 'No se pudo completar la transacción.', 'error');
+            }
+        };
 
-              // 2. Ejecutar migración de colecciones hacia usuarios con rol 'estudiante'
-              await setDoc(doc(db, "usuarios", currentData.email), { 
-                  ...currentData, 
-                  estado: "activo",
-                  rol: "estudiante" 
-              });
-              
-              // 3. Destruir registro original de postulación
-              await deleteDoc(doc(db, "postulaciones", currentId));
-              
-              await Swal.fire({
-                  title: '¡Admitido!',
-                  text: 'El alumno fue integrado exitosamente.',
-                  icon: 'success',
-                  confirmButtonColor: '#27ae60'
-              });
-              
-              location.reload();
-
-          } catch (error) {
-              console.error("Fallo crítico durante la admisión:", error);
-              if (error.code === "permission-denied" || error.message.includes("permissions")) {
-                  await Swal.fire({
-                      title: 'Bloqueo de Servidor',
-                      text: 'Error de permisos de Firestore. Asegúrate de actualizar tus Security Rules en la consola de Firebase.',
-                      icon: 'error',
-                      confirmButtonColor: '#e74c3c'
-                  });
-              } else {
-                  await Swal.fire('Error Técnico', 'No se pudo sincronizar la transacción con el clúster de Firebase.', 'error');
-              }
-          }
-      };
-
-      document.getElementById('btnEliminar').onclick = async () => {
+        document.getElementById('btnEliminar').onclick = async () => {
             const result = await Swal.fire({
                 title: '¿Estás seguro?',
                 text: "¡Esta acción eliminará permanentemente la postulación!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Sí, rechazar',
-                cancelButtonText: 'Cancelar',
-                customClass: {
-                    popup: 'swal2-popup' // Usa tu clase de estilo personalizado
-                }
+                cancelButtonText: 'Cancelar'
             });
 
             if (result.isConfirmed) {
                 try {
                     await deleteDoc(doc(db, "postulaciones", currentId));
-                    await Swal.fire({
-                        title: 'Rechazado',
-                        text: 'El aspirante ha sido descartado correctamente.',
-                        icon: 'success',
-                        customClass: { popup: 'swal2-popup' }
-                    });
+                    await Swal.fire('Rechazado', 'El aspirante ha sido descartado.', 'success');
                     location.reload();
                 } catch (error) {
-                    console.error(error);
-                    Swal.fire('Error', 'No se pudo eliminar el documento del servidor.', 'error');
+                    Swal.fire('Error', 'No se pudo completar la eliminación.', 'error');
                 }
             }
         };
-  </script>
-  </body>
+    </script>
+</body>
   </html>
