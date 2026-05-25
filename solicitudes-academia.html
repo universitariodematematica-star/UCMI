@@ -496,7 +496,32 @@ window.verExpediente = async (id) => {
           const esDocente = d.perfil === "Docente Academia";
           
           document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
-          
+
+         // --- INICIO DE PROCESAMIENTO HORARIO ---
+const diasSemana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+let htmlHorarios = "";
+
+if (esDocente && d.horarios && Array.isArray(d.horarios)) {
+    const agrupado = {};
+    d.horarios.forEach(idx => {
+        const dia = diasSemana[idx % 7];
+        const hora = Math.floor(idx / 7);
+        if (!agrupado[dia]) agrupado[dia] = [];
+        agrupado[dia].push(`${hora}:00`);
+    });
+
+    for (const dia in agrupado) {
+        htmlHorarios += `
+            <div class="col-md-3 col-6 mb-2">
+                <span style="color:var(--dorado-ucmi); font-weight:bold;">${dia}:</span> 
+                <span style="font-size: 0.85rem;">${agrupado[dia].join(', ')}</span>
+            </div>`;
+    }
+} else if (esDocente) {
+    htmlHorarios = `<div class="col-12">No se ha registrado disponibilidad horaria.</div>`;
+}
+// --- FIN DE PROCESAMIENTO HORARIO ---
+      
           let html = `<div class="col-12 mb-4"><h5 style="color:var(--dorado-ucmi)">Expediente del Aspirante</h5></div>`;
 
           if (esDocente) {
@@ -513,6 +538,7 @@ window.verExpediente = async (id) => {
                   <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div>                  
                   <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NIVELES</label><br>${d.niveles_atencion}</div>
                   <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">RAZÓN DE PERTENECIA A NUESTRA INSTITUCIÓN</label><br>${d.razon_deseo_pertenencia}</div>
+                  ${htmlHorarios}
               `;
           } else {
               // Esta parte mantiene exactamente el diseño de tu imagen para estudiantes
