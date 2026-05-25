@@ -17,13 +17,13 @@
         #logoAcademia { width: 120px; height: 120px; border-radius: 25px; object-fit: cover; border: 2px solid var(--dorado-ucmi); }
         .form-label { color: var(--dorado-ucmi); font-weight: bold; margin-top: 15px; display: block; }
         .form-control { background: rgba(255,255,255,0.08) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: white !important; border-radius: 12px; padding: 12px; }
-        .grid-container { width: 100%; margin-top: 15px; }
-        .grid-horaria { display: grid; grid-template-columns: 60px repeat(7, 1fr); gap: 3px; }
+        .grid-container { width: 100%; margin-top: 15px; overflow-x: auto; }
+        .grid-horaria { display: grid; grid-template-columns: 60px repeat(7, 1fr); gap: 3px; min-width: 500px; }
         .cell { background: rgba(255,255,255,0.1); height: 25px; cursor: pointer; border-radius: 4px; transition: 0.2s; }
         .cell.active { background: var(--verde-seleccion) !important; }
         .header-cell { font-weight: bold; padding: 5px; text-align: center; font-size: 0.7rem; color: var(--dorado-ucmi); display: flex; align-items: center; justify-content: center; }
         .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; border: none; width: 100%; margin-top: 30px; }
-        .capsula { display: inline-block; background: var(--dorado-ucmi); color: #000; padding: 2px 10px; border-radius: 20px; font-size: 0.8rem; margin: 3px; font-weight: bold; }
+        .capsula { display: inline-block; background: var(--dorado-ucmi); color: #000; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; margin: 2px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -49,7 +49,7 @@
                 <div class="col-md-6"><label class="form-label">Años de experiencia</label><input type="number" id="anos_experiencia_docente" class="form-control" required></div>
                 <div class="col-md-6"><label class="form-label">Niveles que puede atender</label><input type="text" id="niveles_atencion" class="form-control" required></div>
             </div>
-            <label class="form-label">Disponibilidad Horaria:</label>
+            <label class="form-label">Disponibilidad Horaria (Selecciona las celdas):</label>
             <div class="grid-container"><div class="grid-horaria" id="gridHoraria"></div></div>
             <label class="form-label">¿Por qué quiere formar parte de nuestra institución?</label>
             <textarea id="razon_deseo_pertenencia" class="form-control" rows="3" required></textarea>
@@ -60,12 +60,12 @@
 
 <div class="modal fade" id="modalRevision" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content bg-dark text-white border-warning">
-            <div class="modal-header"><h5 class="modal-title">Confirmar Postulación</h5></div>
-            <div class="modal-body" id="bodyModal"></div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Corregir</button>
-                <button type="button" class="btn btn-success" id="btnFinal">Confirmar Registro</button>
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary"><h5 class="modal-title">Confirmar Datos</h5></div>
+            <div class="modal-body" id="modalContent"></div>
+            <div class="modal-footer border-secondary">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Corregir</button>
+                <button class="btn btn-warning" id="btnConfirmar">Confirmar Envío</button>
             </div>
         </div>
     </div>
@@ -84,7 +84,8 @@
     }
 
     const grid = document.getElementById('gridHoraria');
-    ['','Lun','Mar','Mie','Jue','Vie','Sab','Dom'].forEach(d => grid.innerHTML += `<div class="header-cell">${d}</div>`);
+    grid.innerHTML = '<div></div>';
+    ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'].forEach(d => grid.innerHTML += `<div class="header-cell">${d}</div>`);
     for (let h = 0; h < 24; h++) {
         grid.innerHTML += `<div class="header-cell">${h}:00</div>`;
         for (let d = 0; d < 7; d++) grid.innerHTML += `<div class="cell" onclick="this.classList.toggle('active')"></div>`;
@@ -94,12 +95,28 @@
         { nombre: "Roberto Gómez", dni: "1001", email: "roberto@mail.com", wsp: "+593991234567", loc: "Otavalo", tit: "Lic. en Educación", inst: "PUCE", url: "https://drive.google.com/1", exp: "8", nivel: "Primaria", razon: "Por vocación." },
         { nombre: "Sara Pardo", dni: "1002", email: "sara@mail.com", wsp: "+593987654321", loc: "Ibarra", tit: "Magíster en Pedagogía", inst: "UTE", url: "https://drive.google.com/2", exp: "12", nivel: "Bachillerato", razon: "Por prestigio." },
         { nombre: "Javier Soler", dni: "1003", email: "javier@mail.com", wsp: "+593998877665", loc: "Cotacachi", tit: "Lic. en Lenguas", inst: "ESPE", url: "https://drive.google.com/3", exp: "5", nivel: "Primaria", razon: "Crecimiento." },
-        { nombre: "Lucía Paredes", dni: "1004", email: "lucia@mail.com", wsp: "+593995544332", loc: "Atuntaqui", tit: "Lic. en Ciencias", inst: "UTN", url: "https://drive.google.com/4", exp: "4", nivel: "Bachillerato", razon: "Excelencia." }
+        { nombre: "Lucía Paredes", dni: "1004", email: "lucia@mail.com", wsp: "+593995544332", loc: "Atuntaqui", tit: "Lic. en Ciencias", inst: "UTN", url: "https://drive.google.com/4", exp: "4", nivel: "Bachillerato", razon: "Excelencia." },
+        { nombre: "Martín Fierro", dni: "1005", email: "martin@mail.com", wsp: "+593994433221", loc: "Quito", tit: "Dr. en Historia", inst: "PUCE", url: "https://drive.google.com/5", exp: "20", nivel: "Universitario", razon: "Investigación." },
+        { nombre: "Elena Blanco", dni: "1006", email: "elena@mail.com", wsp: "+593993322110", loc: "Ibarra", tit: "Lic. en Arte", inst: "Bellas Artes", url: "https://drive.google.com/6", exp: "3", nivel: "Preescolar", razon: "Creatividad." },
+        { nombre: "Diego Rivera", dni: "1007", email: "diego@mail.com", wsp: "+593992211009", loc: "Otavalo", tit: "Lic. en Diseño", inst: "UTN", url: "https://drive.google.com/7", exp: "9", nivel: "Arte", razon: "Innovación." },
+        { nombre: "Sara Connor", dni: "1008", email: "sara.c@mail.com", wsp: "+593991100998", loc: "Ibarra", tit: "Ing. en Sistemas", inst: "ESPE", url: "https://drive.google.com/8", exp: "15", nivel: "Tecnología", razon: "Tecnología." },
+        { nombre: "Hugo Sánchez", dni: "1009", email: "hugo@mail.com", wsp: "+593990099887", loc: "Atuntaqui", tit: "Lic. en Ed. Física", inst: "UTN", url: "https://drive.google.com/9", exp: "6", nivel: "Deportes", razon: "Salud." },
+        { nombre: "Frida Kahlo", dni: "1010", email: "frida@mail.com", wsp: "+593999888777", loc: "Otavalo", tit: "Lic. en Pintura", inst: "Bellas Artes", url: "https://drive.google.com/10", exp: "10", nivel: "Artes Visuales", razon: "Expresión." },
+        { nombre: "César Vallejo", dni: "1011", email: "cesar@mail.com", wsp: "+593991112223", loc: "Quito", tit: "Lic. en Letras", inst: "PUCE", url: "https://drive.google.com/11", exp: "18", nivel: "Bachillerato", razon: "Enseñanza." },
+        { nombre: "Gabriela Mistral", dni: "1012", email: "gaby@mail.com", wsp: "+593992223334", loc: "Ibarra", tit: "Magíster en Literatura", inst: "UTN", url: "https://drive.google.com/12", exp: "22", nivel: "Universitario", razon: "Inspiración." },
+        { nombre: "Isaac Newton", dni: "1013", email: "isaac@mail.com", wsp: "+593993334445", loc: "Cotacachi", tit: "Lic. en Física", inst: "ESPE", url: "https://drive.google.com/13", exp: "14", nivel: "Bachillerato", razon: "Ciencia." },
+        { nombre: "Marie Curie", dni: "1014", email: "marie@mail.com", wsp: "+593994445556", loc: "Otavalo", tit: "Lic. en Química", inst: "PUCE", url: "https://drive.google.com/14", exp: "19", nivel: "Universitario", razon: "Descubrimiento." },
+        { nombre: "Pablo Picasso", dni: "1015", email: "pablo@mail.com", wsp: "+593995556667", loc: "Quito", tit: "Lic. en Bellas Artes", inst: "Bellas Artes", url: "https://drive.google.com/15", exp: "30", nivel: "Arte", razon: "Evolución." },
+        { nombre: "Ada Lovelace", dni: "1016", email: "ada@mail.com", wsp: "+593996667778", loc: "Ibarra", tit: "Ing. en Software", inst: "ESPE", url: "https://drive.google.com/16", exp: "7", nivel: "Tecnología", razon: "Programación." },
+        { nombre: "Simón Bolívar", dni: "1017", email: "simon@mail.com", wsp: "+593997778889", loc: "Atuntaqui", tit: "Lic. en Historia", inst: "UTN", url: "https://drive.google.com/17", exp: "25", nivel: "Bachillerato", razon: "Liderazgo." },
+        { nombre: "Juana de Arco", dni: "1018", email: "juana@mail.com", wsp: "+593998889990", loc: "Cotacachi", tit: "Lic. en Filosofía", inst: "PUCE", url: "https://drive.google.com/18", exp: "5", nivel: "Primaria", razon: "Justicia." },
+        { nombre: "Nikola Tesla", dni: "1019", email: "nikola@mail.com", wsp: "+593999990001", loc: "Ibarra", tit: "Ing. Eléctrico", inst: "ESPE", url: "https://drive.google.com/19", exp: "28", nivel: "Universitario", razon: "Energía." },
+        { nombre: "Virginia Woolf", dni: "1020", email: "virginia@mail.com", wsp: "+593990001112", loc: "Otavalo", tit: "Lic. en Redacción", inst: "UTN", url: "https://drive.google.com/20", exp: "11", nivel: "Bachillerato", razon: "Cultura." }
     ];
 
     document.addEventListener('keydown', (e) => {
         if (e.ctrlKey && e.key.toLowerCase() === 'm') { e.preventDefault(); llenarFormulario(perfiles[Math.floor(Math.random() * perfiles.length)]); }
-        if (e.shiftKey && e.code.startsWith('Digit')) { e.preventDefault(); const num = parseInt(e.code.replace('Digit', '')) % perfiles.length; llenarFormulario(perfiles[num]); }
+        if (e.shiftKey && e.code.startsWith('Digit')) { e.preventDefault(); const n = parseInt(e.code.replace('Digit', '')) % perfiles.length; llenarFormulario(perfiles[n]); }
     });
 
     function llenarFormulario(p) {
@@ -112,45 +129,32 @@
         document.querySelectorAll('.cell').forEach(c => Math.random() > 0.8 ? c.classList.add('active') : c.classList.remove('active'));
     }
 
-    let datosForm = {};
+    let dataToSave = {};
     document.getElementById('formDocente').onsubmit = (e) => {
         e.preventDefault();
         const dias = ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'];
         const hSel = [], hCapsulas = [];
-        document.querySelectorAll('.cell').forEach((cell, i) => {
-            if (cell.classList.contains('active')) {
+        document.querySelectorAll('.cell').forEach((c, i) => {
+            if (c.classList.contains('active')) {
                 hSel.push(i);
-                hCapsulas.push(`<span class="capsula">${dias[i % 7]} ${Math.floor(i / 7)}:00</span>`);
+                hCapsulas.push(`<span class="capsula">${dias[i % 7]} ${Math.floor(i / 7)}h</span>`);
             }
         });
 
-        datosForm = {
-            nombreResponsable: document.getElementById('nombreResponsable').value,
-            dniDocente: document.getElementById('dniDocente').value,
-            email: document.getElementById('email').value,
-            whatsapp: document.getElementById('whatsapp').value,
-            ubicacion: document.getElementById('ubicacion').value,
-            titulo: document.getElementById('titulo_universitario').value,
-            institucion_titulo: document.getElementById('institucion_titulo').value,
-            enlaceSintesis: document.getElementById('enlace_sintesis').value,
-            experienciaDocente: document.getElementById('anos_experiencia_docente').value,
-            niveles_atencion: document.getElementById('niveles_atencion').value,
-            razon_deseo_pertenencia: document.getElementById('razon_deseo_pertenencia').value,
+        dataToSave = {
+            nombre: document.getElementById('nombreResponsable').value,
             horarios: hSel,
-            fecha: new Date().toLocaleString(),
-            perfil: "Docente Academia",
-            entidadReferencia: refEntidad || "General"
+            entidadReferencia: refEntidad || "General",
+            fecha: new Date().toLocaleString()
         };
 
-        document.getElementById('bodyModal').innerHTML = `<strong>Nombre:</strong> ${datosForm.nombreResponsable}<br><strong>DNI:</strong> ${datosForm.dniDocente}<br><br><strong>Horarios:</strong><br>${hCapsulas.join('')}`;
+        document.getElementById('modalContent').innerHTML = `<p><strong>Nombre:</strong> ${dataToSave.nombre}</p><p><strong>Disponibilidad:</strong><br>${hCapsulas.join('')}</p>`;
         new bootstrap.Modal(document.getElementById('modalRevision')).show();
     };
 
-    document.getElementById('btnFinal').onclick = () => {
-        db.collection('postulaciones').add(datosForm).then(() => {
-            Swal.fire("¡Éxito!", "Postulación registrada.", "success");
-            document.getElementById('formDocente').reset();
-            document.querySelectorAll('.cell.active').forEach(c => c.classList.remove('active'));
+    document.getElementById('btnConfirmar').onclick = () => {
+        db.collection('postulaciones').add(dataToSave).then(() => {
+            Swal.fire("Éxito", "Postulación guardada", "success");
             bootstrap.Modal.getInstance(document.getElementById('modalRevision')).hide();
         });
     };
