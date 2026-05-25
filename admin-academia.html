@@ -86,7 +86,7 @@
                      <div class="icon-box"><i class="bi bi-person-plus"></i></div>
                      <h4>Captación</h4>
                      <p class="small opacity-75">Link de registro para alumnos prospectos.</p>
-                     <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="event.stopPropagation(); window.copiarLink();">Copiar Enlace</button>
+                     <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="event.stopPropagation(); window.manejarAccionLink(this, 'alumno');">Copiar y Enviar</button>
                  </div>
              </div>
 
@@ -118,7 +118,7 @@
                        <div class="icon-box" style="color: #32cd32;"><i class="bi bi-person-badge"></i></div>
                        <h4>Captación de profesores</h4>
                        <p class="small opacity-75">Formulario de postulación para docentes.</p>
-                       <button class="btn btn-sm btn-outline-success w-100 mt-2" onclick="event.stopPropagation(); window.copiarLinkDocente();">Copiar Enlace</button>
+                       <button class="btn btn-sm btn-outline-success w-100 mt-2" onclick="event.stopPropagation(); window.manejarAccionLink(this, 'docente');">Copiar y Enviar</button>
                    </div>
                </div>
 
@@ -220,30 +220,31 @@
          }
      };
 
-     window.copiarLink = () => {
-         const url = `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`;
-         navigator.clipboard.writeText(url).then(() => alert("Copiado"));
-     };
+     window.manejarAccionLink = (btn, tipo) => {
+        const esDocente = (tipo === 'docente');
+        const url = esDocente 
+            ? `https://universitariodematematica-star.github.io/UCMI/postulacion-docente.html?ref=${encodeURIComponent(entidadActual)}`
+            : `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`;
 
-     window.abrirFormulario = () => {
-         window.open(`https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`, '_blank');
-     };
-// Funciones para Docentes
-window.copiarLinkDocente = (btn) => {
-    const url = `https://universitariodematematica-star.github.io/UCMI/postulacion-docente.html?ref=${encodeURIComponent(entidadActual)}`;
-    navigator.clipboard.writeText(url).then(() => {
-        const originalText = btn.innerText;
-        btn.innerText = "¡Copiado!";
-        btn.classList.replace("btn-outline-success", "btn-success");
-        setTimeout(() => {
-            btn.innerText = originalText;
-            btn.classList.replace("btn-success", "btn-outline-success");
-        }, 2000);
-    });
-};
-window.abrirFormularioDocente = () => {
-    window.open(`https://universitariodematematica-star.github.io/UCMI/postulacion-docente.html?ref=${encodeURIComponent(entidadActual)}`, '_blank');
-};
+        // Si ya está en modo envío, procesamos el WhatsApp
+        if (btn.dataset.mode === "send") {
+            const phone = btn.previousElementSibling.value;
+            if (!phone) return alert("Por favor ingresa un número");
+            const waLink = `https://wa.me/${phone}?text=${encodeURIComponent("Hola, te comparto el link de postulación: " + url)}`;
+            window.open(waLink, '_blank');
+            return;
+        }
+
+        // Si es el primer clic, copiamos y transformamos el botón
+        navigator.clipboard.writeText(url);
+        const parent = btn.parentElement;
+        parent.innerHTML = `
+            <input type="text" class="form-control form-control-sm mb-1" placeholder="Ej: 593999999999" style="background:#222; color:white; border:1px solid #555;">
+            <button class="btn btn-sm btn-success w-100" data-mode="send" onclick="event.stopPropagation(); window.manejarAccionLink(this, '${tipo}');">
+                <i class="bi bi-whatsapp"></i> Enviar por WA
+            </button>
+        `;
+    };
      document.getElementById('btnLogout').onclick = () => signOut(auth).then(() => window.location.href = "index.html");
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
