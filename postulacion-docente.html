@@ -73,6 +73,16 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const urlParams = new URLSearchParams(window.location.search);
+const refEntidad = urlParams.get('ref');
+if (refEntidad) {
+    db.collection("usuarios").where("entidad", "==", refEntidad).get().then(snapshot => {
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if(data.logoCustom) document.getElementById('logoAcademia').src = data.logoCustom;
+        });
+    });
+}
     // Inicialización de la Grilla
     const grid = document.getElementById('gridHoraria');
     grid.innerHTML = '<div></div>';
@@ -147,22 +157,24 @@ document.getElementById('formDocente').onsubmit = (e) => {
                 horariosSeleccionados.push(index); // El índice será 0-167 correctamente
             }
         });
-                const datos = {
-            nombreResponsable: document.getElementById('nombreResponsable').value,
-            dniDocente: document.getElementById('dniDocente').value,
-            email: document.getElementById('email').value,
-            whatsapp: document.getElementById('whatsapp').value,
-            ubicacion: document.getElementById('ubicacion').value,
-            titulo: document.getElementById('titulo_universitario').value,
-            institucion_titulo: document.getElementById('institucion_titulo').value,
-            enlaceSintesis: document.getElementById('enlace_sintesis').value,
-            experienciaDocente: document.getElementById('anos_experiencia_docente').value,
-            niveles_atencion: document.getElementById('niveles_atencion').value,
-            razon_deseo_pertenencia: document.getElementById('razon_deseo_pertenencia').value,
-            horarios: horariosSeleccionados,
-            fecha: new Date().toLocaleString(),
-            perfil: "Docente Academia" // <-- AÑADE ESTA LÍNEA AQUÍ
-        };
+// ... (código previo)
+                    const datos = {
+                        nombreResponsable: document.getElementById('nombreResponsable').value,
+                        dniDocente: document.getElementById('dniDocente').value,
+                        email: document.getElementById('email').value,
+                        whatsapp: document.getElementById('whatsapp').value,
+                        ubicacion: document.getElementById('ubicacion').value,
+                        titulo: document.getElementById('titulo_universitario').value,
+                        institucion_titulo: document.getElementById('institucion_titulo').value,
+                        enlaceSintesis: document.getElementById('enlace_sintesis').value,
+                        experienciaDocente: document.getElementById('anos_experiencia_docente').value,
+                        niveles_atencion: document.getElementById('niveles_atencion').value,
+                        razon_deseo_pertenencia: document.getElementById('razon_deseo_pertenencia').value,
+                        horarios: horariosSeleccionados,
+                        fecha: new Date().toLocaleString(),
+                        perfil: "Docente Academia",
+                        entidadReferencia: refEntidad || "General" // <--- AÑÁDELO AQUÍ
+                    };
 
         db.collection('postulaciones').add(datos)
               .then((docRef) => {
