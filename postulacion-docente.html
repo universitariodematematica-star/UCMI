@@ -75,15 +75,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-      authDomain: "ucmi-13796634.firebaseapp.com",
-      projectId: "ucmi-13796634",
-      storageBucket: "ucmi-13796634.firebasestorage.app",
-      messagingSenderId: "1090719609536",
-      appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
-      measurementId: "G-3M3DH25722"
-    };
+    const firebaseConfig = { apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325", measurementId: "G-3M3DH25722" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const urlParams = new URLSearchParams(window.location.search);
@@ -91,10 +83,7 @@
 
     if (refEntidad) {
         db.collection("usuarios").where("entidad", "==", refEntidad).get().then(snapshot => {
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                if(data.logoCustom) document.getElementById('logoAcademia').src = data.logoCustom;
-            });
+            snapshot.forEach(doc => { const data = doc.data(); if(data.logoCustom) document.getElementById('logoAcademia').src = data.logoCustom; });
         });
     }
 
@@ -130,29 +119,12 @@
     ];
 
     document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key.toLowerCase() === 'm') {
-            e.preventDefault(); e.stopPropagation();
-            llenarFormulario(perfiles[Math.floor(Math.random() * perfiles.length)]);
-        }
-        if (e.shiftKey && e.code.startsWith('Digit')) {
-            e.preventDefault(); e.stopPropagation();
-            const num = parseInt(e.code.replace('Digit', '')) % perfiles.length;
-            llenarFormulario(perfiles[num]);
-        }
+        if (e.ctrlKey && e.key.toLowerCase() === 'm') { e.preventDefault(); e.stopPropagation(); llenarFormulario(perfiles[Math.floor(Math.random() * perfiles.length)]); }
+        if (e.shiftKey && e.code.startsWith('Digit')) { e.preventDefault(); e.stopPropagation(); const num = parseInt(e.code.replace('Digit', '')) % perfiles.length; llenarFormulario(perfiles[num]); }
     }, true);
 
     function llenarFormulario(p) {
-        document.getElementById('nombreResponsable').value = p.nombre;
-        document.getElementById('dniDocente').value = p.dni;
-        document.getElementById('email').value = p.email;
-        document.getElementById('whatsapp').value = p.wsp;
-        document.getElementById('ubicacion').value = p.loc;
-        document.getElementById('titulo_universitario').value = p.tit;
-        document.getElementById('institucion_titulo').value = p.inst;
-        document.getElementById('enlace_sintesis').value = p.url;
-        document.getElementById('anos_experiencia_docente').value = p.exp;
-        document.getElementById('niveles_atencion').value = p.nivel;
-        document.getElementById('razon_deseo_pertenencia').value = p.razon;
+        document.getElementById('nombreResponsable').value = p.nombre; document.getElementById('dniDocente').value = p.dni; document.getElementById('email').value = p.email; document.getElementById('whatsapp').value = p.wsp; document.getElementById('ubicacion').value = p.loc; document.getElementById('titulo_universitario').value = p.tit; document.getElementById('institucion_titulo').value = p.inst; document.getElementById('enlace_sintesis').value = p.url; document.getElementById('anos_experiencia_docente').value = p.exp; document.getElementById('niveles_atencion').value = p.nivel; document.getElementById('razon_deseo_pertenencia').value = p.razon;
         document.querySelectorAll('.cell').forEach(c => Math.random() > 0.8 ? c.classList.add('active') : c.classList.remove('active'));
         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Cargado: ${p.nombre}`, showConfirmButton: false, timer: 1000 });
     }
@@ -161,8 +133,18 @@
 
     document.getElementById('formDocente').onsubmit = (e) => {
         e.preventDefault();
-        const horariosSeleccionados = [];
-        document.querySelectorAll('.cell.active').forEach((cell, index) => horariosSeleccionados.push(index));
+        const dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+        const horariosLegibles = [];
+        const horariosIndexados = [];
+
+        document.querySelectorAll('.cell').forEach((cell, index) => {
+            if (cell.classList.contains('active')) {
+                const hora = Math.floor(index / 7);
+                const dia = dias[index % 7];
+                horariosLegibles.push(`${dia} ${hora}:00`);
+                horariosIndexados.push(index);
+            }
+        });
         
         datosTemporales = {
             nombreResponsable: document.getElementById('nombreResponsable').value,
@@ -176,7 +158,7 @@
             experienciaDocente: document.getElementById('anos_experiencia_docente').value,
             niveles_atencion: document.getElementById('niveles_atencion').value,
             razon_deseo_pertenencia: document.getElementById('razon_deseo_pertenencia').value,
-            horarios: horariosSeleccionados,
+            horarios: horariosIndexados,
             fecha: new Date().toLocaleString(),
             perfil: "Docente Academia",
             entidadReferencia: refEntidad || "General"
@@ -185,13 +167,8 @@
         document.getElementById('bodyModal').innerHTML = `
             <p><strong>Nombre:</strong> ${datosTemporales.nombreResponsable}</p>
             <p><strong>DNI:</strong> ${datosTemporales.dniDocente}</p>
-            <p><strong>Email:</strong> ${datosTemporales.email}</p>
-            <p><strong>WhatsApp:</strong> ${datosTemporales.whatsapp}</p>
-            <p><strong>Ubicación:</strong> ${datosTemporales.ubicacion}</p>
-            <p><strong>Título:</strong> ${datosTemporales.titulo} (${datosTemporales.institucion_titulo})</p>
             <p><strong>Experiencia:</strong> ${datosTemporales.experienciaDocente} años</p>
-            <p><strong>Niveles:</strong> ${datosTemporales.niveles_atencion}</p>
-            <p><strong>Razón:</strong> ${datosTemporales.razon_deseo_pertenencia}</p>
+            <p><strong>Disponibilidad:</strong><br><small>${horariosLegibles.join(', ')}</small></p>
         `;
         new bootstrap.Modal(document.getElementById('modalRevision')).show();
     };
