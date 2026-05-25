@@ -12,20 +12,23 @@
     <style>
         :root { --dorado-ucmi: #c5a059; --verde-seleccion: #28a745; }
         body { background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed; background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; padding: 40px 0; }
-        .card-form { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); max-width: 950px; margin: auto; padding: 40px; }
+        .card-form { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); max-width: 950px; margin: auto; padding: 40px; }
         .form-label { color: var(--dorado-ucmi); font-weight: bold; margin-top: 15px; }
-        .form-control { background: rgba(255,255,255,0.08) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: white !important; border-radius: 12px; }
-        .grid-horaria { display: grid; grid-template-columns: 60px repeat(7, 1fr); gap: 3px; }
+        .form-control { background: rgba(255,255,255,0.08) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: white !important; border-radius: 12px; padding: 10px; }
+        .grid-horaria { display: grid; grid-template-columns: 60px repeat(7, 1fr); gap: 3px; margin-top: 20px; }
         .cell { background: rgba(255,255,255,0.1); height: 25px; cursor: pointer; border-radius: 4px; }
         .cell.active { background: var(--verde-seleccion) !important; }
         .header-cell { font-weight: bold; text-align: center; color: var(--dorado-ucmi); font-size: 0.7rem; }
-        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; width: 100%; margin-top: 30px; border: none; }
+        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; border-radius: 15px; width: 100%; margin-top: 30px; border: none; padding: 15px; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="card-form">
-        <h2 class="text-center" style="color: var(--dorado-ucmi); font-family: 'Cinzel';">POSTULACIÓN DOCENTE</h2>
+        <div class="text-center">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhf12345/s200/LogoUCMI.png" id="logoInst" style="width:100px; border-radius:50%; margin-bottom:15px;">
+            <h2 id="nombreInst" style="color: var(--dorado-ucmi); font-family: 'Cinzel';">UCMI - INSTITUCIÓN</h2>
+        </div>
         <form id="formDocente">
             <div class="row">
                 <div class="col-md-6"><label class="form-label">Nombre Completo</label><input type="text" id="nombreResponsable" class="form-control" required></div>
@@ -53,40 +56,20 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const perfiles = [
-        {nombre: "Roberto Gómez", dni: "1001", email: "roberto@mail.com", wsp: "+593991234567", loc: "Otavalo", tit: "Lic. Educación", exp: "8", razon: "Vocación"},
-        {nombre: "Sara Pardo", dni: "1002", email: "sara@mail.com", wsp: "+593987654321", loc: "Ibarra", tit: "Magíster", exp: "12", razon: "Prestigio"},
-        {nombre: "Javier Soler", dni: "1003", email: "javier@mail.com", wsp: "+593998877665", loc: "Cotacachi", tit: "Lic. Lenguas", exp: "5", razon: "Crecimiento"},
-        {nombre: "Lucía Paredes", dni: "1004", email: "lucia@mail.com", wsp: "+593995544332", loc: "Atuntaqui", tit: "Lic. Ciencias", exp: "4", razon: "Excelencia"},
-        {nombre: "Martín Fierro", dni: "1005", email: "martin@mail.com", wsp: "+593994433221", loc: "Quito", tit: "Dr. Historia", exp: "20", razon: "Investigación"},
-        {nombre: "Elena Blanco", dni: "1006", email: "elena@mail.com", wsp: "+593993322110", loc: "Ibarra", tit: "Lic. Arte", exp: "3", razon: "Creatividad"},
-        {nombre: "Diego Rivera", dni: "1007", email: "diego@mail.com", wsp: "+593992211009", loc: "Otavalo", tit: "Lic. Diseño", exp: "9", razon: "Innovación"},
-        {nombre: "Sara Connor", dni: "1008", email: "sara.c@mail.com", wsp: "+593991100998", loc: "Ibarra", tit: "Ing. Sistemas", exp: "15", razon: "Tecnología"},
-        {nombre: "Hugo Sánchez", dni: "1009", email: "hugo@mail.com", wsp: "+593990099887", loc: "Atuntaqui", tit: "Lic. Ed. Física", exp: "6", razon: "Salud"},
-        {nombre: "Frida Kahlo", dni: "1010", email: "frida@mail.com", wsp: "+593999888777", loc: "Otavalo", tit: "Lic. Pintura", exp: "10", razon: "Expresión"},
-        {nombre: "César Vallejo", dni: "1011", email: "cesar@mail.com", wsp: "+593991112223", loc: "Quito", tit: "Lic. Letras", exp: "18", razon: "Enseñanza"},
-        {nombre: "Gabriela Mistral", dni: "1012", email: "gaby@mail.com", wsp: "+593992223334", loc: "Ibarra", tit: "Magíster", exp: "22", razon: "Inspiración"},
-        {nombre: "Isaac Newton", dni: "1013", email: "isaac@mail.com", wsp: "+593993334445", loc: "Cotacachi", tit: "Lic. Física", exp: "14", razon: "Ciencia"},
-        {nombre: "Marie Curie", dni: "1014", email: "marie@mail.com", wsp: "+593994445556", loc: "Otavalo", tit: "Lic. Química", exp: "19", razon: "Descubrimiento"},
-        {nombre: "Pablo Picasso", dni: "1015", email: "pablo@mail.com", wsp: "+593995556667", loc: "Quito", tit: "Lic. Bellas Artes", exp: "30", razon: "Evolución"},
-        {nombre: "Ada Lovelace", dni: "1016", email: "ada@mail.com", wsp: "+593996667778", loc: "Ibarra", tit: "Ing. Software", exp: "7", razon: "Programación"},
-        {nombre: "Simón Bolívar", dni: "1017", email: "simon@mail.com", wsp: "+593997778889", loc: "Atuntaqui", tit: "Lic. Historia", exp: "25", razon: "Liderazgo"},
-        {nombre: "Juana de Arco", dni: "1018", email: "juana@mail.com", wsp: "+593998889990", loc: "Cotacachi", tit: "Lic. Filosofía", exp: "5", razon: "Justicia"},
-        {nombre: "Nikola Tesla", dni: "1019", email: "nikola@mail.com", wsp: "+593999990001", loc: "Ibarra", tit: "Ing. Eléctrico", exp: "28", razon: "Energía"},
-        {nombre: "Virginia Woolf", dni: "1020", email: "virginia@mail.com", wsp: "+593990001112", loc: "Otavalo", tit: "Lic. Redacción", exp: "11", razon: "Cultura"}
-    ];
+    const perfiles = Array.from({length: 20}, (_, i) => ({
+        nombre: `Docente ${i+1}`, dni: `V-00${i}`, email: `doc${i}@ucmi.edu`, wsp: "04120000000", loc: "Caracas", tit: "Licenciado", exp: "5", razon: "Deseo enseñar"
+    }));
 
-    const llenarFormulario = (p) => {
-        document.getElementById('nombreResponsable').value = p.nombre; document.getElementById('dniDocente').value = p.dni; 
-        document.getElementById('email').value = p.email; document.getElementById('whatsapp').value = p.wsp; 
+    const llenarForm = (p) => {
+        document.getElementById('nombreResponsable').value = p.nombre; document.getElementById('dniDocente').value = p.dni;
+        document.getElementById('email').value = p.email; document.getElementById('whatsapp').value = p.wsp;
         document.getElementById('ubicacion').value = p.loc; document.getElementById('titulo').value = p.tit;
         document.getElementById('experiencia').value = p.exp; document.getElementById('razon').value = p.razon;
         document.querySelectorAll('.cell').forEach(c => Math.random() > 0.8 ? c.classList.add('active') : c.classList.remove('active'));
     };
 
     window.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key === 'm') llenarFormulario(perfiles[Math.floor(Math.random() * perfiles.length)]);
-        if (e.shiftKey && e.code.startsWith('Digit')) llenarFormulario(perfiles[parseInt(e.code.slice(5)) % perfiles.length]);
+        if (e.ctrlKey && e.key === 'm') llenarForm(perfiles[Math.floor(Math.random()*20)]);
     });
 
     const grid = document.getElementById('gridHoraria');
@@ -102,43 +85,28 @@
         const dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
         const agenda = { Lun: [], Mar: [], Mie: [], Jue: [], Vie: [], Sab: [], Dom: [] };
         document.querySelectorAll('.cell').forEach((c, i) => { if(c.classList.contains('active')) agenda[dias[i%7]].push(`${Math.floor(i/7)}:00`); });
-        
         datosFinales = {
-            nombre: document.getElementById('nombreResponsable').value,
-            dni: document.getElementById('dniDocente').value,
-            email: document.getElementById('email').value,
-            whatsapp: document.getElementById('whatsapp').value,
-            ubicacion: document.getElementById('ubicacion').value,
-            titulo: document.getElementById('titulo').value,
-            exp: document.getElementById('experiencia').value,
-            razon: document.getElementById('razon').value,
-            agenda: agenda
+            nombre: document.getElementById('nombreResponsable').value, dni: document.getElementById('dniDocente').value,
+            email: document.getElementById('email').value, whatsapp: document.getElementById('whatsapp').value,
+            ubicacion: document.getElementById('ubicacion').value, titulo: document.getElementById('titulo').value,
+            exp: document.getElementById('experiencia').value, razon: document.getElementById('razon').value, agenda: agenda
         };
-
-        let html = `<h5>${datosFinales.nombre}</h5><p>DNI: ${datosFinales.dni}<br>Email: ${datosFinales.email}</p><hr><h6>Disponibilidad:</h6>`;
-        dias.forEach(d => { if(agenda[d].length > 0) html += `<small><b>${d}:</b> ${agenda[d].join(', ')}</small><br>`; });
-        document.getElementById('bodyModal').innerHTML = html;
+        document.getElementById('bodyModal').innerHTML = `<h5>${datosFinales.nombre}</h5><p>DNI: ${datosFinales.dni}</p><hr><h6>Agenda seleccionada correctamente.</h6>`;
         new bootstrap.Modal(document.getElementById('modalRevision')).show();
     };
 
     document.getElementById('btnConfirmar').onclick = async () => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.setFontSize(16); doc.text("POSTULACIÓN DOCENTE", 20, 20);
+        doc.setFontSize(18); doc.text("POSTULACIÓN DOCENTE", 20, 20);
         doc.setFontSize(12);
-        doc.text(`Nombre: ${datosFinales.nombre}`, 20, 40);
-        doc.text(`Título: ${datosFinales.titulo}`, 20, 50);
-        doc.text("Agenda:", 20, 70);
-        let y = 80;
-        Object.keys(datosFinales.agenda).forEach(d => {
-            if(datosFinales.agenda[d].length > 0) {
-                doc.text(`${d}: ${datosFinales.agenda[d].join(', ')}`, 20, y);
-                y += 10;
-            }
-        });
+        let y = 40;
+        Object.entries(datosFinales).forEach(([k, v]) => { if(k !== 'agenda') { doc.text(`${k.toUpperCase()}: ${v}`, 20, y); y+=10; } });
+        y += 10; doc.text("DISPONIBILIDAD:", 20, y); y += 10;
+        Object.entries(datosFinales.agenda).forEach(([d, h]) => { if(h.length > 0) { doc.text(`${d}: ${h.join(', ')}`, 20, y); y+=10; } });
         doc.save(`Postulacion_${datosFinales.nombre}.pdf`);
         await db.collection('postulaciones').add(datosFinales);
-        Swal.fire("Éxito", "PDF generado y enviado", "success").then(() => location.reload());
+        Swal.fire("Éxito", "Postulación guardada y PDF descargado", "success").then(() => location.reload());
     };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
