@@ -12,7 +12,7 @@
     <style>
         :root { --dorado-ucmi: #c5a059; --verde-seleccion: #28a745; }
         body { background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed; background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; padding: 40px 0; }
-        .card-form { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); max-width: 950px; margin: auto; padding: 40px; }
+        .card-form { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); max-width: 950px; margin: auto; padding: 40px; }
         .logo-container { text-align: center; margin-bottom: 25px; }
         #logoAcademia { width: 120px; height: 120px; border-radius: 25px; object-fit: cover; border: 2px solid var(--dorado-ucmi); }
         .form-label { color: var(--dorado-ucmi); font-weight: bold; margin-top: 15px; display: block; }
@@ -23,7 +23,7 @@
         .cell.active { background: var(--verde-seleccion) !important; }
         .header-cell { font-weight: bold; padding: 5px; text-align: center; font-size: 0.7rem; color: var(--dorado-ucmi); display: flex; align-items: center; justify-content: center; }
         .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; border: none; width: 100%; margin-top: 30px; }
-        .capsula-horario { display: inline-block; background: var(--dorado-ucmi); color: black; padding: 2px 8px; border-radius: 15px; font-size: 0.75rem; margin: 2px; font-weight: bold; }
+        .capsula { display: inline-block; background: var(--dorado-ucmi); color: #000; padding: 2px 10px; border-radius: 20px; font-size: 0.8rem; margin: 3px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -58,14 +58,14 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalRevision" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalRevision" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content bg-dark text-white">
-            <div class="modal-header border-secondary"><h5 class="modal-title">Revisar Datos</h5></div>
-            <div class="modal-body" id="modalBodyContent"></div>
-            <div class="modal-footer border-secondary">
+        <div class="modal-content bg-dark text-white border-warning">
+            <div class="modal-header"><h5 class="modal-title">Confirmar Postulación</h5></div>
+            <div class="modal-body" id="bodyModal"></div>
+            <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Corregir</button>
-                <button type="button" class="btn btn-warning" id="btnConfirmarEnvio">Confirmar y Enviar</button>
+                <button type="button" class="btn btn-success" id="btnFinal">Confirmar Registro</button>
             </div>
         </div>
     </div>
@@ -90,24 +90,41 @@
         for (let d = 0; d < 7; d++) grid.innerHTML += `<div class="cell" onclick="this.classList.toggle('active')"></div>`;
     }
 
-    let datosFinales = {};
+    const perfiles = [
+        { nombre: "Roberto Gómez", dni: "1001", email: "roberto@mail.com", wsp: "+593991234567", loc: "Otavalo", tit: "Lic. en Educación", inst: "PUCE", url: "https://drive.google.com/1", exp: "8", nivel: "Primaria", razon: "Por vocación." },
+        { nombre: "Sara Pardo", dni: "1002", email: "sara@mail.com", wsp: "+593987654321", loc: "Ibarra", tit: "Magíster en Pedagogía", inst: "UTE", url: "https://drive.google.com/2", exp: "12", nivel: "Bachillerato", razon: "Por prestigio." },
+        { nombre: "Javier Soler", dni: "1003", email: "javier@mail.com", wsp: "+593998877665", loc: "Cotacachi", tit: "Lic. en Lenguas", inst: "ESPE", url: "https://drive.google.com/3", exp: "5", nivel: "Primaria", razon: "Crecimiento." },
+        { nombre: "Lucía Paredes", dni: "1004", email: "lucia@mail.com", wsp: "+593995544332", loc: "Atuntaqui", tit: "Lic. en Ciencias", inst: "UTN", url: "https://drive.google.com/4", exp: "4", nivel: "Bachillerato", razon: "Excelencia." }
+    ];
 
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key.toLowerCase() === 'm') { e.preventDefault(); llenarFormulario(perfiles[Math.floor(Math.random() * perfiles.length)]); }
+        if (e.shiftKey && e.code.startsWith('Digit')) { e.preventDefault(); const num = parseInt(e.code.replace('Digit', '')) % perfiles.length; llenarFormulario(perfiles[num]); }
+    });
+
+    function llenarFormulario(p) {
+        document.getElementById('nombreResponsable').value = p.nombre; document.getElementById('dniDocente').value = p.dni;
+        document.getElementById('email').value = p.email; document.getElementById('whatsapp').value = p.wsp;
+        document.getElementById('ubicacion').value = p.loc; document.getElementById('titulo_universitario').value = p.tit;
+        document.getElementById('institucion_titulo').value = p.inst; document.getElementById('enlace_sintesis').value = p.url;
+        document.getElementById('anos_experiencia_docente').value = p.exp; document.getElementById('niveles_atencion').value = p.nivel;
+        document.getElementById('razon_deseo_pertenencia').value = p.razon;
+        document.querySelectorAll('.cell').forEach(c => Math.random() > 0.8 ? c.classList.add('active') : c.classList.remove('active'));
+    }
+
+    let datosForm = {};
     document.getElementById('formDocente').onsubmit = (e) => {
         e.preventDefault();
         const dias = ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'];
-        const horariosSel = [];
-        const resumenHTML = [];
-        
+        const hSel = [], hCapsulas = [];
         document.querySelectorAll('.cell').forEach((cell, i) => {
             if (cell.classList.contains('active')) {
-                const hora = Math.floor(i / 7);
-                const dia = dias[i % 7];
-                horariosSel.push(i);
-                resumenHTML.push(`<span class="capsula-horario">${dia} ${hora}:00</span>`);
+                hSel.push(i);
+                hCapsulas.push(`<span class="capsula">${dias[i % 7]} ${Math.floor(i / 7)}:00</span>`);
             }
         });
 
-        datosFinales = {
+        datosForm = {
             nombreResponsable: document.getElementById('nombreResponsable').value,
             dniDocente: document.getElementById('dniDocente').value,
             email: document.getElementById('email').value,
@@ -119,25 +136,19 @@
             experienciaDocente: document.getElementById('anos_experiencia_docente').value,
             niveles_atencion: document.getElementById('niveles_atencion').value,
             razon_deseo_pertenencia: document.getElementById('razon_deseo_pertenencia').value,
-            horarios: horariosSel,
-            entidadReferencia: refEntidad || "General",
+            horarios: hSel,
             fecha: new Date().toLocaleString(),
-            perfil: "Docente Academia"
+            perfil: "Docente Academia",
+            entidadReferencia: refEntidad || "General"
         };
 
-        const modalBody = document.getElementById('modalBodyContent');
-        modalBody.innerHTML = `
-            <p><strong>Nombre:</strong> ${datosFinales.nombreResponsable}</p>
-            <p><strong>Email:</strong> ${datosFinales.email}</p>
-            <p><strong>Experiencia:</strong> ${datosFinales.experienciaDocente} años</p>
-            <p><strong>Disponibilidad:</strong><br>${resumenHTML.join('')}</p>
-        `;
+        document.getElementById('bodyModal').innerHTML = `<strong>Nombre:</strong> ${datosForm.nombreResponsable}<br><strong>DNI:</strong> ${datosForm.dniDocente}<br><br><strong>Horarios:</strong><br>${hCapsulas.join('')}`;
         new bootstrap.Modal(document.getElementById('modalRevision')).show();
     };
 
-    document.getElementById('btnConfirmarEnvio').onclick = () => {
-        db.collection('postulaciones').add(datosFinales).then(() => {
-            Swal.fire("¡Enviado!", "Tu postulación ha sido registrada.", "success");
+    document.getElementById('btnFinal').onclick = () => {
+        db.collection('postulaciones').add(datosForm).then(() => {
+            Swal.fire("¡Éxito!", "Postulación registrada.", "success");
             document.getElementById('formDocente').reset();
             document.querySelectorAll('.cell.active').forEach(c => c.classList.remove('active'));
             bootstrap.Modal.getInstance(document.getElementById('modalRevision')).hide();
