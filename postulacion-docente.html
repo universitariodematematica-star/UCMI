@@ -134,14 +134,14 @@
     document.getElementById('formDocente').onsubmit = (e) => {
         e.preventDefault();
         const dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
-        const horariosLegibles = [];
+        const agendaAgrupada = { Lun: [], Mar: [], Mie: [], Jue: [], Vie: [], Sab: [], Dom: [] };
         const horariosIndexados = [];
 
         document.querySelectorAll('.cell').forEach((cell, index) => {
             if (cell.classList.contains('active')) {
                 const hora = Math.floor(index / 7);
-                const dia = dias[index % 7];
-                horariosLegibles.push(`${dia} ${hora}:00`);
+                const diaNombre = dias[index % 7];
+                agendaAgrupada[diaNombre].push(`${hora}:00`);
                 horariosIndexados.push(index);
             }
         });
@@ -164,11 +164,26 @@
             entidadReferencia: refEntidad || "General"
         };
 
+        let htmlDisponibilidad = "";
+        dias.forEach(dia => {
+            if (agendaAgrupada[dia].length > 0) {
+                htmlDisponibilidad += `<div><strong>${dia}:</strong> ${agendaAgrupada[dia].join(', ')}</div>`;
+            }
+        });
+
         document.getElementById('bodyModal').innerHTML = `
             <p><strong>Nombre:</strong> ${datosTemporales.nombreResponsable}</p>
             <p><strong>DNI:</strong> ${datosTemporales.dniDocente}</p>
+            <p><strong>Email:</strong> ${datosTemporales.email}</p>
+            <p><strong>WhatsApp:</strong> ${datosTemporales.whatsapp}</p>
+            <p><strong>Ubicación:</strong> ${datosTemporales.ubicacion}</p>
+            <p><strong>Título:</strong> ${datosTemporales.titulo} (${datosTemporales.institucion_titulo})</p>
             <p><strong>Experiencia:</strong> ${datosTemporales.experienciaDocente} años</p>
-            <p><strong>Disponibilidad:</strong><br><small>${horariosLegibles.join(', ')}</small></p>
+            <p><strong>Niveles:</strong> ${datosTemporales.niveles_atencion}</p>
+            <p><strong>Razón:</strong> ${datosTemporales.razon_deseo_pertenencia}</p>
+            <hr>
+            <p><strong>Disponibilidad Horaria:</strong></p>
+            ${htmlDisponibilidad || "No seleccionada"}
         `;
         new bootstrap.Modal(document.getElementById('modalRevision')).show();
     };
@@ -176,12 +191,12 @@
     document.getElementById('btnConfirmar').onclick = () => {
         db.collection('postulaciones').add(datosTemporales)
             .then((docRef) => {
-                Swal.fire("¡Éxito!", "Postulación registrada ID: " + docRef.id, "success");
+                Swal.fire("¡Éxito!", "Postulación registrada en Firestore (ID: " + docRef.id + ")", "success");
                 document.getElementById('formDocente').reset();
                 document.querySelectorAll('.cell.active').forEach(c => c.classList.remove('active'));
                 bootstrap.Modal.getInstance(document.getElementById('modalRevision')).hide();
             })
-            .catch(err => Swal.fire("Error", "No se pudo guardar: " + err.message, "error"));
+            .catch(err => Swal.fire("Error", "No se pudo guardar en Firestore: " + err.message, "error"));
     };
 </script>
 </body>
