@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --dorado-ucmi: #c5a059; --verde-seleccion: #28a745; }
         body { 
@@ -129,6 +130,43 @@
         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Cargado: ${p.nombre}`, showConfirmButton: false, timer: 1000 });
     }
 
+    // --- FUNCIÓN PARA GENERAR EL PDF ---
+    const generarPDF = (datos) => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text("POSTULACIÓN DOCENTE - " + datos.entidadReferencia, 15, 20);
+        doc.setFontSize(10);
+        doc.text("Fecha: " + datos.fecha, 15, 27);
+        doc.line(15, 32, 195, 32);
+
+        const filas = [
+            ["Nombre:", datos.nombreResponsable],
+            ["DNI:", datos.dniDocente],
+            ["Email:", datos.email],
+            ["WhatsApp:", datos.whatsapp],
+            ["Ubicación:", datos.ubicacion],
+            ["Título:", datos.titulo],
+            ["Institución:", datos.institucion_titulo],
+            ["Experiencia:", datos.experienciaDocente + " años"],
+            ["Niveles:", datos.niveles_atencion],
+            ["Razón:", datos.razon_deseo_pertenencia]
+        ];
+
+        let y = 45;
+        filas.forEach(fila => {
+            doc.setFont("helvetica", "bold");
+            doc.text(fila[0], 15, y);
+            doc.setFont("helvetica", "normal");
+            doc.text(String(fila[1]), 65, y);
+            y += 8;
+        });
+
+        doc.save(`Postulacion_${datos.dniDocente}.pdf`);
+    };
+
     let datosTemporales = {};
 
     document.getElementById('formDocente').onsubmit = (e) => {
@@ -191,7 +229,8 @@
     document.getElementById('btnConfirmar').onclick = () => {
         db.collection('postulaciones').add(datosTemporales)
             .then((docRef) => {
-                Swal.fire("¡Éxito!", "Postulación registrada en Firestore (ID: " + docRef.id + ")", "success");
+                Swal.fire("¡Éxito!", "Postulación registrada.", "success");
+                generarPDF(datosTemporales); // Descarga automática del PDF
                 document.getElementById('formDocente').reset();
                 document.querySelectorAll('.cell.active').forEach(c => c.classList.remove('active'));
                 bootstrap.Modal.getInstance(document.getElementById('modalRevision')).hide();
