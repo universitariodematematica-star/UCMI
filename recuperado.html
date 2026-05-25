@@ -1,275 +1,189 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>UCMI - Panel de Academia</title>
-     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-     <style>
-         :root { --dorado-ucmi: #c5a059; }
-         body {
-             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-             background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; min-height: 100vh;
-         }
-         .overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.5) 0%, rgba(6, 9, 15, 0.9) 100%); min-height: 100vh; }
-         .navbar-master { background: rgba(6, 9, 15, 0.85); border-bottom: 1px solid var(--dorado-ucmi); backdrop-filter: blur(10px); padding: 0.8rem 2rem; }
-         .logo-nav { height: 50px; object-fit: contain; border-radius: 5px; opacity: 0; transition: opacity 0.4s ease; }
-         .offcanvas { background: rgba(6, 9, 15, 0.98) !important; border-right: 1px solid var(--dorado-ucmi); color: white; }
-         .profile-img-container { width: 110px; height: 110px; margin: 20px auto; border-radius: 50%; border: 2px solid var(--dorado-ucmi); overflow: hidden; background: #000; }
-         #logoPreview { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.4s ease; }
-         
-         /* Ajuste de tarjetas para que no se estiren */
-         .admin-card { 
-             background: rgba(255, 255, 255, 0.05); 
-             border: 1px solid rgba(255, 255, 255, 0.1); 
-             border-radius: 20px; 
-             padding: 25px 15px; 
-             transition: 0.3s; 
-             text-align: center; 
-             cursor: pointer; 
-             text-decoration: none; 
-             color: white; 
-             height: 100%; 
-             display: flex;
-             flex-direction: column;
-             justify-content: center;
-             align-items: center;
-         }
-         .admin-card:hover { background: rgba(197, 160, 89, 0.1); border-color: var(--dorado-ucmi); transform: translateY(-5px); }
-         .icon-box { font-size: 2.2rem; color: var(--dorado-ucmi); margin-bottom: 10px; }
-         .text-gold { color: var(--dorado-ucmi); text-shadow: 0 0 10px rgba(197, 160, 89, 0.3); }
-         h4 { font-size: 1.2rem; font-weight: bold; }
-     </style>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postulación Docente - UCMI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root { --dorado-ucmi: #c5a059; --verde-seleccion: #28a745; }
+        body { 
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed; 
+            background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; padding: 40px 0; 
+        }
+        .card-form { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); max-width: 950px; margin: auto; padding: 40px; }
+        .logo-container { text-align: center; margin-bottom: 25px; }
+        #logoAcademia { width: 120px; height: 120px; border-radius: 25px; object-fit: cover; border: 2px solid var(--dorado-ucmi); }
+        .form-label { color: var(--dorado-ucmi); font-weight: bold; margin-top: 15px; display: block; }
+        .form-control { background: rgba(255,255,255,0.08) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: white !important; border-radius: 12px; padding: 12px; }
+        .grid-container { width: 100%; margin-top: 15px; }
+        .grid-horaria { display: grid; grid-template-columns: 60px repeat(7, 1fr); gap: 3px; }
+        .cell { background: rgba(255,255,255,0.1); height: 25px; cursor: pointer; border-radius: 4px; transition: 0.2s; }
+        .cell.active { background: var(--verde-seleccion) !important; }
+        .header-cell { font-weight: bold; padding: 5px; text-align: center; font-size: 0.7rem; color: var(--dorado-ucmi); display: flex; align-items: center; justify-content: center; }
+        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; border: none; width: 100%; margin-top: 30px; }
+    </style>
 </head>
 <body>
 
-<div class="overlay">
-     <nav class="navbar navbar-master sticky-top">
-         <div class="container-fluid d-flex justify-content-between align-items-center">
-             <div class="d-flex align-items-center">
-                 <button class="btn btn-outline-warning me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu"><i class="bi bi-list"></i></button>
-                 <img src="" id="navLogo" class="logo-nav">
-             </div>
-             <div class="text-end">
-                 <small class="d-block opacity-75">Panel de Gestión</small>
-                 <span id="navEntidad" class="fw-bold text-gold">Cargando...</span>
-             </div>
-         </div>
-     </nav>
-
-     <div class="offcanvas offcanvas-start" id="sidebarMenu">
-         <div class="offcanvas-header border-bottom border-secondary">
-             <h5 class="offcanvas-title text-warning">CONFIGURACIÓN</h5>
-             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
-         </div>
-         <div class="offcanvas-body d-flex flex-column">
-             <div class="text-center mb-4">
-                 <div class="profile-img-container"><img id="logoPreview" src=""></div>
-                 <h5 id="sideNombreEntidad" class="fw-bold">Cargando...</h5>
-                 <p class="small text-secondary">Sede Oficial</p>
-             </div>
-             <div class="bg-dark p-3 rounded-4 border border-secondary mb-4">
-                 <label class="form-label small fw-bold">CAMBIAR LOGO</label>
-                 <input type="file" id="inputLogo" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" accept="image/*">
-                 <button id="btnSaveLogo" class="btn btn-warning btn-sm w-100 fw-bold">GUARDAR LOGO</button>
-             </div>
-             <button id="btnLogout" class="btn btn-outline-danger mt-auto rounded-pill">Cerrar Sesión</button>
-         </div>
-     </div>
-
-     <div class="container py-5">
-         <div class="row g-4">
-             
-             <div class="col-md-3">
-                 <div class="admin-card" onclick="window.abrirFormulario()">
-                     <div class="icon-box"><i class="bi bi-person-plus"></i></div>
-                     <h4>Captación</h4>
-                     <p class="small opacity-75">Link de registro para alumnos prospectos.</p>
-                     <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="event.stopPropagation(); window.manejarAccionLink(this, 'alumno');">Copiar y Enviar</button>
-                 </div>
-             </div>
-
-             <div class="col-md-3">
-                 <a href="solicitudes-academia.html" class="admin-card">
-                     <div class="icon-box" style="color: #bc13fe;"><i class="bi bi-file-earmark-text"></i></div>
-                     <h4>Solicitudes</h4>
-                     <p class="small opacity-75">Validación de nuevos ingresos.</p>
-                 </a>
-             </div>
-
-             <div class="col-md-3">
-                <a href="alumnos-academia.html" class="admin-card">
-                    <div class="icon-box" style="color: #ff8c00;"><i class="bi bi-people-fill"></i></div>
-                    <h4>Alumnos</h4>
-                    <p class="small opacity-75">Gestión y control de aulas.</p>
-                </a>
+<div class="container">
+    <div class="card-form">
+        <div class="logo-container"><img id="logoAcademia" src="https://via.placeholder.com/120" alt="Logo"></div>
+        <h2 class="text-center" style="color: var(--dorado-ucmi); font-family: 'Cinzel'; margin-bottom: 30px;">POSTULACIÓN DOCENTE</h2>
+        
+        <form id="formDocente">
+            <div class="row">
+                <div class="col-md-6"><label class="form-label">Nombre Completo</label><input type="text" id="nombreResponsable" class="form-control" required></div>
+                <div class="col-md-6"><label class="form-label">DNI</label><input type="text" id="dniDocente" class="form-control" required></div>
+                <div class="col-md-6"><label class="form-label">Email</label><input type="email" id="email" class="form-control" required></div>
+                <div class="col-md-6"><label class="form-label">WhatsApp</label><input type="text" id="whatsapp" class="form-control" required></div>
+                <div class="col-12"><label class="form-label">Ubicación</label><input type="text" id="ubicacion" class="form-control" required></div>
+                <div class="col-md-6"><label class="form-label">Título Universitario</label><input type="text" id="titulo_universitario" class="form-control" required></div>
+                <div class="col-md-6"><label class="form-label">Institución de Egreso</label><input type="text" id="institucion_titulo" class="form-control" required></div>
             </div>
-
-             <div class="col-md-3">
-                 <a href="academia-modulos.html" class="admin-card">
-                     <div class="icon-box" style="color: #00f2ff;"><i class="bi bi-box-seam"></i></div>
-                     <h4>Módulos</h4>
-                     <p class="small opacity-75">Habilitación de visibilidad en formulario.</p>
-                 </a>
-             </div>
-              <div class="col-md-3">
-                   <div class="admin-card" onclick="window.abrirFormularioDocente()">
-                       <div class="icon-box" style="color: #32cd32;"><i class="bi bi-person-badge"></i></div>
-                       <h4>Captación de profesores</h4>
-                       <p class="small opacity-75">Formulario de postulación para docentes.</p>
-                       <button class="btn btn-sm btn-outline-success w-100 mt-2" onclick="event.stopPropagation(); window.manejarAccionLink(this, 'docente');">Copiar y Enviar</button>
-                   </div>
-               </div>
-
-         </div>
-     </div>
+            <label class="form-label">Enlace a Síntesis Curricular</label>
+            <input type="url" id="enlace_sintesis" class="form-control" required>
+            <div class="row">
+                <div class="col-md-6"><label class="form-label">Años de experiencia</label><input type="number" id="anos_experiencia_docente" class="form-control" required></div>
+                <div class="col-md-6"><label class="form-label">Niveles que puede atender</label><input type="text" id="niveles_atencion" class="form-control" required></div>
+            </div>
+            <label class="form-label">Disponibilidad Horaria:</label>
+            <div class="grid-container"><div class="grid-horaria" id="gridHoraria"></div></div>
+            <label class="form-label">¿Por qué quiere formar parte de nuestra institución?</label>
+            <textarea id="razon_deseo_pertenencia" class="form-control" rows="3" required></textarea>
+            <button type="submit" class="btn btn-enviar">ENVIAR POSTULACIÓN</button>
+        </form>
+    </div>
 </div>
 
-<script type="module">
-     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-     import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-     const firebaseConfig = {
-         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-         authDomain: "ucmi-13796634.firebaseapp.com",
-         projectId: "ucmi-13796634",
-         storageBucket: "ucmi-13796634.firebasestorage.app",
-         messagingSenderId: "1090719609536",
-         appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-     };
-
-     const app = initializeApp(firebaseConfig);
-     const auth = getAuth(app);
-     const db = getFirestore(app);
-     let entidadActual = "";
-
-     onAuthStateChanged(auth, async (user) => {
-         if (!user) {
-             window.location.href = "index.html";
-             return;
-         }
-
-         try {
-             const userRef = doc(db, "usuarios", user.email);
-             const userSnap = await getDoc(userRef);
-
-             if (userSnap.exists()) {
-                 const data = userSnap.data();
-                 entidadActual = data.entidad || "Sede";
-                 
-                 document.getElementById('navEntidad').innerText = entidadActual;
-                 document.getElementById('sideNombreEntidad').innerText = entidadActual;
-                 
-                 const finalLogo = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-                 const navLogo = document.getElementById('navLogo');
-                 const logoPrev = document.getElementById('logoPreview');
-                 
-                 navLogo.src = finalLogo;
-                 logoPrev.src = finalLogo;
-                 navLogo.onload = () => navLogo.style.opacity = "1";
-                 logoPrev.onload = () => logoPrev.style.opacity = "1";
-             }
-         } catch (e) {
-             console.error("Error al cargar perfil:", e);
-         }
-     });
-
-     const processImage = (file) => {
-         return new Promise((resolve, reject) => {
-             const reader = new FileReader();
-             reader.readAsDataURL(file);
-             reader.onload = (event) => {
-                 const img = new Image();
-                 img.src = event.target.result;
-                 img.onload = () => {
-                     const canvas = document.createElement('canvas');
-                     const MAX_WIDTH = 400;
-                     const scale = MAX_WIDTH / img.width;
-                     canvas.width = MAX_WIDTH;
-                     canvas.height = img.height * scale;
-                     const ctx = canvas.getContext('2d');
-                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                     resolve(canvas.toDataURL('image/jpeg', 0.7));
-                 };
-             };
-         });
-     };
-
-     document.getElementById('btnSaveLogo').onclick = async () => {
-         const fileInput = document.getElementById('inputLogo');
-         if (!fileInput.files[0]) return alert("Selecciona una imagen.");
-
-         const btn = document.getElementById('btnSaveLogo');
-         btn.disabled = true;
-         btn.innerText = "SUBIENDO...";
-
-         try {
-             const processedBase64 = await processImage(fileInput.files[0]);
-             const userRef = doc(db, "usuarios", auth.currentUser.email);
-             await updateDoc(userRef, { logoCustom: processedBase64 });
-             document.getElementById('navLogo').src = processedBase64;
-             document.getElementById('logoPreview').src = processedBase64;
-             alert("¡Identidad visual actualizada!");
-         } catch (e) {
-             console.error(e);
-         } finally {
-             btn.disabled = false;
-             btn.innerText = "GUARDAR LOGO";
-         }
-     };
-
-     window.manejarAccionLink = (btn, tipo) => {
-        const esDocente = (tipo === 'docente');
-        const url = esDocente
-            ? `https://universitariodematematica-star.github.io/UCMI/postulacion-docente.html?ref=${encodeURIComponent(entidadActual)}`
-            : `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`;
-
-        // Encontramos el contenedor principal de la tarjeta
-        const tarjeta = btn.closest('.admin-card');
-
-        // --- MODO ENVÍO (Cuando se presiona el botón verde de WhatsApp) ---
-        if (btn.dataset.mode === "send") {
-            const phone = btn.previousElementSibling.value;
-            if (!phone) return alert("Por favor ingresa un número");
-            
-            const waLink = `https://wa.me/${phone}?text=${encodeURIComponent("Hola, te comparto el link de postulación: " + url)}`;
-            window.open(waLink, '_blank');
-
-            // AQUÍ ESTÁ LA SOLUCIÓN: Reconstruimos el HTML completo de la tarjeta original
-            tarjeta.innerHTML = `
-                <div class="icon-box" style="${esDocente ? 'color: #32cd32;' : ''}">
-                    <i class="bi ${esDocente ? 'bi-person-badge' : 'bi-person-plus'}"></i>
-                </div>
-                <h4>${esDocente ? 'Captación de profesores' : 'Captación'}</h4>
-                <p class="small opacity-75">${esDocente ? 'Formulario de postulación para docentes.' : 'Link de registro para alumnos prospectos.'}</p>
-                <button class="btn btn-sm ${esDocente ? 'btn-outline-success' : 'btn-outline-info'} w-100 mt-2" 
-                    onclick="event.stopPropagation(); window.manejarAccionLink(this, '${tipo}');">
-                    Copiar y Enviar
-                </button>
-            `;
-            return;
-        }
-
-        // --- MODO INICIAL (Copiar y mostrar campos de envío) ---
-        navigator.clipboard.writeText(url);
-        
-        // Reemplazamos el contenido de la tarjeta por el input y los botones de acción
-        tarjeta.innerHTML = `
-            <div class="icon-box" style="color: #198754;"><i class="bi bi-whatsapp"></i></div>
-            <h4 class="text-success">Enviar por WhatsApp</h4>
-            <input type="text" class="form-control form-control-sm mb-2" placeholder="Ej: 593999999999" style="background:#222; color:white; border:1px solid #555;">
-            <button class="btn btn-sm btn-success w-100" data-mode="send" onclick="event.stopPropagation(); window.manejarAccionLink(this, '${tipo}');">
-                Enviar mensaje
-            </button>
-            <button class="btn btn-sm btn-link text-secondary w-100 mt-1 p-0" onclick="event.stopPropagation(); window.location.reload();">
-                Cancelar
-            </button>
-        `;
+<script>
+    // --- INICIALIZACIÓN DE FIREBASE ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+      authDomain: "ucmi-13796634.firebaseapp.com",
+      projectId: "ucmi-13796634",
+      storageBucket: "ucmi-13796634.firebasestorage.app",
+      messagingSenderId: "1090719609536",
+      appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
+      measurementId: "G-3M3DH25722"
     };
-     document.getElementById('btnLogout').onclick = () => signOut(auth).then(() => window.location.href = "index.html");
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const urlParams = new URLSearchParams(window.location.search);
+const refEntidad = urlParams.get('ref');
+if (refEntidad) {
+    db.collection("usuarios").where("entidad", "==", refEntidad).get().then(snapshot => {
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if(data.logoCustom) document.getElementById('logoAcademia').src = data.logoCustom;
+        });
+    });
+}
+    // Inicialización de la Grilla
+    const grid = document.getElementById('gridHoraria');
+    grid.innerHTML = '<div></div>';
+    ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'].forEach(d => grid.innerHTML += `<div class="header-cell">${d}</div>`);
+    for (let h = 0; h < 24; h++) {
+        grid.innerHTML += `<div class="header-cell">${h}:00</div>`;
+        for (let d = 0; d < 7; d++) grid.innerHTML += `<div class="cell" onclick="this.classList.toggle('active')"></div>`;
+    }
+
+    const perfiles = [
+        { nombre: "Roberto Gómez", dni: "1001", email: "roberto@mail.com", wsp: "+593991234567", loc: "Otavalo", tit: "Lic. en Educación", inst: "PUCE", url: "https://drive.google.com/1", exp: "8", nivel: "Primaria", razon: "Por vocación." },
+        { nombre: "Sara Pardo", dni: "1002", email: "sara@mail.com", wsp: "+593987654321", loc: "Ibarra", tit: "Magíster en Pedagogía", inst: "UTE", url: "https://drive.google.com/2", exp: "12", nivel: "Bachillerato", razon: "Por prestigio." },
+        { nombre: "Javier Soler", dni: "1003", email: "javier@mail.com", wsp: "+593998877665", loc: "Cotacachi", tit: "Lic. en Lenguas", inst: "ESPE", url: "https://drive.google.com/3", exp: "5", nivel: "Primaria", razon: "Crecimiento." },
+        { nombre: "Lucía Paredes", dni: "1004", email: "lucia@mail.com", wsp: "+593995544332", loc: "Atuntaqui", tit: "Lic. en Ciencias", inst: "UTN", url: "https://drive.google.com/4", exp: "4", nivel: "Bachillerato", razon: "Excelencia." },
+        { nombre: "Martín Fierro", dni: "1005", email: "martin@mail.com", wsp: "+593994433221", loc: "Quito", tit: "Dr. en Historia", inst: "PUCE", url: "https://drive.google.com/5", exp: "20", nivel: "Universitario", razon: "Investigación." },
+        { nombre: "Elena Blanco", dni: "1006", email: "elena@mail.com", wsp: "+593993322110", loc: "Ibarra", tit: "Lic. en Arte", inst: "Bellas Artes", url: "https://drive.google.com/6", exp: "3", nivel: "Preescolar", razon: "Creatividad." },
+        { nombre: "Diego Rivera", dni: "1007", email: "diego@mail.com", wsp: "+593992211009", loc: "Otavalo", tit: "Lic. en Diseño", inst: "UTN", url: "https://drive.google.com/7", exp: "9", nivel: "Arte", razon: "Innovación." },
+        { nombre: "Sara Connor", dni: "1008", email: "sara.c@mail.com", wsp: "+593991100998", loc: "Ibarra", tit: "Ing. en Sistemas", inst: "ESPE", url: "https://drive.google.com/8", exp: "15", nivel: "Tecnología", razon: "Tecnología." },
+        { nombre: "Hugo Sánchez", dni: "1009", email: "hugo@mail.com", wsp: "+593990099887", loc: "Atuntaqui", tit: "Lic. en Ed. Física", inst: "UTN", url: "https://drive.google.com/9", exp: "6", nivel: "Deportes", razon: "Salud." },
+        { nombre: "Frida Kahlo", dni: "1010", email: "frida@mail.com", wsp: "+593999888777", loc: "Otavalo", tit: "Lic. en Pintura", inst: "Bellas Artes", url: "https://drive.google.com/10", exp: "10", nivel: "Artes Visuales", razon: "Expresión." },
+        { nombre: "César Vallejo", dni: "1011", email: "cesar@mail.com", wsp: "+593991112223", loc: "Quito", tit: "Lic. en Letras", inst: "PUCE", url: "https://drive.google.com/11", exp: "18", nivel: "Bachillerato", razon: "Enseñanza." },
+        { nombre: "Gabriela Mistral", dni: "1012", email: "gaby@mail.com", wsp: "+593992223334", loc: "Ibarra", tit: "Magíster en Literatura", inst: "UTN", url: "https://drive.google.com/12", exp: "22", nivel: "Universitario", razon: "Inspiración." },
+        { nombre: "Isaac Newton", dni: "1013", email: "isaac@mail.com", wsp: "+593993334445", loc: "Cotacachi", tit: "Lic. en Física", inst: "ESPE", url: "https://drive.google.com/13", exp: "14", nivel: "Bachillerato", razon: "Ciencia." },
+        { nombre: "Marie Curie", dni: "1014", email: "marie@mail.com", wsp: "+593994445556", loc: "Otavalo", tit: "Lic. en Química", inst: "PUCE", url: "https://drive.google.com/14", exp: "19", nivel: "Universitario", razon: "Descubrimiento." },
+        { nombre: "Pablo Picasso", dni: "1015", email: "pablo@mail.com", wsp: "+593995556667", loc: "Quito", tit: "Lic. en Bellas Artes", inst: "Bellas Artes", url: "https://drive.google.com/15", exp: "30", nivel: "Arte", razon: "Evolución." },
+        { nombre: "Ada Lovelace", dni: "1016", email: "ada@mail.com", wsp: "+593996667778", loc: "Ibarra", tit: "Ing. en Software", inst: "ESPE", url: "https://drive.google.com/16", exp: "7", nivel: "Tecnología", razon: "Programación." },
+        { nombre: "Simón Bolívar", dni: "1017", email: "simon@mail.com", wsp: "+593997778889", loc: "Atuntaqui", tit: "Lic. en Historia", inst: "UTN", url: "https://drive.google.com/17", exp: "25", nivel: "Bachillerato", razon: "Liderazgo." },
+        { nombre: "Juana de Arco", dni: "1018", email: "juana@mail.com", wsp: "+593998889990", loc: "Cotacachi", tit: "Lic. en Filosofía", inst: "PUCE", url: "https://drive.google.com/18", exp: "5", nivel: "Primaria", razon: "Justicia." },
+        { nombre: "Nikola Tesla", dni: "1019", email: "nikola@mail.com", wsp: "+593999990001", loc: "Ibarra", tit: "Ing. Eléctrico", inst: "ESPE", url: "https://drive.google.com/19", exp: "28", nivel: "Universitario", razon: "Energía." },
+        { nombre: "Virginia Woolf", dni: "1020", email: "virginia@mail.com", wsp: "+593990001112", loc: "Otavalo", tit: "Lic. en Redacción", inst: "UTN", url: "https://drive.google.com/20", exp: "11", nivel: "Bachillerato", razon: "Cultura." }
+    ];
+
+    // Lógica de Atajos (Ctrl+M Aleatorio, Shift+Número Específico)
+    document.addEventListener('keydown', (e) => {
+        // Ctrl + M: Aleatorio
+        if (e.ctrlKey && e.key.toLowerCase() === 'm') {
+            e.preventDefault(); e.stopPropagation();
+            llenarFormulario(perfiles[Math.floor(Math.random() * perfiles.length)]);
+        }
+        // Shift + Número: Específico
+        if (e.shiftKey && e.code.startsWith('Digit')) {
+            e.preventDefault(); e.stopPropagation();
+            const num = parseInt(e.code.replace('Digit', '')) % perfiles.length;
+            llenarFormulario(perfiles[num]);
+        }
+    }, true);
+
+    function llenarFormulario(p) {
+        document.getElementById('nombreResponsable').value = p.nombre;
+        document.getElementById('dniDocente').value = p.dni;
+        document.getElementById('email').value = p.email;
+        document.getElementById('whatsapp').value = p.wsp;
+        document.getElementById('ubicacion').value = p.loc;
+        document.getElementById('titulo_universitario').value = p.tit;
+        document.getElementById('institucion_titulo').value = p.inst;
+        document.getElementById('enlace_sintesis').value = p.url;
+        document.getElementById('anos_experiencia_docente').value = p.exp;
+        document.getElementById('niveles_atencion').value = p.nivel;
+        document.getElementById('razon_deseo_pertenencia').value = p.razon;
+        document.querySelectorAll('.cell').forEach(c => Math.random() > 0.8 ? c.classList.add('active') : c.classList.remove('active'));
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Cargado: ${p.nombre}`, showConfirmButton: false, timer: 1000 });
+    }
+
+document.getElementById('formDocente').onsubmit = (e) => {
+        e.preventDefault();
+        
+        // Obtener los horarios seleccionados
+        const horariosSeleccionados = [];
+        const todasLasCeldas = document.querySelectorAll('.cell'); // Selecciona TODAS las celdas
+        todasLasCeldas.forEach((cell, index) => {
+            if (cell.classList.contains('active')) {
+                horariosSeleccionados.push(index); // El índice será 0-167 correctamente
+            }
+        });
+// ... (código previo)
+                    const datos = {
+                        nombreResponsable: document.getElementById('nombreResponsable').value,
+                        dniDocente: document.getElementById('dniDocente').value,
+                        email: document.getElementById('email').value,
+                        whatsapp: document.getElementById('whatsapp').value,
+                        ubicacion: document.getElementById('ubicacion').value,
+                        titulo: document.getElementById('titulo_universitario').value,
+                        institucion_titulo: document.getElementById('institucion_titulo').value,
+                        enlaceSintesis: document.getElementById('enlace_sintesis').value,
+                        experienciaDocente: document.getElementById('anos_experiencia_docente').value,
+                        niveles_atencion: document.getElementById('niveles_atencion').value,
+                        razon_deseo_pertenencia: document.getElementById('razon_deseo_pertenencia').value,
+                        horarios: horariosSeleccionados,
+                        fecha: new Date().toLocaleString(),
+                        perfil: "Docente Academia",
+                        entidadReferencia: refEntidad || "General" // <--- AÑÁDELO AQUÍ
+                    };
+
+        db.collection('postulaciones').add(datos)
+              .then((docRef) => {
+                  Swal.fire("¡Éxito!", "Postulación registrada en Firestore (ID: " + docRef.id + ")", "success");
+                  document.getElementById('formDocente').reset();
+                  document.querySelectorAll('.cell.active').forEach(c => c.classList.remove('active'));
+              })
+              .catch(err => Swal.fire("Error", "No se pudo guardar en Firestore: " + err.message, "error"));
+    };
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
