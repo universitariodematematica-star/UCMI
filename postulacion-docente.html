@@ -182,48 +182,26 @@ document.getElementById('formDocente').onsubmit = (e) => {
 
     // 1. Validar si hay horarios seleccionados
     if (horariosSeleccionados.length === 0) {
-        // ... (mantiene todo igual hasta la línea 184)
-
-// 2. Agrupar horarios seleccionados por día
-const horarioPorDia = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
-const diasTexto = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-
-horariosSeleccionados.forEach(index => {
-    const hora = Math.floor(index / 7);
-    const dia = index % 7;
-    horarioPorDia[dia].push(hora);
-});
-
-// 3. Generar el resumen de texto
-let resumenHorario = "";
-for (let d = 0; d < 7; d++) {
-    if (horarioPorDia[d].length > 0) {
-        // Ordenar horas y crear rango legible (ej: "8:00, 9:00, 10:00")
-        const horas = horarioPorDia[d].sort((a, b) => a - b).map(h => `${h}:00`);
-        resumenHorario += `<strong>${diasTexto[d]}:</strong> ${horas.join(", ")}<br>`;
+        Swal.fire("Atención", "Por favor, selecciona al menos un horario.", "warning");
+        return;
     }
-}
 
-// ... (en la línea 206, ajusta el modal para mostrar 'resumenHorario')
+    // 2. Calcular rango de horas (filas de 0 a 23)
+    const filasActivas = horariosSeleccionados.map(i => Math.floor(i / 7));
+    const minH = Math.min(...filasActivas);
+    const maxH = Math.max(...filasActivas);
 
-document.getElementById('bodyModal').innerHTML = `
-    <h5>Confirmar Datos:</h5>
-    <div style="font-size: 0.85rem;">
-        <strong>Nombre:</strong> ${datosPostulacion.nombreResponsable}<br>
-        <strong>DNI:</strong> ${datosPostulacion.dniDocente}<br>
-        <strong>Email:</strong> ${datosPostulacion.email}<br>
-        <strong>WhatsApp:</strong> ${datosPostulacion.whatsapp}<br>
-        <strong>Ubicación:</strong> ${datosPostulacion.ubicacion}<br>
-        <strong>Título:</strong> ${datosPostulacion.titulo} (${datosPostulacion.institucion_titulo})<br>
-        <strong>Experiencia:</strong> ${datosPostulacion.experienciaDocente} años<br>
-        <strong>Niveles:</strong> ${datosPostulacion.niveles_atencion}<br>
-        <strong>Razón:</strong> ${datosPostulacion.razon_deseo_pertenencia}<br>
-        <hr>
-        <strong>Disponibilidad Horaria:</strong><br>
-        ${resumenHorario}
-    </div>
-`;
-// ... (continúa con new bootstrap.Modal...)
+    // 3. Generar la grilla dinámica
+    let gridHtml = `
+        <div style="display:grid; grid-template-columns: 40px repeat(7, 1fr); gap: 2px; margin-top: 10px; font-size: 0.65rem;">
+            <div style="color:#c5a059;">Hora</div>${['Lun','Mar','Mie','Jue','Vie','Sab','Dom'].map(d => `<div style="text-align:center; font-weight:bold; color:#c5a059;">${d}</div>`).join('')}
+    `;
+
+    for (let h = minH; h <= maxH; h++) {
+        gridHtml += `<div style="display:flex; align-items:center; justify-content:center; color:white; background:rgba(255,255,255,0.1); border-radius:2px;">${h}:00</div>`;
+        for (let d = 0; d < 7; d++) {
+            const index = (h * 7) + d;
+            const esActiva = horariosSeleccionados.includes(index);
             gridHtml += `<div style="height:15px; background:${esActiva ? '#28a745' : '#444'}; border-radius:2px;"></div>`;
         }
     }
