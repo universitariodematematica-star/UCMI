@@ -379,245 +379,236 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-      import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-      const firebaseConfig = {
-          apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-          authDomain: "ucmi-13796634.firebaseapp.com",
-          projectId: "ucmi-13796634",
-          storageBucket: "ucmi-13796634.firebasestorage.app",
-          messagingSenderId: "1090719609536",
-          appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-      };
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
 
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      const auth = getAuth(app);
-      
-      let currentId = null;
-      let currentData = null;
-      let logoAcademiaGlobal = "";
-      let academiaNombreGlobal = "";
-      let cuposMaximosGlobal = 0;
-      let registrosLocales = [];
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    
+    let currentId = null;
+    let currentData = null;
+    let logoAcademiaGlobal = "";
+    let academiaNombreGlobal = "";
+    let cuposMaximosGlobal = 0;
+    let registrosLocales = [];
 
-      const selectorFiltro = document.getElementById('filtroPerfil');
+    const selectorFiltro = document.getElementById('filtroPerfil');
 
-      onAuthStateChanged(auth, async (user) => {
-          if (user) {
-              const userDoc = await getDoc(doc(db, "usuarios", user.email));
-              if (userDoc.exists()) {
-                  const data = userDoc.data();
-                  logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-                  document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
-                  document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
-                  
-                  academiaNombreGlobal = data.entidad || "Panel";
-                  cuposMaximosGlobal = data.cupos || 0;
-                  document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
-                  
-                  actualizarMarcadorCupos();
-                  iniciarEscuchaFiltrada(academiaNombreGlobal);
-              }
-          } else {
-              window.location.href = "index.html";
-          }
-      });
-
-      async function actualizarMarcadorCupos() {
-          if (!academiaNombreGlobal) return;
-          const qEstudiantes = query(
-              collection(db, "usuarios"),
-              where("entidad", "==", academiaNombreGlobal),
-              where("rol", "==", "estudiante")
-          );
-          const snap = await getDocs(qEstudiantes);
-          document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
-      }
-
-      function iniciarEscuchaFiltrada(academiaNombre) {
-          // Traemos todos los registros de la entidad (Estudiantes y Docentes)
-          const q = query(
-              collection(db, "postulaciones"),
-              where("entidad", "==", academiaNombre)
-          );
-
-          onSnapshot(q, (snap) => {
-              registrosLocales = snap.docs;
-              renderizarTabla();
-          });
-      }
-
-      function renderizarTabla() {
-          const lista = document.getElementById('listaMaestra');
-          if (!lista) return;
-          const filtro = selectorFiltro.value; 
-          lista.innerHTML = "";
-
-          registrosLocales.forEach(docSnap => {
-              const d = docSnap.data();
-              const id = docSnap.id;
-              
-              const esEstudiante = d.perfil === "Estudiante Academia";
-              const esDocente = d.perfil === "Docente Academia";
-
-              // Lógica de filtro (el value del select debe ser 'estudiante' o 'docente')
-              if (filtro === "estudiante" && !esEstudiante) return;
-              if (filtro === "docente" && !esDocente) return;
-
-              const tr = document.createElement('tr');
-              tr.innerHTML = `
-                  <td>
-                      <div class="fw-bold">${d.nombreResponsable || d.nombre || 'Sin nombre'}</div>
-                      <div class="small text-muted">${d.email}</div>
-                  </td>
-                  <td><span class="badge ${esDocente ? 'bg-categoria-docente' : 'bg-categoria-estudiante'}">${d.perfil}</span></td>
-                  <td><i class="bi bi-geo-alt me-1"></i>${d.ubicacion || 'No definida'}</td>
-                  <td class="text-center">
-                      <button class="btn btn-dark btn-sm" onclick="verExpediente('${id}')">
-                          <i class="bi bi-eye"></i> Detalles
-                      </button>
-                  </td>
-              `;
-              lista.appendChild(tr);
-          });
-      }
-
-window.verExpediente = async (id) => {
-          currentId = id;
-          const snap = await getDoc(doc(db, "postulaciones", id));
-          if (!snap.exists()) return;
-          
-          currentData = snap.data();
-          const d = currentData;
-          const esDocente = d.perfil === "Docente Academia";
-          
-          document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
-
-         // --- INICIO DE PROCESAMIENTO HORARIO ---
-// --- INICIO DE PROCESAMIENTO HORARIO (ORDENADO Y LINEAL) ---
-const diasSemana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
-let htmlHorarios = "";
-
-if (esDocente && d.horarios && Array.isArray(d.horarios)) {
-    const agrupado = {};
-    d.horarios.forEach(idx => {
-        const dia = diasSemana[idx % 7];
-        const hora = Math.floor(idx / 7);
-        if (!agrupado[dia]) agrupado[dia] = [];
-        agrupado[dia].push(`${hora}:00`);
-    });
-
-    // Construimos la lista respetando el orden de diasSemana
-    diasSemana.forEach(dia => {
-        if (agrupado[dia]) {
-            htmlHorarios += `
-                <div class="col-12 mb-1" style="border-bottom: 1px solid rgba(197, 160, 89, 0.2); padding: 5px 0;">
-                    <span style="color:var(--dorado-ucmi); font-weight:bold; display: inline-block; width: 45px;">${dia}:</span> 
-                    <span style="font-size: 0.85rem; color: #fff;">${agrupado[dia].sort((a, b) => parseInt(a) - parseInt(b)).join(', ')}</span>
-                </div>`;
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const userDoc = await getDoc(doc(db, "usuarios", user.email));
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+                document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
+                document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
+                
+                academiaNombreGlobal = data.entidad || "Panel";
+                cuposMaximosGlobal = data.cupos || 0;
+                document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
+                
+                actualizarMarcadorCupos();
+                iniciarEscuchaFiltrada(academiaNombreGlobal);
+            }
+        } else {
+            window.location.href = "index.html";
         }
     });
-} else if (esDocente) {
-    htmlHorarios = `<div class="col-12 mt-2" style="font-size:0.8rem; color:#888;">No hay disponibilidad registrada.</div>`;
-}
-// --- FIN DE PROCESAMIENTO HORARIO ---
-} else if (esDocente) {
-    htmlHorarios = `<div class="col-12">No se ha registrado disponibilidad horaria.</div>`;
-}
-// --- FIN DE PROCESAMIENTO HORARIO ---
-      
-          let html = `<div class="col-12 mb-4"><h5 style="color:var(--dorado-ucmi)">Expediente del Aspirante</h5></div>`;
 
-          if (esDocente) {
-              html += `
-                  <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Docente</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE COMPLETO</label><br>${d.nombreResponsable}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniDocente}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">TÍTULO</label><br>${d.titulo}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">INSTITUCIÓN DE EGRESO</label><br>${d.institucion_titulo}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">ENLACE A SÍNTESIS CURRICULAR</label><br>${d.enlaceSintesis}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">AÑOS DE EXPERIENCIA</label><br>${d.experienciaDocente}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div>                  
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NIVELES</label><br>${d.niveles_atencion}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">RAZÓN DE PERTENECIA A NUESTRA INSTITUCIÓN</label><br>${d.razon_deseo_pertenencia}</div>
-                  ${htmlHorarios}
-              `;
-          } else {
-              // Esta parte mantiene exactamente el diseño de tu imagen para estudiantes
-              html += `
-                  <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Estudiante</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE COMPLETO</label><br>${d.nombre}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniEstudiante}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">GÉNERO</label><br>${d.genero}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">FECHA DE NACIMIENTO</label><br>${d.fechaNacimiento}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">EDAD</label><br>${d.edadEstudiante}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">PROMEDIO</label><br>${d.promediocatualbachillerato}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">MÓDULOS DE INTERÉS</label><br>${d.modulos}</div>
-                  <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold; border-top: 1px solid #333; padding-top:10px;">Información del Representante</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE</label><br>${d.nombreRepresentante}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO</label><br>${d.emailRepresentante}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI</label><br>${d.dniRepresentante}</div>
-                  <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsappRepresentante}</div>
-              `;
-          }
+    async function actualizarMarcadorCupos() {
+        if (!academiaNombreGlobal) return;
+        const qEstudiantes = query(
+            collection(db, "usuarios"),
+            where("entidad", "==", academiaNombreGlobal),
+            where("rol", "==", "estudiante")
+        );
+        const snap = await getDocs(qEstudiantes);
+        document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
+    }
 
-          document.getElementById('contenidoModal').innerHTML = `<div class="row">${html}</div>`;
-          new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-      };
+    function iniciarEscuchaFiltrada(academiaNombre) {
+        const q = query(
+            collection(db, "postulaciones"),
+            where("entidad", "==", academiaNombre)
+        );
 
-      selectorFiltro.addEventListener('change', renderizarTabla);
+        onSnapshot(q, (snap) => {
+            registrosLocales = snap.docs;
+            renderizarTabla();
+        });
+    }
 
-      document.getElementById('btnLogout').onclick = async () => {
-          await signOut(auth);
-          window.location.href = "index.html";
-      };
+    function renderizarTabla() {
+        const lista = document.getElementById('listaMaestra');
+        if (!lista) return;
+        const filtro = selectorFiltro.value; 
+        lista.innerHTML = "";
 
-      document.getElementById('btnConfirmarAcceso').onclick = async () => {
-          if(!currentId || !currentData) return;
-          const esDocente = currentData.perfil === "Docente Academia";
+        registrosLocales.forEach(docSnap => {
+            const d = docSnap.data();
+            const id = docSnap.id;
+            
+            const esEstudiante = d.perfil === "Estudiante Academia";
+            const esDocente = d.perfil === "Docente Academia";
 
-          try {
-              if (!esDocente) {
-                  const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
-                  const snapshotEstudiantes = await getDocs(qEstudiantes);
-                  if (snapshotEstudiantes.size >= cuposMaximosGlobal) {
-                      await Swal.fire('Cupos Agotados', 'No hay vacantes para estudiantes.', 'warning');
-                      return; 
-                  }
-              }
+            if (filtro === "estudiante" && !esEstudiante) return;
+            if (filtro === "docente" && !esDocente) return;
 
-              await setDoc(doc(db, "usuarios", currentData.email), { 
-                  ...currentData, 
-                  estado: "activo",
-                  rol: esDocente ? "docente" : "estudiante"
-              });
-              
-              await deleteDoc(doc(db, "postulaciones", currentId));
-              await Swal.fire('¡Admitido!', `El ${esDocente ? 'docente' : 'estudiante'} fue integrado.`, 'success');
-              location.reload();
-          } catch (error) {
-              Swal.fire('Error', 'No se pudo sincronizar la transacción.', 'error');
-          }
-      };
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div class="fw-bold">${d.nombreResponsable || d.nombre || 'Sin nombre'}</div>
+                    <div class="small text-muted">${d.email}</div>
+                </td>
+                <td><span class="badge ${esDocente ? 'bg-categoria-docente' : 'bg-categoria-estudiante'}">${d.perfil}</span></td>
+                <td><i class="bi bi-geo-alt me-1"></i>${d.ubicacion || 'No definida'}</td>
+                <td class="text-center">
+                    <button class="btn btn-dark btn-sm" onclick="verExpediente('${id}')">
+                        <i class="bi bi-eye"></i> Detalles
+                    </button>
+                </td>
+            `;
+            lista.appendChild(tr);
+        });
+    }
 
-      document.getElementById('btnEliminar').onclick = async () => {
-          const result = await Swal.fire({ title: '¿Estás seguro?', text: "¡Esta acción eliminará la postulación!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, rechazar' });
-          if (result.isConfirmed) {
-              try {
-                  await deleteDoc(doc(db, "postulaciones", currentId));
-                  location.reload();
-              } catch (e) { Swal.fire('Error', 'No se pudo eliminar.', 'error'); }
-          }
-      };
-  </script>
+    window.verExpediente = async (id) => {
+        currentId = id;
+        const snap = await getDoc(doc(db, "postulaciones", id));
+        if (!snap.exists()) return;
+        
+        currentData = snap.data();
+        const d = currentData;
+        const esDocente = d.perfil === "Docente Academia";
+        
+        document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
+
+        // --- PROCESAMIENTO HORARIO ---
+        const diasSemana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+        let htmlHorarios = "";
+
+        if (esDocente && d.horarios && Array.isArray(d.horarios)) {
+            const agrupado = {};
+            d.horarios.forEach(idx => {
+                const dia = diasSemana[idx % 7];
+                const hora = Math.floor(idx / 7);
+                if (!agrupado[dia]) agrupado[dia] = [];
+                agrupado[dia].push(`${hora}:00`);
+            });
+
+            diasSemana.forEach(dia => {
+                if (agrupado[dia]) {
+                    htmlHorarios += `
+                        <div class="col-12 mb-1" style="border-bottom: 1px solid rgba(197, 160, 89, 0.2); padding: 5px 0;">
+                            <span style="color:var(--dorado-ucmi); font-weight:bold; display: inline-block; width: 45px;">${dia}:</span> 
+                            <span style="font-size: 0.85rem; color: #fff;">${agrupado[dia].sort((a, b) => parseInt(a) - parseInt(b)).join(', ')}</span>
+                        </div>`;
+                }
+            });
+        } else if (esDocente) {
+            htmlHorarios = `<div class="col-12 mt-2" style="font-size:0.8rem; color:#888;">No hay disponibilidad registrada.</div>`;
+        }
+
+        let html = `<div class="col-12 mb-4"><h5 style="color:var(--dorado-ucmi)">Expediente del Aspirante</h5></div>`;
+
+        if (esDocente) {
+            html += `
+                <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Docente</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE COMPLETO</label><br>${d.nombreResponsable}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniDocente}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">TÍTULO</label><br>${d.titulo}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">INSTITUCIÓN DE EGRESO</label><br>${d.institucion_titulo}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">ENLACE A SÍNTESIS CURRICULAR</label><br>${d.enlaceSintesis}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">AÑOS DE EXPERIENCIA</label><br>${d.experienciaDocente}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NIVELES</label><br>${d.niveles_atencion}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">RAZÓN DE PERTENECIA A NUESTRA INSTITUCIÓN</label><br>${d.razon_deseo_pertenencia}</div>
+                <div class="col-12 mt-2"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DISPONIBILIDAD HORARIA</label></div>
+                ${htmlHorarios}
+            `;
+        } else {
+            html += `
+                <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Estudiante</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE COMPLETO</label><br>${d.nombre}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniEstudiante}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">GÉNERO</label><br>${d.genero}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">FECHA DE NACIMIENTO</label><br>${d.fechaNacimiento}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">EDAD</label><br>${d.edadEstudiante}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">PROMEDIO</label><br>${d.promediocatualbachillerato}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">MÓDULOS DE INTERÉS</label><br>${d.modulos}</div>
+                <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold; border-top: 1px solid #333; padding-top:10px;">Información del Representante</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE</label><br>${d.nombreRepresentante}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO</label><br>${d.emailRepresentante}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI</label><br>${d.dniRepresentante}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsappRepresentante}</div>
+            `;
+        }
+
+        document.getElementById('contenidoModal').innerHTML = `<div class="row">${html}</div>`;
+        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+    };
+
+    selectorFiltro.addEventListener('change', renderizarTabla);
+
+    document.getElementById('btnLogout').onclick = async () => {
+        await signOut(auth);
+        window.location.href = "index.html";
+    };
+
+    document.getElementById('btnConfirmarAcceso').onclick = async () => {
+        if(!currentId || !currentData) return;
+        const esDocente = currentData.perfil === "Docente Academia";
+
+        try {
+            if (!esDocente) {
+                const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
+                const snapshotEstudiantes = await getDocs(qEstudiantes);
+                if (snapshotEstudiantes.size >= cuposMaximosGlobal) {
+                    await Swal.fire('Cupos Agotados', 'No hay vacantes para estudiantes.', 'warning');
+                    return; 
+                }
+            }
+
+            await setDoc(doc(db, "usuarios", currentData.email), { 
+                ...currentData, 
+                estado: "activo",
+                rol: esDocente ? "docente" : "estudiante"
+            });
+            
+            await deleteDoc(doc(db, "postulaciones", currentId));
+            await Swal.fire('¡Admitido!', `El ${esDocente ? 'docente' : 'estudiante'} fue integrado.`, 'success');
+            location.reload();
+        } catch (error) {
+            Swal.fire('Error', 'No se pudo sincronizar la transacción.', 'error');
+        }
+    };
+
+    document.getElementById('btnEliminar').onclick = async () => {
+        const result = await Swal.fire({ title: '¿Estás seguro?', text: "¡Esta acción eliminará la postulación!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, rechazar' });
+        if (result.isConfirmed) {
+            try {
+                await deleteDoc(doc(db, "postulaciones", currentId));
+                location.reload();
+            } catch (e) { Swal.fire('Error', 'No se pudo eliminar.', 'error'); }
+        }
+    };
+</script>
   </body>
   </html>
