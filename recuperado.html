@@ -226,9 +226,10 @@
             ? `https://universitariodematematica-star.github.io/UCMI/postulacion-docente.html?ref=${encodeURIComponent(entidadActual)}`
             : `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`;
 
-        const parent = btn.parentElement;
+        // Encontramos el contenedor principal de la tarjeta
+        const tarjeta = btn.closest('.admin-card');
 
-        // Si ya está en modo envío, procesamos el WhatsApp
+        // --- MODO ENVÍO (Cuando se presiona el botón verde de WhatsApp) ---
         if (btn.dataset.mode === "send") {
             const phone = btn.previousElementSibling.value;
             if (!phone) return alert("Por favor ingresa un número");
@@ -236,8 +237,13 @@
             const waLink = `https://wa.me/${phone}?text=${encodeURIComponent("Hola, te comparto el link de postulación: " + url)}`;
             window.open(waLink, '_blank');
 
-            // Restauramos el botón exactamente como estaba originalmente
-            parent.innerHTML = `
+            // AQUÍ ESTÁ LA SOLUCIÓN: Reconstruimos el HTML completo de la tarjeta original
+            tarjeta.innerHTML = `
+                <div class="icon-box" style="${esDocente ? 'color: #32cd32;' : ''}">
+                    <i class="bi ${esDocente ? 'bi-person-badge' : 'bi-person-plus'}"></i>
+                </div>
+                <h4>${esDocente ? 'Captación de profesores' : 'Captación'}</h4>
+                <p class="small opacity-75">${esDocente ? 'Formulario de postulación para docentes.' : 'Link de registro para alumnos prospectos.'}</p>
                 <button class="btn btn-sm ${esDocente ? 'btn-outline-success' : 'btn-outline-info'} w-100 mt-2" 
                     onclick="event.stopPropagation(); window.manejarAccionLink(this, '${tipo}');">
                     Copiar y Enviar
@@ -246,27 +252,19 @@
             return;
         }
 
-        // Si es el primer clic, copiamos y transformamos
+        // --- MODO INICIAL (Copiar y mostrar campos de envío) ---
         navigator.clipboard.writeText(url);
         
-        // Guardamos el contenido para poder restaurarlo después si fuera necesario
-        parent.innerHTML = `
-            <input type="text" class="form-control form-control-sm mb-1" placeholder="Ej: 593999999999" style="background:#222; color:white; border:1px solid #555;">
+        // Reemplazamos el contenido de la tarjeta por el input y los botones de acción
+        tarjeta.innerHTML = `
+            <div class="icon-box" style="color: #198754;"><i class="bi bi-whatsapp"></i></div>
+            <h4 class="text-success">Enviar por WhatsApp</h4>
+            <input type="text" class="form-control form-control-sm mb-2" placeholder="Ej: 593999999999" style="background:#222; color:white; border:1px solid #555;">
             <button class="btn btn-sm btn-success w-100" data-mode="send" onclick="event.stopPropagation(); window.manejarAccionLink(this, '${tipo}');">
-                <i class="bi bi-whatsapp"></i> Enviar por WA
+                Enviar mensaje
             </button>
-            <button class="btn btn-sm btn-link text-secondary w-100 mt-1 p-0" onclick="event.stopPropagation(); this.parentElement.innerHTML = '<button class=\\'btn btn-sm ${esDocente ? 'btn-outline-success' : 'btn-outline-info'}\\' w-100 mt-2\\' onclick=\\'event.stopPropagation(); window.manejarAccionLink(this, \\'${tipo}\\');\\'>Copiar y Enviar</button>';">
+            <button class="btn btn-sm btn-link text-secondary w-100 mt-1 p-0" onclick="event.stopPropagation(); window.location.reload();">
                 Cancelar
-            </button>
-        `;
-    };
-
-        // Si es el primer clic, copiamos y transformamos el botón
-        navigator.clipboard.writeText(url);
-        parent.innerHTML = `
-            <input type="text" class="form-control form-control-sm mb-1" placeholder="Ej: 593999999999" style="background:#222; color:white; border:1px solid #555;">
-            <button class="btn btn-sm btn-success w-100" data-mode="send" onclick="event.stopPropagation(); window.manejarAccionLink(this, '${tipo}');">
-                <i class="bi bi-whatsapp"></i> Enviar por WA
             </button>
         `;
     };
