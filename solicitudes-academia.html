@@ -303,8 +303,7 @@
                               <label class="small text-muted fw-bold mb-2 d-block text-uppercase">Filtrar por Perfil</label>
                               <select id="filtroPerfil" class="form-select bg-dark text-white border-0 rounded-pill px-3 shadow-sm">
                                   <option value="todos">Mostrar todos</option>
-                                    <option value="estudiante">Estudiantes</option>
-                                    <option value="docente">Docentes</option>
+                                  <option value="estudiante">Estudiantes</option>
                               </select>
                           </div>
                       </div>
@@ -414,12 +413,12 @@
       }
 
       // 2. SINCRONIZACIÓN EN VIVO DE LAS POSTULACIONES
-            function iniciarEscuchaFiltrada(academiaNombre) {
-            const q = query(
-            collection(db, "postulaciones"),
-            where("perfil", "==", "Estudiante Academia"),
-            where("entidad", "==", academiaNombre)
-            );
+      function iniciarEscuchaFiltrada(academiaNombre) {
+          const q = query(
+              collection(db, "postulaciones"),
+              where("perfil", "==", "Estudiante Academia"),
+              where("entidad", "==", academiaNombre)
+          );
 
           onSnapshot(q, (snap) => {
               registrosLocales = snap.docs;
@@ -462,57 +461,83 @@
 
       // 3. DESPLEGAR DETALLES DEL ALUMNO
       window.verExpediente = async (id) => {
-            currentId = id;
-            const snap = await getDoc(doc(db, "postulaciones", id));
-            if (snap.exists()) {
-                currentData = snap.data();
-                const d = currentData;
-                const esDocente = d.perfil.toLowerCase().includes('docente');
-                
-                document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
-                document.getElementById('contenidoModal').innerHTML = `
-                    <div class="col-12 mb-2">
-                        <h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">
-                            ${esDocente ? 'Datos del Docente' : 'Datos del Estudiante'}
-                        </h6>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">NOMBRE COMPLETO</label>
-                        <span class="fw-bold">${d.nombreResponsable || d.nombre || 'N/A'}</span>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">DNI / ID</label>
-                        <span>${d.dniEstudiante || d.dniDocente || 'N/A'}</span>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">GÉNERO</label>
-                        <span>${d.genero || 'N/A'}</span>
-                    </div>
-                    ${!esDocente ? `
-                    <div class="col-md-4 mb-3">
-                        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">EDAD</label>
-                        <span>${d.edadEstudiante || 'N/A'} años</span>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">PROMEDIO</label>
-                        <span>${d.promediocatualbachillerato || 'N/A'}</span>
-                    </div>` : `
-                    <div class="col-md-8 mb-3">
-                        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">ESPECIALIDAD</label>
-                        <span>${d.especialidad || 'No especificada'}</span>
-                    </div>`}
-                    <div class="col-md-6 mb-3">
-                        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">CORREO</label>
-                        <span class="text-info">${d.email || 'N/A'}</span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">WHATSAPP</label>
-                        <span class="text-success"><i class="bi bi-whatsapp me-1"></i>${d.whatsapp || 'N/A'}</span>
-                    </div>
-                `;
-                new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-            }
-        };
+          currentId = id;
+          const snap = await getDoc(doc(db, "postulaciones", id));
+          if (snap.exists()) {
+              currentData = snap.data();
+              const d = currentData;
+              document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
+              document.getElementById('contenidoModal').innerHTML = `
+    <div class="col-12 mb-2">
+        <h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">Datos del Estudiante</h6>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">NOMBRE COMPLETO</label>
+        <span class="fw-bold">${d.nombreResponsable}</span>
+    </div>
+    <div class="col-md-3 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">DNI / ID</label>
+        <span>${d.dniEstudiante || 'N/A'}</span>
+    </div>
+    <div class="col-md-3 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">GÉNERO</label>
+        <span>${d.genero || 'N/A'}</span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">FECHA DE NACIMIENTO</label>
+        <span>${d.fechaNacimiento || 'N/A'}</span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">EDAD</label>
+        <span>${d.edadEstudiante || 'N/A'} años</span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">PROMEDIO</label>
+        <span>${d.promediocatualbachillerato || 'N/A'}</span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">UBICACIÓN</label>
+        <span>${d.ubicacion || 'N/A'}</span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">CORREO ELECTRÓNICO</label>
+        <span class="text-info">${d.email || 'No provisto'}</span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">WHATSAPP</label>
+        <span class="text-success"><i class="bi bi-whatsapp me-1"></i>${d.whatsapp || 'No provisto'}</span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">MÓDULOS DE INTERÉS</label>
+        <span>${d.modulos ? d.modulos.join(', ') : 'Ninguno'}</span>
+    </div>
+
+    ${d.nombreRepresentante ? `
+    <div class="col-12 mb-2 mt-3 pt-3 border-top border-secondary">
+        <h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">Información del Representante</h6>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">NOMBRE</label>
+        <span>${d.nombreRepresentante}</span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">CORREO ELECTRÓNICO</label>
+        <span class="text-info">${d.email || 'No provisto'}</span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">DNI</label>
+        <span>${d.dniRepresentante || 'N/A'}</span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="small d-block" style="color: #2ecc71; font-weight: 800;">WHATSAPP</label>
+        <span class="text-success"><i class="bi bi-whatsapp me-1"></i>${d.whatsappRepresentante || 'No provisto'}</span>
+    </div>
+    ` : ''}
+`;
+              new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+          }
+      };
+
       selectorFiltro.addEventListener('change', renderizarTabla);
 
       document.getElementById('btnLogout').onclick = async () => {
