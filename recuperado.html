@@ -130,11 +130,11 @@
         Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Cargado: ${p.nombre}`, showConfirmButton: false, timer: 1000 });
     }
 
-    // --- FUNCIÓN PARA GENERAR EL PDF ---
+    let agendaGlobal = {}; // Variable para guardar el horario actual
+
     const generarPDF = (datos) => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
         doc.text("POSTULACIÓN DOCENTE - " + datos.entidadReferencia, 15, 20);
@@ -143,25 +143,30 @@
         doc.line(15, 32, 195, 32);
 
         const filas = [
-            ["Nombre:", datos.nombreResponsable],
-            ["DNI:", datos.dniDocente],
-            ["Email:", datos.email],
-            ["WhatsApp:", datos.whatsapp],
-            ["Ubicación:", datos.ubicacion],
-            ["Título:", datos.titulo],
-            ["Institución:", datos.institucion_titulo],
-            ["Experiencia:", datos.experienciaDocente + " años"],
-            ["Niveles:", datos.niveles_atencion],
-            ["Razón:", datos.razon_deseo_pertenencia]
+            ["Nombre:", datos.nombreResponsable], ["DNI:", datos.dniDocente],
+            ["Email:", datos.email], ["WhatsApp:", datos.whatsapp],
+            ["Ubicación:", datos.ubicacion], ["Título:", datos.titulo],
+            ["Institución:", datos.institucion_titulo], ["Experiencia:", datos.experienciaDocente + " años"],
+            ["Niveles:", datos.niveles_atencion], ["Razón:", datos.razon_deseo_pertenencia]
         ];
 
         let y = 45;
         filas.forEach(fila => {
-            doc.setFont("helvetica", "bold");
-            doc.text(fila[0], 15, y);
-            doc.setFont("helvetica", "normal");
-            doc.text(String(fila[1]), 65, y);
+            doc.setFont("helvetica", "bold"); doc.text(fila[0], 15, y);
+            doc.setFont("helvetica", "normal"); doc.text(String(fila[1]), 65, y);
             y += 8;
+        });
+
+        // Agregar Horario al PDF
+        y += 5;
+        doc.setFont("helvetica", "bold"); doc.text("DISPONIBILIDAD HORARIA:", 15, y);
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        Object.keys(agendaGlobal).forEach(dia => {
+            if (agendaGlobal[dia].length > 0) {
+                doc.text(`${dia}: ${agendaGlobal[dia].join(', ')}`, 15, y);
+                y += 7;
+            }
         });
 
         doc.save(`Postulacion_${datos.dniDocente}.pdf`);
@@ -172,14 +177,14 @@
     document.getElementById('formDocente').onsubmit = (e) => {
         e.preventDefault();
         const dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
-        const agendaAgrupada = { Lun: [], Mar: [], Mie: [], Jue: [], Vie: [], Sab: [], Dom: [] };
+        agendaGlobal = { Lun: [], Mar: [], Mie: [], Jue: [], Vie: [], Sab: [], Dom: [] };
         const horariosIndexados = [];
 
         document.querySelectorAll('.cell').forEach((cell, index) => {
             if (cell.classList.contains('active')) {
                 const hora = Math.floor(index / 7);
                 const diaNombre = dias[index % 7];
-                agendaAgrupada[diaNombre].push(`${hora}:00`);
+                agendaGlobal[diaNombre].push(`${hora}:00`);
                 horariosIndexados.push(index);
             }
         });
@@ -204,8 +209,8 @@
 
         let htmlDisponibilidad = "";
         dias.forEach(dia => {
-            if (agendaAgrupada[dia].length > 0) {
-                htmlDisponibilidad += `<div><strong>${dia}:</strong> ${agendaAgrupada[dia].join(', ')}</div>`;
+            if (agendaGlobal[dia].length > 0) {
+                htmlDisponibilidad += `<div><strong>${dia}:</strong> ${agendaGlobal[dia].join(', ')}</div>`;
             }
         });
 
@@ -230,7 +235,7 @@
         db.collection('postulaciones').add(datosTemporales)
             .then((docRef) => {
                 Swal.fire("¡Éxito!", "Postulación registrada.", "success");
-                generarPDF(datosTemporales); // Descarga automática del PDF
+                generarPDF(datosTemporales);
                 document.getElementById('formDocente').reset();
                 document.querySelectorAll('.cell.active').forEach(c => c.classList.remove('active'));
                 bootstrap.Modal.getInstance(document.getElementById('modalRevision')).hide();
