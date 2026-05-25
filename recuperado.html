@@ -1,256 +1,527 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Postulación Docente - UCMI</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        :root { --dorado-ucmi: #c5a059; --verde-seleccion: #28a745; }
-        body { 
-            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed; 
-            background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; padding: 40px 0; 
-        }
-        .card-form { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); max-width: 950px; margin: auto; padding: 40px; }
-        .logo-container { text-align: center; margin-bottom: 25px; }
-        #logoAcademia { width: 120px; height: 120px; border-radius: 25px; object-fit: cover; border: 2px solid var(--dorado-ucmi); }
-        .form-label { color: var(--dorado-ucmi); font-weight: bold; margin-top: 15px; display: block; }
-        .form-control { background: rgba(255,255,255,0.08) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: white !important; border-radius: 12px; padding: 12px; }
-        .grid-container { width: 100%; margin-top: 15px; }
-        .grid-horaria { display: grid; grid-template-columns: 60px repeat(7, 1fr); gap: 3px; }
-        .cell { background: rgba(255,255,255,0.1); height: 25px; cursor: pointer; border-radius: 4px; transition: 0.2s; }
-        .cell.active { background: var(--verde-seleccion) !important; }
-        .header-cell { font-weight: bold; padding: 5px; text-align: center; font-size: 0.7rem; color: var(--dorado-ucmi); display: flex; align-items: center; justify-content: center; }
-        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 15px; border: none; width: 100%; margin-top: 30px; }
-    </style>
-</head>
-<body>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>UCMI - Control de Postulaciones</title>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+      <link class="sheet" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
-<div class="container">
-    <div class="card-form">
-        <div class="logo-container"><img id="logoAcademia" src="https://via.placeholder.com/120" alt="Logo"></div>
-        <h2 class="text-center" style="color: var(--dorado-ucmi); font-family: 'Cinzel'; margin-bottom: 30px;">POSTULACIÓN DOCENTE</h2>
-        
-        <form id="formDocente">
-            <div class="row">
-                <div class="col-md-6"><label class="form-label">Nombre Completo</label><input type="text" id="nombreResponsable" class="form-control" required></div>
-                <div class="col-md-6"><label class="form-label">DNI</label><input type="text" id="dniDocente" class="form-control" required></div>
-                <div class="col-md-6"><label class="form-label">Email</label><input type="email" id="email" class="form-control" required></div>
-                <div class="col-md-6"><label class="form-label">WhatsApp</label><input type="text" id="whatsapp" class="form-control" required></div>
-                <div class="col-12"><label class="form-label">Ubicación</label><input type="text" id="ubicacion" class="form-control" required></div>
-                <div class="col-md-6"><label class="form-label">Título Universitario</label><input type="text" id="titulo_universitario" class="form-control" required></div>
-                <div class="col-md-6"><label class="form-label">Institución de Egreso</label><input type="text" id="institucion_titulo" class="form-control" required></div>
-            </div>
-            <label class="form-label">Enlace a Síntesis Curricular</label>
-            <input type="url" id="enlace_sintesis" class="form-control" required>
-            <div class="row">
-                <div class="col-md-6"><label class="form-label">Años de experiencia</label><input type="number" id="anos_experiencia_docente" class="form-control" required></div>
-                <div class="col-md-6"><label class="form-label">Niveles que puede atender</label><input type="text" id="niveles_atencion" class="form-control" required></div>
-            </div>
-            <label class="form-label">Disponibilidad Horaria:</label>
-            <div class="grid-container"><div class="grid-horaria" id="gridHoraria"></div></div>
-            <label class="form-label">¿Por qué quiere formar parte de nuestra institución?</label>
-            <textarea id="razon_deseo_pertenencia" class="form-control" rows="3" required></textarea>
-            <button type="submit" class="btn btn-enviar">REVISAR POSTULACIÓN</button>
-        </form>
-    </div>
-</div>
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      <style>
+      :root {
+          --azul-ucmi: #06090f;
+          --azul-sidebar: #1a2a3a;
+          --verde-exito: #27ae60;
+          --dorado-ucmi: #c5a059;
+          --rojo-logout: #e74c3c;
+          --indigo-ucmi: #4b0082;
+      }
+      
+      body {
+          background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+          background-size: cover; font-family: 'Segoe UI', sans-serif; margin: 0; color: white;
+      }
 
-<div class="modal fade" id="modalRevision" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content bg-dark text-white">
-            <div class="modal-header"><h5 class="modal-title">Confirmar Datos</h5></div>
-            <div class="modal-body" id="bodyModal"></div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Editar</button>
-                <button class="btn btn-success" id="btnConfirmar">Confirmar y Enviar</button>
-            </div>
-        </div>
-    </div>
-</div>
+      .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); min-height: 100vh; transition: filter 0.3s ease; }
+      
+      .sidebar {
+          background: rgba(26, 42, 58, 0.95); backdrop-filter: blur(10px); min-height: 100vh; padding: 25px 15px; position: sticky; top: 0; border-right: 1px solid rgba(197, 160, 89, 0.3); display: flex; flex-direction: column;
+      }
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    const firebaseConfig = { apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325", measurementId: "G-3M3DH25722" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const urlParams = new URLSearchParams(window.location.search);
-    const refEntidad = urlParams.get('ref');
+      .logo-sidebar { height: 55px; border-radius: 12px; margin-bottom: 10px; }
+      
+      .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; margin-bottom: 5px; text-decoration: none; padding: 10px; display: block; }
+      .nav-link:hover { color: white; background: rgba(255,255,255,0.1); border-radius: 8px; }
+      .nav-link.active { color: var(--dorado-ucmi); font-weight: bold; background: rgba(197, 160, 89, 0.1); border-radius: 8px; }
 
-    if (refEntidad) {
-        db.collection("usuarios").where("entidad", "==", refEntidad).get().then(snapshot => {
-            snapshot.forEach(doc => { const data = doc.data(); if(data.logoCustom) document.getElementById('logoAcademia').src = data.logoCustom; });
-        });
-    }
+      .sidebar-nav { flex-grow: 1; }
 
-    const grid = document.getElementById('gridHoraria');
-    grid.innerHTML = '<div></div>';
-    ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'].forEach(d => grid.innerHTML += `<div class="header-cell">${d}</div>`);
-    for (let h = 0; h < 24; h++) {
-        grid.innerHTML += `<div class="header-cell">${h}:00</div>`;
-        for (let d = 0; d < 7; d++) grid.innerHTML += `<div class="cell" onclick="this.classList.toggle('active')"></div>`;
-    }
+      .nav-item-ucmi {
+          display: flex; align-items: center;
+          color: rgba(255,255,255,0.6);
+          text-decoration: none;
+          padding: 10px 15px;
+          margin-bottom: 5px;
+          border-radius: 10px;
+          transition: 0.3s all ease;
+          font-size: 0.85rem;
+      }
 
-    const perfiles = [
-        { nombre: "Roberto Gómez", dni: "1001", email: "roberto@mail.com", wsp: "+593991234567", loc: "Otavalo", tit: "Lic. en Educación", inst: "PUCE", url: "https://drive.google.com/1", exp: "8", nivel: "Primaria", razon: "Por vocación." },
-        { nombre: "Sara Pardo", dni: "1002", email: "sara@mail.com", wsp: "+593987654321", loc: "Ibarra", tit: "Magíster en Pedagogía", inst: "UTE", url: "https://drive.google.com/2", exp: "12", nivel: "Bachillerato", razon: "Por prestigio." },
-        { nombre: "Javier Soler", dni: "1003", email: "javier@mail.com", wsp: "+593998877665", loc: "Cotacachi", tit: "Lic. en Lenguas", inst: "ESPE", url: "https://drive.google.com/3", exp: "5", nivel: "Primaria", razon: "Crecimiento." },
-        { nombre: "Lucía Paredes", dni: "1004", email: "lucia@mail.com", wsp: "+593995544332", loc: "Atuntaqui", tit: "Lic. en Ciencias", inst: "UTN", url: "https://drive.google.com/4", exp: "4", nivel: "Bachillerato", razon: "Excelencia." },
-        { nombre: "Martín Fierro", dni: "1005", email: "martin@mail.com", wsp: "+593994433221", loc: "Quito", tit: "Dr. en Historia", inst: "PUCE", url: "https://drive.google.com/5", exp: "20", nivel: "Universitario", razon: "Investigación." },
-        { nombre: "Elena Blanco", dni: "1006", email: "elena@mail.com", wsp: "+593993322110", loc: "Ibarra", tit: "Lic. en Arte", inst: "Bellas Artes", url: "https://drive.google.com/6", exp: "3", nivel: "Preescolar", razon: "Creatividad." },
-        { nombre: "Diego Rivera", dni: "1007", email: "diego@mail.com", wsp: "+593992211009", loc: "Otavalo", tit: "Lic. en Diseño", inst: "UTN", url: "https://drive.google.com/7", exp: "9", nivel: "Arte", razon: "Innovación." },
-        { nombre: "Sara Connor", dni: "1008", email: "sara.c@mail.com", wsp: "+593991100998", loc: "Ibarra", tit: "Ing. en Sistemas", inst: "ESPE", url: "https://drive.google.com/8", exp: "15", nivel: "Tecnología", razon: "Tecnología." },
-        { nombre: "Hugo Sánchez", dni: "1009", email: "hugo@mail.com", wsp: "+593990099887", loc: "Atuntaqui", tit: "Lic. en Ed. Física", inst: "UTN", url: "https://drive.google.com/9", exp: "6", nivel: "Deportes", razon: "Salud." },
-        { nombre: "Frida Kahlo", dni: "1010", email: "frida@mail.com", wsp: "+593999888777", loc: "Otavalo", tit: "Lic. en Pintura", inst: "Bellas Artes", url: "https://drive.google.com/10", exp: "10", nivel: "Artes Visuales", razon: "Expresión." },
-        { nombre: "César Vallejo", dni: "1011", email: "cesar@mail.com", wsp: "+593991112223", loc: "Quito", tit: "Lic. en Letras", inst: "PUCE", url: "https://drive.google.com/11", exp: "18", nivel: "Bachillerato", razon: "Enseñanza." },
-        { nombre: "Gabriela Mistral", dni: "1012", email: "gaby@mail.com", wsp: "+593992223334", loc: "Ibarra", tit: "Magíster en Literatura", inst: "UTN", url: "https://drive.google.com/12", exp: "22", nivel: "Universitario", razon: "Inspiración." },
-        { nombre: "Isaac Newton", dni: "1013", email: "isaac@mail.com", wsp: "+593993334445", loc: "Cotacachi", tit: "Lic. en Física", inst: "ESPE", url: "https://drive.google.com/13", exp: "14", nivel: "Bachillerato", razon: "Ciencia." },
-        { nombre: "Marie Curie", dni: "1014", email: "marie@mail.com", wsp: "+593994445556", loc: "Otavalo", tit: "Lic. en Química", inst: "PUCE", url: "https://drive.google.com/14", exp: "19", nivel: "Universitario", razon: "Descubrimiento." },
-        { nombre: "Pablo Picasso", dni: "1015", email: "pablo@mail.com", wsp: "+593995556667", loc: "Quito", tit: "Lic. en Bellas Artes", inst: "Bellas Artes", url: "https://drive.google.com/15", exp: "30", nivel: "Arte", razon: "Evolución." },
-        { nombre: "Ada Lovelace", dni: "1016", email: "ada@mail.com", wsp: "+593996667778", loc: "Ibarra", tit: "Ing. en Software", inst: "ESPE", url: "https://drive.google.com/16", exp: "7", nivel: "Tecnología", razon: "Programación." },
-        { nombre: "Simón Bolívar", dni: "1017", email: "simon@mail.com", wsp: "+593997778889", loc: "Atuntaqui", tit: "Lic. en Historia", inst: "UTN", url: "https://drive.google.com/17", exp: "25", nivel: "Bachillerato", razon: "Liderazgo." },
-        { nombre: "Juana de Arco", dni: "1018", email: "juana@mail.com", wsp: "+593998889990", loc: "Cotacachi", tit: "Lic. en Filosofía", inst: "PUCE", url: "https://drive.google.com/18", exp: "5", nivel: "Primaria", razon: "Justicia." },
-        { nombre: "Nikola Tesla", dni: "1019", email: "nikola@mail.com", wsp: "+593999990001", loc: "Ibarra", tit: "Ing. Eléctrico", inst: "ESPE", url: "https://drive.google.com/19", exp: "28", nivel: "Universitario", razon: "Energía." },
-        { nombre: "Virginia Woolf", dni: "1020", email: "virginia@mail.com", wsp: "+593990001112", loc: "Otavalo", tit: "Lic. en Redacción", inst: "UTN", url: "https://drive.google.com/20", exp: "11", nivel: "Bachillerato", razon: "Cultura." }
-    ];
+      .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
+      
+      .nav-item-ucmi:hover {
+          color: white;
+          background: rgba(255,255,255,0.1);
+          transform: translateX(5px);
+      }
 
-    document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key.toLowerCase() === 'm') { e.preventDefault(); e.stopPropagation(); llenarFormulario(perfiles[Math.floor(Math.random() * perfiles.length)]); }
-        if (e.shiftKey && e.code.startsWith('Digit')) { e.preventDefault(); e.stopPropagation(); const num = parseInt(e.code.replace('Digit', '')) % perfiles.length; llenarFormulario(perfiles[num]); }
-    }, true);
+      .nav-item-ucmi.active {
+          background: rgba(197, 160, 89, 0.15);
+          color: var(--dorado-ucmi);
+          font-weight: 600;
+          box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1);
+      }   
 
-    function llenarFormulario(p) {
-        document.getElementById('nombreResponsable').value = p.nombre; document.getElementById('dniDocente').value = p.dni; document.getElementById('email').value = p.email; document.getElementById('whatsapp').value = p.wsp; document.getElementById('ubicacion').value = p.loc; document.getElementById('titulo_universitario').value = p.tit; document.getElementById('institucion_titulo').value = p.inst; document.getElementById('enlace_sintesis').value = p.url; document.getElementById('anos_experiencia_docente').value = p.exp; document.getElementById('niveles_atencion').value = p.nivel; document.getElementById('razon_deseo_pertenencia').value = p.razon;
-        document.querySelectorAll('.cell').forEach(c => Math.random() > 0.8 ? c.classList.add('active') : c.classList.remove('active'));
-        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Cargado: ${p.nombre}`, showConfirmButton: false, timer: 1000 });
-    }
+      .btn-sidebar-action {
+          background: transparent;
+          border: 1px solid rgba(255, 255, 255, 0.4) !important;
+          color: white !important;
+          font-weight: 600;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          border-radius: 50px;
+          padding: 10px;
+          text-decoration: none;
+          text-align: center;
+          transition: all 0.3s ease-in-out;
+          display: block;
+          margin-bottom: 10px;
+      }
 
-    let agendaGlobal = {};
+      .btn-sidebar-action:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: #ffffff !important;
+          color: #ffffff !important;
+          box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+          transform: translateY(-2px);
+      }
 
-    const generarPDF = (datos) => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        // Agregar Logo al PDF
-        const logoImg = document.getElementById('logoAcademia');
-        if (logoImg && logoImg.src && !logoImg.src.includes('placeholder')) {
-            doc.addImage(logoImg.src, 'PNG', 15, 10, 25, 25);
-        }
+      .btn-logout {
+          border-color: rgba(231, 76, 60, 0.4) !important;
+          color: rgba(231, 76, 60, 0.8) !important;
+      }
 
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(16);
-        doc.text("POSTULACIÓN DOCENTE - " + datos.entidad, 45, 20);
-        doc.setFontSize(10);
-        doc.text("Fecha: " + datos.fecha, 45, 27);
-        doc.line(15, 38, 195, 38);
+      .btn-logout:hover {
+          background: rgba(231, 76, 60, 0.1) !important;
+          border-color: var(--rojo-logout) !important;
+          color: white !important;
+          box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+      }
 
-        const filas = [
-            ["Nombre:", datos.nombreResponsable], ["DNI:", datos.dniDocente],
-            ["Email:", datos.email], ["WhatsApp:", datos.whatsapp],
-            ["Ubicación:", datos.ubicacion], ["Título:", datos.titulo],
-            ["Institución:", datos.institucion_titulo], ["Experiencia:", datos.experienciaDocente + " años"],
-            ["Niveles:", datos.niveles_atencion], ["Razón de pertenencia:", datos.razon_deseo_pertenencia]
-        ];
+      .table-container {
+          background: rgba(255, 255, 255, 0.03) !important;
+          backdrop-filter: blur(15px) saturate(150%);
+          -webkit-backdrop-filter: blur(15px) saturate(150%);
+          border-radius: 28px;
+          padding: 30px;
+          color: white;
+          box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      }
 
-        let y = 48;
-        filas.forEach(fila => {
-            doc.setFont("helvetica", "bold");
-            doc.text(fila[0], 15, y);
-            doc.setFont("helvetica", "normal");
-            doc.text(String(fila[1]), 65, y);
-            y += 8;
-        });
+      .table {
+          --bs-table-bg: transparent !important;
+          --bs-table-color: white !important;
+          background-color: transparent !important;
+          color: white !important;
+          margin-bottom: 0;
+          border-collapse: separate;
+          border-spacing: 0 5px;
+      }
 
-        // Agregar Horario al PDF
-        y += 5;
-        doc.setFont("helvetica", "bold"); doc.text("DISPONIBILIDAD HORARIA:", 15, y);
-        y += 8;
-        doc.setFont("helvetica", "normal");
-        Object.keys(agendaGlobal).forEach(dia => {
-            if (agendaGlobal[dia].length > 0) {
-                doc.text(`${dia}: ${agendaGlobal[dia].join(', ')}`, 15, y);
-                y += 7;
-            }
-        });
+      .table th, .table td {
+          background-color: transparent !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+          padding: 18px 12px;
+          vertical-align: middle;
+          transition: all 0.3s ease-in-out;
+      }
 
-        doc.save(`Postulacion_${datos.dniDocente}.pdf`);
-    };
+      .table thead th {
+          background-color: transparent !important;
+          color: rgba(255, 255, 255, 0.6) !important;
+          font-weight: 800;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          letter-spacing: 1px;
+          border: none;
+      }
 
-    let datosTemporales = {};
+      .table td .fw-bold { color: #ffffff !important; font-size: 1rem; }
+      .table td .text-muted, .table td .small, .table td span {
+          color: rgba(255, 255, 255, 0.5) !important;
+          transition: all 0.3s ease-in-out;
+      }
 
-    document.getElementById('formDocente').onsubmit = (e) => {
-        e.preventDefault();
-        const dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
-        agendaGlobal = { Lun: [], Mar: [], Mie: [], Jue: [], Vie: [], Sab: [], Dom: [] };
-        const horariosIndexados = [];
+      .table-hover tbody tr:hover td {
+          background-color: rgba(255, 255, 255, 0.05) !important;
+      }
 
-        document.querySelectorAll('.cell').forEach((cell, index) => {
-            if (cell.classList.contains('active')) {
-                const hora = Math.floor(index / 7);
-                const diaNombre = dias[index % 7];
-                agendaGlobal[diaNombre].push(`${hora}:00`);
-                horariosIndexados.push(index);
-            }
-        });
-        
-        datosTemporales = {
-            nombreResponsable: document.getElementById('nombreResponsable').value,
-            dniDocente: document.getElementById('dniDocente').value,
-            email: document.getElementById('email').value,
-            whatsapp: document.getElementById('whatsapp').value,
-            ubicacion: document.getElementById('ubicacion').value,
-            titulo: document.getElementById('titulo_universitario').value,
-            institucion_titulo: document.getElementById('institucion_titulo').value,
-            enlaceSintesis: document.getElementById('enlace_sintesis').value,
-            experienciaDocente: document.getElementById('anos_experiencia_docente').value,
-            niveles_atencion: document.getElementById('niveles_atencion').value,
-            razon_deseo_pertenencia: document.getElementById('razon_deseo_pertenencia').value,
-            horarios: horariosIndexados,
-            fecha: new Date().toLocaleString(),
-            perfil: "Docente Academia",
-            entidad: refEntidad || "General"
-        };
+      .table-hover tbody tr:hover td,
+      .table-hover tbody tr:hover td * {
+          color: #ffffff !important;
+          opacity: 1 !important;
+          text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+          filter: brightness(1.2);
+      }
 
-        let htmlDisponibilidad = "";
-        dias.forEach(dia => {
-            if (agendaGlobal[dia].length > 0) {
-                htmlDisponibilidad += `<div><strong>${dia}:</strong> ${agendaGlobal[dia].join(', ')}</div>`;
-            }
-        });
+      .btn-dark.btn-sm {
+          background-color: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255,255,255,0.2) !important;
+          color: white !important;
+          border-radius: 50px;
+          padding: 6px 15px;
+          transition: 0.3s;
+      }
 
-        document.getElementById('bodyModal').innerHTML = `
-            <p><strong>Nombre:</strong> ${datosTemporales.nombreResponsable}</p>
-            <p><strong>DNI:</strong> ${datosTemporales.dniDocente}</p>
-            <p><strong>Email:</strong> ${datosTemporales.email}</p>
-            <p><strong>WhatsApp:</strong> ${datosTemporales.whatsapp}</p>
-            <p><strong>Ubicación:</strong> ${datosTemporales.ubicacion}</p>
-            <p><strong>Título:</strong> ${datosTemporales.titulo} (${datosTemporales.institucion_titulo})</p>
-            <p><strong>Experiencia:</strong> ${datosTemporales.experienciaDocente} años</p>
-            <p><strong>Niveles:</strong> ${datosTemporales.niveles_atencion}</p>
-            <p><strong>Razón:</strong> ${datosTemporales.razon_deseo_pertenencia}</p>
-            <hr>
-            <p><strong>Disponibilidad Horaria:</strong></p>
-            ${htmlDisponibilidad || "No seleccionada"}
-        `;
-        new bootstrap.Modal(document.getElementById('modalRevision')).show();
-    };
+      .btn-dark.btn-sm:hover {
+          background-color: white !important;
+          color: black !important;
+      }
 
-    document.getElementById('btnConfirmar').onclick = () => {
-        db.collection('postulaciones').add(datosTemporales)
-            .then((docRef) => {
-                Swal.fire("¡Éxito!", "Postulación registrada.", "success");
-                generarPDF(datosTemporales);
-                document.getElementById('formDocente').reset();
-                document.querySelectorAll('.cell.active').forEach(c => c.classList.remove('active'));
-                bootstrap.Modal.getInstance(document.getElementById('modalRevision')).hide();
-            })
-            .catch(err => Swal.fire("Error", "No se pudo guardar en Firestore: " + err.message, "error"));
-    };
-</script>
-</body>
-</html>
+      .modal-content {
+          background: rgba(255, 255, 255, 0.03) !important;
+          backdrop-filter: blur(15px) saturate(150%) !important;
+          -webkit-backdrop-filter: blur(15px) saturate(150%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 32px;
+          color: white !important;
+          box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+      }
+
+      .modal-header, .modal-footer { border: none !important; background: transparent !important; }
+      .modal-header .btn-close { filter: invert(1) grayscale(1) brightness(2); }
+
+      .btn-activar-acceso {
+          background: rgba(39, 174, 96, 0.2) !important;
+          backdrop-filter: blur(10px) !important;
+          border: 1px solid rgba(39, 174, 96, 0.5) !important;
+          color: #ffffff !important;
+          text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+          transition: all 0.3s ease;
+      }
+
+      .btn-activar-acceso:hover {
+          background: rgba(39, 174, 96, 0.4) !important;
+          border-color: rgba(39, 174, 96, 0.9) !important;
+          box-shadow: 0 0 20px rgba(39, 174, 96, 0.4);
+          transform: translateY(-2px);
+      }
+
+      .btn-outline-danger {
+          background: rgba(231, 76, 60, 0.1) !important;
+          backdrop-filter: blur(5px);
+          border: 1px solid rgba(231, 76, 60, 0.4) !important;
+          color: #e74c3c !important;
+          border-radius: 50px;
+          padding: 12px 25px;
+          transition: 0.3s;
+      }
+
+      .btn-outline-danger:hover {
+          background: rgba(231, 76, 60, 0.3) !important;
+          color: white !important;
+          border-color: rgba(231, 76, 60, 0.8) !important;
+      }
+
+      .swal2-popup {
+          background: rgba(255, 255, 255, 0.05) !important;
+          backdrop-filter: blur(20px) saturate(160%) !important;
+          -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 32px !important;
+          color: white !important;
+          box-shadow: 0 30px 60px rgba(0,0,0,0.8) !important;
+      }
+
+      .swal2-title, .swal2-html-container { color: white !important; }
+
+      .swal2-confirm {
+          background: rgba(39, 174, 96, 0.3) !important;
+          backdrop-filter: blur(10px) !important;
+          border: 1px solid rgba(39, 174, 96, 0.6) !important;
+          border-radius: 50px !important;
+          padding: 12px 30px !important;
+          font-weight: 700 !important;
+          transition: 0.3s !important;
+      }
+      .swal2-confirm:hover {
+          background: rgba(39, 174, 96, 0.5) !important;
+          box-shadow: 0 0 15px rgba(39, 174, 96, 0.5) !important;
+      }
+
+      .swal2-cancel {
+          background: rgba(231, 76, 60, 0.15) !important;
+          backdrop-filter: blur(10px) !important;
+          border: 1px solid rgba(231, 76, 60, 0.4) !important;
+          border-radius: 50px !important;
+          padding: 12px 30px !important;
+          color: white !important;
+          transition: 0.3s !important;
+      }
+      .swal2-cancel:hover {
+          background: rgba(231, 76, 60, 0.4) !important;
+          box-shadow: 0 0 15px rgba(231, 76, 60, 0.5) !important;
+      }
+
+      .bg-categoria-estudiante { background-color: #311b92 !important; color: #ffffff !important; }
+      body.modal-open .super-overlay { filter: blur(8px) brightness(0.7); }
+      .modal-backdrop.show { opacity: 0.4; backdrop-filter: blur(4px); }
+  </style>
+  </head>
+
+  <body>
+
+  <div class="super-overlay">
+      <div class="container-fluid">
+          <div class="row">
+              <div class="col-md-2 sidebar d-none d-md-flex">
+                  <div class="text-center mb-4">
+                      <div id="contenedorLogoSidebar">
+                          <img id="logoAcademiaPrincipal" src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 60px; border-radius: 8px; opacity: 0; transition: 0.5s;">
+                      </div>
+                      <h5 id="nombreAcademiaSidebar" class="fw-bold mt-2 text-white">CARGANDO...</h5>
+                  </div>
+                  <hr class="text-white-50">
+                  <nav class="sidebar-nav">
+                      <a href="#" class="nav-item-ucmi active"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-shield-check"></i> VIGENCIA</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-people"></i> USUARIOS</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-clock-history"></i> HISTORIAL</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-person-vcard"></i> DIRECTORIO</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-tags"></i> OFERTAS</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
+                  </nav>
+
+                  <div class="mt-4 pt-4 border-top border-secondary">
+                      <a href="super-admin.html" class="btn-sidebar-action w-100"><i class="bi bi-shield-lock"></i> Panel Maestro</a>
+                      <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a>
+                  </div>
+              </div>
+
+              <div class="col-md-10 p-4">
+                  <div class="d-flex justify-content-between align-items-center">
+                      <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
+                      <span id="marcadorCupos" class="badge bg-dark border border-secondary px-3 py-2 rounded-pill fs-6" style="color: var(--dorado-ucmi) !important;">Cupos: Métrica / Máx</span>
+                  </div>
+                  
+                  <div class="row mt-4">
+                      <div class="col-md-4">
+                          <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
+                              <label class="small text-muted fw-bold mb-2 d-block text-uppercase">Filtrar por Perfil</label>
+<select id="filtroPerfil">
+    <option value="todos">Mostrar todos</option>
+    <option value="estudiante">Estudiantes</option>
+    <option value="docente">Docentes</option>
+</select>
+                          </div>
+                      </div>
+                  </div>
+
+                  <div class="table-container mt-4">
+                      <div class="table-responsive">
+                          <table class="table table-hover align-middle">
+                              <thead>
+                                  <tr class="text-muted small">
+                                      <th>NOMBRE</th>
+                                      <th>PERFIL</th>
+                                      <th>LOCALIZACIÓN</th>
+                                      <th class="text-center">ACCIÓN</th>
+                                  </tr>
+                              </thead>
+                              <tbody id="listaMaestra"></tbody>
+                          </table>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+              <div class="ps-4 pt-4">
+                  <img id="logoModalAspirante" src="" style="height: 50px; border-radius: 5px;">
+              </div>
+              <div class="modal-header border-0 pb-0">
+                  <h4 class="fw-bold"><i class="bi bi-file-earmark-person me-2"></i>Expediente del Aspirante</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body py-4">
+                  <div class="row" id="contenidoModal"></div>
+              </div>
+              <div class="modal-footer border-0">
+                  <button class="btn btn-outline-danger rounded-pill px-4" id="btnEliminar">Rechazar</button>
+                  <button class="btn btn-activar-acceso rounded-pill px-4 fw-bold" id="btnConfirmarAcceso">Activar Acceso</button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+      const firebaseConfig = {
+          apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+          authDomain: "ucmi-13796634.firebaseapp.com",
+          projectId: "ucmi-13796634",
+          storageBucket: "ucmi-13796634.firebasestorage.app",
+          messagingSenderId: "1090719609536",
+          appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const auth = getAuth(app);
+      
+      let currentId = null;
+      let currentData = null;
+      let logoAcademiaGlobal = "";
+      let academiaNombreGlobal = "";
+      let cuposMaximosGlobal = 0;
+      let registrosLocales = [];
+
+      const selectorFiltro = document.getElementById('filtroPerfil');
+
+      onAuthStateChanged(auth, async (user) => {
+          if (user) {
+              const userDoc = await getDoc(doc(db, "usuarios", user.email));
+              if (userDoc.exists()) {
+                  const data = userDoc.data();
+                  logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+                  document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
+                  document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
+                  
+                  academiaNombreGlobal = data.entidad || "Panel";
+                  cuposMaximosGlobal = data.cupos || 0;
+                  document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
+                  
+                  actualizarMarcadorCupos();
+                  iniciarEscuchaFiltrada(academiaNombreGlobal);
+              }
+          } else {
+              window.location.href = "index.html";
+          }
+      });
+
+      async function actualizarMarcadorCupos() {
+          if (!academiaNombreGlobal) return;
+          const qEstudiantes = query(
+              collection(db, "usuarios"),
+              where("entidad", "==", academiaNombreGlobal),
+              where("rol", "==", "estudiante")
+          );
+          const snap = await getDocs(qEstudiantes);
+          document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
+      }
+
+      function iniciarEscuchaFiltrada(academiaNombre) {
+          // Traemos todos los registros de la entidad (Estudiantes y Docentes)
+          const q = query(
+              collection(db, "postulaciones"),
+              where("entidad", "==", academiaNombre)
+          );
+
+          onSnapshot(q, (snap) => {
+              registrosLocales = snap.docs;
+              renderizarTabla();
+          });
+      }
+
+      function renderizarTabla() {
+          const lista = document.getElementById('listaMaestra');
+          if (!lista) return;
+          const filtro = selectorFiltro.value; 
+          lista.innerHTML = "";
+
+          registrosLocales.forEach(docSnap => {
+              const d = docSnap.data();
+              const id = docSnap.id;
+              
+              const esEstudiante = d.perfil === "Estudiante Academia";
+              const esDocente = d.perfil === "Docente Academia";
+
+              // Lógica de filtro (el value del select debe ser 'estudiante' o 'docente')
+              if (filtro === "estudiante" && !esEstudiante) return;
+              if (filtro === "docente" && !esDocente) return;
+
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                  <td>
+                      <div class="fw-bold">${d.nombreResponsable || d.nombre || 'Sin nombre'}</div>
+                      <div class="small text-muted">${d.email}</div>
+                  </td>
+                  <td><span class="badge ${esDocente ? 'bg-warning text-dark' : 'bg-categoria-estudiante'}">${d.perfil}</span></td>
+                  <td><i class="bi bi-geo-alt me-1"></i>${d.ubicacion || 'No definida'}</td>
+                  <td class="text-center">
+                      <button class="btn btn-dark btn-sm" onclick="verExpediente('${id}')">
+                          <i class="bi bi-eye"></i> Detalles
+                      </button>
+                  </td>
+              `;
+              lista.appendChild(tr);
+          });
+      }
+
+      window.verExpediente = async (id) => {
+          currentId = id;
+          const snap = await getDoc(doc(db, "postulaciones", id));
+          if (snap.exists()) {
+              currentData = snap.data();
+              const d = currentData;
+              document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
+              document.getElementById('contenidoModal').innerHTML = `
+                  <div class="col-12 mb-2"><h6 class="text-uppercase fw-bold" style="color: var(--dorado-ucmi); font-size: 0.75rem; letter-spacing: 1px;">Expediente</h6></div>
+                  <div class="col-md-6 mb-3"><label class="small d-block" style="color: #2ecc71; font-weight: 800;">NOMBRE</label><span class="fw-bold">${d.nombreResponsable}</span></div>
+                  <div class="col-md-6 mb-3"><label class="small d-block" style="color: #2ecc71; font-weight: 800;">PERFIL</label><span>${d.perfil}</span></div>
+                  <div class="col-md-6 mb-3"><label class="small d-block" style="color: #2ecc71; font-weight: 800;">CORREO</label><span class="text-info">${d.email || 'N/A'}</span></div>
+                  <div class="col-md-6 mb-3"><label class="small d-block" style="color: #2ecc71; font-weight: 800;">UBICACIÓN</label><span>${d.ubicacion || 'N/A'}</span></div>
+              `;
+              new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+          }
+      };
+
+      selectorFiltro.addEventListener('change', renderizarTabla);
+
+      document.getElementById('btnLogout').onclick = async () => {
+          await signOut(auth);
+          window.location.href = "index.html";
+      };
+
+      document.getElementById('btnConfirmarAcceso').onclick = async () => {
+          if(!currentId || !currentData) return;
+          const esDocente = currentData.perfil === "Docente Academia";
+
+          try {
+              if (!esDocente) {
+                  const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
+                  const snapshotEstudiantes = await getDocs(qEstudiantes);
+                  if (snapshotEstudiantes.size >= cuposMaximosGlobal) {
+                      await Swal.fire('Cupos Agotados', 'No hay vacantes para estudiantes.', 'warning');
+                      return; 
+                  }
+              }
+
+              await setDoc(doc(db, "usuarios", currentData.email), { 
+                  ...currentData, 
+                  estado: "activo",
+                  rol: esDocente ? "docente" : "estudiante"
+              });
+              
+              await deleteDoc(doc(db, "postulaciones", currentId));
+              await Swal.fire('¡Admitido!', `El ${esDocente ? 'docente' : 'estudiante'} fue integrado.`, 'success');
+              location.reload();
+          } catch (error) {
+              Swal.fire('Error', 'No se pudo sincronizar la transacción.', 'error');
+          }
+      };
+
+      document.getElementById('btnEliminar').onclick = async () => {
+          const result = await Swal.fire({ title: '¿Estás seguro?', text: "¡Esta acción eliminará la postulación!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, rechazar' });
+          if (result.isConfirmed) {
+              try {
+                  await deleteDoc(doc(db, "postulaciones", currentId));
+                  location.reload();
+              } catch (e) { Swal.fire('Error', 'No se pudo eliminar.', 'error'); }
+          }
+      };
+  </script>
+  </body>
+  </html>
