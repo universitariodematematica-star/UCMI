@@ -418,29 +418,28 @@
         });
     }
 
-    // --- ESCUCHA DE FIREBASE ---
+// --- ESCUCHA DE FIREBASE (VIGENCIA HEREDADA) ---
 import { getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 async function cargarDatosVigencia() {
-    // 1. Obtener todas las academias para tener sus fechas maestras
-    const snapshotAcademias = await getDocs(collection(db, "academias")); 
+    // Obtenemos las academias para tener las fechas maestras
+    const snapshotAcademias = await getDocs(collection(db, "academias"));
     const academiasMap = {};
     snapshotAcademias.forEach(doc => {
-        academiasMap[doc.data().nombre] = doc.data(); // Asumiendo que guardas el nombre
+        academiasMap[doc.id] = doc.data(); // Guardamos los datos usando el ID de la academia
     });
 
-    // 2. Escuchar usuarios
     onSnapshot(collection(db, "usuarios"), (snapshot) => {
         usuariosMaster = snapshot.docs
             .map(doc => {
                 const data = doc.data();
-                // AQUÍ ESTÁ LA MAGIA: 
-                // Si el usuario tiene entidad, busca la expiración de la academia
-                const academia = academiasMap[data.entidad];
+                // Buscamos la academia correspondiente al usuario (asumiendo que guardas el ID de academia en 'entidadId' o 'entidad')
+                const academia = academiasMap[data.entidadId] || academiasMap[data.entidad];
+                
                 return { 
                     id: doc.id, 
                     ...data,
-                    // Si existe la academia, sobrescribe la fecha de expiración
+                    // Si encontramos la academia, forzamos la fecha de expiración maestra
                     expiracionTimestamp: academia ? academia.fechaVencimiento : data.expiracionTimestamp 
                 };
             })
