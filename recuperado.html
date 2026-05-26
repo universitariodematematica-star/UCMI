@@ -21,8 +21,8 @@
          .table thead th { color: rgba(255,255,255,0.5); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 2.5px; padding-bottom: 25px; border: none; }
          .table tbody tr { background: rgba(255, 255, 255, 0.03); border-radius: 15px; }
          .table tbody td { padding: 22px 15px; border: none; vertical-align: middle; }
-         .progress { background-color: rgba(255, 255, 255, 0.1); height: 8px; border-radius: 10px; margin-bottom: 5px; }
-         .progress-bar-neon { background: linear-gradient(90deg, var(--purpura-neon), var(--cian-tech)); box-shadow: 0 0 10px var(--cian-tech); }
+         .progress { background-color: rgba(255, 255, 255, 0.1); height: 5px; border-radius: 10px; }
+         .progress-bar-neon { background: linear-gradient(90deg, var(--purpura-neon), var(--cian-tech)); }
          .status-badge { font-size: 0.65rem; padding: 6px 14px; border-radius: 8px; font-weight: 800; border: 1px solid #00ff8844; color: #00ff88; background: #00ff8811; }
          .email-badge { font-family: 'Courier New', monospace; color: var(--cian-tech); background: rgba(0, 242, 255, 0.1); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; border: 1px solid rgba(0, 242, 255, 0.2); }
          .btn-revocar { border: 1px solid rgba(255, 77, 77, 0.4); color: #ff4d4d; background: rgba(255, 77, 77, 0.05); padding: 8px 20px; border-radius: 12px; transition: 0.3s; }
@@ -93,40 +93,42 @@
 
             contenedor.innerHTML += `<tr>
                 <td><div class="fw-bold">${data.entidad || 'Entidad'}</div><div class="email-badge">${data.email || 'N/A'}</div></td>
-                <td class="small text-white">${data.nombreResponsable || '-'}</td>
+                <td class="small">${data.nombreResponsable || '-'}</td>
                 <td class="small text-info">${data.perfil || '-'}</td>
-                <td class="small">${dateInicio.toLocaleDateString()}</td>
-                <td style="width: 200px;">
-                    <div class="progress"><div class="progress-bar progress-bar-neon" style="width: ${porcentaje}%"></div></div>
-                    <div class="text-end" style="font-size: 0.65rem; color: var(--cian-tech);">${porcentaje}%</div>
-                </td>
-                <td class="small">${dateFin.toLocaleDateString()}</td>
+                <td>${dateInicio.toLocaleDateString()}</td>
+                <td><div class="progress"><div class="progress-bar progress-bar-neon" style="width: ${porcentaje}%"></div></div></td>
+                <td>${dateFin.toLocaleDateString()}</td>
                 <td><span class="status-badge">${diasRestantes > 0 ? diasRestantes + ' DÍAS' : 'EXPIRADO'}</span></td>
-                <td class="text-end"><button onclick="revocarAcceso('${data.id}')" class="btn btn-revocar">Revocar</button></td>
+                <td class="text-end"><button onclick="revocarAcceso('${data.id}', '${data.entidad}')" class="btn btn-revocar">Revocar</button></td>
             </tr>`;
         });
     }
 
     onSnapshot(collection(db, "usuarios"), (snapshot) => {
         let rawDocs = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.status !== "eliminado");
+        
+        // Mapa de fechas maestras por entidad
         const academiasMap = {};
         rawDocs.forEach(u => { if (u.expiracionTimestamp) academiasMap[u.entidad] = { exp: u.expiracionTimestamp, act: u.fechaActivacion }; });
         
+        // Aplicar herencia: el alumno/profesor toma la expiración de su academia si él no tiene una
         usuariosMaster = rawDocs.map(u => ({
             ...u,
             expiracionTimestamp: u.expiracionTimestamp || academiasMap[u.entidad]?.exp,
             fechaActivacion: u.fechaActivacion || academiasMap[u.entidad]?.act
         }));
+
         renderizar(usuariosMaster);
     });
 
+    // Buscador
     document.getElementById('inputBusqueda').addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
         renderizar(usuariosMaster.filter(u => (u.entidad+u.email+u.nombreResponsable).toLowerCase().includes(term)));
     });
 
-    window.revocarAcceso = async (id) => {
-        if((await Swal.fire({title: '¿Revocar acceso?', icon: 'warning', background: '#06090f', color: '#fff', showCancelButton: true})).isConfirmed) {
+    window.revocarAcceso = async (id, entidad) => {
+        if((await Swal.fire({title: '¿Revocar?', icon: 'warning', showCancelButton: true})).isConfirmed) {
             await updateDoc(doc(db, "usuarios", id), { status: "eliminado" });
         }
     };
