@@ -380,15 +380,30 @@ lista.forEach((data) => {
     // AHORA CALCULAMOS USANDO "fuenteDatos"
     const fechaInicioTexto = formatearFechaInicio(fuenteDatos.fechaActivacion);
     const dateInicio = obtenerDateValido(fuenteDatos.fechaActivacion);
-    const dateFin = fuenteDatos.expiracionTimestamp ? new Date(fuenteDatos.expiracionTimestamp) : new Date();
-    const ahora = new Date();
+    // --- CORRECCIÓN DE FECHAS ---
+const fechaInicioTexto = formatearFechaInicio(fuenteDatos.fechaActivacion);
+const dateInicio = obtenerDateValido(fuenteDatos.fechaActivacion);
 
+// Obtenemos la fecha de expiración de forma segura
+let dateFin;
+if (fuenteDatos.expiracionTimestamp && typeof fuenteDatos.expiracionTimestamp.toDate === 'function') {
+    dateFin = fuenteDatos.expiracionTimestamp.toDate();
+} else {
+    dateFin = fuenteDatos.expiracionTimestamp ? new Date(fuenteDatos.expiracionTimestamp) : null;
+}
+
+const ahora = new Date();
+// Si no hay fecha, los días son null para evitar el "EXPIRADO"
+const diasRestantes = dateFin ? Math.ceil((dateFin - ahora) / (1000 * 60 * 60 * 24)) : null;
+
+// Cálculo de porcentaje (solo si hay fechas válidas)
+let porcentaje = 0;
+if (dateFin && dateInicio) {
     const totalMs = dateFin - dateInicio;
     const transcurridoMs = ahora - dateInicio;
-    let porcentaje = Math.floor((transcurridoMs / totalMs) * 100);
+    porcentaje = Math.floor((transcurridoMs / totalMs) * 100);
     porcentaje = Math.min(Math.max(porcentaje || 0, 0), 100);
-
-    const diasRestantes = Math.ceil((dateFin - ahora) / (1000 * 60 * 60 * 24));
+}
     
     // ... aquí continúa tu código existente con el template literal ...
             contenedor.innerHTML += `
