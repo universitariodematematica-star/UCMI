@@ -2,36 +2,40 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <style>html { display: none; }</style>
+    <script type="module" src="auth-guard.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UCMI - Panel de Vigencia Operativa</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        html { display: none; }
         :root { --dorado-ucmi: #c5a059; --purpura-neon: #bc13fe; --cian-tech: #00f2ff; }
-        body {
-            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-            background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; margin: 0; overflow-x: hidden;
-        }
+        body { background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed; background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; margin: 0; overflow-x: hidden; }
         .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.5) 0%, rgba(6, 9, 15, 0.95) 100%); min-height: 100vh; }
-        .sidebar { background: rgba(255, 255, 255, 0.02) !important; backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.08); min-height: 100vh; padding: 30px 20px; position: sticky; top: 0; }
-        .brand-logo { width: 100px; filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.2)); }
-        .nav-link-custom { display: flex; align-items: center; padding: 12px 15px; color: rgba(255, 255, 255, 0.6); text-decoration: none; border-radius: 12px; font-size: 0.85rem; transition: 0.3s; margin-bottom: 5px; }
-        .nav-link-custom:hover { background: rgba(255, 255, 255, 0.05); color: var(--cian-tech); }
+        .sidebar { background: rgba(255, 255, 255, 0.02) !important; backdrop-filter: blur(20px) saturate(150%); border-right: 1px solid rgba(255, 255, 255, 0.08); min-height: 100vh; padding: 30px 20px; position: sticky; top: 0; }
+        .brand-container { text-align: center; margin-bottom: 35px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .brand-logo { width: 100px; height: auto; filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.2)); transition: 0.3s; }
+        .nav-section-title { color: rgba(255, 255, 255, 0.3); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; padding-left: 10px; }
+        .nav-link-custom { display: flex; align-items: center; padding: 12px 15px; color: rgba(255, 255, 255, 0.6); text-decoration: none; border-radius: 12px; font-size: 0.85rem; transition: all 0.3s ease; margin-bottom: 5px; }
+        .nav-link-custom i { font-size: 1.1rem; margin-right: 12px; width: 20px; text-align: center; }
+        .nav-link-custom:hover { background: rgba(255, 255, 255, 0.05); color: var(--cian-tech); transform: translateX(5px); }
         .nav-link-custom.active { background: rgba(188, 19, 254, 0.1); color: #d880ff; border: 1px solid rgba(188, 19, 254, 0.2); }
-        .btn-logout-custom { background: rgba(255, 77, 77, 0.05); border: 1px solid rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 100%; padding: 12px; border-radius: 12px; transition: 0.3s; margin-top: 20px; }
+        .btn-system-white { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); color: #ffffff; width: 100%; padding: 12px; border-radius: 12px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; transition: all 0.3s ease; margin-top: 10px; }
+        .btn-logout-custom { background: rgba(255, 77, 77, 0.05); border: 1px solid rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 100%; padding: 12px; border-radius: 12px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; margin-top: 20px; }
         .btn-logout-custom:hover { background: #ff4d4d; color: white; }
-        .glass-panel { background: rgba(255, 255, 255, 0.03) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; backdrop-filter: blur(25px); border-radius: 35px; padding: 45px; box-shadow: 0 30px 60px rgba(0,0,0,0.7); max-width: 1300px; margin: auto; }
+        .glass-panel { background: rgba(255, 255, 255, 0.03) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; backdrop-filter: blur(25px) !important; border-radius: 35px; padding: 45px; box-shadow: 0 30px 60px rgba(0,0,0,0.7); max-width: 1300px; margin: auto; }
         .table { --bs-table-bg: transparent !important; --bs-table-color: white !important; border-collapse: separate; border-spacing: 0 12px; }
+        .table thead th { border: none !important; color: rgba(255,255,255,0.5); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 2.5px; padding-bottom: 25px; }
+        .table tbody tr { background: rgba(255, 255, 255, 0.03); border-radius: 15px; }
+        .table tbody td { background: transparent !important; border: none !important; padding: 22px 15px; vertical-align: middle; }
         .progress { background-color: rgba(255, 255, 255, 0.1); height: 5px; border-radius: 10px; }
-        .progress-bar-neon { background: linear-gradient(90deg, var(--purpura-neon), var(--cian-tech)); }
+        .progress-bar-neon { background: linear-gradient(90deg, var(--purpura-neon), var(--cian-tech)); box-shadow: 0 0 12px rgba(0, 242, 255, 0.5); }
         .status-badge { font-size: 0.65rem; padding: 6px 14px; border-radius: 8px; font-weight: 800; border: 1px solid #00ff8844; color: #00ff88; background: #00ff8811; }
         .email-badge { font-family: 'Courier New', monospace; color: var(--cian-tech); background: rgba(0, 242, 255, 0.1); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; border: 1px solid rgba(0, 242, 255, 0.2); }
-        .btn-revocar { border: 1px solid rgba(255, 77, 77, 0.4); color: #ff4d4d; background: rgba(255, 77, 77, 0.05); padding: 8px 20px; border-radius: 12px; }
+        .btn-revocar { border: 1px solid rgba(255, 77, 77, 0.4); color: #ff4d4d; background: rgba(255, 77, 77, 0.05); border-radius: 12px; font-size: 0.8rem; padding: 8px 20px; transition: 0.3s; }
         .btn-revocar:hover { background: #ff4d4d; color: white; }
     </style>
-    <script type="module" src="auth-guard.js"></script>
 </head>
 <body>
 
@@ -39,19 +43,41 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-2 sidebar d-none d-md-flex flex-column">
-                <div class="brand-container text-center mb-4"><img src="logo-ucmi.png" alt="UCMI Logo" class="brand-logo"></div>
+                <div class="brand-container"><img src="logo-ucmi.png" alt="UCMI Logo" class="brand-logo"></div>
                 <nav class="nav flex-column mb-auto">
+                    <p class="nav-section-title">Protocolos</p>
                     <a class="nav-link-custom" href="master-postulaciones.html"><i class="bi bi-person-badge"></i> Solicitudes</a>
                     <a class="nav-link-custom active" href="master-vigencia.html"><i class="bi bi-clock-history"></i> Vigencia</a>
-                    <button id="btnLogout" class="btn-logout-custom"><i class="bi bi-box-arrow-left"></i> Cerrar Sesión</button>
+                    <a class="nav-link-custom" href="master-usuarios.html"><i class="bi bi-people"></i> Usuarios</a>
+                    <a class="nav-link-custom" href="historial-postulaciones.html"><i class="bi bi-archive"></i> Historial</a>
+                    <a class="nav-link-custom" href="directorio.html"><i class="bi bi-journal-text"></i> Directorio</a>
+                    <a class="nav-link-custom" href="ofertas-academicas.html"><i class="bi bi-mortarboard"></i> Ofertas</a>
+                    <a class="nav-link-custom" href="master-repositorio.html"><i class="bi bi-grid-1x2"></i> Módulos</a>
+                    <a class="nav-link-custom" href="papelera.html"><i class="bi bi-trash3"></i> Papelera</a>
+                    <p class="nav-section-title mt-4">Sistema</p>
+                    <a href="super-admin.html" class="btn-system-white"><i class="bi bi-shield-lock"></i> Panel Maestro</a>
                 </nav>
+                <div class="sidebar-footer">
+                    <button id="btnLogout" class="btn-logout-custom"><i class="bi bi-box-arrow-left"></i> Cerrar Sesión</button>
+                </div>
             </div>
             <div class="col-md-10 p-5">
                 <div class="glass-panel">
-                    <h3 class="fw-bold mb-5 text-uppercase" style="letter-spacing: 4px;">Panel de Vigencia Operativa</h3>
+                    <div class="d-flex justify-content-between align-items-center mb-5">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-info rounded-3 p-2 me-3 shadow-lg"><i class="bi bi-cpu-fill text-dark fs-4"></i></div>
+                            <h3 class="fw-bold m-0 text-uppercase" style="letter-spacing: 4px;">Panel de Vigencia Operativa</h3>
+                        </div>
+                        <div style="min-width: 350px;">
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-secondary text-info"><i class="bi bi-search"></i></span>
+                                <input type="text" id="inputBusqueda" class="form-control bg-transparent text-white border-secondary" placeholder="Buscar entidad, email o responsable..." style="border-radius: 0 12px 12px 0;">
+                            </div>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table">
-                            <thead><tr><th>Responsable</th><th>Inicio</th><th>Cronología</th><th>Expiración</th><th>Remanente</th><th class="text-end">Op.</th></tr></thead>
+                            <thead><tr><th>Responsable / Identificador</th><th>Activación</th><th style="width: 20%;">Cronología</th><th>Expiración</th><th>Remanente</th><th class="text-end">Operaciones</th></tr></thead>
                             <tbody id="listaVigencia"></tbody>
                         </table>
                     </div>
@@ -63,61 +89,65 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, updateDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const firebaseConfig = { /* TU CONFIG AQUÍ */ };
+    const firebaseConfig = { /* TU CONFIG ORIGINAL AQUÍ */ };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    function formatearFecha(valor) {
-        if (!valor) return "N/A";
-        const date = (valor?.toDate) ? valor.toDate() : new Date(valor);
-        return date.toLocaleDateString('es-ES');
+    let usuariosMaster = [];
+
+    // --- LÓGICA DE FECHAS SEGURA ---
+    function obtenerFechaSegura(valor) {
+        if (!valor) return new Date();
+        if (typeof valor.toDate === 'function') return valor.toDate();
+        if (valor instanceof Date) return valor;
+        return new Date(valor);
     }
 
     function renderizar(lista) {
         const contenedor = document.getElementById('listaVigencia');
-        contenedor.innerHTML = lista.map(data => {
-            const dateInicio = (data.fechaActivacion?.toDate) ? data.fechaActivacion.toDate() : new Date(data.fechaActivacion || Date.now());
-            const dateFin = (data.expiracionTimestamp?.toDate) ? data.expiracionTimestamp.toDate() : new Date(data.expiracionTimestamp || Date.now());
+        contenedor.innerHTML = '';
+        lista.forEach((data) => {
+            const dateInicio = obtenerFechaSegura(data.fechaActivacion);
+            const dateFin = data.expiracionTimestamp ? new Date(data.expiracionTimestamp) : new Date();
             const ahora = new Date();
             const totalMs = dateFin - dateInicio;
             const transcurridoMs = ahora - dateInicio;
-            let porcentaje = Math.min(Math.max(Math.floor((transcurridoMs / totalMs) * 100), 0), 100);
+            let porcentaje = Math.min(Math.max(Math.floor((transcurridoMs / totalMs) * 100) || 0, 0), 100);
             const diasRestantes = Math.ceil((dateFin - ahora) / (1000 * 60 * 60 * 24));
 
-            return `<tr>
-                <td><div class="fw-bold">${data.entidad || 'Entidad'}</div><div class="email-badge">${data.email || ''}</div></td>
-                <td>${formatearFecha(data.fechaActivacion)}</td>
-                <td><div class="progress"><div class="progress-bar progress-bar-neon" style="width: ${porcentaje}%"></div></div></td>
-                <td>${formatearFecha(data.expiracionTimestamp)}</td>
+            contenedor.innerHTML += `<tr>
+                <td><div class="d-flex align-items-center"><div class="p-2 rounded-circle bg-opacity-10 bg-info me-3" style="border: 1px solid #00f2ff55"><i class="bi bi-person-badge-fill text-info fs-5"></i></div>
+                <div><div class="fw-bold text-white mb-1">${data.entidad || 'Entidad'}</div><div class="email-badge">${data.email || data.id}</div></div></div></td>
+                <td><div class="text-white-50 mb-1" style="font-size: 0.6rem;">FECHA INICIO:</div><div class="fw-bold small text-white">${dateInicio.toLocaleDateString()}</div></td>
+                <td><div class="progress mb-2"><div class="progress-bar progress-bar-neon" style="width: ${porcentaje}%"></div></div><div class="d-flex justify-content-between" style="font-size: 0.6rem;"><span class="text-white-50">CONSUMO</span><span class="text-info fw-bold">${porcentaje}%</span></div></td>
+                <td><div class="text-white-50 mb-1" style="font-size: 0.6rem;">VENCE EN:</div><div class="fw-bold text-info small">${dateFin.toLocaleDateString()}</div></td>
                 <td><span class="status-badge">${diasRestantes > 0 ? diasRestantes + ' DÍAS' : 'EXPIRADO'}</span></td>
-                <td class="text-end"><button onclick="revocarAcceso('${data.id}', '${data.entidad}')" class="btn btn-revocar">Revocar</button></td>
+                <td class="text-end"><button onclick="revocarAcceso('${data.id}', '${data.entidad || 'Usuario'}')" class="btn btn-revocar"><i class="bi bi-trash3-fill me-2"></i>Revocar</button></td>
             </tr>`;
-        }).join('');
-    }
-
-    async function cargarDatos() {
-        const snap = await getDocs(collection(db, "academias"));
-        const acadMap = {};
-        snap.forEach(d => acadMap[d.id] = d.data());
-        onSnapshot(collection(db, "usuarios"), (s) => {
-            const lista = s.docs.map(d => ({id: d.id, ...d.data(), expiracionTimestamp: acadMap[d.data().entidadId]?.fechaVencimiento || d.data().expiracionTimestamp}))
-                              .filter(u => u.status !== "eliminado");
-            renderizar(lista);
         });
     }
 
+    onSnapshot(collection(db, "usuarios"), (snapshot) => {
+        usuariosMaster = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(u => u.status !== "eliminado");
+        renderizar(usuariosMaster);
+    });
+
+    document.getElementById('inputBusqueda').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        renderizar(usuariosMaster.filter(u => (u.entidad || "").toLowerCase().includes(term) || (u.email || "").toLowerCase().includes(term)));
+    });
+
     window.revocarAcceso = async (id, entidad) => {
-        if ((await Swal.fire({title: '¿Revocar acceso?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí'})).isConfirmed) {
-            await updateDoc(doc(db, "usuarios", id), {status: "eliminado", fechaEliminacion: serverTimestamp()});
+        if ((await Swal.fire({ title: '¿REVOCAR ACCESO?', text: `La entidad ${entidad} pasará a papelera.`, icon: 'warning', background: '#06090f', color: '#fff', showCancelButton: true, confirmButtonColor: '#ff4d4d', confirmButtonText: 'Sí, revocar' })).isConfirmed) {
+            await updateDoc(doc(db, "usuarios", id), { status: "eliminado", fechaEliminacion: serverTimestamp() });
         }
     };
 
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
-    cargarDatos();
 </script>
 </body>
 </html>
