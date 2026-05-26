@@ -419,12 +419,38 @@
     }
 
     // --- ESCUCHA DE FIREBASE ---
+import { getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+async function cargarDatosVigencia() {
+    // 1. Obtener todas las academias para tener sus fechas maestras
+    const snapshotAcademias = await getDocs(collection(db, "academias")); 
+    const academiasMap = {};
+    snapshotAcademias.forEach(doc => {
+        academiasMap[doc.data().nombre] = doc.data(); // Asumiendo que guardas el nombre
+    });
+
+    // 2. Escuchar usuarios
     onSnapshot(collection(db, "usuarios"), (snapshot) => {
         usuariosMaster = snapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data() }))
-            .filter(u => u.status !== "eliminado"); 
+            .map(doc => {
+                const data = doc.data();
+                // AQUÍ ESTÁ LA MAGIA: 
+                // Si el usuario tiene entidad, busca la expiración de la academia
+                const academia = academiasMap[data.entidad];
+                return { 
+                    id: doc.id, 
+                    ...data,
+                    // Si existe la academia, sobrescribe la fecha de expiración
+                    expiracionTimestamp: academia ? academia.fechaVencimiento : data.expiracionTimestamp 
+                };
+            })
+            .filter(u => u.status !== "eliminado");
+        
         renderizar(usuariosMaster);
     });
+}
+
+cargarDatosVigencia();
 
     // --- MOTOR DE BÚSQUEDA ---
     document.getElementById('inputBusqueda').addEventListener('input', (e) => {
