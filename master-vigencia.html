@@ -359,19 +359,21 @@
         contenedor.innerHTML = '';
 
   // --- SUSTITUCIÓN DEL CICLO RENDERIZADOR ---
+// --- CORRECCIÓN DE HERENCIA DE DATOS ---
 lista.forEach((data) => {
     const id = data.id;
     
-    // NUEVA LÓGICA: Buscamos si existe una "academia" cuyo nombre 
-    // sea igual al campo "entidad" del usuario actual.
-    let fuenteDatos = data; 
-    
-    // Solo buscamos padre si el usuario NO es la academia misma 
-    // (puedes añadir una condición extra si tienes un campo 'tipoUsuario')
-    if (data.entidad && data.tipoUsuario !== 'academia') {
+    // Identificamos si es la propia academia o un usuario dependiente
+    let fuenteDatos = data;
+    const esAcademia = data.tipoUsuario === 'academia';
+
+    if (!esAcademia && data.entidad) {
+        // Buscamos a la academia que tenga la misma entidad
         const academiaPadre = lista.find(u => u.entidad === data.entidad && u.tipoUsuario === 'academia');
+        
+        // Si encontramos a la academia, usamos sus datos de fecha
         if (academiaPadre) {
-            fuenteDatos = academiaPadre; // "Hereda" las fechas de la academia padre
+            fuenteDatos = academiaPadre;
         }
     }
 
