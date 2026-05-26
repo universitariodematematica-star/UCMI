@@ -358,24 +358,37 @@
         const contenedor = document.getElementById('listaVigencia');
         contenedor.innerHTML = '';
 
-        lista.forEach((data) => {
-            const id = data.id;
-            
-            // Usamos las nuevas funciones compatibles con Timestamps
-            const fechaInicioTexto = formatearFechaInicio(data.fechaActivacion);
-            const dateInicio = obtenerDateValido(data.fechaActivacion);
-            
-            // Expiración (usamos el int64 que ya tienes guardado)
-            const dateFin = data.expiracionTimestamp ? new Date(data.expiracionTimestamp) : new Date();
-            const ahora = new Date();
+  // --- SUSTITUCIÓN DEL CICLO RENDERIZADOR ---
+lista.forEach((data) => {
+    const id = data.id;
+    
+    // NUEVA LÓGICA: Buscamos si existe una "academia" cuyo nombre 
+    // sea igual al campo "entidad" del usuario actual.
+    let fuenteDatos = data; 
+    
+    // Solo buscamos padre si el usuario NO es la academia misma 
+    // (puedes añadir una condición extra si tienes un campo 'tipoUsuario')
+    if (data.entidad && data.tipoUsuario !== 'academia') {
+        const academiaPadre = lista.find(u => u.entidad === data.entidad && u.tipoUsuario === 'academia');
+        if (academiaPadre) {
+            fuenteDatos = academiaPadre; // "Hereda" las fechas de la academia padre
+        }
+    }
 
-            const totalMs = dateFin - dateInicio;
-            const transcurridoMs = ahora - dateInicio;
-            let porcentaje = Math.floor((transcurridoMs / totalMs) * 100);
-            porcentaje = Math.min(Math.max(porcentaje || 0, 0), 100);
+    // AHORA CALCULAMOS USANDO "fuenteDatos"
+    const fechaInicioTexto = formatearFechaInicio(fuenteDatos.fechaActivacion);
+    const dateInicio = obtenerDateValido(fuenteDatos.fechaActivacion);
+    const dateFin = fuenteDatos.expiracionTimestamp ? new Date(fuenteDatos.expiracionTimestamp) : new Date();
+    const ahora = new Date();
 
-            const diasRestantes = Math.ceil((dateFin - ahora) / (1000 * 60 * 60 * 24));
+    const totalMs = dateFin - dateInicio;
+    const transcurridoMs = ahora - dateInicio;
+    let porcentaje = Math.floor((transcurridoMs / totalMs) * 100);
+    porcentaje = Math.min(Math.max(porcentaje || 0, 0), 100);
 
+    const diasRestantes = Math.ceil((dateFin - ahora) / (1000 * 60 * 60 * 24));
+    
+    // ... aquí continúa tu código existente con el template literal ...
             contenedor.innerHTML += `
                 <tr>
                     <td>
