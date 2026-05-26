@@ -418,38 +418,29 @@
         });
     }
 
-    // --- ESCUCHA DE FIREBASE ---
+   // --- ESCUCHA DE FIREBASE CON SINCRONIZACIÓN POR ENTIDAD ---
     onSnapshot(collection(db, "usuarios"), (snapshot) => {
-        // --- ESCUCHA DE FIREBASE ---
-onSnapshot(collection(db, "usuarios"), (snapshot) => {
-    // 1. Obtener datos y filtrar eliminados
-    let datos = snapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(u => u.status !== "eliminado");
+        let rawDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        let datos = rawDocs.filter(u => u.status !== "eliminado");
 
-    // 2. NUEVA LÓGICA: Sincronizar aspiración y remanente por academia
-    const academiasMap = {};
-    
-    // Primero, identificamos los valores base de cada academia
-    datos.forEach(u => {
-        if (u.academia && u.aspiracion !== undefined && u.remanente !== undefined) {
-            academiasMap[u.academia] = { 
-                aspiracion: u.aspiracion, 
-                remanente: u.remanente 
-            };
-        }
-    });
+        // 1. Mapear valores maestros de cada entidad
+        const academiasMap = {};
+        datos.forEach(u => {
+            if (u.entidad && u.expiracionTimestamp) {
+                academiasMap[u.entidad] = { 
+                    expiracionTimestamp: u.expiracionTimestamp,
+                    fechaActivacion: u.fechaActivacion
+                };
+            }
+        });
 
-    // 3. Forzamos que todos los miembros tengan esos valores compartidos
-    usuariosMaster = datos.map(u => ({
-        ...u,
-        aspiracion: academiasMap[u.academia]?.aspiracion ?? u.aspiracion,
-        remanente: academiasMap[u.academia]?.remanente ?? u.remanente
-    }));
+        // 2. Sincronizar: Si el usuario está vacío, hereda de la entidad
+        usuariosMaster = datos.map(u => ({
+            ...u,
+            expiracionTimestamp: u.expiracionTimestamp || academiasMap[u.entidad]?.expiracionTimestamp,
+            fechaActivacion: u.fechaActivacion || academiasMap[u.entidad]?.fechaActivacion
+        }));
 
-    // 4. Renderizar con los datos ya sincronizados
-    renderizar(usuariosMaster);
-}); 
         renderizar(usuariosMaster);
     });
 
