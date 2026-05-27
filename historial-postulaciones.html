@@ -242,15 +242,22 @@
         tablaCuerpo.innerHTML = '';
         snapshot.forEach(doc => {
             const p = doc.data();
-            
-            // Lógica para detectar Docente Academia
             const esDocente = String(p.perfil || '').toLowerCase().includes("docente");
             
-            const esAprobado = ['ACTIVO', 'ACEPTADO', 'APROBADO', 'TRUE'].includes(String(p.decisionFinal || '').toUpperCase());
-            const esRechazado = ['RECHAZADO', 'INACTIVO', 'FALSE'].includes(String(p.decisionFinal || '').toUpperCase());
+            // Forzamos a convertir el valor a string, mayúsculas y quitamos espacios
+            const decision = String(p.decisionFinal || "").toUpperCase().trim();
             
-            const statusClass = esAprobado ? 'status-aprobado' : (esRechazado ? 'status-rechazado' : 'status-pendiente');
-            const estadoTexto = esAprobado ? 'ACEPTADO' : (esRechazado ? 'RECHAZADO' : 'PENDIENTE');
+            // Lógica clara:
+            let statusClass = 'status-pendiente';
+            let estadoTexto = 'PENDIENTE';
+
+            if (decision === 'ACEPTADO') {
+                statusClass = 'status-aprobado';
+                estadoTexto = 'ACEPTADO';
+            } else if (decision === 'RECHAZADO') {
+                statusClass = 'status-rechazado';
+                estadoTexto = 'RECHAZADO';
+            }
 
             tablaCuerpo.innerHTML += `
                 <tr>
