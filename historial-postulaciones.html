@@ -284,50 +284,57 @@
               return;
           }
 
-          datos.forEach((p) => {
-              let esAprobado = false;
-              let esRechazado = false;
-              const camposAEvaluar = [p.decisionFinal, p.estado, p.resultado];
+         datos.forEach((p) => {
+                // 1. Identificar si es Docente (Nuevo)
+                const esDocente = String(p.perfil || '').toLowerCase().includes("docente");
+                
+                let esAprobado = false;
+                let esRechazado = false;
+                const camposAEvaluar = [p.decisionFinal, p.estado, p.resultado];
 
-              camposAEvaluar.forEach(campo => {
-                  if (campo !== undefined && campo !== null) {
-                      const textoClean = String(campo).toUpperCase().trim();
-                      if (['ACTIVO', 'ACEPTADO', 'APROBADO', 'TRUE'].includes(textoClean)) esAprobado = true;
-                      if (['RECHAZADO', 'INACTIVO', 'FALSE'].includes(textoClean)) esRechazado = true;
-                  }
-              });
+                camposAEvaluar.forEach(campo => {
+                    if (campo !== undefined && campo !== null) {
+                        const textoClean = String(campo).toUpperCase().trim();
+                        if (['ACTIVO', 'ACEPTADO', 'APROBADO', 'TRUE'].includes(textoClean)) esAprobado = true;
+                        if (['RECHAZADO', 'INACTIVO', 'FALSE'].includes(textoClean)) esRechazado = true;
+                    }
+                });
 
-              let statusClass = 'status-pendiente';
-              let estadoTextoMostrar = 'PENDIENTE';
-              if (esAprobado) { statusClass = 'status-aprobado'; estadoTextoMostrar = 'ACEPTADO'; }
-              else if (esRechazado) { statusClass = 'status-rechazado'; estadoTextoMostrar = 'RECHAZADO'; }
+                let statusClass = 'status-pendiente';
+                let estadoTextoMostrar = 'PENDIENTE';
+                if (esAprobado) { statusClass = 'status-aprobado'; estadoTextoMostrar = 'ACEPTADO'; }
+                else if (esRechazado) { statusClass = 'status-rechazado'; estadoTextoMostrar = 'RECHAZADO'; }
 
-              let fechaLegible = '---';
-              if (p.timestamp && typeof p.timestamp.toDate === 'function') {
-                  fechaLegible = p.timestamp.toDate().toLocaleDateString();
-              } else if (p.fechaAdmision) {
-                  fechaLegible = new Date(p.fechaAdmision).toLocaleDateString();
-              } else {
-                  fechaLegible = p.fechaProcesado || p.fechaActivacion || '---';
-              }
+                let fechaLegible = '---';
+                if (p.timestamp && typeof p.timestamp.toDate === 'function') {
+                    fechaLegible = p.timestamp.toDate().toLocaleDateString();
+                } else if (p.fechaAdmision) {
+                    fechaLegible = new Date(p.fechaAdmision).toLocaleDateString();
+                } else {
+                    fechaLegible = p.fechaProcesado || p.fechaActivacion || '---';
+                }
 
-              tablaCuerpo.innerHTML += `
-                  <tr>
-                      <td class="ps-4">
-                          <div class="fw-bold text-white">${p.entidad || 'Sin Entidad'}</div>
-                          <div class="text-white-50 small">${p.nombreResponsable || p.nombreEstudiante || '---'}</div>
-                      </td>
-                      <td><span class="date-chip">${fechaLegible}</span></td>
-                      <td><div class="small fw-bold text-warning">${(p.perfil || 'Academia').toUpperCase()}</div></td>
-                      <td><span class="badge-status ${statusClass}">${estadoTextoMostrar}</span></td>
-                      <td class="text-end pe-4">
-                          <a href="https://wa.me/${p.whatsapp}" target="_blank" class="text-info text-decoration-none small">
-                              <i class="bi bi-whatsapp me-1"></i> ${p.whatsapp || 'Sin WhatsApp'}
-                          </a>
-                      </td>
-                  </tr>
-              `;
-          });
+                tablaCuerpo.innerHTML += `
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-white">${p.entidad || 'Sin Entidad'}</div>
+                            <div class="text-white-50 small">${p.nombreResponsable || p.nombreEstudiante || '---'}</div>
+                        </td>
+                        <td><span class="date-chip">${fechaLegible}</span></td>
+                        <td>
+                            <div class="small fw-bold ${esDocente ? 'text-info' : 'text-warning'}">
+                                ${(p.perfil || 'ACADEMIA').toUpperCase()}
+                            </div>
+                        </td>
+                        <td><span class="badge-status ${statusClass}">${estadoTextoMostrar}</span></td>
+                        <td class="text-end pe-4">
+                            <a href="https://wa.me/${p.whatsapp}" target="_blank" class="text-info text-decoration-none small">
+                                <i class="bi bi-whatsapp me-1"></i> ${p.whatsapp || 'Sin WhatsApp'}
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
       }
   
       // --- ESCUCHADOR ÚNICO: Historial de Postulaciones ---
