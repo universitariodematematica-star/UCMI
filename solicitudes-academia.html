@@ -396,32 +396,39 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-
-    // Variables globales
+    
     let currentId = null;
     let currentData = null;
-    let academiaNombreGlobal = "";
     let logoAcademiaGlobal = "";
+    let academiaNombreGlobal = "";
     let cuposMaximosGlobal = 0;
     let registrosLocales = [];
 
-    // --- CARGA INICIAL ---
+    const selectorFiltro = document.getElementById('filtroPerfil');
+
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             const userDoc = await getDoc(doc(db, "usuarios", user.email));
             if (userDoc.exists()) {
                 const data = userDoc.data();
-                academiaNombreGlobal = data.entidad || "Panel";
                 logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-                cuposMaximosGlobal = data.cupos || 0;
-                
                 document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
+                document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
+                academiaNombreGlobal = data.entidad || "Panel";
+                cuposMaximosGlobal = data.cupos || 0;
                 document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
-                
+                actualizarMarcadorCupos();
                 iniciarEscuchaFiltrada(academiaNombreGlobal);
             }
-        }
+        } else { window.location.href = "index.html"; }
     });
+
+    async function actualizarMarcadorCupos() {
+        if (!academiaNombreGlobal) return;
+        const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
+        const snap = await getDocs(qEstudiantes);
+        document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
+    }
 
     function iniciarEscuchaFiltrada(academiaNombre) {
         const q = query(collection(db, "postulaciones"), where("entidad", "==", academiaNombre));
@@ -434,18 +441,17 @@
     function renderizarTabla() {
         const lista = document.getElementById('listaMaestra');
         if (!lista) return;
+        const filtro = selectorFiltro.value; 
         lista.innerHTML = "";
-        
         registrosLocales.forEach(docSnap => {
             const d = docSnap.data();
             const id = docSnap.id;
+            const esEstudiante = d.perfil === "Estudiante Academia";
+            const esDocente = d.perfil === "Docente Academia";
+            if (filtro === "estudiante" && !esEstudiante) return;
+            if (filtro === "docente" && !esDocente) return;
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><div class="fw-bold">${d.nombreResponsable || d.nombre || 'Sin nombre'}</div><div class="small text-muted">${d.email}</div></td>
-                <td><span class="badge ${d.perfil === 'Docente Academia' ? 'bg-primary' : 'bg-secondary'}">${d.perfil}</span></td>
-                <td>${d.ubicacion || 'N/A'}</td>
-                <td class="text-center"><button class="btn btn-dark btn-sm" onclick="window.verExpediente('${id}')">Detalles</button></td>
-            `;
+            tr.innerHTML = `<td><div class="fw-bold">${d.nombreResponsable || d.nombre || 'Sin nombre'}</div><div class="small text-muted">${d.email}</div></td><td><span class="badge ${esDocente ? 'bg-categoria-docente' : 'bg-categoria-estudiante'}">${d.perfil}</span></td><td><i class="bi bi-geo-alt me-1"></i>${d.ubicacion || 'No definida'}</td><td class="text-center"><button class="btn btn-dark btn-sm" onclick="verExpediente('${id}')"><i class="bi bi-eye"></i> Detalles</button></td>`;
             lista.appendChild(tr);
         });
     }
@@ -453,27 +459,54 @@
     window.verExpediente = async (id) => {
         currentId = id;
         const snap = await getDoc(doc(db, "postulaciones", id));
-        if (snap.exists()) {
-            currentData = snap.data();
-            // Aquí puedes volver a llamar a tu lógica de mostrar el modal que tenías antes
-            new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+        if (!snap.exists()) return;
+        currentData = snap.data();
+        const d = currentData;
+        const esDocente = d.perfil === "Docente Academia";
+        document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
+        const diasSemana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+        let htmlHorarios = "";
+        if (esDocente && d.horarios && Array.isArray(d.horarios)) {
+            const agrupado = {};
+            d.horarios.forEach(idx => { const dia = diasSemana[idx % 7]; const hora = Math.floor(idx / 7); if (!agrupado[dia]) agrupado[dia] = []; agrupado[dia].push(`${hora}:00`); });
+            diasSemana.forEach(dia => { if (agrupado[dia]) { htmlHorarios += `<div class="col-12 mb-1" style="border-bottom: 1px solid rgba(197, 160, 89, 0.2); padding: 5px 0;"><span style="color:var(--dorado-ucmi); font-weight:bold; display: inline-block; width: 45px;">${dia}:</span><span style="font-size: 0.85rem; color: #fff;">${agrupado[dia].sort((a,b)=>a-b).join(', ')}</span></div>`; } });
+        } else if (esDocente) { htmlHorarios = `<div class="col-12 mt-2" style="font-size:0.8rem; color:#888;">No hay disponibilidad registrada.</div>`; }
+
+        let html = `<div class="col-12 mb-4"><h5 style="color:var(--dorado-ucmi)">Expediente del Aspirante</h5></div>`;
+        if (esDocente) {
+            html += `<div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Docente</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE COMPLETO</label><br>${d.nombreResponsable}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniDocente}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">TÍTULO</label><br>${d.titulo}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">INSTITUCIÓN DE EGRESO</label><br>${d.institucion_titulo}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">ENLACE A SÍNTESIS CURRICULAR</label><br>${d.enlaceSintesis}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">AÑOS DE EXPERIENCIA</label><br>${d.experienciaDocente}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NIVELES</label><br>${d.niveles_atencion}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">RAZÓN DE PERTENECIA</label><br>${d.razon_deseo_pertenencia}</div><div class="col-12 mt-2"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DISPONIBILIDAD HORARIA</label></div>${htmlHorarios}`;
+        } else {
+            html += `<div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Estudiante</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE</label><br>${d.nombre}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniEstudiante}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">GÉNERO</label><br>${d.genero}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NACIMIENTO</label><br>${d.fechaNacimiento}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">EDAD</label><br>${d.edadEstudiante}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">PROMEDIO</label><br>${d.promediocatualbachillerato}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO</label><br>${d.email}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">MÓDULOS</label><br>${d.modulos}</div><div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold; border-top: 1px solid #333; padding-top:10px;">Información del Representante</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE</label><br>${d.nombreRepresentante}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO</label><br>${d.emailRepresentante}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI</label><br>${d.dniRepresentante}</div><div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsappRepresentante}</div>`;
         }
+        document.getElementById('contenidoModal').innerHTML = `<div class="row">${html}</div>`;
+        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
     };
 
-    // BOTONES MODAL (Admitir/Rechazar)
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
-        if (!currentData) return;
-        await addDoc(collection(db, "historial_postulaciones"), { ...currentData, resultado: "Admitido", fecha: new Date().toISOString() });
-        await setDoc(doc(db, "usuarios", currentData.email), { ...currentData, estado: "activo", rol: currentData.perfil.includes("Docente") ? "docente" : "estudiante" });
-        await deleteDoc(doc(db, "postulaciones", currentId));
-        location.reload();
+        if(!currentId || !currentData) return;
+        const esDocente = currentData.perfil === "Docente Academia";
+        try {
+            if (!esDocente) {
+                const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
+                const snap = await getDocs(qEstudiantes);
+                if (snap.size >= cuposMaximosGlobal) { await Swal.fire('Cupos Agotados', 'No hay vacantes.', 'warning'); return; }
+            }
+            await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fecha_procesamiento: new Date().toISOString(), resultado: "Admitido" });
+            await setDoc(doc(db, "usuarios", currentData.email), { ...currentData, estado: "activo", rol: esDocente ? "docente" : "estudiante" });
+            await deleteDoc(doc(db, "postulaciones", currentId));
+            location.reload();
+        } catch (e) { Swal.fire('Error', 'No se pudo procesar la admisión.', 'error'); }
     };
 
     document.getElementById('btnEliminar').onclick = async () => {
-        if (!currentData) return;
-        await addDoc(collection(db, "historial_postulaciones"), { ...currentData, resultado: "Rechazado", fecha: new Date().toISOString() });
-        await deleteDoc(doc(db, "postulaciones", currentId));
-        location.reload();
+        const res = await Swal.fire({ title: '¿Estás seguro?', text: "¡Esta acción eliminará la postulación!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, rechazar' });
+        if (res.isConfirmed) {
+            try {
+                await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fecha_procesamiento: new Date().toISOString(), resultado: "Rechazado" });
+                await deleteDoc(doc(db, "postulaciones", currentId));
+                location.reload();
+            } catch (e) { Swal.fire('Error', 'No se pudo rechazar.', 'error'); }
+        }
     };
 </script>
   </body>
