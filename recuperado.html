@@ -2,384 +2,613 @@
 <html lang="es">
 <head>
       <meta charset="UTF-8">
-      <style>html { display: none; }</style>
-      <script type="module" src="auth-guard.js"></script>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>UCMI - Historial de Solicitudes</title>
+      <title>UCMI - Control de Postulaciones</title>
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+      <link class="sheet" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-      
       <style>
-          :root {
-              --dorado-ucmi: #c5a059;
-              --dorado-neon: #ffcc66;
-              --azul-sidebar: #1a2a3a;
-              --cian-tech: #00f2ff;
-              --rojo-neon: #ff3131;
-              --blanco-neon: #ffffff;
-          }
-  
-          body {
-              background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-              background-size: cover;
-              font-family: 'Segoe UI', sans-serif;
-              color: white;
-              overflow-x: hidden;
-          }
-  
-          .super-overlay {
-              background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.95) 100%);
-              min-height: 100vh;
-          }
-  
-          /* --- SIDEBAR --- */
-          .sidebar {
-              background: rgba(26, 42, 58, 0.95);
-              backdrop-filter: blur(10px);
-              min-height: 100vh;
-              padding: 25px 15px;
-              border-right: 1px solid rgba(197, 160, 89, 0.3);
-              display: flex;
-              flex-direction: column;
-              position: sticky;
-              top: 0;
-          }
-  
-          .nav-section-title {
-              color: rgba(255, 255, 255, 0.3);
-              font-size: 0.65rem;
-              text-transform: uppercase;
-              letter-spacing: 2px;
-              margin-bottom: 15px;
-              padding-left: 10px;
-          }
-  
-          .nav-link-custom {
-              display: flex;
-              align-items: center;
-              width: 100%;
-              background: transparent;
-              border: none;
-              padding: 12px 15px;
-              color: rgba(255, 255, 255, 0.6);
-              text-align: left;
-              border-radius: 12px;
-              font-size: 0.85rem;
-              transition: all 0.3s ease;
-              margin-bottom: 5px;
-              cursor: pointer;
-          }
-  
-          .nav-link-custom i { font-size: 1.1rem; margin-right: 12px; width: 20px; text-align: center; }
-  
-          .nav-link-custom:hover {
-              background: rgba(255, 255, 255, 0.05);
-              color: var(--cian-tech);
-              transform: translateX(5px);
-          }
-  
-          .nav-link-custom.active {
-              background: rgba(188, 19, 254, 0.1);
-              color: #d880ff;
-              border: 1px solid rgba(188, 19, 254, 0.2);
-              box-shadow: 0 0 15px rgba(188, 19, 254, 0.1);
-              text-shadow: 0 0 8px rgba(188, 19, 254, 0.6);
-          }
-  
-          /* --- BOTONES NEÓN --- */
-          .btn-super-admin {
-              background: rgba(255, 255, 255, 0.05);
-              border: 1px solid var(--blanco-neon);
-              color: var(--blanco-neon);
-              padding: 12px;
-              border-radius: 12px;
-              width: 100%;
-              text-align: center;
-              font-weight: bold;
-              text-transform: uppercase;
-              font-size: 0.75rem;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-              margin-bottom: 10px;
-          }
-  
-          .btn-super-admin:hover {
-              background: var(--blanco-neon);
-              color: black;
-              box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-          }
-  
-          .btn-logout {
-              background: rgba(255, 49, 49, 0.05);
-              border: 1px solid var(--rojo-neon);
-              color: var(--rojo-neon);
-              padding: 10px;
-              border-radius: 12px;
-              width: 100%;
-              text-align: center;
-              font-weight: bold;
-              text-transform: uppercase;
-              font-size: 0.75rem;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              box-shadow: 0 0 10px rgba(255, 49, 49, 0.2);
-          }
-  
-          .btn-logout:hover {
-              background: var(--rojo-neon);
-              color: white;
-              box-shadow: 0 0 20px rgba(255, 49, 49, 0.8);
-          }
-  
-          /* --- PANEL DE TABLA --- */
-          .glass-panel {
-              background: rgba(255, 255, 255, 0.02);
-              border: 1px solid rgba(255, 255, 255, 0.1);
-              backdrop-filter: blur(25px);
-              border-radius: 30px;
-              padding: 30px;
-              box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-          }
-  
-          .table-historial { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
-          .table-historial tr { background: rgba(255, 255, 255, 0.03); border-radius: 15px; }
-          .table-historial td { padding: 15px 20px; vertical-align: middle; border: none; }
-  
-          .badge-status { padding: 6px 14px; border-radius: 100px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
-          .status-aprobado { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid #00ff8844; }
-          .status-rechazado { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d44; }
-          .status-pendiente { background: rgba(255, 204, 0, 0.1); color: #ffcc00; border: 1px solid #ffcc0044; }
-  
-          .neon-gold { color: var(--dorado-neon); font-weight: bold; }
-          .date-chip { font-family: 'Courier New', monospace; background: rgba(0, 242, 255, 0.05); color: var(--cian-tech); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(0, 242, 255, 0.2); }
-  
-      </style>
-</head>
-<body>
-  
-<div class="super-overlay">
+      :root {
+          --azul-ucmi: #06090f;
+          --azul-sidebar: #1a2a3a;
+          --verde-exito: #27ae60;
+          --dorado-ucmi: #c5a059;
+          --rojo-logout: #e74c3c;
+          --indigo-ucmi: #4b0082;
+      }
+      
+      body {
+          background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+          background-size: cover; font-family: 'Segoe UI', sans-serif; margin: 0; color: white;
+      }
+
+      .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); min-height: 100vh; transition: filter 0.3s ease; }
+      
+      .sidebar {
+          background: rgba(26, 42, 58, 0.95); backdrop-filter: blur(10px); min-height: 100vh; padding: 25px 15px; position: sticky; top: 0; border-right: 1px solid rgba(197, 160, 89, 0.3); display: flex; flex-direction: column;
+      }
+
+      .logo-sidebar { height: 55px; border-radius: 12px; margin-bottom: 10px; }
+      
+      .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; margin-bottom: 5px; text-decoration: none; padding: 10px; display: block; }
+      .nav-link:hover { color: white; background: rgba(255,255,255,0.1); border-radius: 8px; }
+      .nav-link.active { color: var(--dorado-ucmi); font-weight: bold; background: rgba(197, 160, 89, 0.1); border-radius: 8px; }
+
+      .sidebar-nav { flex-grow: 1; }
+
+      .nav-item-ucmi {
+          display: flex; align-items: center;
+          color: rgba(255,255,255,0.6);
+          text-decoration: none;
+          padding: 10px 15px;
+          margin-bottom: 5px;
+          border-radius: 10px;
+          transition: 0.3s all ease;
+          font-size: 0.85rem;
+      }
+
+      .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
+      
+      .nav-item-ucmi:hover {
+          color: white;
+          background: rgba(255,255,255,0.1);
+          transform: translateX(5px);
+      }
+
+      .nav-item-ucmi.active {
+          background: rgba(197, 160, 89, 0.15);
+          color: var(--dorado-ucmi);
+          font-weight: 600;
+          box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1);
+      }   
+
+      .btn-sidebar-action {
+          background: transparent;
+          border: 1px solid rgba(255, 255, 255, 0.4) !important;
+          color: white !important;
+          font-weight: 600;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          border-radius: 50px;
+          padding: 10px;
+          text-decoration: none;
+          text-align: center;
+          transition: all 0.3s ease-in-out;
+          display: block;
+          margin-bottom: 10px;
+      }
+
+      .btn-sidebar-action:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: #ffffff !important;
+          color: #ffffff !important;
+          box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+          transform: translateY(-2px);
+      }
+
+      .btn-logout {
+          border-color: rgba(231, 76, 60, 0.4) !important;
+          color: rgba(231, 76, 60, 0.8) !important;
+      }
+
+      .btn-logout:hover {
+          background: rgba(231, 76, 60, 0.1) !important;
+          border-color: var(--rojo-logout) !important;
+          color: white !important;
+          box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+      }
+
+      .table-container {
+          background: rgba(255, 255, 255, 0.03) !important;
+          backdrop-filter: blur(15px) saturate(150%);
+          -webkit-backdrop-filter: blur(15px) saturate(150%);
+          border-radius: 28px;
+          padding: 30px;
+          color: white;
+          box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      }
+
+      .table {
+          --bs-table-bg: transparent !important;
+          --bs-table-color: white !important;
+          background-color: transparent !important;
+          color: white !important;
+          margin-bottom: 0;
+          border-collapse: separate;
+          border-spacing: 0 5px;
+      }
+
+      .table th, .table td {
+          background-color: transparent !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+          padding: 18px 12px;
+          vertical-align: middle;
+          transition: all 0.3s ease-in-out;
+      }
+
+      .table thead th {
+          background-color: transparent !important;
+          color: rgba(255, 255, 255, 0.6) !important;
+          font-weight: 800;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          letter-spacing: 1px;
+          border: none;
+      }
+
+      .table td .fw-bold { color: #ffffff !important; font-size: 1rem; }
+      .table td .text-muted, .table td .small, .table td span {
+          color: rgba(255, 255, 255, 0.5) !important;
+          transition: all 0.3s ease-in-out;
+      }
+
+      .table-hover tbody tr:hover td {
+          background-color: rgba(255, 255, 255, 0.05) !important;
+      }
+
+      .table-hover tbody tr:hover td,
+      .table-hover tbody tr:hover td * {
+          color: #ffffff !important;
+          opacity: 1 !important;
+          text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+          filter: brightness(1.2);
+      }
+
+      .btn-dark.btn-sm {
+          background-color: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255,255,255,0.2) !important;
+          color: white !important;
+          border-radius: 50px;
+          padding: 6px 15px;
+          transition: 0.3s;
+      }
+
+      .btn-dark.btn-sm:hover {
+          background-color: white !important;
+          color: black !important;
+      }
+
+      .modal-content {
+          background: rgba(255, 255, 255, 0.03) !important;
+          backdrop-filter: blur(15px) saturate(150%) !important;
+          -webkit-backdrop-filter: blur(15px) saturate(150%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 32px;
+          color: white !important;
+          box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+      }
+
+      .modal-header, .modal-footer { border: none !important; background: transparent !important; }
+      .modal-header .btn-close { filter: invert(1) grayscale(1) brightness(2); }
+
+      .btn-activar-acceso {
+          background: rgba(39, 174, 96, 0.2) !important;
+          backdrop-filter: blur(10px) !important;
+          border: 1px solid rgba(39, 174, 96, 0.5) !important;
+          color: #ffffff !important;
+          text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+          transition: all 0.3s ease;
+      }
+
+      .btn-activar-acceso:hover {
+          background: rgba(39, 174, 96, 0.4) !important;
+          border-color: rgba(39, 174, 96, 0.9) !important;
+          box-shadow: 0 0 20px rgba(39, 174, 96, 0.4);
+          transform: translateY(-2px);
+      }
+
+      .btn-outline-danger {
+          background: rgba(231, 76, 60, 0.1) !important;
+          backdrop-filter: blur(5px);
+          border: 1px solid rgba(231, 76, 60, 0.4) !important;
+          color: #e74c3c !important;
+          border-radius: 50px;
+          padding: 12px 25px;
+          transition: 0.3s;
+      }
+
+      .btn-outline-danger:hover {
+          background: rgba(231, 76, 60, 0.3) !important;
+          color: white !important;
+          border-color: rgba(231, 76, 60, 0.8) !important;
+      }
+
+      .swal2-popup {
+          background: rgba(255, 255, 255, 0.05) !important;
+          backdrop-filter: blur(20px) saturate(160%) !important;
+          -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          border-radius: 32px !important;
+          color: white !important;
+          box-shadow: 0 30px 60px rgba(0,0,0,0.8) !important;
+      }
+
+      .swal2-title, .swal2-html-container { color: white !important; }
+
+      .swal2-confirm {
+          background: rgba(39, 174, 96, 0.3) !important;
+          backdrop-filter: blur(10px) !important;
+          border: 1px solid rgba(39, 174, 96, 0.6) !important;
+          border-radius: 50px !important;
+          padding: 12px 30px !important;
+          font-weight: 700 !important;
+          transition: 0.3s !important;
+      }
+      .swal2-confirm:hover {
+          background: rgba(39, 174, 96, 0.5) !important;
+          box-shadow: 0 0 15px rgba(39, 174, 96, 0.5) !important;
+      }
+
+      .swal2-cancel {
+          background: rgba(231, 76, 60, 0.15) !important;
+          backdrop-filter: blur(10px) !important;
+          border: 1px solid rgba(231, 76, 60, 0.4) !important;
+          border-radius: 50px !important;
+          padding: 12px 30px !important;
+          color: white !important;
+          transition: 0.3s !important;
+      }
+      .swal2-cancel:hover {
+          background: rgba(231, 76, 60, 0.4) !important;
+          box-shadow: 0 0 15px rgba(231, 76, 60, 0.5) !important;
+      }
+      .bg-categoria-docente { background-color: #d63384 !important; /* Fucsia vibrante */color: #ffffff !important; }
+      .bg-categoria-estudiante { background-color: #311b92 !important; color: #ffffff !important; }
+      body.modal-open .super-overlay { filter: blur(8px) brightness(0.7); }
+      .modal-backdrop.show { opacity: 0.4; backdrop-filter: blur(4px); }
+
+/* Estilo para el selector de filtro */
+#filtroPerfil {
+    background: rgba(255, 255, 255, 0.05) !important; /* Fondo semitransparente */
+    backdrop-filter: blur(10px); /* Efecto vidrio esmerilado */
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important; /* Borde sutil */
+    color: white !important; /* Letras blancas */
+    border-radius: 50px !important; /* Bordes redondeados */
+    padding: 10px 20px !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Para que las opciones dentro del selector también se vean bien */
+#filtroPerfil option {
+    background-color: #1a2a3a; /* Un color oscuro para que contraste */
+    color: white;
+}
+
+/* Efecto al pasar el mouse */
+#filtroPerfil:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--dorado-ucmi) !important;
+}
+            
+  </style>
+  </head>
+
+  <body>
+
+  <div class="super-overlay">
       <div class="container-fluid">
           <div class="row">
               <div class="col-md-2 sidebar d-none d-md-flex">
                   <div class="text-center mb-4">
-                      <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" style="height: 50px;" alt="Logo">
-                      <p class="small mt-2 neon-gold">SISTEMA UCMI</p>
+                      <div id="contenedorLogoSidebar">
+                          <img id="logoAcademiaPrincipal" src="https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png" style="height: 60px; border-radius: 8px; opacity: 0; transition: 0.5s;">
+                      </div>
+                      <h5 id="nombreAcademiaSidebar" class="fw-bold mt-2 text-white">CARGANDO...</h5>
                   </div>
-                   
-                  <nav class="nav flex-column mb-auto">
-                      <p class="nav-section-title">Protocolos</p>
-                      <button class="nav-link-custom" onclick="location.href='master-postulaciones.html'">
-                          <i class="bi bi-person-badge"></i> Solicitudes
-                      </button>
-                      <button class="nav-link-custom" onclick="location.href='master-vigencia.html'">
-                          <i class="bi bi-clock-history"></i> Vigencia
-                      </button>
-                      <button class="nav-link-custom" onclick="location.href='master-usuarios.html'">
-                          <i class="bi bi-people"></i> Usuarios
-                      </button>
-                      <button class="nav-link-custom active" onclick="location.href='historial-postulaciones.html'">
-                          <i class="bi bi-archive"></i> Historial
-                      </button>
-                      <button class="nav-link-custom" onclick="location.href='directorio.html'">
-                          <i class="bi bi-journal-text"></i> Directorio
-                      </button>
-                      <button class="nav-link-custom" onclick="location.href='ofertas-academicas.html'">
-                          <i class="bi bi-mortarboard"></i> Ofertas
-                      </button>
-                      <button class="nav-link-custom" onclick="location.href='master-repositorio.html'">
-                          <i class="bi bi-grid-1x2"></i> Módulos
-                      </button>
-                      <button class="nav-link-custom" onclick="location.href='papelera.html'">
-                          <i class="bi bi-trash3"></i> Papelera
-                      </button>
+                  <hr class="text-white-50">
+                  <nav class="sidebar-nav">
+                      <a href="#" class="nav-item-ucmi active"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-shield-check"></i> VIGENCIA</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-people"></i> USUARIOS</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-clock-history"></i> HISTORIAL</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-person-vcard"></i> DIRECTORIO</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-tags"></i> OFERTAS</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
+                      <a href="#" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
                   </nav>
-  
-                  <div class="mt-4">
-                      <p class="nav-section-title">Sistema</p>
-                      <button onclick="location.href='super-admin.html'" class="btn-super-admin">
-                          <i class="bi bi-shield-lock me-2"></i> Panel Maestro
-                      </button>
-                      <button id="btnCerrarSesion" class="btn-logout">
-                          <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
-                      </button>
+
+                  <div class="mt-4 pt-4 border-top border-secondary">
+                      <a href="super-admin.html" class="btn-sidebar-action w-100"><i class="bi bi-shield-lock"></i> Panel Maestro</a>
+                      <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a>
                   </div>
               </div>
-  
-              <div class="col-md-10 p-5">
-                  <h2 class="neon-gold text-uppercase mb-4">Historial de Solicitudes 2</h2>
-                  <div class="glass-panel">
+
+              <div class="col-md-10 p-4">
+                  <div class="d-flex justify-content-between align-items-center">
+                      <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
+                      <span id="marcadorCupos" class="badge bg-dark border border-secondary px-3 py-2 rounded-pill fs-6" style="color: var(--dorado-ucmi) !important;">Cupos: Métrica / Máx</span>
+                  </div>
+                  
+                  <div class="row mt-4">
+                      <div class="col-md-4">
+                          <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
+                              <label class="small text-muted fw-bold mb-2 d-block text-uppercase">Filtrar por Perfil</label>
+<select id="filtroPerfil">
+    <option value="todos">Mostrar todos</option>
+    <option value="estudiante">Estudiantes</option>
+    <option value="docente">Docentes</option>
+</select>
+                          </div>
+                      </div>
+                  </div>
+
+                  <div class="table-container mt-4">
                       <div class="table-responsive">
-                          <table class="table-historial text-white">
+                          <table class="table table-hover align-middle">
                               <thead>
-                                  <tr class="text-white-50 small text-uppercase">
-                                      <th class="ps-4">Solicitante</th>
-                                      <th>Fecha</th>
-                                      <th>Perfil</th>
-                                      <th>Estado</th>
-                                      <th>WhatsApp</th>
+                                  <tr class="text-muted small">
+                                      <th>NOMBRE</th>
+                                      <th>PERFIL</th>
+                                      <th>LOCALIZACIÓN</th>
+                                      <th class="text-center">ACCIÓN</th>
                                   </tr>
                               </thead>
-                              <tbody id="tablaCuerpo">
-                              </tbody>
+                              <tbody id="listaMaestra"></tbody>
                           </table>
                       </div>
                   </div>
               </div>
           </div>
       </div>
-</div>
-  
+  </div>
+
+  <div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+              <div class="ps-4 pt-4">
+                  <img id="logoModalAspirante" src="" style="height: 50px; border-radius: 5px;">
+              </div>
+              <div class="modal-header border-0 pb-0">
+                  <h4 class="fw-bold"><i class="bi bi-file-earmark-person me-2"></i>Expediente del Aspirante</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body py-4">
+                  <div class="row" id="contenidoModal"></div>
+              </div>
+              <div class="modal-footer border-0">
+                  <button class="btn btn-outline-danger rounded-pill px-4" id="btnEliminar">Rechazar</button>
+                  <button class="btn btn-activar-acceso rounded-pill px-4 fw-bold" id="btnConfirmarAcceso">Activar Acceso</button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-      import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  
-      const firebaseConfig = {
-          apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-          authDomain: "ucmi-13796634.firebaseapp.com",
-          projectId: "ucmi-13796634",
-          storageBucket: "ucmi-13796634.firebasestorage.app",
-          messagingSenderId: "1090719609536",
-          appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-      };
-  
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      const auth = getAuth(app);
-      const tablaCuerpo = document.getElementById('tablaCuerpo');
-  
-      // --- LÓGICA DE CIERRE DE SESIÓN ---
-      document.getElementById('btnCerrarSesion').addEventListener('click', () => {
-          Swal.fire({
-              title: '¿Cerrar sesión?',
-              text: "Se finalizará tu acceso administrativo actual.",
-              icon: 'warning',
-              showCancelButton: true,
-              confirmButtonColor: '#ff3131',
-              cancelButtonColor: '#1a2a3a',
-              confirmButtonText: 'Sí, Salir',
-              cancelButtonText: 'Cancelar',
-              background: '#1a2a3a',
-              color: '#ffffff'
-          }).then((result) => {
-              if (result.isConfirmed) {
-                  signOut(auth).then(() => {
-                      window.location.href = 'index.html';
-                  }).catch((error) => {
-                      console.error("Error al cerrar sesión:", error);
-                      window.location.href = 'index.html';
-                  });
-              }
-          });
-      });
-  
-      // --- CONTENEDORES GLOBALES DE CRUCE DE DATOS ---
-      let datosHistorial = [];
-      let datosUsuarios = [];
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-      // Función unificada que procesa ambos arreglos, los mezcla y los ordena cronológicamente
-      function actualizarTablaUnificada() {
-          tablaCuerpo.innerHTML = '';
-          
-          // Combinamos ambas listas en una sola
-          const listaCombinada = [...datosHistorial, ...datosUsuarios];
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
 
-          if (listaCombinada.length === 0) {
-              tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros.</td></tr>`;
-              return;
-          }
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    
+    let currentId = null;
+    let currentData = null;
+    let logoAcademiaGlobal = "";
+    let academiaNombreGlobal = "";
+    let cuposMaximosGlobal = 0;
+    let registrosLocales = [];
 
-          // Ordenamos de más reciente a más antiguo evaluando de forma segura los diferentes formatos de tiempo
-          listaCombinada.sort((a, b) => {
-              const timeA = a.timestamp && typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() : (a.timestamp || 0);
-              const timeB = b.timestamp && typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() : (b.timestamp || 0);
-              return timeB - timeA;
-          });
+    const selectorFiltro = document.getElementById('filtroPerfil');
 
-          // Renderizamos las filas combinadas
-          listaCombinada.forEach((p) => {
-              let esAprobado = false;
-              let esRechazado = false;
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const userDoc = await getDoc(doc(db, "usuarios", user.email));
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+                document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
+                document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
+                
+                academiaNombreGlobal = data.entidad || "Panel";
+                cuposMaximosGlobal = data.cupos || 0;
+                document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
+                
+                actualizarMarcadorCupos();
+                iniciarEscuchaFiltrada(academiaNombreGlobal);
+            }
+        } else {
+            window.location.href = "index.html";
+        }
+    });
 
-              // Evaluamos de forma adaptativa todos los campos de estado potenciales
-              const camposAEvaluar = [p.decisionFinal, p.estado, p.resultado];
+    async function actualizarMarcadorCupos() {
+        if (!academiaNombreGlobal) return;
+        const qEstudiantes = query(
+            collection(db, "usuarios"),
+            where("entidad", "==", academiaNombreGlobal),
+            where("rol", "==", "estudiante")
+        );
+        const snap = await getDocs(qEstudiantes);
+        document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
+    }
 
-              camposAEvaluar.forEach(campo => {
-                  if (campo !== undefined && campo !== null) {
-                      if (campo === true) esAprobado = true;
-                      if (campo === false) esRechazado = true;
-                      
-                      const textoClean = String(campo).toUpperCase().trim();
-                      if (['ACTIVO', 'ACEPTADO', 'APROBADO', 'TRUE'].includes(textoClean)) {
-                          esAprobado = true;
-                      }
-                      if (['RECHAZADO', 'INACTIVO', 'FALSE'].includes(textoClean)) {
-                          esRechazado = true;
-                      }
-                  }
-              });
+    function iniciarEscuchaFiltrada(academiaNombre) {
+        const q = query(
+            collection(db, "postulaciones"),
+            where("entidad", "==", academiaNombre)
+        );
 
-              let statusClass = 'status-pendiente';
-              let estadoTextoMostrar = 'PENDIENTE';
+        onSnapshot(q, (snap) => {
+            registrosLocales = snap.docs;
+            renderizarTabla();
+        });
+    }
 
-              if (esAprobado) {
-                  statusClass = 'status-aprobado';
-                  estadoTextoMostrar = 'ACEPTADO';
-              } else if (esRechazado) {
-                  statusClass = 'status-rechazado';
-                  estadoTextoMostrar = 'RECHAZADO';
-              }
+    function renderizarTabla() {
+        const lista = document.getElementById('listaMaestra');
+        if (!lista) return;
+        const filtro = selectorFiltro.value; 
+        lista.innerHTML = "";
 
-              // Normalizador de fechas adaptativo para Strings de fecha e instancias Timestamp
-              let fechaLegible = '---';
-              if (p.timestamp && typeof p.timestamp.toDate === 'function') {
-                  fechaLegible = p.timestamp.toDate().toLocaleDateString();
-              } else if (p.fechaAdmision) {
-                  // Si viene el String de ISO date que me pasaste ("2026-05-17T04:00:54...") lo formatea limpio
-                  fechaLegible = new Date(p.fechaAdmision).toLocaleDateString();
-              } else {
-                  fechaLegible = p.fechaProcesado || p.fechaActivacion || '---';
-              }
+        registrosLocales.forEach(docSnap => {
+            const d = docSnap.data();
+            const id = docSnap.id;
+            
+            const esEstudiante = d.perfil === "Estudiante Academia";
+            const esDocente = d.perfil === "Docente Academia";
 
-              tablaCuerpo.innerHTML += `
-                  <tr>
-                      <td class="ps-4">
-                          <div class="fw-bold text-white">${p.entidad || 'Sin Entidad'}</div>
-                          <div class="text-white-50 small">${p.nombreResponsable || p.nombreEstudiante || '---'}</div>
-                      </td>
-                      <td><span class="date-chip">${fechaLegible}</span></td>
-                      <td><div class="small fw-bold text-warning">${(p.perfil || 'Academia').toUpperCase()}</div></td>
-                      <td><span class="badge-status ${statusClass}">${estadoTextoMostrar}</span></td>
-                      <td class="text-end pe-4">
-                          <a href="https://wa.me/${p.whatsapp}" target="_blank" class="text-info text-decoration-none small">
-                              <i class="bi bi-whatsapp me-1"></i> ${p.whatsapp || 'Sin WhatsApp'}
-                          </a>
-                      </td>
-                  </tr>
-              `;
-          });
-      }
+            if (filtro === "estudiante" && !esEstudiante) return;
+            if (filtro === "docente" && !esDocente) return;
 
-      // --- ESCUCHADORES EN TIEMPO REAL MULTI-COLECCIÓN ---
-      
-      // Escuchador 1: Historial de Postulaciones (Pendientes y Rechazados)
-      const qHistorial = query(collection(db, "historial_postulaciones"), orderBy("timestamp", "desc"));
-      onSnapshot(qHistorial, (snapshot) => {
-          datosHistorial = [];
-          snapshot.forEach(doc => datosHistorial.push(doc.data()));
-          actualizarTablaUnificada();
-      });
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div class="fw-bold">${d.nombreResponsable || d.nombre || 'Sin nombre'}</div>
+                    <div class="small text-muted">${d.email}</div>
+                </td>
+                <td><span class="badge ${esDocente ? 'bg-categoria-docente' : 'bg-categoria-estudiante'}">${d.perfil}</span></td>
+                <td><i class="bi bi-geo-alt me-1"></i>${d.ubicacion || 'No definida'}</td>
+                <td class="text-center">
+                    <button class="btn btn-dark btn-sm" onclick="verExpediente('${id}')">
+                        <i class="bi bi-eye"></i> Detalles
+                    </button>
+                </td>
+            `;
+            lista.appendChild(tr);
+        });
+    }
 
-      // Escuchador 2: Usuarios (Los Aceptados)
-      const qUsuarios = query(collection(db, "usuarios"), orderBy("timestamp", "desc"));
-      onSnapshot(qUsuarios, (snapshot) => {
-          datosUsuarios = [];
-          snapshot.forEach(doc => datosUsuarios.push(doc.data()));
-          actualizarTablaUnificada();
-      });
+    window.verExpediente = async (id) => {
+        currentId = id;
+        const snap = await getDoc(doc(db, "postulaciones", id));
+        if (!snap.exists()) return;
+        
+        currentData = snap.data();
+        const d = currentData;
+        const esDocente = d.perfil === "Docente Academia";
+        
+        document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
 
+        // --- PROCESAMIENTO HORARIO ---
+        const diasSemana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+        let htmlHorarios = "";
+
+        if (esDocente && d.horarios && Array.isArray(d.horarios)) {
+            const agrupado = {};
+            d.horarios.forEach(idx => {
+                const dia = diasSemana[idx % 7];
+                const hora = Math.floor(idx / 7);
+                if (!agrupado[dia]) agrupado[dia] = [];
+                agrupado[dia].push(`${hora}:00`);
+            });
+
+            diasSemana.forEach(dia => {
+                if (agrupado[dia]) {
+                    htmlHorarios += `
+                        <div class="col-12 mb-1" style="border-bottom: 1px solid rgba(197, 160, 89, 0.2); padding: 5px 0;">
+                            <span style="color:var(--dorado-ucmi); font-weight:bold; display: inline-block; width: 45px;">${dia}:</span> 
+                            <span style="font-size: 0.85rem; color: #fff;">${agrupado[dia].sort((a, b) => parseInt(a) - parseInt(b)).join(', ')}</span>
+                        </div>`;
+                }
+            });
+        } else if (esDocente) {
+            htmlHorarios = `<div class="col-12 mt-2" style="font-size:0.8rem; color:#888;">No hay disponibilidad registrada.</div>`;
+        }
+
+        let html = `<div class="col-12 mb-4"><h5 style="color:var(--dorado-ucmi)">Expediente del Aspirante</h5></div>`;
+
+        if (esDocente) {
+            html += `
+                <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Docente</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE COMPLETO</label><br>${d.nombreResponsable}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniDocente}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">TÍTULO</label><br>${d.titulo}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">INSTITUCIÓN DE EGRESO</label><br>${d.institucion_titulo}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">ENLACE A SÍNTESIS CURRICULAR</label><br>${d.enlaceSintesis}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">AÑOS DE EXPERIENCIA</label><br>${d.experienciaDocente}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NIVELES</label><br>${d.niveles_atencion}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">RAZÓN DE PERTENECIA A NUESTRA INSTITUCIÓN</label><br>${d.razon_deseo_pertenencia}</div>
+                <div class="col-12 mt-2"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DISPONIBILIDAD HORARIA</label></div>
+                ${htmlHorarios}
+            `;
+        } else {
+            html += `
+                <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Estudiante</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE COMPLETO</label><br>${d.nombre}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniEstudiante}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">GÉNERO</label><br>${d.genero}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">FECHA DE NACIMIENTO</label><br>${d.fechaNacimiento}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">EDAD</label><br>${d.edadEstudiante}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">PROMEDIO</label><br>${d.promediocatualbachillerato}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">MÓDULOS DE INTERÉS</label><br>${d.modulos}</div>
+                <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold; border-top: 1px solid #333; padding-top:10px;">Información del Representante</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE</label><br>${d.nombreRepresentante}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO</label><br>${d.emailRepresentante}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI</label><br>${d.dniRepresentante}</div>
+                <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsappRepresentante}</div>
+            `;
+        }
+
+        document.getElementById('contenidoModal').innerHTML = `<div class="row">${html}</div>`;
+        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+    };
+
+    selectorFiltro.addEventListener('change', renderizarTabla);
+
+    document.getElementById('btnLogout').onclick = async () => {
+        await signOut(auth);
+        window.location.href = "index.html";
+    };
+
+    document.getElementById('btnConfirmarAcceso').onclick = async () => {
+        if(!currentId || !currentData) return;
+        const esDocente = currentData.perfil === "Docente Academia";
+
+        try {
+            if (!esDocente) {
+                const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
+                const snapshotEstudiantes = await getDocs(qEstudiantes);
+                if (snapshotEstudiantes.size >= cuposMaximosGlobal) {
+                    await Swal.fire('Cupos Agotados', 'No hay vacantes para estudiantes.', 'warning');
+                    return; 
+                }
+            }
+
+            await setDoc(doc(db, "usuarios", currentData.email), { 
+                ...currentData, 
+                estado: "activo",
+                rol: esDocente ? "docente" : "estudiante"
+            });
+            
+            await deleteDoc(doc(db, "postulaciones", currentId));
+            await Swal.fire('¡Admitido!', `El ${esDocente ? 'docente' : 'estudiante'} fue integrado.`, 'success');
+            location.reload();
+        } catch (error) {
+            Swal.fire('Error', 'No se pudo sincronizar la transacción.', 'error');
+        }
+    };
+
+    document.getElementById('btnEliminar').onclick = async () => {
+        const result = await Swal.fire({ title: '¿Estás seguro?', text: "¡Esta acción eliminará la postulación!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, rechazar' });
+        if (result.isConfirmed) {
+            try {
+                await deleteDoc(doc(db, "postulaciones", currentId));
+                location.reload();
+            } catch (e) { Swal.fire('Error', 'No se pudo eliminar.', 'error'); }
+        }
+    };
 </script>
-</body>
-</html>
+  </body>
+  </html>
