@@ -482,47 +482,62 @@
     };
 
 document.getElementById('btnConfirmarAcceso').onclick = async () => {
-    if(!currentId || !currentData) return;
+    if (!currentId || !currentData) return;
     const esDocente = currentData.perfil === "Docente Academia";
-    
+
     try {
+        // Validación de cupos (solo para estudiantes)
         if (!esDocente) {
             const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
             const snap = await getDocs(qEstudiantes);
-            if (snap.size >= cuposMaximosGlobal) { 
-                await Swal.fire('Cupos Agotados', 'No hay vacantes.', 'warning'); 
-                return; 
+            if (snap.size >= cuposMaximosGlobal) {
+                await Swal.fire('Cupos Agotados', 'No hay vacantes disponibles.', 'warning');
+                return;
             }
         }
 
-        // 1. Crear autenticación en Firebase Auth (para que pueda iniciar sesión)
-        // Usamos el DNI como contraseña (o un valor por defecto)
-        const passwordTemp = currentData.dniDocente || currentData.dniEstudiante || "UCMI2026*";
-        await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp);
+        // 1. Lógica segura de contraseña
+        // Extraemos el DNI y validamos longitud mínima de 6 caracteres
+        let rawPassword = String(currentData.dniDocente || currentData.dniEstudiante || "UCMI2026");
+        const passwordTemp = rawPassword.length >= 6 ? rawPassword : "UCMI2026";
 
-        // 2. Guardar en Usuarios (para acceso al sistema)
-        await setDoc(doc(db, "usuarios", currentData.email), { 
-            ...currentData, 
-            estado: "activo", 
-            rol: esDocente ? "docente" : "estudiante" 
+        // 2. Crear autenticación
+        try {
+            await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp);
+        } catch (authError) {
+            // Si el error es que el email ya existe en Auth, continuamos (es normal en re-procesos)
+            if (authError.code !== 'auth/email-already-in-use') {
+                throw authError; 
+            }
+        }
+
+        // 3. Guardar en Usuarios
+        await setDoc(doc(db, "usuarios", currentData.email), {
+            ...currentData,
+            estado: "activo",
+            rol: esDocente ? "docente" : "estudiante"
         });
 
-        // 3. Guardar en Historial
-        await addDoc(collection(db, "historial_postulaciones"), { 
-            ...currentData, 
-            fechaProceso: new Date().toISOString(), 
-            resultado: "Admitido", 
-            decisionFinal: "ACEPTADO" 
+        // 4. Guardar en Historial
+        await addDoc(collection(db, "historial_postulaciones"), {
+            ...currentData,
+            fechaProceso: new Date().toISOString(),
+            resultado: "Admitido",
+            decisionFinal: "ACEPTADO"
         });
 
-        // 4. Borrar de Postulaciones (la línea que mencionabas)
+        // 5. Borrar de Postulaciones
         await deleteDoc(doc(db, "postulaciones", currentId));
 
-        await Swal.fire('¡Éxito!', 'Usuario aceptado y habilitado para inicio de sesión.', 'success');
+        await Swal.fire({
+            title: '¡Éxito!',
+            text: 'Usuario aceptado. Su clave inicial es: ' + passwordTemp,
+            icon: 'success'
+        });
         location.reload();
-        
+
     } catch (e) {
-        console.error(e);
+        console.error("Error detallado:", e);
         Swal.fire('Error', 'No se pudo procesar la admisión: ' + e.message, 'error');
     }
 };
