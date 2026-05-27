@@ -384,7 +384,6 @@
     import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // ... (Tu objeto firebaseConfig aquí) ...
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
         authDomain: "ucmi-13796634.firebaseapp.com",
@@ -397,80 +396,84 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-    
-    // Variables globales importantes
+
+    // Variables globales
     let currentId = null;
     let currentData = null;
+    let academiaNombreGlobal = "";
+    let logoAcademiaGlobal = "";
+    let cuposMaximosGlobal = 0;
+    let registrosLocales = [];
 
-    // --- FUNCIÓN PARA VER EXPEDIENTE (Asegura que los datos se guarden en currentData) ---
+    // --- CARGA INICIAL ---
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const userDoc = await getDoc(doc(db, "usuarios", user.email));
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                academiaNombreGlobal = data.entidad || "Panel";
+                logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+                cuposMaximosGlobal = data.cupos || 0;
+                
+                document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
+                document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
+                
+                iniciarEscuchaFiltrada(academiaNombreGlobal);
+            }
+        }
+    });
+
+    function iniciarEscuchaFiltrada(academiaNombre) {
+        const q = query(collection(db, "postulaciones"), where("entidad", "==", academiaNombre));
+        onSnapshot(q, (snap) => {
+            registrosLocales = snap.docs;
+            renderizarTabla();
+        });
+    }
+
+    function renderizarTabla() {
+        const lista = document.getElementById('listaMaestra');
+        if (!lista) return;
+        lista.innerHTML = "";
+        
+        registrosLocales.forEach(docSnap => {
+            const d = docSnap.data();
+            const id = docSnap.id;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><div class="fw-bold">${d.nombreResponsable || d.nombre || 'Sin nombre'}</div><div class="small text-muted">${d.email}</div></td>
+                <td><span class="badge ${d.perfil === 'Docente Academia' ? 'bg-primary' : 'bg-secondary'}">${d.perfil}</span></td>
+                <td>${d.ubicacion || 'N/A'}</td>
+                <td class="text-center"><button class="btn btn-dark btn-sm" onclick="window.verExpediente('${id}')">Detalles</button></td>
+            `;
+            lista.appendChild(tr);
+        });
+    }
+
     window.verExpediente = async (id) => {
         currentId = id;
-        try {
-            const snap = await getDoc(doc(db, "postulaciones", id));
-            if (!snap.exists()) return;
-            
-            currentData = snap.data(); // <--- AQUÍ SE RECARGAN LOS DATOS
-            
-            // ... (AQUÍ VA TU LÓGICA DE RENDERIZADO DEL MODAL QUE YA TENÍAS) ...
-            // Asegúrate de que esta parte esté intacta como la tenías antes
-            
+        const snap = await getDoc(doc(db, "postulaciones", id));
+        if (snap.exists()) {
+            currentData = snap.data();
+            // Aquí puedes volver a llamar a tu lógica de mostrar el modal que tenías antes
             new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-        } catch (e) {
-            console.error("Error al cargar datos:", e);
         }
     };
 
-    // --- BOTÓN CONFIRMAR (Admitir) ---
+    // BOTONES MODAL (Admitir/Rechazar)
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
-        if (!currentId || !currentData) {
-            Swal.fire('Error', 'No se encontraron datos del aspirante. Cierra y vuelve a abrir el modal.', 'error');
-            return;
-        }
-
-        const esDocente = currentData.perfil === "Docente Academia";
-        try {
-            // 1. Guardar en historial
-            await addDoc(collection(db, "historial_postulaciones"), { 
-                ...currentData, 
-                fecha_procesamiento: new Date().toISOString(), 
-                resultado: "Admitido" 
-            });
-
-            // 2. Crear usuario
-            await setDoc(doc(db, "usuarios", currentData.email), {
-                ...currentData,
-                estado: "activo",
-                rol: esDocente ? "docente" : "estudiante"
-            });
-
-            // 3. Borrar de postulaciones
-            await deleteDoc(doc(db, "postulaciones", currentId));
-            
-            location.reload();
-        } catch (error) { 
-            Swal.fire('Error', 'No se pudo procesar la admisión: ' + error.message, 'error'); 
-        }
+        if (!currentData) return;
+        await addDoc(collection(db, "historial_postulaciones"), { ...currentData, resultado: "Admitido", fecha: new Date().toISOString() });
+        await setDoc(doc(db, "usuarios", currentData.email), { ...currentData, estado: "activo", rol: currentData.perfil.includes("Docente") ? "docente" : "estudiante" });
+        await deleteDoc(doc(db, "postulaciones", currentId));
+        location.reload();
     };
 
-    // --- BOTÓN RECHAZAR ---
     document.getElementById('btnEliminar').onclick = async () => {
-        if (!currentId || !currentData) {
-            Swal.fire('Error', 'No se encontraron datos del aspirante.', 'error');
-            return;
-        }
-
-        const result = await Swal.fire({ title: '¿Estás seguro?', text: "Rechazar postulación", icon: 'warning', showCancelButton: true });
-        if (result.isConfirmed) {
-            try {
-                await addDoc(collection(db, "historial_postulaciones"), { 
-                    ...currentData, 
-                    fecha_procesamiento: new Date().toISOString(), 
-                    resultado: "Rechazado" 
-                });
-                await deleteDoc(doc(db, "postulaciones", currentId));
-                location.reload();
-            } catch (e) { Swal.fire('Error', 'No se pudo rechazar.', 'error'); }
-        }
+        if (!currentData) return;
+        await addDoc(collection(db, "historial_postulaciones"), { ...currentData, resultado: "Rechazado", fecha: new Date().toISOString() });
+        await deleteDoc(doc(db, "postulaciones", currentId));
+        location.reload();
     };
 </script>
   </body>
