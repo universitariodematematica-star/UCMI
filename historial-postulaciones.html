@@ -208,7 +208,7 @@
               </div>
   
               <div class="col-md-10 p-5">
-                  <h2 class="neon-gold text-uppercase mb-4">Historial de Solicitudes 2</h2>
+                  <h2 class="neon-gold text-uppercase mb-4">Historial de Solicitudes</h2>
                   <div class="glass-panel">
                       <div class="table-responsive">
                           <table class="table-historial text-white">
@@ -275,69 +275,37 @@
           });
       });
   
-      // --- CONTENEDORES GLOBALES DE CRUCE DE DATOS ---
-      let datosHistorial = [];
-      let datosUsuarios = [];
-
-      // Función unificada que procesa ambos arreglos, los mezcla y los ordena cronológicamente
-      function actualizarTablaUnificada() {
+      // --- PROCESAR Y RENDERIZAR SOLO HISTORIAL ---
+      function actualizarTabla(datos) {
           tablaCuerpo.innerHTML = '';
           
-          // Combinamos ambas listas en una sola
-          const listaCombinada = [...datosHistorial, ...datosUsuarios];
-
-          if (listaCombinada.length === 0) {
-              tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros.</td></tr>`;
+          if (datos.length === 0) {
+              tablaCuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-white-50">No hay registros en el historial.</td></tr>`;
               return;
           }
 
-          // Ordenamos de más reciente a más antiguo evaluando de forma segura los diferentes formatos de tiempo
-          listaCombinada.sort((a, b) => {
-              const timeA = a.timestamp && typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() : (a.timestamp || 0);
-              const timeB = b.timestamp && typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() : (b.timestamp || 0);
-              return timeB - timeA;
-          });
-
-          // Renderizamos las filas combinadas
-          listaCombinada.forEach((p) => {
+          datos.forEach((p) => {
               let esAprobado = false;
               let esRechazado = false;
-
-              // Evaluamos de forma adaptativa todos los campos de estado potenciales
               const camposAEvaluar = [p.decisionFinal, p.estado, p.resultado];
 
               camposAEvaluar.forEach(campo => {
                   if (campo !== undefined && campo !== null) {
-                      if (campo === true) esAprobado = true;
-                      if (campo === false) esRechazado = true;
-                      
                       const textoClean = String(campo).toUpperCase().trim();
-                      if (['ACTIVO', 'ACEPTADO', 'APROBADO', 'TRUE'].includes(textoClean)) {
-                          esAprobado = true;
-                      }
-                      if (['RECHAZADO', 'INACTIVO', 'FALSE'].includes(textoClean)) {
-                          esRechazado = true;
-                      }
+                      if (['ACTIVO', 'ACEPTADO', 'APROBADO', 'TRUE'].includes(textoClean)) esAprobado = true;
+                      if (['RECHAZADO', 'INACTIVO', 'FALSE'].includes(textoClean)) esRechazado = true;
                   }
               });
 
               let statusClass = 'status-pendiente';
               let estadoTextoMostrar = 'PENDIENTE';
+              if (esAprobado) { statusClass = 'status-aprobado'; estadoTextoMostrar = 'ACEPTADO'; }
+              else if (esRechazado) { statusClass = 'status-rechazado'; estadoTextoMostrar = 'RECHAZADO'; }
 
-              if (esAprobado) {
-                  statusClass = 'status-aprobado';
-                  estadoTextoMostrar = 'ACEPTADO';
-              } else if (esRechazado) {
-                  statusClass = 'status-rechazado';
-                  estadoTextoMostrar = 'RECHAZADO';
-              }
-
-              // Normalizador de fechas adaptativo para Strings de fecha e instancias Timestamp
               let fechaLegible = '---';
               if (p.timestamp && typeof p.timestamp.toDate === 'function') {
                   fechaLegible = p.timestamp.toDate().toLocaleDateString();
               } else if (p.fechaAdmision) {
-                  // Si viene el String de ISO date que me pasaste ("2026-05-17T04:00:54...") lo formatea limpio
                   fechaLegible = new Date(p.fechaAdmision).toLocaleDateString();
               } else {
                   fechaLegible = p.fechaProcesado || p.fechaActivacion || '---';
@@ -361,23 +329,13 @@
               `;
           });
       }
-
-      // --- ESCUCHADORES EN TIEMPO REAL MULTI-COLECCIÓN ---
-      
-      // Escuchador 1: Historial de Postulaciones (Pendientes y Rechazados)
+  
+      // --- ESCUCHADOR ÚNICO: Historial de Postulaciones ---
       const qHistorial = query(collection(db, "historial_postulaciones"), orderBy("timestamp", "desc"));
       onSnapshot(qHistorial, (snapshot) => {
-          datosHistorial = [];
-          snapshot.forEach(doc => datosHistorial.push(doc.data()));
-          actualizarTablaUnificada();
-      });
-
-      // Escuchador 2: Usuarios (Los Aceptados)
-      const qUsuarios = query(collection(db, "usuarios"), orderBy("timestamp", "desc"));
-      onSnapshot(qUsuarios, (snapshot) => {
-          datosUsuarios = [];
-          snapshot.forEach(doc => datosUsuarios.push(doc.data()));
-          actualizarTablaUnificada();
+          const listaHistorial = [];
+          snapshot.forEach(doc => listaHistorial.push(doc.data()));
+          actualizarTabla(listaHistorial);
       });
 
 </script>
