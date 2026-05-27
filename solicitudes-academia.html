@@ -382,8 +382,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
+    import { getAuth, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
         authDomain: "ucmi-13796634.firebaseapp.com",
@@ -482,21 +481,51 @@
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
     };
 
-    document.getElementById('btnConfirmarAcceso').onclick = async () => {
-        if(!currentId || !currentData) return;
-        const esDocente = currentData.perfil === "Docente Academia";
-        try {
-            if (!esDocente) {
-                const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
-                const snap = await getDocs(qEstudiantes);
-                if (snap.size >= cuposMaximosGlobal) { await Swal.fire('Cupos Agotados', 'No hay vacantes.', 'warning'); return; }
+document.getElementById('btnConfirmarAcceso').onclick = async () => {
+    if(!currentId || !currentData) return;
+    const esDocente = currentData.perfil === "Docente Academia";
+    
+    try {
+        if (!esDocente) {
+            const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
+            const snap = await getDocs(qEstudiantes);
+            if (snap.size >= cuposMaximosGlobal) { 
+                await Swal.fire('Cupos Agotados', 'No hay vacantes.', 'warning'); 
+                return; 
             }
-            await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Admitido", decisionFinal: "ACEPTADO" });
-            await setDoc(doc(db, "usuarios", currentData.email), { ...currentData, estado: "activo", rol: esDocente ? "docente" : "estudiante" });
-            await deleteDoc(doc(db, "postulaciones", currentId));
-            location.reload();
-        } catch (e) { Swal.fire('Error', 'No se pudo procesar la admisión.', 'error'); }
-    };
+        }
+
+        // 1. Crear autenticación en Firebase Auth (para que pueda iniciar sesión)
+        // Usamos el DNI como contraseña (o un valor por defecto)
+        const passwordTemp = currentData.dniDocente || currentData.dniEstudiante || "UCMI2026*";
+        await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp);
+
+        // 2. Guardar en Usuarios (para acceso al sistema)
+        await setDoc(doc(db, "usuarios", currentData.email), { 
+            ...currentData, 
+            estado: "activo", 
+            rol: esDocente ? "docente" : "estudiante" 
+        });
+
+        // 3. Guardar en Historial
+        await addDoc(collection(db, "historial_postulaciones"), { 
+            ...currentData, 
+            fechaProceso: new Date().toISOString(), 
+            resultado: "Admitido", 
+            decisionFinal: "ACEPTADO" 
+        });
+
+        // 4. Borrar de Postulaciones (la línea que mencionabas)
+        await deleteDoc(doc(db, "postulaciones", currentId));
+
+        await Swal.fire('¡Éxito!', 'Usuario aceptado y habilitado para inicio de sesión.', 'success');
+        location.reload();
+        
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Error', 'No se pudo procesar la admisión: ' + e.message, 'error');
+    }
+};
 
     document.getElementById('btnEliminar').onclick = async () => {
         const res = await Swal.fire({ title: '¿Estás seguro?', text: "¡Esta acción eliminará la postulación!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, rechazar' });
