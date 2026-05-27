@@ -406,20 +406,35 @@
     const selectorFiltro = document.getElementById('filtroPerfil');
 
     onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const userDoc = await getDoc(doc(db, "usuarios", user.email));
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-                document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
-                document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
-                academiaNombreGlobal = data.entidad || "Panel";
-                cuposMaximosGlobal = data.cupos || 0;
-                document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
-                actualizarMarcadorCupos();
-                iniciarEscuchaFiltrada(academiaNombreGlobal);
+        if (!user) {
+            window.location.href = "index.html";
+            return;
+        }
+
+        const userDoc = await getDoc(doc(db, "usuarios", user.email));
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            
+            // VALIDACIÓN: Si no tiene entidad o no tiene cupos configurados, no cargamos nada
+            if (!data.entidad) {
+                console.error("Usuario sin entidad asociada");
+                return; 
             }
-        } else { window.location.href = "index.html"; }
+
+            logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+            document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
+            document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
+            
+            academiaNombreGlobal = data.entidad;
+            cuposMaximosGlobal = data.cupos || 0; // Si es 0, al menos ya sabemos que es el valor real
+            
+            document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
+            actualizarMarcadorCupos();
+            iniciarEscuchaFiltrada(academiaNombreGlobal);
+        } else {
+            // Si el usuario existe en Auth pero no en Firestore, no es un usuario válido del sistema
+            window.location.href = "index.html";
+        }
     });
 
     async function actualizarMarcadorCupos() {
