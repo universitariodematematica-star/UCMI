@@ -491,7 +491,7 @@
                 const snap = await getDocs(qEstudiantes);
                 if (snap.size >= cuposMaximosGlobal) { await Swal.fire('Cupos Agotados', 'No hay vacantes.', 'warning'); return; }
             }
-            await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fecha_procesamiento: new Date().toISOString(), resultado: "Admitido" });
+            await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Admitido" });
             await setDoc(doc(db, "usuarios", currentData.email), { ...currentData, estado: "activo", rol: esDocente ? "docente" : "estudiante" });
             await deleteDoc(doc(db, "postulaciones", currentId));
             location.reload();
@@ -502,7 +502,7 @@
         const res = await Swal.fire({ title: '¿Estás seguro?', text: "¡Esta acción eliminará la postulación!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, rechazar' });
         if (res.isConfirmed) {
             try {
-                await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fecha_procesamiento: new Date().toISOString(), resultado: "Rechazado" });
+                await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Rechazado" });
                 await deleteDoc(doc(db, "postulaciones", currentId));
                 location.reload();
             } catch (e) { Swal.fire('Error', 'No se pudo rechazar.', 'error'); }
