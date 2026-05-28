@@ -550,18 +550,46 @@
     };
 
     document.getElementById('btnEliminar').onclick = async () => {
-        if(!currentId || !currentData) return;
-        const conf = await Swal.fire({ title: '¿Rechazar?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
-        if (conf.isConfirmed) {
-            try {
-                await setDoc(doc(db, "historial_postulaciones", currentId), { ...currentData, decisionFinal: "RECHAZADO", fechaProceso: new Date().toLocaleString() });
-                await deleteDoc(doc(db, "postulaciones", currentId));
-                enviarEmailAutomatico(currentData, "RECHAZADO");
-                prepararMensajeWhatsApp(currentData, "RECHAZADO");
-                bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
-            } catch (e) { Swal.fire("Error", e.message, "error"); }
+    if (!currentId || !currentData) return;
+
+    // 1. Pedir confirmación al usuario
+    const conf = await Swal.fire({ 
+        title: '¿Rechazar?', 
+        icon: 'warning', 
+        showCancelButton: true, 
+        confirmButtonColor: '#d33' 
+    });
+
+    if (conf.isConfirmed) {
+        try {
+            // 2. Ejecutar operaciones de base de datos
+            await setDoc(doc(db, "historial_postulaciones", currentId), { 
+                ...currentData, 
+                decisionFinal: "RECHAZADO", 
+                fechaProceso: new Date().toLocaleString() 
+            });
+            await deleteDoc(doc(db, "postulaciones", currentId));
+            
+            // 3. Enviar correo (es una operación interna, no abre ventanas)
+            enviarEmailAutomatico(currentData, "RECHAZADO");
+            
+            // 4. Cerrar el modal ANTES de mostrar el aviso final
+            const modalElement = document.getElementById('modalDetalles');
+            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) modalInstance.hide();
+            
+            // 5. Mostrar aviso final y ESPERAR a que el usuario cierre el Swal
+            // El 'await' aquí es la clave para que la ejecución se pause
+            await Swal.fire("Correcto", "Solicitud rechazada. Se abrirá WhatsApp para informar.", "info");
+            
+            // 6. ÚLTIMO PASO: Abrir el WhatsApp
+            prepararMensajeWhatsApp(currentData, "RECHAZADO");
+            
+        } catch (e) { 
+            Swal.fire("Error", e.message, "error"); 
         }
-    };
+    }
+};
 
     document.getElementById('btnLogout').onclick = async (e) => {
         e.preventDefault();
