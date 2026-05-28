@@ -393,8 +393,12 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+      const db = getFirestore(app);
+      const auth = getAuth(app); // Esta es para tu sesión de administrador
+      
+      // Nueva instancia secundaria solo para crear usuarios nuevos
+      const appSecundaria = initializeApp(firebaseConfig, "creador");
+      const authCreacion = getAuth(appSecundaria);
     
     let currentId = null;
     let currentData = null;
@@ -518,7 +522,8 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
 
         // 2. Crear autenticación
         try {
-            await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp);
+            // Usamos authCreacion para que no afecte a tu sesión actual (auth)
+            await createUserWithEmailAndPassword(authCreacion, currentData.email, passwordTemp);
         } catch (authError) {
             // Si el error es que el email ya existe en Auth, continuamos (es normal en re-procesos)
             if (authError.code !== 'auth/email-already-in-use') {
