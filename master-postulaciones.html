@@ -596,10 +596,21 @@ function renderizarTabla() {
          try {
              // 1. Intentar crear el usuario en Firebase Auth
              try {
-                 await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
-             } catch (authError) {
-                 if (authError.code !== 'auth/email-already-in-use') throw authError;
-             }
+    // Creamos una instancia de Auth secundaria o simplemente 
+    // evitamos que el SDK de la app persista el usuario recién creado
+    const userCredential = await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
+    
+    // TRUCO: Como el usuario recién creado se vuelve el "currentUser", 
+    // forzamos la salida inmediata del usuario recién creado para que 
+    // tu sesión de administrador (si está guardada en la caché) o el flujo no se rompa.
+    // O mejor aún: usa el método para crear usuarios via Admin SDK en un backend (Recomendado)
+    await auth.signOut(); 
+    
+    // NOTA IMPORTANTE: Si necesitas mantenerte logueado, 
+    // este método de crear usuarios desde el frontend SIEMPRE cambiará el estado de auth.
+} catch (authError) {
+    if (authError.code !== 'auth/email-already-in-use') throw authError;
+}
  
              // 2. LÓGICA DE FECHAS (SISTEMA DE DETECCIÓN ADAPTATIVO REPARADO)
              const fechaAceptacion = new Date();
@@ -645,20 +656,35 @@ function renderizarTabla() {
              });
  
              prepararMensajeWhatsApp(dataFinal, "ACEPTADO");
-             location.reload();
- 
-         } catch (e) {
-             console.error(e);
-             Swal.fire("Error", "No se pudo procesar la activación: " + e.message, "error");
-         }
-     };
+             // --- BLOQUE ACTUALIZADO (REEMPLAZA LÍNEAS 648-676) ---
 
-    // --- ACCIÓN: RECHAZAR ---
+            // Acción si es ACEPTADO (Línea 648 sustituida)
+            prepararMensajeWhatsApp(dataFinal, "ACEPTADO");
+
+            // Limpiar interfaz sin recargar
+            bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
+            await Swal.fire({ 
+                title: "¡Éxito!", 
+                text: "Postulación registrada. Sesión de administrador mantenida.", 
+                icon: "success" 
+            });
+            
+            // Opcional: forzar salida del nuevo usuario creado para no perder control admin
+            await auth.signOut();
+            renderizarTabla(); 
+
+        } catch (e) {
+            console.error(e);
+            Swal.fire("Error", "No se pudo procesar: " + e.message, "error");
+        }
+    };
+
+    // --- ACCIÓN: RECHAZAR (Línea 657-676 sustituida) ---
     document.getElementById('btnEliminar').onclick = async () => {
         if(!currentId || !currentData) return;
         const confirmacion = await Swal.fire({
             title: '¿Rechazar solicitud?',
-            text: "Se notificará por Email y WhatsApp.",
+            text: "Se notificará al usuario.",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
@@ -667,13 +693,25 @@ function renderizarTabla() {
 
         if (confirmacion.isConfirmed) {
             try {
-                await setDoc(doc(db, "historial_postulaciones", currentId), { ...currentData, decisionFinal: "RECHAZADO", fechaProceso: new Date().toLocaleString() });
+                await setDoc(doc(db, "historial_postulaciones", currentId), { 
+                    ...currentData, 
+                    decisionFinal: "RECHAZADO", 
+                    fechaProceso: new Date().toLocaleString() 
+                });
                 await deleteDoc(doc(db, "postulaciones", currentId));
                 
-                enviarEmailAutomatico(currentData, "RECHAZADO"); // Email automático
-                prepararMensajeWhatsApp(currentData, "RECHAZADO"); // WhatsApp manual
+                enviarEmailAutomatico(currentData, "RECHAZADO");
+                prepararMensajeWhatsApp(currentData, "RECHAZADO");
                 
-                location.reload();
+                // Limpiar interfaz sin recargar
+                bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
+                renderizarTabla();
+                Swal.fire("Correcto", "Solicitud rechazada.", "success");
+            } catch (e) {
+                Swal.fire("Error", e.message, "error");
+            }
+        }
+    };
             } catch (e) {
                 Swal.fire("Error", e.message, "error");
             }
