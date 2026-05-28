@@ -432,7 +432,6 @@
     let currentId = null;
     let currentData = null;
 
-    // --- FUNCIÓN DE CORREO ELECTRÓNICO (AUTOMÁTICA) ---
     const enviarEmailAutomatico = (data, decision) => {
         const templateParams = {
             to_name: data.nombreResponsable,
@@ -442,30 +441,23 @@
                 ? "Tu solicitud en UCMI ha sido aprobada. Tus credenciales de acceso son tu correo y la clave UCMI2026." 
                 : "Lamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión."
         };
-
-        // REEMPLAZA 'YOUR_SERVICE_ID' y 'YOUR_TEMPLATE_ID'
         emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
             .then(() => console.log("Email enviado correctamente"))
             .catch((err) => console.error("Error Email:", err));
     };
 
-   // --- FUNCIÓN DE WHATSAPP DEFINITIVA (REPLAZA LÍNEAS 426-445) ---
     const prepararMensajeWhatsApp = (data, decision) => {
         const nombre = data.nombreResponsable || "Postulante";
         const telefono = data.whatsapp || "";
         if (!telefono || telefono === "N/A") return;
-
         let textoMensaje = "";
-
         if (decision === "ACEPTADO") {
-            // Extraemos los datos calculados en dataFinal
             const meses = data.mesesAprobados || "1";
             const expiracion = data.expiracionLicencia || "Ver panel";
-
             textoMensaje = `¡Hola *${nombre}*! Te saluda UCMI. %0A%0A` +
                `Tu solicitud ha sido *ACEPTADA*. ✅%0A%0A` +
                `*Detalles de acceso:*%0A` +
-               `📧 *Usuario:* ${data.email}%0A` + // Añadí espacio y negrita
+               `📧 *Usuario:* ${data.email}%0A` +
                `🔑 *Clave:* UCMI2026%0A%0A` +
                `*Vigencia:*%0A` +
                `📅 *Duración:* ${data.duracionLicencia || data.mesesAprobados + ' mes(es)'}%0A` + 
@@ -474,88 +466,37 @@
         } else {
             textoMensaje = `Hola *${nombre}*. Gracias por tu interés en UCMI. %0A%0ALamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión.`;
         }
-
         const telLimpio = telefono.toString().replace(/\D/g, '');
         const url = `https://api.whatsapp.com/send?phone=${telLimpio}&text=${textoMensaje}`;
-        
         window.open(url, '_blank');
     };
-    // --- LÓGICA DE FILTRADO Y TABLA (SIN CAMBIOS) ---
+
     const selectorFiltro = document.getElementById('filtroPerfil');
     let registrosLocales = [];
 
-function renderizarTabla() {
-    const tbody = document.getElementById('listaMaestra');
-    const valorFiltro = selectorFiltro.value; 
-    tbody.innerHTML = '';
-
-    registrosLocales.forEach((d) => {
-        const data = d.data();
-        const id = d.id;
-        const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
-        const pLow = perfilOriginal.toLowerCase().trim();
-
-        // --- 1. MOTOR DE BÚSQUEDA ACTUALIZADO ---
-        let pasaFiltro = false;
-        if (valorFiltro === "todos") {
-            pasaFiltro = true;
-        } else {
-            // Compara el valor del selector directamente con el perfil almacenado
-            pasaFiltro = (perfilOriginal === valorFiltro);
-        }
-        
-        if (!pasaFiltro) return;
-
-        // --- 2. MOTOR DE COLOR ACTUALIZADO ---
-        let colorClass = "";
-        if (perfilOriginal === "Academia") {
-            colorClass = "bg-categoria-academia";
-        } else if (perfilOriginal === "Profesor independiente") {
-            colorClass = "bg-categoria-profesor";
-        } else if (perfilOriginal === "Estudiante UCMI") {
-            colorClass = "bg-categoria-estudiante";
-        } else {
-            colorClass = "bg-categoria-default";
-        }
-
-        // --- 3. LÓGICA DE INHABILITACIÓN DEL BOTÓN (NUEVA) ---
-        // Lista de perfiles que NO pueden ser revisados (se bloquean)
-        const perfilesBloqueados = [
-            "profesora academia", 
-            "estudiante academia", 
-            "estudiante asociado", 
-            "estudiante embajador"
-        ];
-        
-        // Si el perfil está en la lista negra, el botón se deshabilita
-        const estaInhabilitado = perfilesBloqueados.includes(pLow) ? "disabled" : "";
-
-        // --- 4. RENDERIZADO ---
-        tbody.innerHTML += `
-            <tr>
-                <td>
-                    <div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : "---"}</div>
-                    <div class="small text-muted">${data.email}</div>
-                </td>
-                <td class="small">
-                    ${data.nombreResponsable || '---'}
-                </td>
-                <td>
-                    <span class="badge-perfil ${colorClass}">${perfilOriginal}</span>
-                </td>
-                <td class="small">
-                    ${data.ubicacion || '---'}
-                </td>
-                <td class="text-center">
-                    <button onclick="verExpediente('${id}')" 
-                            class="btn btn-dark btn-sm rounded-pill px-3" 
-                            ${estaInhabilitado}> <!-- Atributo dinámico -->
-                        ${estaInhabilitado ? 'Bloqueado' : 'Revisar'}
-                    </button>
-                </td>
+    function renderizarTabla() {
+        const tbody = document.getElementById('listaMaestra');
+        const valorFiltro = selectorFiltro.value; 
+        tbody.innerHTML = '';
+        registrosLocales.forEach((d) => {
+            const data = d.data();
+            const id = d.id;
+            const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
+            const pLow = perfilOriginal.toLowerCase().trim();
+            let pasaFiltro = (valorFiltro === "todos") ? true : (perfilOriginal === valorFiltro);
+            if (!pasaFiltro) return;
+            let colorClass = (perfilOriginal === "Academia") ? "bg-categoria-academia" : (perfilOriginal === "Profesor independiente") ? "bg-categoria-profesor" : (perfilOriginal === "Estudiante UCMI") ? "bg-categoria-estudiante" : "bg-categoria-default";
+            const perfilesBloqueados = ["profesora academia", "estudiante academia", "estudiante asociado", "estudiante embajador"];
+            const estaInhabilitado = perfilesBloqueados.includes(pLow) ? "disabled" : "";
+            tbody.innerHTML += `<tr>
+                <td><div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : "---"}</div><div class="small text-muted">${data.email}</div></td>
+                <td class="small">${data.nombreResponsable || '---'}</td>
+                <td><span class="badge-perfil ${colorClass}">${perfilOriginal}</span></td>
+                <td class="small">${data.ubicacion || '---'}</td>
+                <td class="text-center"><button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3" ${estaInhabilitado}>${estaInhabilitado ? 'Bloqueado' : 'Revisar'}</button></td>
             </tr>`;
-    });
-}
+        });
+    }
 
     selectorFiltro.addEventListener('change', renderizarTabla);
 
@@ -568,7 +509,7 @@ function renderizarTabla() {
             document.getElementById('contenidoModal').innerHTML = `
                 <div class="col-md-12 mb-4 border-bottom pb-2">
                     <label class="label-exp">Fecha de Solicitud</label>
-<span class="val-exp text-primary fw-bold"><i class="bi bi-calendar3 me-2"></i>${d.timestamp && typeof d.timestamp.toDate === 'function' ? d.timestamp.toDate().toLocaleString() : (d.timestamp || 'N/A')}</span>
+                    <span class="val-exp text-primary fw-bold"><i class="bi bi-calendar3 me-2"></i>${d.timestamp && typeof d.timestamp.toDate === 'function' ? d.timestamp.toDate().toLocaleString() : (d.timestamp || 'N/A')}</span>
                 </div>
                 <div class="col-md-6">
                     <label class="label-exp">Entidad / Institución</label><span class="val-exp">${d.entidad || 'N/A'}</span>
@@ -589,112 +530,48 @@ function renderizarTabla() {
         }
     };
 
-    // --- ACCIÓN: ACTIVAR ACCESO (CON CÁLCULO DE EXPIRACIÓN REAL CORREGIDO) ---
-     document.getElementById('btnConfirmarAcceso').onclick = async () => {
-         if(!currentId || !currentData) return;
-         
-         try {
-             // 1. Intentar crear el usuario en Firebase Auth
-             try {
-                 await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026");
-             } catch (authError) {
-                 if (authError.code !== 'auth/email-already-in-use') throw authError;
-             }
- 
-             // 2. LÓGICA DE FECHAS (SISTEMA DE DETECCIÓN ADAPTATIVO REPARADO)
-             const fechaAceptacion = new Date();
-             
-             // Leemos de forma prioritaria 'mesesLicencia' que es el campo que usas en el expediente
-             const duracionTexto = currentData.mesesLicencia || currentData.duracionLicencia || "1";
-             const mesesSolicitados = parseInt(String(duracionTexto).replace(/\D/g, '')) || 1;
-             
-             // Creamos el objeto de expiración sumando de manera exacta los meses correspondientes
-             const fechaExpiracion = new Date();
-             fechaExpiracion.setMonth(fechaAceptacion.getMonth() + mesesSolicitados);
- 
-             // 3. Preparamos el objeto final (Asegurando nombres de campos exactos)
-             const dataFinal = {
-                 ...currentData,
-                 estado: "activo",
-                 fechaActivacion: new Date(), // Guarda el objeto Date que Firebase convierte a Timestamp
-                 expiracionLicencia: fechaExpiracion.toLocaleString(),
-                 expiracionTimestamp: fechaExpiracion.getTime(),
-                 mesesAprobados: mesesSolicitados,
-                 duracionLicencia: `${mesesSolicitados} mes(es)` // Normalizamos para evitar futuros fallos en WhatsApp
-             };
- 
-             // 4. Guardar en la colección de usuarios activos y en el historial
-             await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
-             await setDoc(doc(db, "historial_postulaciones", currentId), {
-                 ...dataFinal,
-                 decisionFinal: "ACEPTADO",
-                 fechaProceso: fechaAceptacion.toLocaleString()
-             });
- 
-             // 5. Borrar la postulación pendiente
-             await deleteDoc(doc(db, "postulaciones", currentId));
- 
-             // ACCIONES DE COMUNICACIÓN
-             enviarEmailAutomatico(currentData, "ACEPTADO");
-             
-             await Swal.fire({
-                 title: "¡Acceso Activado!",
-                 text: `Licencia válida por ${mesesSolicitados} mes(es) hasta: ${fechaExpiracion.toLocaleDateString()}`,
-                 icon: "success",
-                 confirmButtonColor: "#27ae60"
-             });
- 
-             prepararMensajeWhatsApp(dataFinal, "ACEPTADO");
-             location.reload();
- 
-         } catch (e) {
-             console.error(e);
-             Swal.fire("Error", "No se pudo procesar la activación: " + e.message, "error");
-         }
-     };
+    document.getElementById('btnConfirmarAcceso').onclick = async () => {
+        if(!currentId || !currentData) return;
+        const adminAuth = auth.currentUser; // Guardar sesión admin
+        try {
+            try { await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026"); } catch (e) { if (e.code !== 'auth/email-already-in-use') throw e; }
+            await auth.updateCurrentUser(adminAuth); // Restaurar sesión admin
+            const meses = parseInt(String(currentData.mesesLicencia || "1").replace(/\D/g, '')) || 1;
+            const exp = new Date(); exp.setMonth(exp.getMonth() + meses);
+            const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date(), expiracionLicencia: exp.toLocaleString(), expiracionTimestamp: exp.getTime(), mesesAprobados: meses, duracionLicencia: `${meses} mes(es)` };
+            await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
+            await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO", fechaProceso: new Date().toLocaleString() });
+            await deleteDoc(doc(db, "postulaciones", currentId));
+            enviarEmailAutomatico(currentData, "ACEPTADO");
+            prepararMensajeWhatsApp(dataFinal, "ACEPTADO");
+            bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
+            Swal.fire("¡Acceso Activado!", "Usuario creado y datos guardados.", "success");
+        } catch (e) { Swal.fire("Error", e.message, "error"); }
+    };
 
-    // --- ACCIÓN: RECHAZAR ---
     document.getElementById('btnEliminar').onclick = async () => {
         if(!currentId || !currentData) return;
-        const confirmacion = await Swal.fire({
-            title: '¿Rechazar solicitud?',
-            text: "Se notificará por Email y WhatsApp.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'Sí, rechazar'
-        });
-
-        if (confirmacion.isConfirmed) {
+        const conf = await Swal.fire({ title: '¿Rechazar?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
+        if (conf.isConfirmed) {
             try {
                 await setDoc(doc(db, "historial_postulaciones", currentId), { ...currentData, decisionFinal: "RECHAZADO", fechaProceso: new Date().toLocaleString() });
                 await deleteDoc(doc(db, "postulaciones", currentId));
-                
-                enviarEmailAutomatico(currentData, "RECHAZADO"); // Email automático
-                prepararMensajeWhatsApp(currentData, "RECHAZADO"); // WhatsApp manual
-                
-                location.reload();
-            } catch (e) {
-                Swal.fire("Error", e.message, "error");
-            }
+                enviarEmailAutomatico(currentData, "RECHAZADO");
+                prepararMensajeWhatsApp(currentData, "RECHAZADO");
+                bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
+            } catch (e) { Swal.fire("Error", e.message, "error"); }
         }
     };
 
-    // --- LOGOUT ---
     document.getElementById('btnLogout').onclick = async (e) => {
         e.preventDefault();
         const result = await Swal.fire({ title: '¿Cerrar sesión?', icon: 'question', showCancelButton: true });
-        if (result.isConfirmed) {
-            await signOut(auth);
-            window.location.href = "index.html"; 
-        }
+        if (result.isConfirmed) { await signOut(auth); window.location.href = "index.html"; }
     };
-    // --- ESCUCHADOR EN TIEMPO REAL ---
-    onSnapshot(collection(db, "postulaciones"), (snapshot) => {
-        registrosLocales = snapshot.docs;
+
+    onSnapshot(collection(db, "postulaciones"), (snap) => {
+        registrosLocales = snap.docs;
         renderizarTabla();
-    }, (error) => {
-        console.error("Error al obtener postulaciones: ", error);
     });
 </script>
 </body>
