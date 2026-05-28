@@ -393,12 +393,8 @@
     };
 
     const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      const auth = getAuth(app); // Esta es para tu sesión de administrador
-      
-      // Nueva instancia secundaria solo para crear usuarios nuevos
-      const appSecundaria = initializeApp(firebaseConfig, "creador");
-      const authCreacion = getAuth(appSecundaria);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
     
     let currentId = null;
     let currentData = null;
@@ -410,35 +406,20 @@
     const selectorFiltro = document.getElementById('filtroPerfil');
 
     onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            window.location.href = "index.html";
-            return;
-        }
-
-        const userDoc = await getDoc(doc(db, "usuarios", user.email));
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            
-            // VALIDACIÓN: Si no tiene entidad o no tiene cupos configurados, no cargamos nada
-            if (!data.entidad) {
-                console.error("Usuario sin entidad asociada");
-                return; 
+        if (user) {
+            const userDoc = await getDoc(doc(db, "usuarios", user.email));
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+                document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
+                document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
+                academiaNombreGlobal = data.entidad || "Panel";
+                cuposMaximosGlobal = data.cupos || 0;
+                document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
+                actualizarMarcadorCupos();
+                iniciarEscuchaFiltrada(academiaNombreGlobal);
             }
-
-            logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-            document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
-            document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
-            
-            academiaNombreGlobal = data.entidad;
-            cuposMaximosGlobal = data.cupos || 0; // Si es 0, al menos ya sabemos que es el valor real
-            
-            document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
-            actualizarMarcadorCupos();
-            iniciarEscuchaFiltrada(academiaNombreGlobal);
-        } else {
-            // Si el usuario existe en Auth pero no en Firestore, no es un usuario válido del sistema
-            window.location.href = "index.html";
-        }
+        } else { window.location.href = "index.html"; }
     });
 
     async function actualizarMarcadorCupos() {
@@ -522,8 +503,7 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
 
         // 2. Crear autenticación
         try {
-            // Usamos authCreacion para que no afecte a tu sesión actual (auth)
-            await createUserWithEmailAndPassword(authCreacion, currentData.email, passwordTemp);
+            await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp);
         } catch (authError) {
             // Si el error es que el email ya existe en Auth, continuamos (es normal en re-procesos)
             if (authError.code !== 'auth/email-already-in-use') {
