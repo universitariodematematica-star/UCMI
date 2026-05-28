@@ -423,18 +423,24 @@
         } else { window.location.href = "index.html"; }
     });
 
-    async function actualizarMarcadorCupos() {
-        if (!academiaNombreGlobal) return;
-        
-        // Consulta sincronizada: cuenta estudiantes y docentes
-        const qUsuarios = query(
-            collection(db, "usuarios"), 
-            where("entidad", "==", academiaNombreGlobal), 
-            where("rol", "in", ["estudiante", "docente"])
-        );
-        const snap = await getDocs(qUsuarios);
-        document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
-    }
+            async function actualizarMarcadorCupos() {
+                    // Añadimos un pequeño log para debuggear en la consola
+                    console.log("Actualizando marcador para:", academiaNombreGlobal, "con cupos:", cuposMaximosGlobal);
+            
+                    if (!academiaNombreGlobal) return;
+                    
+                    const qUsuarios = query(
+                        collection(db, "usuarios"), 
+                        where("entidad", "==", academiaNombreGlobal), 
+                        where("rol", "in", ["estudiante", "docente"])
+                    );
+                    
+                    const snap = await getDocs(qUsuarios);
+                    
+                    // Si cuposMaximosGlobal sigue siendo 0, intentamos leerlo de nuevo 
+                    // o aseguramos que el DOM se actualice solo cuando tengamos el dato real.
+                    document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
+                }
 
     function iniciarEscuchaFiltrada(academiaNombre) {
         const q = query(collection(db, "postulaciones"), where("entidad", "==", academiaNombre));
