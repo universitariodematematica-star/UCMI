@@ -486,13 +486,19 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
     const esDocente = currentData.perfil === "Docente Academia";
 
     try {
-        // Validación de cupos (solo para estudiantes)
-        if (!esDocente) {
-            const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
-            const snap = await getDocs(qEstudiantes);
+                    // Validación de cupos (solo para estudiantes)
+            // 1. Nueva consulta que busca a CUALQUIERA (estudiante o docente)
+            const qUsuarios = query(
+                collection(db, "usuarios"), 
+                where("entidad", "==", academiaNombreGlobal),
+                where("rol", "in", ["estudiante", "docente"]) // Busca ambos
+            );
+            const snap = await getDocs(qUsuarios);
+            
+            // 2. Bloqueo universal si ya se llegó al límite
             if (snap.size >= cuposMaximosGlobal) {
                 await Swal.fire('Cupos Agotados', 'No hay vacantes disponibles.', 'warning');
-                return;
+                return; // Detiene la admisión de CUALQUIER perfil
             }
         }
 
