@@ -431,9 +431,15 @@
     let currentId = null;
     let currentData = null;
 
-    // --- FUNCIONES ORIGINALES (MANTENIDAS) ---
     const enviarEmailAutomatico = (data, decision) => {
-        const templateParams = { to_name: data.nombreResponsable, to_email: data.email, status: decision, message: decision === "ACEPTADO" ? "Tu solicitud en UCMI ha sido aprobada. Tus credenciales de acceso son tu correo y la clave UCMI2026." : "Lamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión." };
+        const templateParams = {
+            to_name: data.nombreResponsable,
+            to_email: data.email,
+            status: decision,
+            message: decision === "ACEPTADO" 
+                ? "Tu solicitud en UCMI ha sido aprobada. Tus credenciales de acceso son tu correo y la clave UCMI2026." 
+                : "Lamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión."
+        };
         emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams).catch(console.error);
     };
 
@@ -441,7 +447,9 @@
         const nombre = data.nombreResponsable || "Postulante";
         const telefono = data.whatsapp || "";
         if (!telefono || telefono === "N/A") return;
-        let textoMensaje = (decision === "ACEPTADO") ? `¡Hola *${nombre}*! Te saluda UCMI. %0A%0A Tu solicitud ha sido *ACEPTADA*. ✅%0A%0A*Detalles de acceso:*%0A📧 *Usuario:* ${data.email}%0A🔑 *Clave:* UCMI2026%0A%0A*Vigencia:*%0A📅 *Duración:* ${data.duracionLicencia || data.mesesAprobados + ' mes(es)'}%0A⏳ *Expira el:* ${data.expiracionLicencia}%0A%0A¡Bienvenido!` : `Hola *${nombre}*. Gracias por tu interés en UCMI. %0A%0ALamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión.`;
+        let textoMensaje = decision === "ACEPTADO" 
+            ? `¡Hola *${nombre}*! Tu solicitud fue *ACEPTADA*. ✅%0A%0A📧 *Usuario:* ${data.email}%0A🔑 *Clave:* UCMI2026%0A%0A¡Bienvenido!` 
+            : `Hola *${nombre}*. Lamentamos informarte que tu solicitud no ha sido aprobada.`;
         window.open(`https://api.whatsapp.com/send?phone=${telefono.toString().replace(/\D/g, '')}&text=${textoMensaje}`, '_blank');
     };
 
@@ -457,8 +465,12 @@
             const id = d.id;
             const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
             if (valorFiltro !== "todos" && perfilOriginal !== valorFiltro) return;
-            const estaInhabilitado = ["profesora academia", "estudiante academia", "estudiante asociado", "estudiante embajador"].includes(perfilOriginal.toLowerCase().trim()) ? "disabled" : "";
-            tbody.innerHTML += `<tr><td><div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : "---"}</div><div class="small text-muted">${data.email}</div></td><td class="small">${data.nombreResponsable || '---'}</td><td><span class="badge-perfil">${perfilOriginal}</span></td><td class="small">${data.ubicacion || '---'}</td><td class="text-center"><button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3" ${estaInhabilitado}>${estaInhabilitado ? 'Bloqueado' : 'Revisar'}</button></td></tr>`;
+            tbody.innerHTML += `<tr>
+                <td><div class="fw-bold">${data.entidad || "---"}</div><div class="small text-muted">${data.email}</div></td>
+                <td>${data.nombreResponsable}</td>
+                <td><span class="badge-perfil">${perfilOriginal}</span></td>
+                <td class="text-center"><button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm">Revisar</button></td>
+            </tr>`;
         });
     }
 
@@ -470,77 +482,57 @@
         if (snap.exists()) {
             currentData = snap.data();
             const d = currentData;
-            document.getElementById('contenidoModal').innerHTML = `
-                <div class="col-md-12 mb-4 border-bottom pb-2">
-                    <label class="label-exp">Fecha de Solicitud</label>
-                    <span class="val-exp text-primary fw-bold"><i class="bi bi-calendar3 me-2"></i>${d.timestamp && typeof d.timestamp.toDate === 'function' ? d.timestamp.toDate().toLocaleString() : (d.timestamp || 'N/A')}</span>
-                </div>
-                <div class="col-md-6">
-                    <label class="label-exp">Entidad / Institución</label><span class="val-exp">${d.entidad || 'N/A'}</span>
-                    <label class="label-exp">Nombres y apellidos</label><span class="val-exp">${d.nombreResponsable || 'N/A'}</span>
-                    <label class="label-exp">ID (Cédula/RIF)</label><span class="val-exp">${d.cedulaResponsable || d.rif || 'N/A'}</span>
-                    <label class="label-exp">Email</label><span class="val-exp text-lowercase">${d.email || 'N/A'}</span>
-                    <label class="label-exp">WhatsApp</label><span class="val-exp">${d.whatsapp || 'N/A'}</span>
-                </div>
-                <div class="col-md-6" style="background: rgba(0,0,0,0.03); border-radius: 15px; padding: 15px;">
-                    <label class="label-exp">Perfil</label><span class="val-exp fw-bold text-success">${d.tipoSolicitante || d.perfil || 'N/A'}</span>
-                    <label class="label-exp">LICENCIA EN MESES</label><span class="val-exp">${d.mesesLicencia || 'N/A'}</span>
-                    <label class="label-exp">Cupos</label><span class="val-exp">${d.cupos || '0'}</span>
-                    <label class="label-exp">Ubicación</label><span class="val-exp">${d.ubicacion || 'N/A'}</span>
-                    <label class="label-exp">Programas</label>
-                    <div class="small p-2 bg-white border rounded" style="max-height: 100px; overflow-y: auto;">${d.modulos || 'No especificados'}</div>
-                </div>`;
+            document.getElementById('contenidoModal').innerHTML = `<div>...datos del expediente...</div>`;
             new bootstrap.Modal(document.getElementById('modalDetalles')).show();
         }
     };
 
-    // --- ACCIÓN: ACTIVAR ACCESO (CORREGIDO PARA MANTENER SESIÓN) ---
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
         if(!currentId || !currentData) return;
-        const adminSession = auth.currentUser; // Captura sesión actual
+        const adminAuth = auth.currentUser;
         try {
             try { await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026"); } catch (e) { if (e.code !== 'auth/email-already-in-use') throw e; }
-            await auth.updateCurrentUser(adminSession); // RESTAURA SESIÓN ADMIN
-
-            const meses = parseInt(String(currentData.mesesLicencia || "1").replace(/\D/g, '')) || 1;
-            const fechaExpiracion = new Date(); fechaExpiracion.setMonth(new Date().getMonth() + meses);
-            const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date(), expiracionLicencia: fechaExpiracion.toLocaleString(), mesesAprobados: meses, duracionLicencia: `${meses} mes(es)` };
+            await auth.updateCurrentUser(adminAuth);
             
-            await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
-            await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO", fechaProceso: new Date().toLocaleString() });
+            const exp = new Date(); exp.setMonth(exp.getMonth() + 1);
+            await setDoc(doc(db, "usuarios", currentData.email), { ...currentData, estado: "activo", expiracionLicencia: exp.toLocaleString() });
+            await setDoc(doc(db, "historial_postulaciones", currentId), { ...currentData, decisionFinal: "ACEPTADO" });
             await deleteDoc(doc(db, "postulaciones", currentId));
             
             enviarEmailAutomatico(currentData, "ACEPTADO");
-            prepararMensajeWhatsApp(dataFinal, "ACEPTADO");
+            prepararMensajeWhatsApp(currentData, "ACEPTADO");
             
             bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
             renderizarTabla();
-            Swal.fire("¡Acceso Activado!", "Usuario creado exitosamente.", "success");
+            Swal.fire("¡Éxito!", "Postulación ACEPTADA correctamente.", "success");
         } catch (e) { Swal.fire("Error", e.message, "error"); }
     };
 
-    // --- ACCIÓN: RECHAZAR ---
     document.getElementById('btnEliminar').onclick = async () => {
         if(!currentId || !currentData) return;
-        const conf = await Swal.fire({ title: '¿Rechazar solicitud?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
+        const conf = await Swal.fire({ title: '¿Rechazar?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
         if (conf.isConfirmed) {
             try {
-                await setDoc(doc(db, "historial_postulaciones", currentId), { ...currentData, decisionFinal: "RECHAZADO", fechaProceso: new Date().toLocaleString() });
+                await setDoc(doc(db, "historial_postulaciones", currentId), { ...currentData, decisionFinal: "RECHAZADO" });
                 await deleteDoc(doc(db, "postulaciones", currentId));
                 enviarEmailAutomatico(currentData, "RECHAZADO");
                 prepararMensajeWhatsApp(currentData, "RECHAZADO");
+                
                 bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
                 renderizarTabla();
-                Swal.fire("Correcto", "Solicitud rechazada.", "info");
+                Swal.fire("Correcto", "Solicitud RECHAZADA.", "info");
             } catch (e) { Swal.fire("Error", e.message, "error"); }
         }
     };
 
     document.getElementById('btnLogout').onclick = async () => {
-        if ((await Swal.fire({ title: '¿Cerrar sesión?', icon: 'question', showCancelButton: true })).isConfirmed) { await signOut(auth); window.location.href = "index.html"; }
+        const result = await Swal.fire({ title: '¿Cerrar sesión?', icon: 'question', showCancelButton: true });
+        if (result.isConfirmed) { await signOut(auth); window.location.href = "index.html"; }
     };
 
-    onSnapshot(collection(db, "postulaciones"), (snap) => { registrosLocales = snap.docs; renderizarTabla(); });
+    onSnapshot(collection(db, "postulaciones"), (snap) => {
+        registrosLocales = snap.docs;
+        renderizarTabla();
+    });
 </script>
-
 </html>
