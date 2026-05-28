@@ -154,6 +154,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -167,168 +168,103 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    // Carga de Módulos
-    onSnapshot(query(collection(db, "ofertas"), where("ofertado", "==", true), orderBy("modulo", "asc")), (snap) => {
-        const contenedor = document.getElementById('contenedorModulos');
-        contenedor.innerHTML = "";
-        snap.forEach(doc => {
-            const d = doc.data();
-            contenedor.innerHTML += `
-                <div class="col-6 col-md-4"><div class="p-2 border rounded" style="background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1) !important;">
-                <input type="checkbox" class="form-check-input check-modulo me-2" value="${d.modulo}" onchange="fn_CalcularInversion()"> 
-                <span class="small">${d.modulo}</span></div></div>`;
-        });
-    });
+// --- PASO 3: PROTECCIÓN Y LÓGICA DE GESTIÓN ---
+   onAuthStateChanged(auth, (user) => {
+       if (user) {
+           console.log("Admin autenticado. Iniciando carga de sistema...");
 
-    // Lógica Global
-window.fn_VerificarEdad = () => {
-        const f = document.getElementById('fechaNacimientoInput').value;
-        if(!f) return;
-        const edad = new Date().getFullYear() - new Date(f).getFullYear();
-        const esMenor = edad < 18;
-        document.getElementById('bloqueRepresentante').style.display = esMenor ? 'block' : 'none';
-        
-        // Control de obligatoriedad
-        const ids = ['repNombre', 'repCedula', 'repEmail', 'repWhatsapp'];
-        ids.forEach(id => document.getElementById(id).required = esMenor);
-    };
+           // 1. Carga de Módulos (Antigua línea 172)
+           onSnapshot(query(collection(db, "ofertas"), where("ofertado", "==", true), orderBy("modulo", "asc")), (snap) => {
+               const contenedor = document.getElementById('contenedorModulos');
+               if(contenedor) {
+                   contenedor.innerHTML = "";
+                   snap.forEach(doc => {
+                       const d = doc.data();
+                       contenedor.innerHTML += `
+                           <div class="col-6 col-md-4"><div class="p-2 border rounded" style="background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1) !important;">
+                           <input type="checkbox" class="form-check-input check-modulo me-2" value="${d.modulo}" onchange="fn_CalcularInversion()">
+                           <span class="small">${d.modulo}</span></div></div>`;
+                   });
+               }
+           });
 
-    window.fn_AjustarPerfil = () => {
-        const p = document.getElementById('perfilUsuario').value;
-        const c = document.getElementById('cuposInput');
-        if(p === 'Estudiante UCMI') { c.value = 1; c.readOnly = true; } else { c.readOnly = false; }
-        fn_CalcularInversion();
-    };
+           // 2. Lógica de envío del formulario
+           document.getElementById('formUCMI').addEventListener('submit', (e) => {
+               e.preventDefault();
+               const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(m => m.value);
+               if(!e.target.checkValidity() || modulos.length === 0) {
+                   Swal.fire({ title: "Error", text: "Completa los datos y elige al menos un módulo.", icon: "error" });
+                   return;
+               }
 
-window.fn_CalcularInversion = () => {
-    const p = document.getElementById('perfilUsuario').value;
-    const t = parseInt(document.getElementById('planLicencia').value) || 0;
-    const n = document.querySelectorAll('.check-modulo:checked').length;
-    const x = parseInt(document.getElementById('cuposInput').value) || 0;
-    let total = 0;
-    let ahorro = 0;
+               // Guardar datos en una variable temporal global
+               window.datosPayload = {
+                   nombreResponsable: document.getElementById('nombreInput').value,
+                   cedulaResponsable: document.getElementById('dniInput').value,
+                   fechaNacimiento: document.getElementById('fechaNacimientoInput').value,
+                   genero: document.getElementById('generoInput').value,
+                   email: document.getElementById('emailInput').value,
+                   whatsapp: document.getElementById('whatsappInput').value,
+                   ubicacion: document.getElementById('ubicacionInput').value,
+                   repNombre: document.getElementById('repNombre').value.trim() || "N/A",
+                   repCedula: document.getElementById('repCedula').value.trim() || "N/A",
+                   repEmail: document.getElementById('repEmail').value.trim() || "N/A",
+                   repWhatsapp: document.getElementById('repWhatsapp').value.trim() || "N/A",
+                   perfil: document.getElementById('perfilUsuario').value,
+                   entidad: document.getElementById('nombreInstitucion').value || "N/A",
+                   mesesLicencia: parseInt(document.getElementById('planLicencia').value) || 0,
+                   cupos: parseInt(document.getElementById('cuposInput').value) || 0,
+                   total: document.getElementById('displayInversion').innerText,
+                   modulos: modulos,
+                   timestamp: new Date()
+               };
 
-    if (t > 0 && n > 0) {
-        // 1. Algoritmo de Regresión de Tiempo (ft)
-        const ft = 0.7 + (0.3 / (1 + (0.15 * (t - 1))));
-        
-        // 2. Cálculo del Total según Perfil
-        if (p === 'Estudiante UCMI') {
-            let pb = n === 1 ? 10 : n === 2 ? 18 : n === 3 ? 24 : n >= 4 ? 28 : 0;
-            total = pb * t * ft;
-        } else if (x > 0) {
-            let ix = x <= 10 ? 10 * x * (1 - (x - 1) / 90) : x <= 50 ? 10 * x * (1 - (10 + 0.5 * (x - 10)) / 100) : (5 * x) + 100;
-            total = ix * t * ft;
-        }
+               const nombresModulos = window.datosPayload.modulos.join(", ");
+               const entidad = window.datosPayload.entidad;
 
-        // 3. Cálculo de Ahorro Lógico (Comparado con precio base de mercado de $10/cupo/mes)
-        // Referencia: Lo que pagaría cualquier entidad fuera de la red UCMI
-        const precioReferencia = (p === 'Estudiante UCMI') ? 10 * n * t : 10 * x * t;
-        
-        if (precioReferencia > 0 && total > 0) {
-            ahorro = ((precioReferencia - total) / precioReferencia) * 100;
-        }
+               document.getElementById('resumenModal').innerHTML = `
+                   <div style="border-bottom: 1px solid rgba(197,160,89,0.2); padding-bottom: 10px; margin-bottom: 10px;">
+                       <p><strong><i class="bi bi-person-fill"></i> Postulante:</strong> ${window.datosPayload.nombreResponsable.toUpperCase()}</p>
+                       <p><strong><i class="bi bi-card-text"></i> ID/Cédula:</strong> ${window.datosPayload.cedulaResponsable}</p>
+                   </div>
+                   <div style="background: rgba(197,160,89,0.1); padding: 10px; border-radius: 10px;">
+                       <p><strong><i class="bi bi-building"></i> Entidad:</strong> ${entidad}</p>
+                       <p><strong><i class="bi bi-layers"></i> Módulos:</strong> ${nombresModulos}</p>
+                       <p style="font-size: 1.2rem; color: var(--dorado-ucmi); text-align: center; margin: 0;">
+                           <strong>Total: $${window.datosPayload.total} USD</strong>
+                       </p>
+                   </div>`;
+               
+               new bootstrap.Modal(document.getElementById('modalConfirmacion')).show();
+           });
 
-        // 4. Límites de seguridad para realismo comercial
-        if (p !== 'Estudiante UCMI' && ahorro > 50) ahorro = 50;
-        if (p === 'Estudiante UCMI' && ahorro > 70) ahorro = 70;
-    }
+           // 3. Confirmación final (sin recarga)
+           document.getElementById('btnConfirmarFinal').addEventListener('click', async () => {
+               try {
+                   await addDoc(collection(db, "postulaciones"), window.datosPayload);
+                   fn_GenerarPDF(window.datosPayload);
+                   
+                   // Limpiar interfaz
+                   document.getElementById('formUCMI').reset();
+                   document.getElementById('bloqueRepresentante').style.display = 'none';
+                   document.getElementById('displayInversion').innerText = "0.00";
+                   document.getElementById('badgeAhorro').innerHTML = "";
+                   
+                   bootstrap.Modal.getInstance(document.getElementById('modalConfirmacion')).hide();
+                   
+                   await Swal.fire({ title: "¡Éxito!", text: "Postulación registrada correctamente.", icon: "success", confirmButtonColor: "#c5a059" });
+               } catch(err) { 
+                   Swal.fire({ title: "Error", text: "Falló la conexión a la base de datos.", icon: "error" }); 
+               }
+           });
 
-    // Actualización de la interfaz
-    document.getElementById('displayInversion').innerText = total.toFixed(2);
-    const badgeAhorro = document.getElementById('badgeAhorro');
-    
-    if (ahorro > 5 && total > 0) {
-        badgeAhorro.innerHTML = `
-            <span class="badge bg-success" style="font-size: 0.9rem; padding: 8px 15px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-                <i class="bi bi-piggy-bank-fill me-1"></i> ¡Ahorras un ${ahorro.toFixed(0)}%!
-            </span>`;
-    } else {
-        badgeAhorro.innerHTML = "";
-    }
-};
-
-    // Envío y PDF
-    let datosPayload = null;
-    document.getElementById('formUCMI').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(m => m.value);
-        if(!e.target.checkValidity() || modulos.length === 0) {
-            Swal.fire({ title: "Error", text: "Completa los datos y elige al menos un módulo.", icon: "error" });
-            return;
-        }
-
-        datosPayload = {
-            nombreResponsable: document.getElementById('nombreInput').value,
-            cedulaResponsable: document.getElementById('dniInput').value,
-            fechaNacimiento: document.getElementById('fechaNacimientoInput').value,
-            genero: document.getElementById('generoInput').value,
-            email: document.getElementById('emailInput').value,
-            whatsapp: document.getElementById('whatsappInput').value,
-            ubicacion: document.getElementById('ubicacionInput').value,
-            repNombre: document.getElementById('repNombre').value.trim() || "N/A",
-            repCedula: document.getElementById('repCedula').value.trim() || "N/A",
-            repEmail: document.getElementById('repEmail').value.trim() || "N/A",
-            repWhatsapp: document.getElementById('repWhatsapp').value.trim() || "N/A",
-            perfil: document.getElementById('perfilUsuario').value,
-            entidad: document.getElementById('nombreInstitucion').value || "N/A",
-            mesesLicencia: parseInt(document.getElementById('planLicencia').value) || 0, // CAMBIO AQUÍ
-            cupos: parseInt(document.getElementById('cuposInput').value) || 0,
-            total: document.getElementById('displayInversion').innerText,
-            modulos: modulos,
-            timestamp: new Date()
-        };
-
-// Capturamos los nombres de los módulos seleccionados para listarlos
-const nombresModulos = datosPayload.modulos.join(", ");
-const entidad = document.getElementById('nombreInstitucion').value || "N/A";
-
-document.getElementById('resumenModal').innerHTML = `
-    <div style="border-bottom: 1px solid rgba(197,160,89,0.2); padding-bottom: 10px; margin-bottom: 10px;">
-        <p><strong><i class="bi bi-person-fill"></i> Postulante:</strong> ${datosPayload.nombreResponsable.toUpperCase()}</p>
-        <p><strong><i class="bi bi-card-text"></i> ID/Cédula:</strong> ${document.getElementById('dniInput').value}</p>
-        <p><strong><i class="bi bi-calendar-event"></i> Fecha de Nacimiento:</strong> ${document.getElementById('fechaNacimientoInput').value}</p>
-        <p><strong><i class="bi bi-gender-ambiguous"></i> Género:</strong> ${document.getElementById('generoInput').value}</p>
-    </div>
-
-    <div style="border-bottom: 1px solid rgba(197,160,89,0.2); padding-bottom: 10px; margin-bottom: 10px;">
-        <p><strong><i class="bi bi-envelope-at"></i> Correo:</strong> ${document.getElementById('emailInput').value}</p>
-        <p><strong><i class="bi bi-whatsapp"></i> WhatsApp:</strong> ${document.getElementById('whatsappInput').value}</p>
-        <p><strong><i class="bi bi-geo-alt"></i> Ubicación:</strong> ${document.getElementById('ubicacionInput').value}</p>
-    </div>
-    
-${document.getElementById('bloqueRepresentante').style.display === 'block' ? `
-    <div style="border-bottom: 1px solid rgba(255,0,0,0.2); padding-bottom: 10px; margin-bottom: 10px; color: #ffcccc; font-size: 0.85rem;">
-        <p><strong><i class="bi bi-shield-shaded"></i> Representante:</strong> ${document.getElementById('repNombre').value}</p>
-        <p><strong><i class="bi bi-envelope"></i> Correo Rep:</strong> ${document.getElementById('repEmail').value}</p>
-        <p><strong><i class="bi bi-whatsapp"></i> WhatsApp Rep:</strong> ${document.getElementById('repWhatsapp').value}</p>
-    </div>` : ''}
-
-    <div style="background: rgba(197,160,89,0.1); padding: 10px; border-radius: 10px;">
-        <p><strong><i class="bi bi-building"></i> Entidad:</strong> ${entidad}</p>
-        <p><strong><i class="bi bi-briefcase"></i> Perfil:</strong> ${datosPayload.perfil}</p>
-        <p><strong><i class="bi bi-layers"></i> Módulos (${datosPayload.modulos.length}):</strong> <span class="small" style="color: #ddd;">${nombresModulos}</span></p>
-        <p><strong><i class="bi bi-calendar-check"></i> Licencia:</strong> ${document.getElementById('planLicencia').value} meses</p>
-        <p><strong><i class="bi bi-people"></i> Cupos:</strong> ${document.getElementById('cuposInput').value}</p>
-        <hr style="border-color: var(--dorado-ucmi)">
-        <p style="font-size: 1.2rem; color: var(--dorado-ucmi); text-align: center; margin: 0;">
-            <strong>Total a Invertir: $${datosPayload.total} USD</strong>
-        </p>
-    </div>
-`;
-        
-        new bootstrap.Modal(document.getElementById('modalConfirmacion')).show();
-    });
-
-    document.getElementById('btnConfirmarFinal').addEventListener('click', async () => {
-        try {
-            await addDoc(collection(db, "postulaciones"), datosPayload);
-fn_GenerarPDF(datosPayload);
-            await Swal.fire({ title: "¡Éxito!", text: "Postulación registrada. El comprobante se abrirá en una nueva pestaña.", icon: "success", confirmButtonColor: "#c5a059" });
-            location.reload();
-        } catch(err) { Swal.fire({ title: "Error", text: "Falló la conexión.", icon: "error" }); }
-    });
+       } else {
+           // Si no está autenticado, redirige
+           window.location.href = "login.html";
+       }
+   });
 
     function fn_GenerarPDF(d) {
         const { jsPDF } = window.jspdf;
