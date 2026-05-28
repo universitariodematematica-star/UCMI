@@ -393,12 +393,8 @@
     };
 
     const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      const auth = getAuth(app); // Esta es para tu sesión de administrador
-      
-      // Nueva instancia secundaria solo para crear usuarios nuevos
-      const appSecundaria = initializeApp(firebaseConfig, "creador");
-      const authCreacion = getAuth(appSecundaria);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
     
     let currentId = null;
     let currentData = null;
@@ -410,35 +406,20 @@
     const selectorFiltro = document.getElementById('filtroPerfil');
 
     onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            window.location.href = "index.html";
-            return;
-        }
-
-        const userDoc = await getDoc(doc(db, "usuarios", user.email));
-        if (userDoc.exists()) {
-            const data = userDoc.data();
-            
-            // VALIDACIÓN: Si no tiene entidad o no tiene cupos configurados, no cargamos nada
-            if (!data.entidad) {
-                console.error("Usuario sin entidad asociada");
-                return; 
+        if (user) {
+            const userDoc = await getDoc(doc(db, "usuarios", user.email));
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+                document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
+                document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
+                academiaNombreGlobal = data.entidad || "Panel";
+                cuposMaximosGlobal = data.cupos || 0;
+                document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
+                actualizarMarcadorCupos();
+                iniciarEscuchaFiltrada(academiaNombreGlobal);
             }
-
-            logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-            document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
-            document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
-            
-            academiaNombreGlobal = data.entidad;
-            cuposMaximosGlobal = data.cupos || 0; // Si es 0, al menos ya sabemos que es el valor real
-            
-            document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
-            actualizarMarcadorCupos();
-            iniciarEscuchaFiltrada(academiaNombreGlobal);
-        } else {
-            // Si el usuario existe en Auth pero no en Firestore, no es un usuario válido del sistema
-            window.location.href = "index.html";
-        }
+        } else { window.location.href = "index.html"; }
     });
 
     async function actualizarMarcadorCupos() {
@@ -506,33 +487,14 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
 
     try {
         // Validación de cupos (solo para estudiantes)
-document.getElementById('btnConfirmarAcceso').onclick = async () => {
-    if (!currentId || !currentData) return;
-    const esDocente = currentData.perfil === "Docente Academia";
-
-    try {
-        // 1. VALIDACIÓN GLOBAL DE CUPOS
-        const qUsuarios = query(
-            collection(db, "usuarios"), 
-            where("entidad", "==", academiaNombreGlobal),
-            where("rol", "in", ["estudiante", "docente"])
-        );
-        
-        const snap = await getDocs(qUsuarios);
-        
-        if (snap.size >= cuposMaximosGlobal) {
-            await Swal.fire('Cupos Agotados', 'No hay vacantes disponibles (límite alcanzado).', 'warning');
-            return;
+        if (!esDocente) {
+            const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
+            const snap = await getDocs(qEstudiantes);
+            if (snap.size >= cuposMaximosGlobal) {
+                await Swal.fire('Cupos Agotados', 'No hay vacantes disponibles.', 'warning');
+                return;
+            }
         }
-
-        // 2. RESTO DEL PROCESO (Creación de usuario, etc...)
-        // ... (Aquí va tu código de createUserWithEmailAndPassword, setDoc, etc.)
-
-    } catch (e) {
-        console.error("Error:", e);
-        Swal.fire('Error', 'No se pudo procesar la admisión: ' + e.message, 'error');
-    }
-};
 
         // 1. Lógica segura de contraseña
         // Extraemos el DNI y validamos longitud mínima de 6 caracteres
@@ -541,8 +503,7 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
 
         // 2. Crear autenticación
         try {
-            // Usamos authCreacion para que no afecte a tu sesión actual (auth)
-            await createUserWithEmailAndPassword(authCreacion, currentData.email, passwordTemp);
+            await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp);
         } catch (authError) {
             // Si el error es que el email ya existe en Auth, continuamos (es normal en re-procesos)
             if (authError.code !== 'auth/email-already-in-use') {
