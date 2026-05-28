@@ -506,14 +506,33 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
 
     try {
         // Validación de cupos (solo para estudiantes)
-        if (!esDocente) {
-            const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
-            const snap = await getDocs(qEstudiantes);
-            if (snap.size >= cuposMaximosGlobal) {
-                await Swal.fire('Cupos Agotados', 'No hay vacantes disponibles.', 'warning');
-                return;
-            }
+document.getElementById('btnConfirmarAcceso').onclick = async () => {
+    if (!currentId || !currentData) return;
+    const esDocente = currentData.perfil === "Docente Academia";
+
+    try {
+        // 1. VALIDACIÓN GLOBAL DE CUPOS
+        const qUsuarios = query(
+            collection(db, "usuarios"), 
+            where("entidad", "==", academiaNombreGlobal),
+            where("rol", "in", ["estudiante", "docente"])
+        );
+        
+        const snap = await getDocs(qUsuarios);
+        
+        if (snap.size >= cuposMaximosGlobal) {
+            await Swal.fire('Cupos Agotados', 'No hay vacantes disponibles (límite alcanzado).', 'warning');
+            return;
         }
+
+        // 2. RESTO DEL PROCESO (Creación de usuario, etc...)
+        // ... (Aquí va tu código de createUserWithEmailAndPassword, setDoc, etc.)
+
+    } catch (e) {
+        console.error("Error:", e);
+        Swal.fire('Error', 'No se pudo procesar la admisión: ' + e.message, 'error');
+    }
+};
 
         // 1. Lógica segura de contraseña
         // Extraemos el DNI y validamos longitud mínima de 6 caracteres
