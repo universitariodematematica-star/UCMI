@@ -422,12 +422,19 @@
         } else { window.location.href = "index.html"; }
     });
 
-    async function actualizarMarcadorCupos() {
-        if (!academiaNombreGlobal) return;
-        const qEstudiantes = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "==", "estudiante"));
-        const snap = await getDocs(qEstudiantes);
-        document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
-    }
+            async function actualizarMarcadorCupos() {
+                if (!academiaNombreGlobal) return;
+                
+                // Cambiamos la consulta para que coincida con la lógica de bloqueo
+                const qUsuarios = query(
+                    collection(db, "usuarios"), 
+                    where("entidad", "==", academiaNombreGlobal), 
+                    where("rol", "in", ["estudiante", "docente"]) // Ahora cuenta AMBOS
+                );
+                
+                const snap = await getDocs(qUsuarios);
+                document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
+            }
 
     function iniciarEscuchaFiltrada(academiaNombre) {
         const q = query(collection(db, "postulaciones"), where("entidad", "==", academiaNombre));
