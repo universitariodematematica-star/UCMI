@@ -519,8 +519,10 @@ async function actualizarMarcadorCupos() {
 
             // 2. Crear autenticación
             try {
-                await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp);
-            } catch (authError) {
+                            await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp);
+                            // INSERTA ESTA LÍNEA:
+                            await signOut(auth); 
+                        } catch (authError) {
                 if (authError.code !== 'auth/email-already-in-use') throw authError;
             }
 
@@ -542,7 +544,7 @@ async function actualizarMarcadorCupos() {
             // 5. Borrar de Postulaciones
             await deleteDoc(doc(db, "postulaciones", currentId));
 
-            await Swal.fire({
+await Swal.fire({
                 title: '¡Éxito!',
                 text: 'Usuario aceptado. Su clave inicial es: ' + passwordTemp,
                 icon: 'success'
