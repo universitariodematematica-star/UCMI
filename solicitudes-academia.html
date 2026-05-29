@@ -418,11 +418,16 @@
         window.open(url, '_blank');
     };
 
-    onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, async (user) => {
+        // --- BLINDAJE: Si eres tú el administrador, no hagas nada y quédate en el panel ---
+        if (user && user.email === "TU_CORREO_AQUÍ@dominio.com") { 
+            return; 
+        }
+        // ---------------------------------------------------------------------------------
+
         if (user) {
             const userDoc = await getDoc(doc(db, "usuarios", user.email));
             if (userDoc.exists()) {
-                const data = userDoc.data();
                 logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
                 document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
                 document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
@@ -547,7 +552,11 @@ if (snap.size >= cuposMaximosGlobal) {
             }
             const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
             const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
-            try { await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp); await signOut(auth); } catch (authError) { if (authError.code !== 'auth/email-already-in-use') throw authError; }
+            try { 
+    await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp); 
+} catch (authError) { 
+    if (authError.code !== 'auth/email-already-in-use') throw authError; 
+}
                         await setDoc(doc(db, "usuarios", currentData.email), {
                 ...currentData,
                 estado: "activo",
