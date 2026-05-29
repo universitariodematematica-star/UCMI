@@ -423,24 +423,25 @@
         } else { window.location.href = "index.html"; }
     });
 
-            async function actualizarMarcadorCupos() {
-                    // Añadimos un pequeño log para debuggear en la consola
-                    console.log("Actualizando marcador para:", academiaNombreGlobal, "con cupos:", cuposMaximosGlobal);
-            
-                    if (!academiaNombreGlobal) return;
-                    
-                    const qUsuarios = query(
-                        collection(db, "usuarios"), 
-                        where("entidad", "==", academiaNombreGlobal), 
-                        where("rol", "in", ["estudiante", "docente"])
-                    );
-                    
-                    const snap = await getDocs(qUsuarios);
-                    
-                    // Si cuposMaximosGlobal sigue siendo 0, intentamos leerlo de nuevo 
-                    // o aseguramos que el DOM se actualice solo cuando tengamos el dato real.
-                    document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
-                }
+async function actualizarMarcadorCupos() {
+    if (!academiaNombreGlobal) return;
+
+    // 1. Buscamos el documento del admin para obtener el valor REAL y ACTUALIZADO
+    const docAdmin = await getDoc(doc(db, "usuarios", auth.currentUser.email));
+    const dataAdmin = docAdmin.exists() ? docAdmin.data() : { cupos: 0 };
+    const cuposReales = dataAdmin.cupos || 0;
+
+    // 2. Contamos cuántos usuarios hay (el numerador)
+    const qUsuarios = query(
+        collection(db, "usuarios"), 
+        where("entidad", "==", academiaNombreGlobal), 
+        where("rol", "in", ["estudiante", "docente"])
+    );
+    const snap = await getDocs(qUsuarios);
+
+    // 3. Mostramos el resultado usando el dato fresco recién leído
+    document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposReales}`;
+}
 
     function iniciarEscuchaFiltrada(academiaNombre) {
         const q = query(collection(db, "postulaciones"), where("entidad", "==", academiaNombre));
