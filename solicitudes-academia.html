@@ -419,23 +419,26 @@
     };
 
 onAuthStateChanged(auth, async (user) => {
-        // BLINDAJE: Si es el administrador, no hagas nada y mantén la sesión activa
-        if (user && user.email === "TU_CORREO_ADMIN@ucmi.com") return; 
+        if (!user) { window.location.href = "index.html"; return; }
 
-        if (user) {
-            const userDoc = await getDoc(doc(db, "usuarios", user.email));
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-                document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
-                document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
-                academiaNombreGlobal = data.entidad || "Panel";
-                cuposMaximosGlobal = data.cupos || 0;
-                document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
-                actualizarMarcadorCupos();
-                iniciarEscuchaFiltrada(academiaNombreGlobal);
-            }
-        } else { window.location.href = "index.html"; }
+        const userDoc = await getDoc(doc(db, "usuarios", user.email));
+        
+        // --- AQUÍ ESTÁ EL TRUCO: Si el usuario detectado no tiene datos de admin, 
+        // simplemente ignora el cambio de sesión y quédate como estás. ---
+        if (!userDoc.exists()) {
+            console.log("Sesión de usuario secundario detectada, ignorando...");
+            return; 
+        }
+
+        const data = userDoc.data();
+        logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+        document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
+        document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
+        academiaNombreGlobal = data.entidad || "Panel";
+        cuposMaximosGlobal = data.cupos || 0;
+        document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
+        actualizarMarcadorCupos();
+        iniciarEscuchaFiltrada(academiaNombreGlobal);
     });
 
     async function actualizarMarcadorCupos() {
@@ -550,7 +553,7 @@ if (snap.size >= cuposMaximosGlobal) {
             }
             const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
             const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
-            try { await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp); await signOut(auth); } catch (authError) { if (authError.code !== 'auth/email-already-in-use') throw authError; }
+            try { await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp); } catch (authError) { if (authError.code !== 'auth/email-already-in-use') throw authError; }
                         await setDoc(doc(db, "usuarios", currentData.email), {
                 ...currentData,
                 estado: "activo",
