@@ -412,7 +412,7 @@
         const telefono = data.whatsapp || data.whatsappRepresentante || "";
         if (!telefono || telefono === "N/A") return;
         let textoMensaje = (decision === "ACEPTADO") 
-            ? `¡Hola *${nombre}*! Tu solicitud en UCMI ha sido *ACEPTADA*. ✅%0A%0A📧 *Usuario:* ${data.email}%0A🔑 *Clave:* UCMI2026`
+            ? `¡Hola *${nombre}*! Tu solicitud en UCMI ha sido *ACEPTADA*. ✅%0A%0A📧 *Usuario:* ${data.email}%0A🔑 *Clave:* ${data.claveEnviada}`
             : `Hola *${nombre}*. Lamentamos informarte que tu solicitud en UCMI no ha sido aprobada en esta ocasión. Ponte en contacto con el +593991752385 para informarte la razón de tu rechazo.`;
         const url = `https://api.whatsapp.com/send?phone=${telefono.toString().replace(/\D/g, '')}&text=${textoMensaje}`;
         window.open(url, '_blank');
@@ -538,15 +538,20 @@
                 await Swal.fire('Cupos Agotados', 'No hay vacantes disponibles (límite alcanzado).', 'warning');
                 return;
             }
-            let rawPassword = String(currentData.dniDocente || currentData.dniEstudiante || "UCMI2026");
-            const passwordTemp = rawPassword.length >= 6 ? rawPassword : "UCMI2026";
+            const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
+            const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
             try { await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp); await signOut(auth); } catch (authError) { if (authError.code !== 'auth/email-already-in-use') throw authError; }
-            await setDoc(doc(db, "usuarios", currentData.email), { ...currentData, estado: "activo", rol: esDocente ? "docente" : "estudiante" });
+                        await setDoc(doc(db, "usuarios", currentData.email), {
+                ...currentData,
+                estado: "activo",
+                rol: esDocente ? "docente" : "estudiante",
+                claveInicial: passwordTemp
+            });
             await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Admitido", decisionFinal: "ACEPTADO" });
             await deleteDoc(doc(db, "postulaciones", currentId));
             
             // Acción WhatsApp
-            prepararMensajeWhatsApp(currentData, "ACEPTADO");
+            prepararMensajeWhatsApp({ ...currentData, claveEnviada: passwordTemp }, "ACEPTADO");
             
             await Swal.fire({ title: '¡Éxito!', text: 'Usuario aceptado. Su clave inicial es: ' + passwordTemp, icon: 'success' });
             location.reload();
