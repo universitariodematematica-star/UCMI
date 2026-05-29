@@ -319,7 +319,7 @@
 
               <div class="col-md-10 p-4">
                   <div class="d-flex justify-content-between align-items-center">
-                      <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
+                      <h1 class="display-6 fw-bold">Control de Postulaciones 2</h1>
                       <span id="marcadorCupos" class="badge bg-dark border border-secondary px-3 py-2 rounded-pill fs-6" style="color: var(--dorado-ucmi) !important;">Cupos: Métrica / Máx</span>
                   </div>
                   
@@ -423,18 +423,25 @@
         } else { window.location.href = "index.html"; }
     });
 
-    async function actualizarMarcadorCupos() {
-        if (!academiaNombreGlobal) return;
-        
-        // Consulta sincronizada: cuenta estudiantes y docentes
-        const qUsuarios = query(
-            collection(db, "usuarios"), 
-            where("entidad", "==", academiaNombreGlobal), 
-            where("rol", "in", ["estudiante", "docente"])
-        );
-        const snap = await getDocs(qUsuarios);
-        document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
-    }
+async function actualizarMarcadorCupos() {
+    if (!academiaNombreGlobal) return;
+
+    // 1. Buscamos el documento del admin para obtener el valor REAL y ACTUALIZADO
+    const docAdmin = await getDoc(doc(db, "usuarios", auth.currentUser.email));
+    const dataAdmin = docAdmin.exists() ? docAdmin.data() : { cupos: 0 };
+    const cuposReales = dataAdmin.cupos || 0;
+
+    // 2. Contamos cuántos usuarios hay (el numerador)
+    const qUsuarios = query(
+        collection(db, "usuarios"), 
+        where("entidad", "==", academiaNombreGlobal), 
+        where("rol", "in", ["estudiante", "docente"])
+    );
+    const snap = await getDocs(qUsuarios);
+
+    // 3. Mostramos el resultado usando el dato fresco recién leído
+    document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposReales}`;
+}
 
     function iniciarEscuchaFiltrada(academiaNombre) {
         const q = query(collection(db, "postulaciones"), where("entidad", "==", academiaNombre));
@@ -512,8 +519,10 @@
 
             // 2. Crear autenticación
             try {
-                await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp);
-            } catch (authError) {
+                            await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp);
+                            // INSERTA ESTA LÍNEA:
+                            await signOut(auth); 
+                        } catch (authError) {
                 if (authError.code !== 'auth/email-already-in-use') throw authError;
             }
 
@@ -535,7 +544,7 @@
             // 5. Borrar de Postulaciones
             await deleteDoc(doc(db, "postulaciones", currentId));
 
-            await Swal.fire({
+await Swal.fire({
                 title: '¡Éxito!',
                 text: 'Usuario aceptado. Su clave inicial es: ' + passwordTemp,
                 icon: 'success'
