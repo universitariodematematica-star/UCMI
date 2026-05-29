@@ -534,8 +534,15 @@
         try {
             const qUsuarios = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "in", ["estudiante", "docente"]));
             const snap = await getDocs(qUsuarios);
-            if (snap.size >= cuposMaximosGlobal) {
+if (snap.size >= cuposMaximosGlobal) {
                 await Swal.fire('Cupos Agotados', 'No hay vacantes disponibles (límite alcanzado).', 'warning');
+                return;
+            }
+
+            // --- NUEVA VALIDACIÓN: VERIFICAR SI EL CORREO YA ES USUARIO ---
+            const usuarioExistente = await getDoc(doc(db, "usuarios", currentData.email));
+            if (usuarioExistente.exists()) {
+                await Swal.fire('Error', 'Este correo ya está registrado en el sistema. No se puede sobrescribir.', 'error');
                 return;
             }
             const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
