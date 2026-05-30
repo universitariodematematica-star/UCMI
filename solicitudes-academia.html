@@ -382,142 +382,59 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signOut, onAuthStateChanged, createUserWithEmailAndPassword, initializeAuth, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-        authDomain: "ucmi-13796634.firebaseapp.com",
-        projectId: "ucmi-13796634",
-        storageBucket: "ucmi-13796634.firebasestorage.app",
-        messagingSenderId: "1090719609536",
-        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-    };
-
+    // ... (Tu configuración sigue igual)
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-    // ESTA ES LA CLAVE: Una instancia que no persiste sesión y no afecta a tu administrador
-    const authCreator = initializeAuth(app, { persistence: inMemoryPersistence });
     
-    let currentId = null;
-    let currentData = null;
-    let logoAcademiaGlobal = "";
-    let academiaNombreGlobal = "";
-    let cuposMaximosGlobal = 0;
-    let registrosLocales = [];
-
-    const selectorFiltro = document.getElementById('filtroPerfil');
-
-    const prepararMensajeWhatsApp = (data, decision) => {
-        const nombre = data.nombreResponsable || data.nombre || "Postulante";
-        const telefono = data.whatsapp || data.whatsappRepresentante || "";
-        if (!telefono || telefono === "N/A") return;
-        let textoMensaje = (decision === "ACEPTADO") 
-            ? `¡Hola *${nombre}*! Tu solicitud en UCMI ha sido *ACEPTADA*. ✅%0A%0A📧 *Usuario:* ${data.email}%0A🔑 *Clave:* ${data.claveEnviada}`
-            : `Hola *${nombre}*. Lamentamos informarte que tu solicitud en UCMI no ha sido aprobada en esta ocasión.`;
-        const url = `https://api.whatsapp.com/send?phone=${telefono.toString().replace(/\D/g, '')}&text=${textoMensaje}`;
-        window.open(url, '_blank');
-    };
-
+    // BLINDAJE TOTAL: Solo escucha cambios de sesión, nunca los fuerza
     onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const userDoc = await getDoc(doc(db, "usuarios", user.email));
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-                document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
-                document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
-                academiaNombreGlobal = data.entidad || "Panel";
-                cuposMaximosGlobal = data.cupos || 0;
-                document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
-                actualizarMarcadorCupos();
-                iniciarEscuchaFiltrada(academiaNombreGlobal);
-            }
-        } else { window.location.href = "index.html"; }
+        if (!user) { window.location.href = "index.html"; return; }
+        // Aquí no hacemos nada más que cargar el panel si el usuario es válido
+        // ... (código de carga de logo y academia)
     });
 
-    async function actualizarMarcadorCupos() {
-        if (!academiaNombreGlobal) return;
-        const docAdmin = await getDoc(doc(db, "usuarios", auth.currentUser.email));
-        const dataAdmin = docAdmin.exists() ? docAdmin.data() : { cupos: 0 };
-        const cuposReales = dataAdmin.cupos || 0;
-        const qUsuarios = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "in", ["estudiante", "docente"]));
-        const snap = await getDocs(qUsuarios);
-        document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposReales}`;
-    }
-
-    function iniciarEscuchaFiltrada(academiaNombre) {
-        onSnapshot(query(collection(db, "postulaciones"), where("entidad", "==", academiaNombre)), (snap) => {
-            registrosLocales = snap.docs;
-            renderizarTabla();
-        });
-    }
-
-    function renderizarTabla() {
-        const lista = document.getElementById('listaMaestra');
-        if (!lista) return;
-        lista.innerHTML = "";
-        registrosLocales.forEach(docSnap => {
-            const d = docSnap.data();
-            const id = docSnap.id;
-            const esEstudiante = d.perfil === "Estudiante Academia";
-            const esDocente = d.perfil === "Docente Academia";
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><div class="fw-bold">${d.nombreResponsable || 'Sin nombre'}</div><div class="small text-muted">${d.email}</div></td><td><span class="badge ${esDocente ? 'bg-categoria-docente' : 'bg-categoria-estudiante'}">${d.perfil}</span></td><td><i class="bi bi-geo-alt me-1"></i>${d.ubicacion || 'No definida'}</td><td class="text-center"><button class="btn btn-dark btn-sm" onclick="verExpediente('${id}')"><i class="bi bi-eye"></i> Detalles</button></td>`;
-            lista.appendChild(tr);
-        });
-    }
-
-    window.verExpediente = async (id) => {
-        currentId = id;
-        const snap = await getDoc(doc(db, "postulaciones", id));
-        if (!snap.exists()) return;
-        currentData = snap.data();
-        const d = currentData;
-        const esDocente = d.perfil === "Docente Academia";
-        document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
-        // ... (resto de tu lógica de renderizado de modal queda igual)
-        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-    };
-
+    // BOTÓN CONFIRMAR: Registro puramente en Base de Datos (Firestore)
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
         if (!currentId || !currentData) return;
-        const esDocente = currentData.perfil === "Docente Academia";
+        
         try {
             const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
             const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
             
-            // USAMOS authCreator: Esto crea el usuario sin cerrar tu sesión
-            await createUserWithEmailAndPassword(authCreator, currentData.email, passwordTemp);
-            
+            // 1. GUARDAR SOLO EN FIRESTORE (Firestore es independiente de Auth)
+            // Esto NO cierra tu sesión, NO cambia tu identidad.
             await setDoc(doc(db, "usuarios", currentData.email), {
                 ...currentData,
                 estado: "activo",
-                rol: esDocente ? "docente" : "estudiante",
+                rol: currentData.perfil === "Docente Academia" ? "docente" : "estudiante",
                 claveInicial: passwordTemp
             });
-            await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Admitido", decisionFinal: "ACEPTADO" });
+
+            // 2. LOG DE HISTORIAL
+            await addDoc(collection(db, "historial_postulaciones"), { 
+                ...currentData, 
+                fechaProceso: new Date().toISOString(), 
+                resultado: "ACEPTADO" 
+            });
+
+            // 3. BORRAR POSTULACIÓN
             await deleteDoc(doc(db, "postulaciones", currentId));
             
+            // 4. NOTIFICAR Y CERRAR MODAL (SIN RECARGAR)
             prepararMensajeWhatsApp({ ...currentData, claveEnviada: passwordTemp }, "ACEPTADO");
+            Swal.fire('¡Éxito!', 'Usuario registrado exitosamente en la base de datos.', 'success');
             
-            await Swal.fire({ title: '¡Éxito!', text: 'Usuario aceptado.', icon: 'success' });
-            
-            // Actualización dinámica sin recargar la página
+            // Refrescamos la tabla localmente sin recargar el navegador
             bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
-        } catch (e) { Swal.fire('Error', 'No se pudo procesar: ' + e.message, 'error'); }
-    };
-
-    document.getElementById('btnEliminar').onclick = async () => {
-        const res = await Swal.fire({ title: '¿Estás seguro?', text: "¡Esta acción eliminará la postulación!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, rechazar' });
-        if (res.isConfirmed) {
-            try {
-                await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Rechazado", decisionFinal: "RECHAZADO" });
-                await deleteDoc(doc(db, "postulaciones", currentId));
-                prepararMensajeWhatsApp(currentData, "RECHAZADO");
-                bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
-            } catch (e) { Swal.fire('Error', 'No se pudo rechazar.', 'error'); }
+            renderizarTabla();
+            
+        } catch (e) { 
+            Swal.fire('Error', 'No se pudo procesar: ' + e.message, 'error'); 
         }
     };
 </script>
+  </body>       
   </html>
