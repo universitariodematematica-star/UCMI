@@ -426,11 +426,15 @@
         appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    let currentId = null;
-    let currentData = null;
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+        const secondaryAuth = getAuth(secondaryApp);
+        
+        let currentId = null;
+        let currentData = null;
 
     const enviarEmailAutomatico = (data, decision) => {
         const templateParams = {
@@ -532,10 +536,21 @@
 
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
         if(!currentId || !currentData) return;
-        const adminAuth = auth.currentUser; // Guardar sesión admin
+
         try {
-            try { await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026"); } catch (e) { if (e.code !== 'auth/email-already-in-use') throw e; }
-            await auth.updateCurrentUser(adminAuth); // Restaurar sesión admin
+            console.log("ANTES:", auth.currentUser?.email);
+
+try {
+    await createUserWithEmailAndPassword(
+        secondaryAuth,
+        currentData.email,
+        "UCMI2026"
+    );
+} catch (e) {
+    if (e.code !== 'auth/email-already-in-use') throw e;
+}
+
+console.log("DESPUÉS:", auth.currentUser?.email);
             const meses = parseInt(String(currentData.mesesLicencia || "1").replace(/\D/g, '')) || 1;
             const exp = new Date(); exp.setMonth(exp.getMonth() + meses);
             const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date(), expiracionLicencia: exp.toLocaleString(), expiracionTimestamp: exp.getTime(), mesesAprobados: meses, duracionLicencia: `${meses} mes(es)` };
