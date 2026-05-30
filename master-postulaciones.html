@@ -429,6 +429,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+
+    const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+    const secondaryAuth = getAuth(secondaryApp);
+    
     let currentId = null;
     let currentData = null;
 
@@ -532,10 +536,15 @@
 
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
         if(!currentId || !currentData) return;
-        const adminAuth = auth.currentUser; // Guardar sesión admin
-        try {
-            try { await createUserWithEmailAndPassword(auth, currentData.email, "UCMI2026"); } catch (e) { if (e.code !== 'auth/email-already-in-use') throw e; }
-            await auth.updateCurrentUser(adminAuth); // Restaurar sesión admin
+        
+try {
+    await createUserWithEmailAndPassword(
+        secondaryAuth,
+        currentData.email,
+        "UCMI2026"
+    );
+} catch (e) {
+            if (e.code !== 'auth/email-already-in-use') throw e; }
             const meses = parseInt(String(currentData.mesesLicencia || "1").replace(/\D/g, '')) || 1;
             const exp = new Date(); exp.setMonth(exp.getMonth() + meses);
             const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date(), expiracionLicencia: exp.toLocaleString(), expiracionTimestamp: exp.getTime(), mesesAprobados: meses, duracionLicencia: `${meses} mes(es)` };
