@@ -21,7 +21,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // TU IDENTIDAD MAESTRA
-const MASTER_ID = "m56REyF19sOsC6BE5sJdJG6eR863";
+const MASTER_ID = "x0oBFbDP09d7I3VZvWuN6BOODf32";
 
 // CONFIGURACIÓN DE INACTIVIDAD (30 minutos)
 const TIEMPO_INACTIVIDAD = 30 * 60 * 1000; 
