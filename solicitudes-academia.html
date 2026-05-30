@@ -382,7 +382,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signOut, onAuthStateChanged, createUserWithEmailAndPassword, initializeAuth, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -396,6 +396,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    const authCreator = initializeAuth(app, { persistence: inMemoryPersistence });
     
     let currentId = null;
     let currentData = null;
@@ -553,7 +554,7 @@ if (snap.size >= cuposMaximosGlobal) {
             }
             const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
             const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
-            try { await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp); } catch (authError) { if (authError.code !== 'auth/email-already-in-use') throw authError; }
+            try { await createUserWithEmailAndPassword(authCreator, currentData.email, passwordTemp); } catch (authError) { if (authError.code !== 'auth/email-already-in-use') throw authError; }
                         await setDoc(doc(db, "usuarios", currentData.email), {
                 ...currentData,
                 estado: "activo",
@@ -567,7 +568,11 @@ if (snap.size >= cuposMaximosGlobal) {
             prepararMensajeWhatsApp({ ...currentData, claveEnviada: passwordTemp }, "ACEPTADO");
             
             await Swal.fire({ title: '¡Éxito!', text: 'Usuario aceptado. Su clave inicial es: ' + passwordTemp, icon: 'success' });
-            location.reload();
+            registrosLocales = registrosLocales.filter(item => item.id !== currentId);
+            renderizarTabla();
+            const modalEl = document.getElementById('modalDetalles');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
         } catch (e) { console.error("Error:", e); Swal.fire('Error', 'No se pudo procesar la admisión: ' + e.message, 'error'); }
     };
 
