@@ -541,20 +541,60 @@
             console.log("ANTES:", auth.currentUser?.email);
 
 try {
-    await createUserWithEmailAndPassword(
-        secondaryAuth,
-        currentData.email,
-        "UCMI2026"
-    );
+await createUserWithEmailAndPassword(
+    secondaryAuth,
+    currentData.email.trim().toLowerCase(),
+    "UCMI2026"
+);
 } catch (e) {
-    if (e.code !== 'auth/email-already-in-use') throw e;
+
+    if (e.code === 'auth/email-already-in-use') {
+        await Swal.fire(
+            "Error",
+            "Este correo ya existe en Firebase Authentication. No se puede crear nuevamente.",
+            "error"
+        );
+        return;
+    }
+
+    throw e;
 }
 
 console.log("DESPUÉS:", auth.currentUser?.email);
             const meses = parseInt(String(currentData.mesesLicencia || "1").replace(/\D/g, '')) || 1;
             const exp = new Date(); exp.setMonth(exp.getMonth() + meses);
-            const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date(), expiracionLicencia: exp.toLocaleString(), expiracionTimestamp: exp.getTime(), mesesAprobados: meses, duracionLicencia: `${meses} mes(es)` };
-            await setDoc(doc(db, "usuarios", currentData.email), dataFinal);
+const emailNormalizado = currentData.email.trim().toLowerCase();
+
+const usuarioExistente = await getDoc(
+    doc(db, "usuarios", emailNormalizado)
+);
+
+if (usuarioExistente.exists()) {
+    await Swal.fire(
+        "Error",
+        "Este correo ya está registrado en el sistema. No se puede sobrescribir.",
+        "error"
+    );
+    return;
+}
+
+const dataFinal = {
+    ...currentData,
+    estado: "activo",
+    fechaActivacion: new Date(),
+    expiracionLicencia: exp.toLocaleString(),
+    expiracionTimestamp: exp.getTime(),
+    mesesAprobados: meses,
+    duracionLicencia: `${meses} mes(es)`
+};
+            await setDoc(
+    doc(
+        db,
+        "usuarios",
+        currentData.email.trim().toLowerCase()
+    ),
+    dataFinal
+);
             await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO", fechaProceso: new Date().toLocaleString() });
             await deleteDoc(doc(db, "postulaciones", currentId));
             enviarEmailAutomatico(currentData, "ACEPTADO");
