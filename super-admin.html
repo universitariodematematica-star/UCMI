@@ -182,16 +182,21 @@
 
         <div class="row g-4 gy-5">
             <div class="col-md-3">
-                <a href="https://universitariodematematica-star.github.io/UCMI/postulacion-academica.html" class="admin-card text-center">
-                    <div class="icon-circle" style="border-color: var(--verde-neon); color: var(--verde-neon);">
-                        <i class="bi bi-person-fill-add"></i>
-                    </div>
-                    <h3 class="fw-bold">Nueva Postulación</h3>
-                    <p class="text-light-opacity small px-3">Registrar aspirante directamente en una academia específica.</p>
-                    <div class="mt-3">
-                        <span class="badge-custom badge-registro">REGISTRO DIRECTO</span>
-                    </div>
-                </a>
+<div class="admin-card text-center" onclick="abrirNuevaPostulacion()">
+    <div class="icon-circle" style="border-color: var(--verde-neon); color: var(--verde-neon);">
+        <i class="bi bi-person-fill-add"></i>
+    </div>
+    <h3 class="fw-bold">Nueva Postulación</h3>
+    <p class="text-light-opacity small px-3">Registrar aspirante directamente en una academia específica.</p>
+    <div class="mt-3">
+        <span class="badge-custom badge-registro">REGISTRO DIRECTO</span>
+    </div>
+
+    <button class="btn btn-sm btn-outline-info w-100 mt-3"
+        onclick="event.stopPropagation(); manejarAccionNuevaPostulacion(this);">
+        Copiar y Enviar
+    </button>
+</div>
             </div>
             
             <div class="col-md-3">
@@ -480,6 +485,7 @@ onAuthStateChanged(auth, (user) => {
     };
 
     function mostrarNotificacionFlotante(cupos, academia) {
+      
         const aviso = document.getElementById('aviso-exito-cupos');
         const texto = document.getElementById('texto-aviso-cupos');
         
@@ -493,6 +499,69 @@ onAuthStateChanged(auth, (user) => {
             setTimeout(() => { aviso.style.display = 'none'; }, 500);
         }, 4500);
     }
+
+window.abrirNuevaPostulacion = () => {
+    window.open(
+        "https://universitariodematematica-star.github.io/UCMI/postulacion-academica.html",
+        "_blank"
+    );
+};
+
+window.manejarAccionNuevaPostulacion = (btn) => {
+
+    const url =
+        "https://universitariodematematica-star.github.io/UCMI/postulacion-academica.html";
+
+    const tarjeta = btn.closest('.admin-card');
+
+    if (btn.dataset.mode === "send") {
+
+        const phone = btn.previousElementSibling.value;
+
+        if (!phone) {
+            alert("Ingresa un número");
+            return;
+        }
+
+        window.open(
+            `https://wa.me/${phone}?text=${encodeURIComponent("Hola, te comparto el link: " + url)}`,
+            '_blank'
+        );
+
+        location.reload();
+        return;
+    }
+
+    navigator.clipboard.writeText(url);
+
+    tarjeta.innerHTML = `
+        <div class="icon-circle" style="border-color: var(--verde-neon); color: var(--verde-neon);">
+            <i class="bi bi-whatsapp"></i>
+        </div>
+
+        <h3 class="fw-bold text-success">Enviar por WhatsApp</h3>
+
+        <input
+            type="text"
+            class="form-control form-control-sm mb-2"
+            placeholder="Ej: 593999999999"
+            style="background:#222;color:white;border:1px solid #555;">
+
+        <button
+            class="btn btn-sm btn-success w-100"
+            data-mode="send"
+            onclick="event.stopPropagation(); manejarAccionNuevaPostulacion(this);">
+            Enviar mensaje
+        </button>
+
+        <button
+            class="btn btn-sm btn-link text-secondary w-100 mt-1 p-0"
+            onclick="event.stopPropagation(); window.location.reload();">
+            Cancelar
+        </button>
+    `;
+};
+    
 </script>
 
 </body>
