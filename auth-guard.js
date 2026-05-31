@@ -32,6 +32,8 @@ document.documentElement.style.display = "none";
 
 // 2. MONITOR DE ESTADO DE SESIÓN
 onAuthStateChanged(auth, async (user) => {
+    console.log("AUTH GUARD EJECUTADO");
+console.log("USER:", user);
     if (user) {
         console.log("AUTH GUARD UID:", user.uid);
 console.log("MASTER UID:", MASTER_ID);
