@@ -33,7 +33,11 @@ document.documentElement.style.display = "none";
 // 2. MONITOR DE ESTADO DE SESIÓN
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        if (user.uid === MASTER_ID) {
+        console.log("AUTH GUARD UID:", user.uid);
+console.log("MASTER UID:", MASTER_ID);
+console.log("COINCIDEN:", user.uid === MASTER_ID);
+
+if (user.uid === MASTER_ID) {
             // ACCESO CONCEDIDO
             document.documentElement.style.display = "block";
             iniciarVigilanciaInactividad();
