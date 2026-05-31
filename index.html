@@ -149,6 +149,29 @@
           async function procesarRedireccion(user) {
               if (navegando) return;
               navegando = true;
+              
+              // Si es el Super-Admin Maestro, pasa directo sin consultar Firestore
+console.log("UID USER:", user.uid);
+console.log("UID MAESTRO:", MI_UID_MAESTRO);
+console.log("IGUALES:", user.uid === MI_UID_MAESTRO);
+
+alert(
+    "USER: " + user.uid +
+    "\nMAESTRO: " + MI_UID_MAESTRO +
+    "\nIGUALES: " + (user.uid === MI_UID_MAESTRO)
+);
+
+if (user.uid === MI_UID_MAESTRO) {
+    alert("SUPERADMIN DETECTADO");
+
+    localStorage.setItem(
+        'userId',
+        user.email.toLowerCase().trim()
+    );
+
+    window.location.href = "super-admin.html";
+    return;
+}
  
               try {
                   const docRef = doc(db, "usuarios", user.email.toLowerCase().trim());
@@ -214,6 +237,7 @@
 window.continuarAlPanel = () => {
     const u = auth.currentUser;
     if (u) {
+        console.log("Intentando acceder con UID:", u.uid);
         procesarRedireccion(u);
     } else {
         alert("La sesión no está cargada todavía. Por favor, espera un segundo y vuelve a intentar.");
@@ -252,6 +276,8 @@ window.continuarAlPanel = () => {
  
               try {
                   const cred = await signInWithEmailAndPassword(auth, email, pass);
+                   console.log("UID ACTUAL:", cred.user.uid);
+                    alert("UID ACTUAL: " + cred.user.uid);
                   limpiarTodo(); 
                   procesarRedireccion(cred.user);
               } catch (error) {
