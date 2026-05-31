@@ -410,16 +410,39 @@
     const selectorFiltro = document.getElementById('filtroPerfil');
 
     // Función global de WhatsApp (extraída fuera del render)
-    const prepararMensajeWhatsApp = (data, decision) => {
-        const nombre = data.nombreResponsable || data.nombre || "Postulante";
-        const telefono = data.whatsapp || data.whatsappRepresentante || "";
-        if (!telefono || telefono === "N/A") return;
-        let textoMensaje = (decision === "ACEPTADO") 
-            ? `¡Hola *${nombre}*! Tu solicitud en UCMI ha sido *ACEPTADA*. ✅%0A%0A📧 *Usuario:* ${data.email}%0A🔑 *Clave:* ${data.claveEnviada}`
-            : `Hola *${nombre}*. Lamentamos informarte que tu solicitud en UCMI no ha sido aprobada en esta ocasión. Ponte en contacto con el +593991752385 para informarte la razón de tu rechazo.`;
-        const url = `https://api.whatsapp.com/send?phone=${telefono.toString().replace(/\D/g, '')}&text=${textoMensaje}`;
-        window.open(url, '_blank');
-    };
+const prepararMensajeWhatsApp = (data, decision) => {
+    const nombre = data.nombreResponsable || data.nombre || "Postulante";
+    const telefono = data.whatsapp || data.whatsappRepresentante || "";
+
+    if (!telefono || telefono === "N/A") return;
+
+    let textoMensaje = "";
+
+    if (decision === "ACEPTADO") {
+        textoMensaje =
+`🎉 ¡Hola *${nombre}*!
+
+Nos complace informarte que tu solicitud en *${academiaNombreGlobal}* ha sido *ACEPTADA*. ✅
+
+📧 *Usuario:* ${data.email}
+🔑 *Clave:* ${data.claveEnviada}
+
+Por favor, conserva estos datos de acceso en un lugar seguro.
+
+¡Bienvenido(a) a ${academiaNombreGlobal}!`;
+    } else {
+        textoMensaje =
+`Hola *${nombre}*.
+
+Lamentamos informarte que tu solicitud en *${academiaNombreGlobal}* no ha sido aprobada en esta ocasión.
+
+Si deseas más información, puedes comunicarte directamente con la institución.`;
+    }
+
+    const url = `https://api.whatsapp.com/send?phone=${telefono.toString().replace(/\D/g, '')}&text=${encodeURIComponent(textoMensaje)}`;
+
+    window.open(url, '_blank');
+};
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
