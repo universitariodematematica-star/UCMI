@@ -22,10 +22,33 @@
 
 <script type="module">
 
+// ======================================================
+// IMPORTS (PRIMERO TODO)
+// ======================================================
+
 import { crearLayout, obtenerContenedor } from "./ucmi-layout.js";
+import { db, obtenerSesion } from "./firebase-config.js";
+
+import {
+    doc,
+    getDoc,
+    updateDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // ======================================================
-// INICIALIZAR LAYOUT GLOBAL
+// SESIÓN
+// ======================================================
+
+const { userId, userRole } = obtenerSesion();
+
+if (!userId) {
+    document.body.innerHTML =
+        "<p class='text-center mt-5'>Sesión expirada</p>";
+    throw new Error("Sin sesión");
+}
+
+// ======================================================
+// INICIALIZAR LAYOUT (IMPORTANTE: DESPUÉS DE IMPORTS)
 // ======================================================
 
 await crearLayout({
@@ -34,37 +57,17 @@ await crearLayout({
     icono: "bi-journal-bookmark-fill"
 });
 
-// Contenedor donde se renderiza la página
+// ======================================================
+// AHORA SÍ EXISTE EL DOM DEL LAYOUT
+// ======================================================
+
 const contenedor = obtenerContenedor();
 
 // ======================================================
-// FIREBASE + SESIÓN
-// ======================================================
-
-import {
-    db,
-    obtenerSesion
-} from "./firebase-config.js";
-
-import {
-    doc,
-    getDoc,
-    updateDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-const { userId, userRole } = obtenerSesion();
-
-// ======================================================
-// CARGA DE DATOS
+// CARGAR DATOS
 // ======================================================
 
 async function cargarDatos() {
-
-    if (!userId) {
-        contenedor.innerHTML =
-            `<p class="text-center opacity-50">Sesión expirada.</p>`;
-        return;
-    }
 
     try {
 
@@ -72,74 +75,71 @@ async function cargarDatos() {
         const snap = await getDoc(ref);
 
         if (!snap.exists()) {
+
             contenedor.innerHTML =
-                `<p class="text-center opacity-50">Usuario no encontrado.</p>`;
+                `<p class="text-center opacity-50">
+                    Usuario no encontrado
+                </p>`;
+
             return;
         }
 
         const data = snap.data();
 
-        const misModulos = data.modulos || [];
+        const modulos = data.modulos || [];
         const estados = data['modulos-ofertados-academia'] || {};
 
-        if (misModulos.length === 0) {
+        if (!modulos.length) {
+
             contenedor.innerHTML =
                 `<p class="text-center opacity-50 mt-5">
-                    No tienes módulos asignados.
+                    No tienes módulos asignados
                 </p>`;
+
             return;
         }
 
-        contenedor.innerHTML = misModulos.map((nombre, index) => {
+        contenedor.innerHTML = modulos.map((nombre, index) => {
 
             const activo = estados[nombre] === true;
 
             return `
-                <div class="module-item">
+            <div class="module-item">
 
-                    <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center">
 
-                        <div class="me-3 opacity-50">
-                            <i class="bi bi-stack"></i>
-                        </div>
+                    <i class="bi bi-stack me-2 opacity-50"></i>
 
-                        <div>
-                            <h3 class="m-0" style="font-size: 1rem;">
-                                ${nombre}
-                            </h3>
-                        </div>
-
-                    </div>
-
-                    <div class="d-flex align-items-center">
-
-                        <span id="label-${index}"
-                              class="status-label ${activo ? 'text-publico' : 'text-oculto'}">
-
-                            ${activo ? 'Público' : 'Oculto'}
-
-                        </span>
-
-                        <div class="form-check form-switch m-0">
-
-                            <input class="form-check-input"
-                                   type="checkbox"
-                                   id="switch-${index}"
-                                   ${activo ? 'checked' : ''}
-
-                                   onchange="window.toggleModulo('${nombre}', ${index})">
-
-                        </div>
-
-                    </div>
+                    <h3 class="m-0" style="font-size:1rem">
+                        ${nombre}
+                    </h3>
 
                 </div>
-            `;
+
+                <div class="d-flex align-items-center">
+
+                    <span id="label-${index}"
+                          class="status-label ${activo ? 'text-publico' : 'text-oculto'}">
+
+                        ${activo ? 'Público' : 'Oculto'}
+
+                    </span>
+
+                    <input class="form-check-input"
+                           type="checkbox"
+                           id="switch-${index}"
+                           ${activo ? 'checked' : ''}
+
+                           onchange="toggleModulo('${nombre}', ${index})">
+
+                </div>
+
+            </div>`;
         }).join('');
 
-    } catch (error) {
+    } catch (err) {
 
-        console.error(error);
+        console.error(err);
 
         contenedor.innerHTML =
             `<p class="text-danger text-center">
@@ -149,18 +149,18 @@ async function cargarDatos() {
 }
 
 // ======================================================
-// TOGGLE DE MÓDULOS
+// TOGGLE GLOBAL (FUNCION NECESARIA EN WINDOW)
 // ======================================================
 
-window.toggleModulo = async function(nombreModulo, index) {
+window.toggleModulo = async function(nombre, index) {
 
     const sw = document.getElementById(`switch-${index}`);
     const label = document.getElementById(`label-${index}`);
 
-    const nuevoEstado = sw.checked;
+    const estado = sw.checked;
 
-    label.innerText = nuevoEstado ? "Público" : "Oculto";
-    label.className = nuevoEstado
+    label.innerText = estado ? "Público" : "Oculto";
+    label.className = estado
         ? "status-label text-publico"
         : "status-label text-oculto";
 
@@ -169,28 +169,28 @@ window.toggleModulo = async function(nombreModulo, index) {
         const ref = doc(db, "usuarios", userId);
 
         await updateDoc(ref, {
-            [`modulos-ofertados-academia.${nombreModulo}`]:
-                nuevoEstado
+            [`modulos-ofertados-academia.${nombre}`]:
+                estado
         });
 
     } catch (error) {
 
         console.error(error);
 
-        sw.checked = !nuevoEstado;
+        // revertir si falla
+        sw.checked = !estado;
 
-        label.innerText = !nuevoEstado ? "Público" : "Oculto";
-
-        label.className = !nuevoEstado
+        label.innerText = !estado ? "Público" : "Oculto";
+        label.className = !estado
             ? "status-label text-publico"
             : "status-label text-oculto";
 
-        alert("Error al actualizar módulo");
+        alert("No se pudo actualizar");
     }
 };
 
 // ======================================================
-// INICIALIZAR
+// INIT
 // ======================================================
 
 cargarDatos();
