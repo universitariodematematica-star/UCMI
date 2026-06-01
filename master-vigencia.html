@@ -1,114 +1,234 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>UCMI - Panel de Vigencia Operativa</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UCMI - Vigencia Operativa</title>
 
-     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-     <style>
-         :root {
-             --purpura-neon: #bc13fe;
-             --cian-tech: #00f2ff;
-         }
+<style>
+:root { 
+    --dorado-ucmi: #c5a059;
+    --cristal-claro: rgba(255,255,255,0.05);
+    --rojo-peligro: #e74c3c;
+    --purpura-neon: #bc13fe;
+    --cian-tech: #00f2ff;
+}
 
-         body {
-             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-             background-size: cover;
-             font-family: 'Segoe UI', sans-serif;
-             color: white;
-             margin: 0;
-         }
+body {
+    margin:0;
+    font-family: 'Segoe UI', sans-serif;
+    color:white;
+    background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+    background-size: cover;
+}
 
-         .overlay {
-             background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.95) 100%);
-             min-height: 100vh;
-             padding: 40px;
-         }
+.overlay {
+    position: fixed;
+    inset:0;
+    background: radial-gradient(circle, rgba(6,9,15,0.7), rgba(6,9,15,0.95));
+}
 
-         .glass-panel {
-             background: rgba(255, 255, 255, 0.03);
-             backdrop-filter: blur(25px);
-             border-radius: 30px;
-             padding: 40px;
-             box-shadow: 0 30px 60px rgba(0,0,0,0.7);
-             max-width: 1200px;
-             margin: auto;
-         }
+.wrapper {
+    display:flex;
+    height:100vh;
+}
 
-         .table {
-             --bs-table-bg: transparent;
-             --bs-table-color: white;
-             border-collapse: separate;
-             border-spacing: 0 12px;
-         }
+/* SIDEBAR (MÓDULOS STYLE) */
+.sidebar {
+    width:260px;
+    min-width:260px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(25px);
+    border-right: 1px solid rgba(197,160,89,0.2);
+    padding:25px 15px;
+    display:flex;
+    flex-direction:column;
+}
 
-         .table tbody tr {
-             background: rgba(255,255,255,0.03);
-             border-radius: 12px;
-         }
+.sidebar-logo {
+    width:100px;
+    margin:0 auto 25px;
+}
 
-         .progress {
-             background: rgba(255,255,255,0.1);
-             height: 8px;
-         }
+.nav-item-ucmi {
+    display:flex;
+    align-items:center;
+    color:rgba(255,255,255,0.6);
+    text-decoration:none;
+    padding:10px 12px;
+    border-radius:10px;
+    font-size:0.85rem;
+    margin-bottom:5px;
+    transition:0.3s;
+}
 
-         .progress-bar {
-             background: linear-gradient(90deg, var(--purpura-neon), var(--cian-tech));
-         }
+.nav-item-ucmi i { margin-right:10px; }
 
-         .status-badge {
-             font-size: 0.7rem;
-             padding: 6px 12px;
-             border-radius: 8px;
-             background: rgba(0,255,136,0.1);
-             border: 1px solid rgba(0,255,136,0.3);
-             color: #00ff88;
-         }
-     </style>
+.nav-item-ucmi:hover {
+    background:rgba(255,255,255,0.08);
+    color:white;
+    transform:translateX(5px);
+}
+
+.nav-item-ucmi.active {
+    background:rgba(197,160,89,0.15);
+    color:var(--dorado-ucmi);
+}
+
+/* BOTONES SIDEBAR */
+.btn-maestro {
+    margin-top:auto;
+    border:1px solid rgba(255,255,255,0.3);
+    color:white;
+    text-align:center;
+    padding:10px;
+    border-radius:50px;
+    font-size:0.65rem;
+    text-decoration:none;
+}
+
+.btn-cerrar {
+    margin-top:10px;
+    border:1px solid rgba(231,76,60,0.4);
+    color:rgba(231,76,60,0.9);
+    text-align:center;
+    padding:8px;
+    border-radius:50px;
+    font-size:0.65rem;
+    text-decoration:none;
+}
+
+/* CONTENIDO */
+.main {
+    flex:1;
+    padding:40px;
+    overflow:auto;
+}
+
+.glass {
+    background: var(--cristal-claro);
+    backdrop-filter: blur(20px);
+    border-radius:25px;
+    padding:30px;
+    border:1px solid rgba(197,160,89,0.2);
+}
+
+.table {
+    --bs-table-bg: transparent;
+    --bs-table-color:white;
+    border-spacing:0 10px;
+}
+
+.progress {
+    height:8px;
+    background:rgba(255,255,255,0.1);
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, var(--purpura-neon), var(--cian-tech));
+}
+
+.badge {
+    background:rgba(0,255,136,0.1);
+    border:1px solid rgba(0,255,136,0.3);
+    color:#00ff88;
+}
+</style>
 </head>
 
 <body>
-<div class="overlay">
 
-    <div class="glass-panel">
+<div class="overlay"></div>
 
-        <div class="d-flex justify-content-between mb-4">
-            <h3 class="fw-bold text-uppercase">Panel de Vigencia Operativa</h3>
+<div class="wrapper">
 
-            <input type="text"
-                   id="inputBusqueda"
-                   class="form-control w-25 bg-transparent text-white border-secondary"
-                   placeholder="Buscar...">
-        </div>
+<!-- SIDEBAR (MÓDULOS) -->
+<aside class="sidebar">
 
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Entidad</th>
-                        <th>Nombre</th>
-                        <th>Perfil</th>
-                        <th>Activación</th>
-                        <th>Progreso</th>
-                        <th>Expiración</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody id="listaVigencia"></tbody>
-            </table>
-        </div>
+    <img src="logo-ucmi.png" class="sidebar-logo">
 
+    <a class="nav-item-ucmi" href="master-postulaciones.html">
+        <i class="bi bi-person-badge"></i> SOLICITUDES
+    </a>
+
+    <a class="nav-item-ucmi active" href="master-vigencia.html">
+        <i class="bi bi-shield-check"></i> VIGENCIA
+    </a>
+
+    <a class="nav-item-ucmi" href="master-usuarios.html">
+        <i class="bi bi-people"></i> USUARIOS
+    </a>
+
+    <a class="nav-item-ucmi" href="historial-postulaciones.html">
+        <i class="bi bi-clock-history"></i> HISTORIAL
+    </a>
+
+    <a class="nav-item-ucmi" href="directorio.html">
+        <i class="bi bi-person-vcard"></i> DIRECTORIO
+    </a>
+
+    <a class="nav-item-ucmi" href="ofertas-academicas.html">
+        <i class="bi bi-mortarboard"></i> OFERTAS
+    </a>
+
+    <a class="nav-item-ucmi" href="master-repositorio.html">
+        <i class="bi bi-grid-1x2"></i> MÓDULOS
+    </a>
+
+    <a class="nav-item-ucmi" href="papelera.html">
+        <i class="bi bi-trash3"></i> PAPELERA
+    </a>
+
+    <a href="super-admin.html" class="btn-maestro">
+        <i class="bi bi-cpu"></i> PANEL MAESTRO
+    </a>
+
+    <a href="#" id="btnLogout" class="btn-cerrar">
+        <i class="bi bi-power"></i> CERRAR SESIÓN
+    </a>
+
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<div class="glass">
+
+    <div class="d-flex justify-content-between mb-4">
+        <h3>Panel de Vigencia Operativa</h3>
+        <input id="inputBusqueda" class="form-control w-25 bg-transparent text-white border-secondary" placeholder="Buscar...">
     </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Entidad</th>
+                <th>Nombre</th>
+                <th>Perfil</th>
+                <th>Inicio</th>
+                <th>Progreso</th>
+                <th>Fin</th>
+                <th>Estado</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody id="listaVigencia"></tbody>
+    </table>
+
+</div>
+
+</main>
 
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -117,73 +237,61 @@ const app = initializeApp({
 });
 
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-let usuariosMaster = [];
+let usuarios = [];
 
-function renderizar(lista) {
-    const contenedor = document.getElementById("listaVigencia");
-    contenedor.innerHTML = "";
+function render(data){
+    const now = new Date();
+    const tbody = document.getElementById("listaVigencia");
+    tbody.innerHTML = "";
 
-    const ahora = new Date();
+    data.forEach(u => {
 
-    lista.forEach(u => {
+        const ini = u.fechaActivacion?.toDate ? u.fechaActivacion.toDate() : new Date(u.fechaActivacion || now);
+        const fin = new Date(u.expiracionTimestamp || now);
 
-        const inicio = u.fechaActivacion?.toDate
-            ? u.fechaActivacion.toDate()
-            : new Date(u.fechaActivacion || ahora);
+        const total = Math.max(fin - ini,1);
+        const prog = Math.min(Math.max((now-ini)/total*100,0),100);
 
-        const fin = u.expiracionTimestamp
-            ? new Date(u.expiracionTimestamp)
-            : ahora;
+        const dias = Math.ceil((fin-now)/86400000);
 
-        const total = Math.max(fin - inicio, 1);
-        const trans = ahora - inicio;
-
-        const porcentaje = Math.min(Math.max((trans / total) * 100, 0), 100);
-
-        const dias = Math.ceil((fin - ahora) / 86400000);
-
-        contenedor.innerHTML += `
-            <tr>
-                <td>${u.entidad || "-"}</td>
-                <td>${u.nombreResponsable || "-"}</td>
-                <td>${u.perfil || "-"}</td>
-                <td>${inicio.toLocaleDateString()}</td>
-
-                <td style="width:200px">
-                    <div class="progress">
-                        <div class="progress-bar" style="width:${porcentaje}%"></div>
-                    </div>
-                    <small>${Math.floor(porcentaje)}%</small>
-                </td>
-
-                <td>${fin.toLocaleDateString()}</td>
-
-                <td>
-                    <span class="status-badge">
-                        ${dias > 0 ? dias + " días" : "Expirado"}
-                    </span>
-                </td>
-            </tr>
-        `;
+        tbody.innerHTML += `
+        <tr>
+            <td>${u.entidad || "-"}</td>
+            <td>${u.nombreResponsable || "-"}</td>
+            <td>${u.perfil || "-"}</td>
+            <td>${ini.toLocaleDateString()}</td>
+            <td style="width:200px">
+                <div class="progress">
+                    <div class="progress-bar" style="width:${prog}%"></div>
+                </div>
+                <small>${Math.floor(prog)}%</small>
+            </td>
+            <td>${fin.toLocaleDateString()}</td>
+            <td><span class="badge">${dias>0?dias+" días":"Expirado"}</span></td>
+            <td><button class="btn btn-danger btn-sm" onclick="revocar('${u.id}')">Revocar</button></td>
+        </tr>`;
     });
 }
 
-onSnapshot(collection(db, "usuarios"), (snap) => {
-    usuariosMaster = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderizar(usuariosMaster);
+onSnapshot(collection(db,"usuarios"), snap=>{
+    usuarios = snap.docs.map(d=>({id:d.id,...d.data()}));
+    render(usuarios);
 });
 
-document.getElementById("inputBusqueda").addEventListener("input", e => {
-    const t = e.target.value.toLowerCase();
-    renderizar(
-        usuariosMaster.filter(u =>
-            (u.entidad + u.nombreResponsable + u.perfil)
-            .toLowerCase()
-            .includes(t)
-        )
-    );
+document.getElementById("inputBusqueda").addEventListener("input",e=>{
+    const t=e.target.value.toLowerCase();
+    render(usuarios.filter(u =>
+        (u.entidad+u.nombreResponsable+u.perfil).toLowerCase().includes(t)
+    ));
 });
+
+window.revocar = async(id)=>{
+    await updateDoc(doc(db,"usuarios",id),{status:"eliminado"});
+};
+
+document.getElementById("btnLogout").onclick = ()=>signOut(auth).then(()=>location.href="index.html");
 </script>
 
 </body>
