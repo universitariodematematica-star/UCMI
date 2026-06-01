@@ -276,7 +276,9 @@ function renderizar(lista) {
             ? u.fechaActivacion.toDate()
             : new Date(u.fechaActivacion || ahora);
 
-        const fin = new Date(u.expiracionTimestamp || ahora);
+        const fin = u.expiracionTimestamp
+    ? new Date(u.expiracionTimestamp)
+    : ahora;
 
         const total = Math.max(fin - inicio, 1);
         const trans = ahora - inicio;
@@ -308,9 +310,41 @@ function renderizar(lista) {
     });
 }
 
-onSnapshot(collection(db, "usuarios"), (snap) => {
-    usuariosMaster = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+onSnapshot(collection(db, "usuarios"), (snapshot) => {
+
+    let rawDocs = snapshot.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(u => u.status !== "eliminado");
+
+    const academiasMap = {};
+
+    rawDocs.forEach(u => {
+
+        if (u.expiracionTimestamp) {
+
+            academiasMap[u.entidad] = {
+                exp: u.expiracionTimestamp,
+                act: u.fechaActivacion
+            };
+
+        }
+
+    });
+
+    usuariosMaster = rawDocs.map(u => ({
+        ...u,
+
+        expiracionTimestamp:
+            u.expiracionTimestamp ||
+            academiasMap[u.entidad]?.exp,
+
+        fechaActivacion:
+            u.fechaActivacion ||
+            academiasMap[u.entidad]?.act
+    }));
+
     renderizar(usuariosMaster);
+
 });
 
 document.getElementById("inputBusqueda").addEventListener("input", e => {
