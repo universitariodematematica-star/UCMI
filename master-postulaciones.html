@@ -2,340 +2,95 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <style>html { display: none; }</style>
-    <script type="module" src="auth-guard.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UCMI - Gestión de Solicitudes</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
-
     <style>
-        :root { --dorado-ucmi: #c5a059; --sidebar-width: 260px; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; color: white; background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed; background-size: cover; overflow: hidden; }
-        .overlay { position: fixed; top: 0; right: 0; bottom: 0; left: var(--sidebar-width); background: radial-gradient(circle, rgba(6, 9, 15, 0.7) 0%, rgba(6, 9, 15, 0.95) 100%); z-index: 0; pointer-events: none; }
-        .wrapper { display: flex; height: 100vh; width: 100vw; }
-        .sidebar { width: var(--sidebar-width); background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(25px); border-right: 1px solid rgba(197, 160, 89, 0.2); display: flex; flex-direction: column; padding: 25px 15px; z-index: 1; }
-        .sidebar-logo { width: 100px; margin: 0 auto 30px; }
-        .nav-item-ucmi { display: flex; align-items: center; color: rgba(255,255,255,0.6); text-decoration: none; padding: 10px 15px; border-radius: 10px; margin-bottom: 5px; font-size: 0.85rem; }
-        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); }
-        .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; z-index: 1; }
-        .glass-panel { background: rgba(255,255,255,0.03); backdrop-filter: blur(25px); border-radius: 30px; padding: 40px; max-width: 1200px; margin: auto; }
+        :root { --dorado-ucmi: #c5a059; }
+        body { background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') fixed; background-size: cover; color: white; }
+        .glass-panel { background: rgba(255,255,255,0.05); backdrop-filter: blur(25px); border-radius: 30px; padding: 40px; margin: 40px; }
         .select-input-ucmi { background: rgba(26, 42, 58, 0.6) !important; backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.15) !important; color: #fff !important; border-radius: 20px; }
-        .table-custom { width: 100%; border-collapse: separate; border-spacing: 0 12px; color: white; }
-        .table-custom tr { background: rgba(255, 255, 255, 0.05); }
+        .table-custom { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        .table-custom tr { background: rgba(255,255,255,0.05); }
+        .badge-perfil { padding: 5px 10px; border-radius: 10px; font-size: 0.75rem; }
     </style>
 </head>
 <body>
 
-<div class="overlay"></div>
-<div class="wrapper">
-    <aside class="sidebar">
-        <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" class="sidebar-logo">
-        <nav class="sidebar-nav">
-            <a href="master-postulaciones.html" class="nav-item-ucmi active"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
-            </nav>
-    </aside>
-
-    <main class="main-content">
-        <div class="glass-panel">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="fw-bold text-uppercase">Gestión de Solicitudes</h3>
-                
-                <div class="d-flex gap-3">
-                    <div class="position-relative" style="width: 320px;">
-                        <i class="bi bi-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--dorado-ucmi);"></i>
-                        <input type="text" id="buscadorTexto" class="form-control select-input-ucmi" placeholder="Buscar por nombre o entidad..." style="padding-left: 45px !important;">
-                    </div>
-
-                    <div class="position-relative" style="width: 320px;">
-                        <i class="bi bi-bank" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--dorado-ucmi); pointer-events: none; z-index: 2;"></i>
-                        <select id="filtroPerfil" class="form-select select-input-ucmi" style="padding-left: 45px !important;">
-                            <option value="todos">--- TODAS LAS CATEGORÍAS ---</option>
-                            <option value="Academia">ACADEMIA</option>
-                            <option value="Profesor independiente">PROFESOR INDEPENDIENTE</option>
-                            <option value="Estudiante UCMI">ESTUDIANTE UCMI</option>
-                        </select>
-                    </div>
-
-                    <button onclick="exportarPDF()" class="btn btn-outline-light btn-sm rounded-pill px-3">PDF</button>
-                    <button onclick="exportarExcel()" class="btn btn-outline-success btn-sm rounded-pill px-3">EXCEL</button>
-                </div>
+<div class="glass-panel">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-uppercase">Gestión de Solicitudes</h3>
+        <div class="d-flex gap-3">
+            <div class="position-relative" style="width: 320px;">
+                <i class="bi bi-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--dorado-ucmi);"></i>
+                <input type="text" id="buscadorTexto" class="form-control select-input-ucmi" placeholder="Buscar nombre o entidad..." style="padding-left: 45px !important;">
             </div>
-
-            <div class="table-responsive">
-                <table class="table-custom" id="tablaUsuariosUcmi">
-                    <thead>
-                        <tr class="text-white-50 small text-uppercase">
-                            <th>Entidad</th>
-                            <th>Responsable</th>
-                            <th>Perfil</th>
-                            <th>Ubicación</th>
-                            <th class="text-center">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="listaMaestra"></tbody>
-                </table>
+            <div class="position-relative" style="width: 320px;">
+                <i class="bi bi-bank" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--dorado-ucmi);"></i>
+                <select id="filtroPerfil" class="form-select select-input-ucmi" style="padding-left: 45px !important;">
+                    <option value="todos">--- TODAS LAS CATEGORÍAS ---</option>
+                    <option value="Academia">ACADEMIA</option>
+                    <option value="Profesor independiente">PROFESOR INDEPENDIENTE</option>
+                    <option value="Estudiante UCMI">ESTUDIANTE UCMI</option>
+                </select>
             </div>
         </div>
-    </main>
-</div>
+    </div>
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <table class="table-custom text-white">
+        <thead><tr class="text-white-50 small text-uppercase"><th>Entidad</th><th>Responsable</th><th>Perfil</th><th>Ubicación</th><th class="text-center">Acción</th></tr></thead>
+        <tbody id="listaMaestra"></tbody>
+    </table>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Inicializar EmailJS (REEMPLAZA CON TU PUBLIC KEY)
-    emailjs.init("TU_PUBLIC_KEY_AQUÍ");
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-        authDomain: "ucmi-13796634.firebaseapp.com",
-        projectId: "ucmi-13796634",
-        storageBucket: "ucmi-13796634.firebasestorage.app",
-        messagingSenderId: "1090719609536",
-        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-    };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        
-        const secondaryApp = initializeApp(firebaseConfig, "Secondary");
-        const secondaryAuth = getAuth(secondaryApp);
-        
-        let currentId = null;
-        let currentData = null;
-
-    const enviarEmailAutomatico = (data, decision) => {
-        const templateParams = {
-            to_name: data.nombreResponsable,
-            to_email: data.email,
-            status: decision,
-            message: decision === "ACEPTADO" 
-                ? "Tu solicitud en UCMI ha sido aprobada. Tus credenciales de acceso son tu correo y la clave UCMI2026." 
-                : "Lamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión."
-        };
-        emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
-            .then(() => console.log("Email enviado correctamente"))
-            .catch((err) => console.error("Error Email:", err));
-    };
-
-    const prepararMensajeWhatsApp = (data, decision) => {
-        const nombre = data.nombreResponsable || "Postulante";
-        const telefono = data.whatsapp || "";
-        if (!telefono || telefono === "N/A") return;
-        let textoMensaje = "";
-        if (decision === "ACEPTADO") {
-            const meses = data.mesesAprobados || "1";
-            const expiracion = data.expiracionLicencia || "Ver panel";
-            textoMensaje = `¡Hola *${nombre}*! Te saluda UCMI. %0A%0A` +
-               `Tu solicitud ha sido *ACEPTADA*. ✅%0A%0A` +
-               `*Detalles de acceso:*%0A` +
-               `📧 *Usuario:* ${data.email}%0A` +
-               `🔑 *Clave:* UCMI2026%0A%0A` +
-               `*Vigencia:*%0A` +
-               `📅 *Duración:* ${data.duracionLicencia || data.mesesAprobados + ' mes(es)'}%0A` + 
-               `⏳ *Expira el:* ${expiracion}%0A%0A` +
-               `¡Bienvenido!`;
-        } else {
-            textoMensaje = `Hola *${nombre}*. Gracias por tu interés en UCMI. %0A%0ALamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión.`;
-        }
-        const telLimpio = telefono.toString().replace(/\D/g, '');
-        const url = `https://api.whatsapp.com/send?phone=${telLimpio}&text=${textoMensaje}`;
-        window.open(url, '_blank');
-    };
-
-    const selectorFiltro = document.getElementById('filtroPerfil');
+    const firebaseConfig = { /* TU CONFIGURACIÓN AQUÍ */ };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
     let registrosLocales = [];
 
-    function renderizarTabla() {
+    const renderizarTabla = () => {
         const tbody = document.getElementById('listaMaestra');
-        const valorFiltro = selectorFiltro.value; 
+        const filtroPerfil = document.getElementById('filtroPerfil').value;
+        const busqueda = document.getElementById('buscadorTexto').value.toLowerCase();
+        
         tbody.innerHTML = '';
+        
         registrosLocales.forEach((d) => {
             const data = d.data();
             const id = d.id;
-            const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
-            const pLow = perfilOriginal.toLowerCase().trim();
-            let pasaFiltro = (valorFiltro === "todos") ? true : (perfilOriginal === valorFiltro);
-            if (!pasaFiltro) return;
-            let colorClass = (perfilOriginal === "Academia") ? "bg-categoria-academia" : (perfilOriginal === "Profesor independiente") ? "bg-categoria-profesor" : (perfilOriginal === "Estudiante UCMI") ? "bg-categoria-estudiante" : "bg-categoria-default";
-            const perfilesBloqueados = ["profesora academia", "estudiante academia", "estudiante asociado", "estudiante embajador"];
-            const estaInhabilitado = perfilesBloqueados.includes(pLow) ? "disabled" : "";
-            tbody.innerHTML += `<tr>
-                <td><div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : "---"}</div><div class="small text-muted">${data.email}</div></td>
-                <td class="small">${data.nombreResponsable || '---'}</td>
-                <td><span class="badge-perfil ${colorClass}">${perfilOriginal}</span></td>
-                <td class="small">${data.ubicacion || '---'}</td>
-                <td class="text-center"><button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3" ${estaInhabilitado}>${estaInhabilitado ? 'Bloqueado' : 'Revisar'}</button></td>
-            </tr>`;
+            const perfil = data.tipoSolicitante || data.perfil || "N/A";
+            const nombre = (data.nombreResponsable || "").toLowerCase();
+            const entidad = (data.entidad || "").toLowerCase();
+
+            // Lógica de filtro: Categoría Y Buscador
+            const cumplePerfil = (filtroPerfil === "todos" || perfil === filtroPerfil);
+            const cumpleBusqueda = (nombre.includes(busqueda) || entidad.includes(busqueda));
+
+            if (cumplePerfil && cumpleBusqueda) {
+                tbody.innerHTML += `<tr>
+                    <td><div class="fw-bold">${data.entidad}</div><div class="small text-muted">${data.email}</div></td>
+                    <td>${data.nombreResponsable || '---'}</td>
+                    <td><span class="badge bg-secondary">${perfil}</span></td>
+                    <td>${data.ubicacion || '---'}</td>
+                    <td class="text-center"><button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill">Revisar</button></td>
+                </tr>`;
+            }
         });
-    }
-
-    selectorFiltro.addEventListener('change', renderizarTabla);
-
-    window.verExpediente = async (id) => {
-        currentId = id;
-        const snap = await getDoc(doc(db, "postulaciones", id));
-        if (snap.exists()) {
-            currentData = snap.data();
-            const d = currentData;
-            document.getElementById('contenidoModal').innerHTML = `
-                <div class="col-md-12 mb-4 border-bottom pb-2">
-                    <label class="label-exp">Fecha de Solicitud</label>
-                    <span class="val-exp text-primary fw-bold"><i class="bi bi-calendar3 me-2"></i>${d.timestamp && typeof d.timestamp.toDate === 'function' ? d.timestamp.toDate().toLocaleString() : (d.timestamp || 'N/A')}</span>
-                </div>
-                <div class="col-md-6">
-                    <label class="label-exp">Entidad / Institución</label><span class="val-exp">${d.entidad || 'N/A'}</span>
-                    <label class="label-exp">Nombres y apellidos</label><span class="val-exp">${d.nombreResponsable || 'N/A'}</span>
-                    <label class="label-exp">ID (Cédula/RIF)</label><span class="val-exp">${d.cedulaResponsable || d.rif || 'N/A'}</span>
-                    <label class="label-exp">Email</label><span class="val-exp text-lowercase">${d.email || 'N/A'}</span>
-                    <label class="label-exp">WhatsApp</label><span class="val-exp">${d.whatsapp || 'N/A'}</span>
-                </div>
-                <div class="col-md-6" style="background: rgba(0,0,0,0.03); border-radius: 15px; padding: 15px;">
-                    <label class="label-exp">Perfil</label><span class="val-exp fw-bold text-success">${d.tipoSolicitante || d.perfil || 'N/A'}</span>
-                    <label class="label-exp">LICENCIA EN MESES</label><span class="val-exp">${d.mesesLicencia || 'N/A'}</span>
-                    <label class="label-exp">Cupos</label><span class="val-exp">${d.cupos || '0'}</span>
-                    <label class="label-exp">Ubicación</label><span class="val-exp">${d.ubicacion || 'N/A'}</span>
-                    <label class="label-exp">Programas</label>
-                    <div class="small p-2 bg-white border rounded" style="max-height: 100px; overflow-y: auto;">${d.modulos || 'No especificados'}</div>
-                </div>`;
-            new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-        }
     };
 
-    document.getElementById('btnConfirmarAcceso').onclick = async () => {
-        if(!currentId || !currentData) return;
-
-        try {
-            console.log("ANTES:", auth.currentUser?.email);
-
-try {
-await createUserWithEmailAndPassword(
-    secondaryAuth,
-    currentData.email.trim().toLowerCase(),
-    "UCMI2026"
-);
-} catch (e) {
-
-    if (e.code === 'auth/email-already-in-use') {
-        await Swal.fire(
-            "Error",
-            "Este correo ya existe en Firebase Authentication. No se puede crear nuevamente.",
-            "error"
-        );
-        return;
-    }
-
-    throw e;
-}
-
-console.log("DESPUÉS:", auth.currentUser?.email);
-            const meses = parseInt(String(currentData.mesesLicencia || "1").replace(/\D/g, '')) || 1;
-            const exp = new Date(); exp.setMonth(exp.getMonth() + meses);
-const emailNormalizado = currentData.email.trim().toLowerCase();
-
-const usuarioExistente = await getDoc(
-    doc(db, "usuarios", emailNormalizado)
-);
-
-if (usuarioExistente.exists()) {
-    await Swal.fire(
-        "Error",
-        "Este correo ya está registrado en el sistema. No se puede sobrescribir.",
-        "error"
-    );
-    return;
-}
-
-const dataFinal = {
-    ...currentData,
-    estado: "activo",
-    fechaActivacion: new Date(),
-    expiracionLicencia: exp.toLocaleString(),
-    expiracionTimestamp: exp.getTime(),
-    mesesAprobados: meses,
-    duracionLicencia: `${meses} mes(es)`
-};
-            await setDoc(
-    doc(
-        db,
-        "usuarios",
-        currentData.email.trim().toLowerCase()
-    ),
-    dataFinal
-);
-            await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO", fechaProceso: new Date().toLocaleString() });
-            await deleteDoc(doc(db, "postulaciones", currentId));
-            enviarEmailAutomatico(currentData, "ACEPTADO");
-            prepararMensajeWhatsApp(dataFinal, "ACEPTADO");
-            bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
-            Swal.fire("¡Acceso Activado!", "Usuario creado y datos guardados.", "success");
-        } catch (e) { Swal.fire("Error", e.message, "error"); }
-    };
-
-    document.getElementById('btnEliminar').onclick = async () => {
-    if (!currentId || !currentData) return;
-
-    // 1. Pedir confirmación al usuario
-    const conf = await Swal.fire({ 
-        title: '¿Rechazar?', 
-        icon: 'warning', 
-        showCancelButton: true, 
-        confirmButtonColor: '#d33' 
-    });
-
-    if (conf.isConfirmed) {
-        try {
-            // 2. Ejecutar operaciones de base de datos
-            await setDoc(doc(db, "historial_postulaciones", currentId), { 
-                ...currentData, 
-                decisionFinal: "RECHAZADO", 
-                fechaProceso: new Date().toLocaleString() 
-            });
-            await deleteDoc(doc(db, "postulaciones", currentId));
-            
-            // 3. Enviar correo (es una operación interna, no abre ventanas)
-            enviarEmailAutomatico(currentData, "RECHAZADO");
-            
-            // 4. Cerrar el modal ANTES de mostrar el aviso final
-            const modalElement = document.getElementById('modalDetalles');
-            const modalInstance = bootstrap.Modal.getInstance(modalElement);
-            if (modalInstance) modalInstance.hide();
-            
-            // 5. Mostrar aviso final y ESPERAR a que el usuario cierre el Swal
-            // El 'await' aquí es la clave para que la ejecución se pause
-            await Swal.fire("Correcto", "Solicitud rechazada. Se abrirá WhatsApp para informar.", "info");
-            
-            // 6. ÚLTIMO PASO: Abrir el WhatsApp
-            prepararMensajeWhatsApp(currentData, "RECHAZADO");
-            
-        } catch (e) { 
-            Swal.fire("Error", e.message, "error"); 
-        }
-    }
-};
-
-    document.getElementById('btnLogout').onclick = async (e) => {
-        e.preventDefault();
-        const result = await Swal.fire({ title: '¿Cerrar sesión?', icon: 'question', showCancelButton: true });
-        if (result.isConfirmed) { await signOut(auth); window.location.href = "index.html"; }
-    };
+    document.getElementById('filtroPerfil').addEventListener('change', renderizarTabla);
+    document.getElementById('buscadorTexto').addEventListener('input', renderizarTabla);
 
     onSnapshot(collection(db, "postulaciones"), (snap) => {
         registrosLocales = snap.docs;
         renderizarTabla();
     });
 </script>
-
- </body>
-
- </html>
+</body>
+</html>
