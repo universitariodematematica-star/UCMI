@@ -5,165 +5,235 @@
     <style>html { display: none; }</style>
     <script type="module" src="auth-guard.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Control de Postulaciones 1</title>
+    <title>UCMI - Repositorio Académico Maestro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-    :root {
-        --azul-ucmi: #06090f;
-        --azul-sidebar: #1a2a3a;
-        --verde-exito: #27ae60;
-        --dorado-ucmi: #c5a059;
-        --rojo-logout: #e74c3c;
-        --indigo-ucmi: #4b0082;
-    }
-    body { 
-        background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-        background-size: cover; font-family: 'Segoe UI', sans-serif; margin: 0; color: white;
-    }
-    /* ALGORITMO: Nueva clase contenedora para separar el sidebar del overlay */
-    .app-wrapper { display: flex; min-height: 100vh; }
-    /* ALGORITMO: El overlay ahora ocupa el espacio restante a la derecha */
-    .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); flex-grow: 1; min-height: 100vh; transition: filter 0.3s ease; overflow-y: auto; }
-    /* ALGORITMO: Sidebar independiente, fuera del flujo del overlay */
-    .sidebar { background: rgba(26, 42, 58, 0.4); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.15); width: 260px; flex-shrink: 0; padding: 25px 15px; display: flex; flex-direction: column; }
-    .logo-sidebar { height: 55px; border-radius: 12px; margin-bottom: 10px; }
-    .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; margin-bottom: 5px; text-decoration: none; padding: 10px; display: block; }
-    .nav-link:hover { color: white; background: rgba(255,255,255,0.1); border-radius: 8px; }
-    .nav-link.active { color: var(--dorado-ucmi); font-weight: bold; background: rgba(197, 160, 89, 0.1); border-radius: 8px; }
-    .sidebar-nav { flex-grow: 1; }
-    .nav-item-ucmi { display: flex; align-items: center; color: rgba(255,255,255,0.6); text-decoration: none; padding: 10px 15px; margin-bottom: 5px; border-radius: 10px; transition: 0.3s all ease; font-size: 0.85rem; }
-    .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
-    .nav-item-ucmi:hover { color: white; background: rgba(255,255,255,0.1); transform: translateX(5px); }
-    .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1); }
-    .btn-sidebar-action { background: transparent; border: 1px solid rgba(255, 255, 255, 0.4) !important; color: white !important; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; border-radius: 50px; padding: 10px; text-decoration: none; text-align: center; transition: all 0.3s ease-in-out; display: block; margin-bottom: 10px; }
-    .btn-sidebar-action:hover { background: rgba(255, 255, 255, 0.1); border-color: #ffffff !important; color: #ffffff !important; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); transform: translateY(-2px); }
-    .btn-logout { border-color: rgba(231, 76, 60, 0.4) !important; color: rgba(231, 76, 60, 0.8) !important; }
-    .btn-logout:hover { background: rgba(231, 76, 60, 0.1) !important; border-color: var(--rojo-logout) !important; color: white !important; box-shadow: 0 0 10px rgba(231, 76, 60, 0.5); }
-    .table-container { background: rgba(255, 255, 255, 0.03) !important; backdrop-filter: blur(15px) saturate(150%); -webkit-backdrop-filter: blur(15px) saturate(150%); border-radius: 28px; padding: 30px; color: white; box-shadow: 0 25px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255, 255, 255, 0.1) !important; }
-    .table { --bs-table-bg: transparent !important; --bs-table-color: white !important; background-color: transparent !important; color: white !important; margin-bottom: 0; border-collapse: separate; border-spacing: 0 5px; }
-    .table th, .table td { background-color: transparent !important; border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; padding: 18px 12px; vertical-align: middle; transition: all 0.3s ease-in-out; }
-    .table thead th { background-color: transparent !important; color: rgba(255, 255, 255, 0.6) !important; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; border: none; }
-    .table td .fw-bold { color: #ffffff !important; font-size: 1rem; }
-    .table td .text-muted, .table td .small, .table td span { color: rgba(255, 255, 255, 0.5) !important; transition: all 0.3s ease-in-out; }
-    .table-hover tbody tr:hover td { background-color: rgba(255, 255, 255, 0.05) !important; }
-    .table-hover tbody tr:hover td, .table-hover tbody tr:hover td * { color: #ffffff !important; opacity: 1 !important; text-shadow: 0 0 10px rgba(255, 255, 255, 0.9); filter: brightness(1.2); }
-    .btn-dark.btn-sm { background-color: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: white !important; border-radius: 50px; padding: 6px 15px; transition: 0.3s; }
-    .btn-dark.btn-sm:hover { background-color: white !important; color: black !important; }
-    .modal-content { background: rgba(255, 255, 255, 0.03) !important; backdrop-filter: blur(15px) saturate(150%) !important; -webkit-backdrop-filter: blur(15px) saturate(150%) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; border-radius: 32px; color: white !important; box-shadow: 0 30px 60px rgba(0,0,0,0.7); }
-    .modal-header, .modal-footer { border: none !important; background: transparent !important; }
-    .modal-header .btn-close { filter: invert(1) grayscale(1) brightness(2); }
-    .btn-activar-acceso { background: rgba(39, 174, 96, 0.2) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; border: 1px solid rgba(39, 174, 96, 0.5) !important; color: #ffffff !important; text-shadow: 0 0 8px rgba(255, 255, 255, 0.5); transition: all 0.3s ease; }
-    .btn-activar-acceso:hover { background: rgba(39, 174, 96, 0.4) !important; border-color: rgba(39, 174, 96, 0.9) !important; box-shadow: 0 0 20px rgba(39, 174, 96, 0.4); transform: translateY(-2px); }
-    .btn-outline-danger { background: rgba(231, 76, 60, 0.1) !important; backdrop-filter: blur(5px); border: 1px solid rgba(231, 76, 60, 0.4) !important; color: #e74c3c !important; border-radius: 50px; padding: 12px 25px; transition: 0.3s; }
-    .btn-outline-danger:hover { background: rgba(231, 76, 60, 0.3) !important; color: white !important; border-color: rgba(231, 76, 60, 0.8) !important; }
-    .swal2-popup { background: rgba(255, 255, 255, 0.05) !important; backdrop-filter: blur(20px) saturate(160%) !important; -webkit-backdrop-filter: blur(20px) saturate(160%) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; border-radius: 32px !important; color: white !important; box-shadow: 0 30px 60px rgba(0,0,0,0.8) !important; }
-    .swal2-title, .swal2-html-container { color: white !important; }
-    .swal2-confirm { background: rgba(39, 174, 96, 0.3) !important; backdrop-filter: blur(10px) !important; border: 1px solid rgba(39, 174, 96, 0.6) !important; border-radius: 50px !important; padding: 12px 30px !important; font-weight: 700 !important; transition: 0.3s !important; }
-    .swal2-confirm:hover { background: rgba(39, 174, 96, 0.5) !important; box-shadow: 0 0 15px rgba(39, 174, 96, 0.5) !important; }
-    .swal2-cancel { background: rgba(231, 76, 60, 0.15) !important; backdrop-filter: blur(10px) !important; border: 1px solid rgba(231, 76, 60, 0.4) !important; border-radius: 50px !important; padding: 12px 30px !important; color: white !important; transition: 0.3s !important; }
-    .swal2-cancel:hover { background: rgba(231, 76, 60, 0.4) !important; box-shadow: 0 0 15px rgba(231, 76, 60, 0.5) !important; }
-    .label-exp { color: var(--dorado-ucmi) !important; font-size: 0.7rem; text-transform: uppercase; font-weight: 800; margin-bottom: 2px; display: block; opacity: 0.9; }
-    .val-exp { color: #ffffff !important; font-size: 1rem; font-weight: 500; margin-bottom: 15px; display: block; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 5px; }
-    .badge-perfil { font-size: 0.7rem; padding: 5px 10px; border-radius: 50px; color: white; font-weight: 700; }
-    #contenidoModal .bg-white { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: rgba(255, 255, 255, 0.8) !important; border-radius: 12px; }
-    .bg-categoria-academia { background-color: #0a3d1d !important; color: #ffffff !important; }
-    .bg-categoria-profesor { background-color: #0d2e5e !important; color: #ffffff !important; }
-    .bg-categoria-estudiante { background-color: #311b92 !important; color: #ffffff !important; }
-    .bg-categoria-default { background-color: #455a64 !important; color: #ffffff !important; }
-    body.modal-open .super-overlay { filter: blur(8px) brightness(0.7); }
-    .modal-backdrop.show { opacity: 0.4; backdrop-filter: blur(4px); }
-    .modal.fade .modal-dialog { transform: scale(0.95); transition: transform 0.3s ease-out; }
-    .modal.show .modal-dialog { transform: scale(1); }
+        :root {
+            --dorado-ucmi: #c5a059;
+            --azul-sidebar: #1a2a3a;
+            --cian-tech: #00f2ff;
+            --purpura-neon: #bc13fe;
+        }
+
+        body {
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            color: white;
+            margin: 0;
+        }
+
+        .super-overlay {
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.9) 100%);
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR BASADO EN image_0f113d.png */
+        .sidebar { 
+            background: rgba(26, 42, 58, 0.95); 
+            backdrop-filter: blur(10px);
+            min-height: 100vh; 
+            padding: 25px 15px; 
+            border-right: 1px solid rgba(197, 160, 89, 0.3);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+        }
+
+        .logo-sidebar { height: 50px; margin-bottom: 15px; }
+
+        .nav-link-custom {
+            display: flex; align-items: center; width: 100%;
+            background: transparent; border: none; padding: 12px 15px;
+            color: rgba(255, 255, 255, 0.7); text-align: left;
+            border-radius: 12px; font-size: 0.85rem; font-weight: 500;
+            transition: all 0.3s ease; margin-bottom: 5px; cursor: pointer;
+            text-decoration: none; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .nav-link-custom i { font-size: 1.1rem; margin-right: 12px; }
+        .nav-link-custom:hover { background: rgba(255, 255, 255, 0.05); color: var(--cian-tech); }
+        
+        .nav-link-custom.active { 
+            background: rgba(188, 19, 254, 0.1); 
+            color: #d880ff; 
+            border: 1px solid rgba(188, 19, 254, 0.3); 
+        }
+
+        .sidebar-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 20px 0;
+        }
+
+        /* BOTONES DE ACCIÓN (ESTILO CÁPSULA) */
+        .btn-action-sidebar {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 10px;
+            border-radius: 50px;
+            width: 100%;
+            text-align: center;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+            display: block;
+            text-decoration: none;
+        }
+
+        .btn-action-sidebar:hover {
+            background: white;
+            color: #1a2a3a;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-logout-sidebar {
+            border: 1px solid rgba(255, 49, 49, 0.4);
+            color: #ff3131;
+        }
+
+        .btn-logout-sidebar:hover {
+            background: rgba(255, 49, 49, 0.1);
+            color: #ff3131;
+            border-color: #ff3131;
+            box-shadow: 0 0 15px rgba(255, 49, 49, 0.2);
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        .program-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+        }
+
+        .program-card i { font-size: 1.6rem; margin-bottom: 12px; color: var(--dorado-ucmi); }
+        .program-card:hover {
+            background: rgba(197, 160, 89, 0.15);
+            border-color: var(--dorado-ucmi);
+            transform: translateY(-5px);
+        }
+
+        .text-glow-gold {
+            color: var(--dorado-ucmi);
+            text-shadow: 0 0 15px rgba(197, 160, 89, 0.6);
+        }
     </style>
 </head>
-
 <body>
-<div class="app-wrapper">
-    <aside class="sidebar d-none d-md-flex">
-        <div class="text-center mb-4">
-            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" class="logo-sidebar">
-            <h5 class="fw-bold mt-2 text-white">UCMI ADMIN</h5>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="#" class="nav-item-ucmi active"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
-            <a href="master-vigencia.html" class="nav-item-ucmi"><i class="bi bi-shield-check"></i> VIGENCIA</a>
-            <a href="master-usuarios.html" class="nav-item-ucmi"><i class="bi bi-people"></i> USUARIOS</a>
-            <a href="historial-postulaciones.html" class="nav-item-ucmi"><i class="bi bi-clock-history"></i> HISTORIAL</a>
-            <a href="directorio.html" class="nav-item-ucmi"><i class="bi bi-person-vcard"></i> DIRECTORIO</a>
-            <a href="ofertas-academicas.html" class="nav-item-ucmi"><i class="bi bi-tags"></i> OFERTAS</a>
-            <a href="master-repositorio.html" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
-            <a href="papelera.html" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
-        </nav>
-        <div class="mt-4 pt-4 border-top border-secondary">
-            <a href="super-admin.html" class="btn-sidebar-action w-100"><i class="bi bi-shield-lock"></i> Panel Maestro</a>
-            <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a>
-        </div>
-    </aside>
 
-    <main class="super-overlay">
-        <div class="container-fluid p-4">
-            <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
-            <div class="row mt-4">
-                <div class="col-md-4">
-                    <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
-                        <label class="small text-muted fw-bold mb-2 d-block text-uppercase" style="letter-spacing: 1px;">Filtrar por Perfil</label>
-                        <select id="filtroPerfil" class="form-select bg-dark text-white border-0 rounded-pill px-3 shadow-sm">
-                            <option value="todos">Mostrar todos</option>
-                            <option value="Academia">Academia</option>
-                            <option value="Profesor independiente">Profesor independiente</option>
-                            <option value="Estudiante UCMI">Estudiante UCMI</option>
-                        </select>
-                    </div>
+<div class="super-overlay">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- SIDEBAR ACTUALIZADO -->
+            <div class="col-md-2 sidebar d-none d-md-flex">
+                <div class="text-center mb-4">
+                    <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" class="logo-sidebar" alt="Logo">
+                    <h5 class="fw-bold text-white small opacity-50">SISTEMA MAESTRO</h5>
+                </div>
+                
+                <nav class="nav flex-column mb-auto">
+                    <a class="nav-link-custom" href="master-postulaciones.html">
+                        <i class="bi bi-person-video2"></i> Solicitudes
+                    </a>
+                    <a class="nav-link-custom" href="master-vigencia.html">
+                        <i class="bi bi-shield-check"></i> Vigencia
+                    </a>
+                    <a class="nav-link-custom" href="master-usuarios.html">
+                        <i class="bi bi-people"></i> Usuarios
+                    </a>
+                    <a class="nav-link-custom" href="historial-postulaciones.html">
+                        <i class="bi bi-clock-history"></i> Historial
+                    </a>
+                    <a class="nav-link-custom" href="directorio.html">
+                        <i class="bi bi-person-lines-fill"></i> Directorio
+                    </a>
+                    <a class="nav-link-custom" href="ofertas-academicas.html">
+                        <i class="bi bi-tags"></i> Ofertas
+                    </a>
+                    <a class="nav-link-custom active" href="master-repositorio.html">
+                        <i class="bi bi-grid-3x3-gap"></i> Módulos
+                    </a>
+                    <a class="nav-link-custom" href="papelera.html">
+                        <i class="bi bi-trash3"></i> Papelera
+                    </a>
+                </nav>
+
+                <div class="sidebar-divider"></div>
+
+                <div class="px-2">
+                    <!-- BOTÓN PANEL MAESTRO INTEGRADO -->
+                    <a href="super-admin.html" class="btn-action-sidebar">
+                        <i class="bi bi-shield-lock me-2"></i> Panel Maestro
+                    </a>
+                    
+                    <button id="btnLogoutSidebar" class="btn-action-sidebar btn-logout-sidebar">
+                        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+                    </button>
                 </div>
             </div>
-            <div class="table-container mt-4">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead>
-                            <tr class="text-muted small">
-                                <th>ENTIDAD</th>
-                                <th>NOMBRE</th>
-                                <th>PERFIL</th>
-                                <th>LOCALIZACIÓN</th>
-                                <th class="text-center">ACCIÓN</th>
-                            </tr>
-                        </thead>
-                        <tbody id="listaMaestra"></tbody>
-                    </table>
+
+            <!-- CONTENIDO PRINCIPAL -->
+            <div class="col-md-10 p-4">
+                <div class="text-center mb-5">
+                    <h1 class="fw-bold text-uppercase display-6"><i class="bi bi-journal-bookmark-fill me-3 text-glow-gold"></i>Repositorio Maestro</h1>
+                    <p class="text-white-50">Protocolos de Enseñanza Supralógica</p>
                 </div>
-            </div>
-        </div>
-    </main>
-</div>
-<div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h4 class="fw-bold"><i class="bi bi-file-earmark-person me-2"></i>Expediente del Aspirante</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body py-4">
-                <div class="row" id="contenidoModal"></div>
-            </div>
-            <div class="modal-footer border-0">
-                <button class="btn btn-outline-danger rounded-pill px-4" id="btnEliminar">Rechazar</button>
-                <button class="btn btn-activar-acceso rounded-pill px-4 fw-bold" id="btnConfirmarAcceso">Activar Acceso</button>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-calculator"></i><h6 class="fw-bold">Matemática AGEM</h6></a></div>
+                    <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-speedometer2"></i><h6 class="fw-bold">Física</h6></a></div>
+                    <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-flask"></i><h6 class="fw-bold">Química</h6></a></div>
+                    <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-tree"></i><h6 class="fw-bold">Biología</h6></a></div>
+                    <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-diagram-3"></i><h6 class="fw-bold">Lógica</h6></a></div>
+                    <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-bar-chart"></i><h6 class="fw-bold">Estadística</h6></a></div>
+                    <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-hash"></i><h6 class="fw-bold">Razonamiento numérico</h6></a></div>
+                    <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-puzzle"></i><h6 class="fw-bold">Razonamiento abstracto</h6></a></div>
+                    <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-chat-left-text"></i><h6 class="fw-bold">Lengua</h6></a></div>
+                </div>
+
+                <hr class="border-secondary opacity-25">
+
+                <div class="text-center my-4">
+                    <h4 class="text-glow-gold small fw-bold text-uppercase">Certificaciones Internacionales</h4>
+                </div>
+                <div class="row g-3 justify-content-center">
+                    <div class="col-md-2 col-6"><a href="#" class="program-card py-4"><i class="bi bi-translate"></i><h6 class="small mb-0">Inglés A1</h6></a></div>
+                    <div class="col-md-2 col-6"><a href="#" class="program-card py-4"><i class="bi bi-translate"></i><h6 class="small mb-0">Inglés A2</h6></a></div>
+                    <div class="col-md-2 col-6"><a href="#" class="program-card py-4"><i class="bi bi-translate"></i><h6 class="small mb-0">Inglés B1</h6></a></div>
+                    <div class="col-md-2 col-6"><a href="#" class="program-card py-4"><i class="bi bi-translate"></i><h6 class="small mb-0">Inglés B1+</h6></a></div>
+                    <div class="col-md-2 col-6"><a href="#" class="program-card py-4"><i class="bi bi-translate"></i><h6 class="small mb-0">Inglés B2</h6></a></div>
+                    <div class="col-md-2 col-6"><a href="#" class="program-card py-4"><i class="bi bi-translate"></i><h6 class="small mb-0">Inglés B2+</h6></a></div>
+                    <div class="col-md-2 col-6"><a href="#" class="program-card py-4"><i class="bi bi-translate"></i><h6 class="small mb-0">Inglés C1</h6></a></div>
+                </div>
+
+                <footer class="mt-5 text-center text-white-25 small">
+                    UCMI — Desarrollo Humano y Excelencia Académica © 2026
+                </footer>
             </div>
         </div>
     </div>
 </div>
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    emailjs.init("TU_PUBLIC_KEY_AQUÍ");
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -175,161 +245,18 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
     const auth = getAuth(app);
-    const secondaryApp = initializeApp(firebaseConfig, "Secondary");
-    const secondaryAuth = getAuth(secondaryApp);
-    
-    let currentId = null;
-    let currentData = null;
+    const MI_UID_MAESTRO = "x0oBFbDP09d7I3VZvWuN6BOODf32";
 
-    const enviarEmailAutomatico = (data, decision) => {
-        const templateParams = {
-            to_name: data.nombreResponsable,
-            to_email: data.email,
-            status: decision,
-            message: decision === "ACEPTADO" 
-                ? "Tu solicitud en UCMI ha sido aprobada. Tus credenciales de acceso son tu correo y la clave UCMI2026." 
-                : "Lamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión."
-        };
-        emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
-            .then(() => console.log("Email enviado correctamente"))
-            .catch((err) => console.error("Error Email:", err));
-    };
+    onAuthStateChanged(auth, (user) => {
+        console.log("REPOSITORIO EJECUTADO");
+console.log("USER REPOSITORIO:", user);
+        if (!user || user.uid !== MI_UID_MAESTRO) { window.location.href = "index.html"; }
+    });
 
-    const prepararMensajeWhatsApp = (data, decision) => {
-        const nombre = data.nombreResponsable || "Postulante";
-        const telefono = data.whatsapp || "";
-        if (!telefono || telefono === "N/A") return;
-        let textoMensaje = "";
-        if (decision === "ACEPTADO") {
-            const meses = data.mesesAprobados || "1";
-            const expiracion = data.expiracionLicencia || "Ver panel";
-            textoMensaje = `¡Hola *${nombre}*! Te saluda UCMI. %0A%0A` +
-               `Tu solicitud ha sido *ACEPTADA*. ✅%0A%0A` +
-               `*Detalles de acceso:*%0A` +
-               `📧 *Usuario:* ${data.email}%0A` +
-               `🔑 *Clave:* UCMI2026%0A%0A` +
-               `*Vigencia:*%0A` +
-               `📅 *Duración:* ${data.duracionLicencia || data.mesesAprobados + ' mes(es)'}%0A` + 
-               `⏳ *Expira el:* ${expiracion}%0A%0A` +
-               `¡Bienvenido!`;
-        } else {
-            textoMensaje = `Hola *${nombre}*. Gracias por tu interés en UCMI. %0A%0ALamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión.`;
-        }
-        const telLimpio = telefono.toString().replace(/\D/g, '');
-        const url = `https://api.whatsapp.com/send?phone=${telLimpio}&text=${textoMensaje}`;
-        window.open(url, '_blank');
-    };
-
-    const selectorFiltro = document.getElementById('filtroPerfil');
-    let registrosLocales = [];
-
-    function renderizarTabla() {
-        const tbody = document.getElementById('listaMaestra');
-        const valorFiltro = selectorFiltro.value; 
-        tbody.innerHTML = '';
-        registrosLocales.forEach((d) => {
-            const data = d.data();
-            const id = d.id;
-            const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
-            const pLow = perfilOriginal.toLowerCase().trim();
-            let pasaFiltro = (valorFiltro === "todos") ? true : (perfilOriginal === valorFiltro);
-            if (!pasaFiltro) return;
-            let colorClass = (perfilOriginal === "Academia") ? "bg-categoria-academia" : (perfilOriginal === "Profesor independiente") ? "bg-categoria-profesor" : (perfilOriginal === "Estudiante UCMI") ? "bg-categoria-estudiante" : "bg-categoria-default";
-            const perfilesBloqueados = ["profesora academia", "estudiante academia", "estudiante asociado", "estudiante embajador"];
-            const estaInhabilitado = perfilesBloqueados.includes(pLow) ? "disabled" : "";
-            tbody.innerHTML += `<tr>
-                <td><div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : "---"}</div><div class="small text-muted">${data.email}</div></td>
-                <td class="small">${data.nombreResponsable || '---'}</td>
-                <td><span class="badge-perfil ${colorClass}">${perfilOriginal}</span></td>
-                <td class="small">${data.ubicacion || '---'}</td>
-                <td class="text-center"><button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3" ${estaInhabilitado}>${estaInhabilitado ? 'Bloqueado' : 'Revisar'}</button></td>
-            </tr>`;
-        });
-    }
-
-    selectorFiltro.addEventListener('change', renderizarTabla);
-
-    window.verExpediente = async (id) => {
-        currentId = id;
-        const snap = await getDoc(doc(db, "postulaciones", id));
-        if (snap.exists()) {
-            currentData = snap.data();
-            const d = currentData;
-            document.getElementById('contenidoModal').innerHTML = `
-                <div class="col-md-12 mb-4 border-bottom pb-2">
-                    <label class="label-exp">Fecha de Solicitud</label>
-                    <span class="val-exp text-primary fw-bold"><i class="bi bi-calendar3 me-2"></i>${d.timestamp && typeof d.timestamp.toDate === 'function' ? d.timestamp.toDate().toLocaleString() : (d.timestamp || 'N/A')}</span>
-                </div>
-                <div class="col-md-6">
-                    <label class="label-exp">Entidad / Institución</label><span class="val-exp">${d.entidad || 'N/A'}</span>
-                    <label class="label-exp">Nombres y apellidos</label><span class="val-exp">${d.nombreResponsable || 'N/A'}</span>
-                    <label class="label-exp">ID (Cédula/RIF)</label><span class="val-exp">${d.cedulaResponsable || d.rif || 'N/A'}</span>
-                    <label class="label-exp">Email</label><span class="val-exp text-lowercase">${d.email || 'N/A'}</span>
-                    <label class="label-exp">WhatsApp</label><span class="val-exp">${d.whatsapp || 'N/A'}</span>
-                </div>
-                <div class="col-md-6" style="background: rgba(0,0,0,0.03); border-radius: 15px; padding: 15px;">
-                    <label class="label-exp">Perfil</label><span class="val-exp fw-bold text-success">${d.tipoSolicitante || d.perfil || 'N/A'}</span>
-                    <label class="label-exp">LICENCIA EN MESES</label><span class="val-exp">${d.mesesLicencia || 'N/A'}</span>
-                    <label class="label-exp">Cupos</label><span class="val-exp">${d.cupos || '0'}</span>
-                    <label class="label-exp">Ubicación</label><span class="val-exp">${d.ubicacion || 'N/A'}</span>
-                    <label class="label-exp">Programas</label>
-                    <div class="small p-2 bg-white border rounded" style="max-height: 100px; overflow-y: auto;">${d.modulos || 'No especificados'}</div>
-                </div>`;
-            new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-        }
-    };
-
-    document.getElementById('btnConfirmarAcceso').onclick = async () => {
-        if(!currentId || !currentData) return;
-        try {
-            await createUserWithEmailAndPassword(secondaryAuth, currentData.email.trim().toLowerCase(), "UCMI2026");
-            const meses = parseInt(String(currentData.mesesLicencia || "1").replace(/\D/g, '')) || 1;
-            const exp = new Date(); exp.setMonth(exp.getMonth() + meses);
-            const emailNormalizado = currentData.email.trim().toLowerCase();
-            const usuarioExistente = await getDoc(doc(db, "usuarios", emailNormalizado));
-            if (usuarioExistente.exists()) {
-                await Swal.fire("Error", "Este correo ya está registrado.", "error");
-                return;
-            }
-            const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date(), expiracionLicencia: exp.toLocaleString(), expiracionTimestamp: exp.getTime(), mesesAprobados: meses, duracionLicencia: `${meses} mes(es)` };
-            await setDoc(doc(db, "usuarios", emailNormalizado), dataFinal);
-            await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO", fechaProceso: new Date().toLocaleString() });
-            await deleteDoc(doc(db, "postulaciones", currentId));
-            enviarEmailAutomatico(currentData, "ACEPTADO");
-            prepararMensajeWhatsApp(dataFinal, "ACEPTADO");
-            bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
-            Swal.fire("¡Acceso Activado!", "Usuario creado y datos guardados.", "success");
-        } catch (e) { Swal.fire("Error", e.message, "error"); }
-    };
-
-    document.getElementById('btnEliminar').onclick = async () => {
-        if (!currentId || !currentData) return;
-        const conf = await Swal.fire({ title: '¿Rechazar?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
-        if (conf.isConfirmed) {
-            try {
-                await setDoc(doc(db, "historial_postulaciones", currentId), { ...currentData, decisionFinal: "RECHAZADO", fechaProceso: new Date().toLocaleString() });
-                await deleteDoc(doc(db, "postulaciones", currentId));
-                enviarEmailAutomatico(currentData, "RECHAZADO");
-                const modalElement = document.getElementById('modalDetalles');
-                const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                if (modalInstance) modalInstance.hide();
-                await Swal.fire("Correcto", "Solicitud rechazada. Se abrirá WhatsApp para informar.", "info");
-                prepararMensajeWhatsApp(currentData, "RECHAZADO");
-            } catch (e) { Swal.fire("Error", e.message, "error"); }
-        }
-    };
-
-    document.getElementById('btnLogout').onclick = async (e) => {
-        e.preventDefault();
-        const result = await Swal.fire({ title: '¿Cerrar sesión?', icon: 'question', showCancelButton: true });
-        if (result.isConfirmed) { await signOut(auth); window.location.href = "index.html"; }
-    };
-
-    onSnapshot(collection(db, "postulaciones"), (snap) => {
-        registrosLocales = snap.docs;
-        renderizarTabla();
+    document.getElementById('btnLogoutSidebar').addEventListener('click', () => {
+        signOut(auth).then(() => { window.location.href = "index.html"; });
     });
 </script>
+</body>
 </html>
