@@ -164,12 +164,27 @@
     const tablaCuerpo = document.getElementById('tablaCuerpo');
 
     onSnapshot(collection(db, "historial_postulaciones"), (snapshot) => {
+        // DIAGNÓSTICO: Ver si llega algo de Firestore
+        console.log("DEBUG: Documentos detectados en 'historial_postulaciones':", snapshot.size);
+        
         tablaCuerpo.innerHTML = '';
+        
+        if (snapshot.empty) {
+            console.warn("DEBUG: La colección está vacía.");
+            tablaCuerpo.innerHTML = '<tr><td colspan="5" class="text-center">No hay registros en el historial.</td></tr>';
+            return;
+        }
+
         snapshot.forEach(doc => {
             const p = doc.data();
-            const esDocente = String(p.perfil || '').toLowerCase().includes("docente");
+            console.log("DEBUG: Procesando doc:", doc.id, p);
+
+            // Mapeo robusto: intentamos con perfil, si no, con tipoSolicitante
+            const perfil = p.perfil || p.tipoSolicitante || 'ACADEMIA';
+            const esDocente = String(perfil).toLowerCase().includes("docente");
             const decision = String(p.decisionFinal || "").toUpperCase().trim();
-            
+            const whatsapp = p.whatsapp || '';
+
             let statusClass = 'status-pendiente';
             let estadoTexto = 'PENDIENTE';
 
@@ -183,11 +198,16 @@
 
             tablaCuerpo.innerHTML += `
                 <tr>
-                    <td><div class="fw-bold">${p.entidad || 'N/A'}</div><div class="small text-white-50">${p.nombreResponsable || p.nombreEstudiante || '---'}</div></td>
+                    <td>
+                        <div class="fw-bold">${p.entidad || 'N/A'}</div>
+                        <div class="small text-white-50">${p.nombreResponsable || p.nombreEstudiante || '---'}</div>
+                    </td>
                     <td><span class="date-chip">${p.fechaProceso || '---'}</span></td>
-                    <td><div class="fw-bold ${esDocente ? 'text-info' : 'text-warning'}">${(p.perfil || 'ACADEMIA').toUpperCase()}</div></td>
+                    <td><div class="fw-bold ${esDocente ? 'text-info' : 'text-warning'}">${String(perfil).toUpperCase()}</div></td>
                     <td><span class="badge-status ${statusClass}">${estadoTexto}</span></td>
-                    <td><a href="https://wa.me/${p.whatsapp}" target="_blank" class="text-decoration-none text-info"><i class="bi bi-whatsapp"></i> ${p.whatsapp || '---'}</a></td>
+                    <td>
+                        ${whatsapp ? `<a href="https://wa.me/${whatsapp}" target="_blank" class="text-decoration-none text-info"><i class="bi bi-whatsapp"></i> ${whatsapp}</a>` : '---'}
+                    </td>
                 </tr>
             `;
         });
