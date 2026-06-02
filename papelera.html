@@ -2,196 +2,122 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <style>html { display: none; }</style>
-    <script type="module" src="auth-guard.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UCMI - Papelera de Reciclaje</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root {
-            --dorado-neon: #ffcc66;
-            --azul-neon: #00f2ff;
-            --dorado-ucmi: #c5a059;
+        :root { 
+            --dorado-ucmi: #c5a059; 
+            --sidebar-width: 260px;
+            --purpura-neon: #bc13fe;
             --cian-tech: #00f2ff;
-            --rojo-neon: #ff3131;
-            --blanco-neon: #ffffff;
-            --fondo-sidebar: #1a2a3a;
         }
 
         body {
-            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-            background-size: cover;
+            margin: 0;
             font-family: 'Segoe UI', sans-serif;
             color: white;
-            overflow-x: hidden;
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover;
+            overflow: hidden;
         }
 
-        .super-overlay {
-            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.95) 100%);
-            min-height: 100vh;
+        .overlay {
+            position: fixed;
+            top: 0; right: 0; bottom: 0; left: var(--sidebar-width);
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.7) 0%, rgba(6, 9, 15, 0.95) 100%);
+            z-index: -1;
         }
 
-        /* --- SIDEBAR ESTILO IMAGEN --- */
-        .sidebar { 
-            background: rgba(26, 42, 58, 0.95); 
-            backdrop-filter: blur(10px);
-            min-height: 100vh; 
-            padding: 30px 20px; 
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        .wrapper { display: flex; height: 100vh; width: 100vw; }
+
+        /* SIDEBAR INTEGRADO */
+        .sidebar {
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(25px);
+            border-right: 1px solid rgba(197, 160, 89, 0.2);
             display: flex;
             flex-direction: column;
-            position: sticky;
-            top: 0;
+            padding: 25px 15px;
         }
 
-        .nav-link-custom {
-            display: flex; align-items: center; width: 100%;
-            background: transparent; border: none; padding: 14px 18px;
-            color: rgba(255, 255, 255, 0.7); text-align: left;
-            border-radius: 12px; font-size: 0.9rem; font-weight: 500;
-            transition: all 0.3s ease; margin-bottom: 8px; cursor: pointer;
-            text-decoration: none; text-transform: uppercase; letter-spacing: 1px;
+        .sidebar-logo { width: 100px; margin: 0 auto 30px; display: block; }
+        .sidebar-nav { flex-grow: 1; }
+        .nav-item-ucmi {
+            display: flex; align-items: center; color: rgba(255,255,255,0.6);
+            text-decoration: none; padding: 10px 15px; margin-bottom: 5px;
+            border-radius: 10px; transition: 0.3s; font-size: 0.85rem;
+        }
+        .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
+        .nav-item-ucmi:hover { color: white; background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; }
+
+        .btn-maestro {
+            background: transparent; border: 1px solid rgba(255,255,255,0.3);
+            color: white; font-weight: 600; text-transform: uppercase;
+            font-size: 0.65rem; border-radius: 50px; padding: 10px;
+            text-align: center; display: block; margin-bottom: 10px; text-decoration: none;
+        }
+        .btn-cerrar {
+            background: transparent; border: 1px solid rgba(231, 76, 60, 0.4);
+            color: rgba(231, 76, 60, 0.9); font-weight: 600; text-transform: uppercase;
+            font-size: 0.65rem; border-radius: 50px; padding: 8px;
+            text-align: center; display: block; text-decoration: none;
         }
 
-        .nav-link-custom i { font-size: 1.2rem; margin-right: 15px; }
-        .nav-link-custom:hover { background: rgba(255, 255, 255, 0.05); color: var(--dorado-ucmi); }
-        
-        /* Estilo Activo para Papelera */
-        .nav-link-custom.active { 
-            background: rgba(197, 160, 89, 0.1); 
-            color: var(--dorado-ucmi); 
-            border: 1px solid rgba(197, 160, 89, 0.2); 
-        }
-
-        .sidebar-divider {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin: 20px 0;
-        }
-
-        /* Botones Especiales Inferiores */
-        .btn-panel-maestro {
-            background: transparent; border: 1px solid rgba(255, 255, 255, 0.4);
-            color: white; padding: 12px; border-radius: 50px; width: 100%;
-            text-align: center; font-weight: 600; text-transform: uppercase;
-            font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease;
-            margin-bottom: 15px; display: block; text-decoration: none;
-        }
-        .btn-panel-maestro:hover { background: white; color: #1a2a3a; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
-
-        .btn-cerrar-sesion {
-            background: transparent; border: 1px solid rgba(255, 49, 49, 0.4);
-            color: #ff3131; padding: 12px; border-radius: 50px; width: 100%;
-            text-align: center; font-weight: 600; text-transform: uppercase;
-            font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease;
-            display: block; text-decoration: none;
-        }
-        .btn-cerrar-sesion:hover { background: rgba(255, 49, 49, 0.1); border-color: #ff3131; box-shadow: 0 0 15px rgba(255, 49, 49, 0.2); }
-
-        /* --- CONTENIDO DE TABLA --- */
+        /* CONTENIDO */
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; }
         .glass-panel {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255,255,255,0.03);
             backdrop-filter: blur(25px);
             border-radius: 30px;
-            padding: 30px;
+            padding: 40px;
         }
-
-        .table-custom { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
-        #trash-table-body tr { background: rgba(255, 255, 255, 0.03); vertical-align: middle; }
-        #trash-table-body td { padding: 15px; }
-        #trash-table-body tr td:first-child { border-radius: 15px 0 0 15px; }
-        #trash-table-body tr td:last-child { border-radius: 0 15px 15px 0; }
-
-        .neon-blue { color: var(--azul-neon); }
+        .table { --bs-table-bg: transparent; --bs-table-color: white; }
         .btn-restore {
-            background: rgba(0, 242, 255, 0.1); border: 1px solid var(--azul-neon);
-            color: var(--azul-neon); border-radius: 8px; padding: 6px 12px; font-size: 0.75rem; transition: 0.3s;
+            background: rgba(0, 242, 255, 0.1); border: 1px solid var(--cian-tech);
+            color: var(--cian-tech); border-radius: 8px; padding: 5px 12px; font-size: 0.8rem;
         }
-        .btn-restore:hover { background: var(--azul-neon); color: black; }
-
     </style>
 </head>
 <body>
 
-<div class="super-overlay">
-    <div class="container-fluid">
-        <div class="row">
-            <!-- SIDEBAR INTEGRADO (Exacto a la imagen) -->
-            <div class="col-md-2 sidebar d-none d-md-flex">
-                <div class="mb-4 text-center">
-                    <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" style="height: 45px;" alt="UCMI">
-                </div>
-                
-                <nav class="nav flex-column mb-auto">
-                    <a href="master-postulaciones.html" class="nav-link-custom">
-                        <i class="bi bi-person-video2"></i> Solicitudes
-                    </a>
-                    <a href="master-vigencia.html" class="nav-link-custom">
-                        <i class="bi bi-shield-check"></i> Vigencia
-                    </a>
-                    <a href="master-usuarios.html" class="nav-link-custom">
-                        <i class="bi bi-people"></i> Usuarios
-                    </a>
-                    <a href="historial-postulaciones.html" class="nav-link-custom">
-                        <i class="bi bi-clock-history"></i> Historial
-                    </a>
-                    <a href="directorio.html" class="nav-link-custom">
-                        <i class="bi bi-person-lines-fill"></i> Directorio
-                    </a>
-                    <a href="ofertas-academicas.html" class="nav-link-custom">
-                        <i class="bi bi-tags"></i> Ofertas
-                    </a>
-                    <a href="master-repositorio.html" class="nav-link-custom">
-                        <i class="bi bi-grid-3x3-gap"></i> Módulos
-                    </a>
-                    <a href="papelera.html" class="nav-link-custom active">
-                        <i class="bi bi-trash3"></i> Papelera
-                    </a>
-                </nav>
+<div class="overlay"></div>
 
-                <div class="sidebar-divider"></div>
+<div class="wrapper">
+    <aside class="sidebar">
+        <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" class="sidebar-logo">
+        <nav class="sidebar-nav">
+            <a href="master-postulaciones.html" class="nav-item-ucmi"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
+            <a href="master-vigencia.html" class="nav-item-ucmi"><i class="bi bi-shield-check"></i> VIGENCIA</a>
+            <a href="master-usuarios.html" class="nav-item-ucmi"><i class="bi bi-people"></i> USUARIOS</a>
+            <a href="historial-postulaciones.html" class="nav-item-ucmi"><i class="bi bi-clock-history"></i> HISTORIAL</a>
+            <a href="directorio.html" class="nav-item-ucmi"><i class="bi bi-person-vcard"></i> DIRECTORIO</a>
+            <a href="ofertas-academicas.html" class="nav-item-ucmi"><i class="bi bi-tags"></i> OFERTAS</a>
+            <a href="master-repositorio.html" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
+            <a href="papelera.html" class="nav-item-ucmi active"><i class="bi bi-trash3"></i> PAPELERA</a>
+        </nav>
+        <div class="mt-auto pt-3">
+            <a href="super-admin.html" class="btn-maestro"><i class="bi bi-cpu"></i> PANEL MAESTRO</a>
+            <a href="#" id="btnCerrar" class="btn-cerrar"><i class="bi bi-power"></i> CERRAR SESIÓN</a>
+        </div>
+    </aside>
 
-                <div class="mb-2">
-                    <a href="super-admin.html" class="btn-panel-maestro">
-                        <i class="bi bi-shield-lock me-2"></i> Panel Maestro
-                    </a>
-                    <a href="#" id="btnCerrarSesion" class="btn-cerrar-sesion">
-                        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
-                    </a>
-                </div>
-            </div>
-
-            <!-- CONTENIDO PRINCIPAL -->
-            <div class="col-md-10 p-5">
-                <div class="mb-4">
-                    <h2 class="neon-gold text-uppercase mb-1"><i class="bi bi-trash3 me-2"></i>Papelera</h2>
-                    <p class="text-white-50">Los elementos serán eliminados permanentemente después de 30 días.</p>
-                </div>
-
-                <div class="glass-panel">
-                    <div class="table-responsive">
-                        <table class="table-custom">
-                            <thead>
-                                <tr class="text-white-50 small text-uppercase">
-                                    <th class="ps-4">Entidad</th>
-                                    <th>Responsable</th>
-                                    <th>Email / ID</th>
-                                    <th>Perfil</th>
-                                    <th>Días Restantes</th>
-                                    <th class="text-end pe-4">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="trash-table-body">
-                                <!-- Datos inyectados -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <main class="main-content">
+        <div class="glass-panel">
+            <h3 class="fw-bold text-uppercase mb-4">Papelera de Reciclaje</h3>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead><tr><th>Entidad</th><th>Responsable</th><th>Días Restantes</th><th>Acción</th></tr></thead>
+                    <tbody id="trash-table-body"></tbody>
+                </table>
             </div>
         </div>
-    </div>
+    </main>
 </div>
 
 <script type="module">
@@ -199,96 +125,24 @@
     import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-        authDomain: "ucmi-13796634.firebaseapp.com",
-        projectId: "ucmi-13796634",
-        storageBucket: "ucmi-13796634.firebasestorage.app",
-        messagingSenderId: "1090719609536",
-        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-    };
-
-    const app = initializeApp(firebaseConfig);
+    const app = initializeApp({ apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634" });
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    const trashBody = document.getElementById('trash-table-body');
+    document.getElementById("btnCerrar").onclick = () => signOut(auth).then(() => window.location.href = "index.html");
 
-    // Cargar Papelera
     onSnapshot(collection(db, "usuarios"), (snapshot) => {
-        trashBody.innerHTML = '';
-        const ahora = new Date().getTime();
-
-        snapshot.forEach(async (docSnap) => {
-            const data = docSnap.data();
-            const id = docSnap.id;
-
-            if (data.status === "eliminado") {
-                const fechaElim = data.fechaEliminacion ? data.fechaEliminacion.toDate() : new Date();
-                const diffTiempo = ahora - fechaElim.getTime();
-                const diffDias = Math.floor(diffTiempo / (1000 * 60 * 60 * 24));
-                const diasRestantes = 30 - diffDias;
-
-                if (diasRestantes <= 0) {
-                    await deleteDoc(doc(db, "usuarios", id));
-                    return; 
-                }
-
-                trashBody.innerHTML += `
-                    <tr>
-                        <td class="ps-4">
-                            <span class="neon-gold d-block">${data.entidad || 'Entidad'}</span>
-                        </td>
-                        <td>
-                            <span class="fw-bold text-white">${data.nombreResponsable || 'Sin Nombre'}</span>
-                        </td>
-                        <td><span class="neon-blue small">${data.email || id}</span></td>
-                        <td>
-                            <span class="badge" style="border: 1px solid #c5a059; color: #c5a059; background: rgba(197, 160, 89, 0.05);">
-                                ${(data.perfil || 'Usuario').toUpperCase()}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="small ${diasRestantes < 5 ? 'text-danger fw-bold' : 'text-white-50'}">
-                                ${diasRestantes} días
-                            </span>
-                        </td>
-                        <td class="text-end pe-4">
-                            <button onclick="restituirUsuario('${id}', '${data.nombreResponsable || data.entidad}')" class="btn btn-restore">
-                                <i class="bi bi-arrow-counterclockwise me-1"></i> RESTITUIR
-                            </button>
-                        </td>
-                    </tr>`;
+        const body = document.getElementById('trash-table-body');
+        body.innerHTML = '';
+        snapshot.forEach(docSnap => {
+            const d = docSnap.data();
+            if (d.status === "eliminado") {
+                body.innerHTML += `<tr><td>${d.entidad}</td><td>${d.nombreResponsable}</td><td>30 días</td><td><button class="btn-restore" onclick="restituir('${docSnap.id}')">Restituir</button></td></tr>`;
             }
         });
     });
 
-    // Función Restituir
-    window.restituirUsuario = async (id, nombre) => {
-        const res = await Swal.fire({
-            title: '¿Restaurar Usuario?',
-            text: `Habilitar acceso nuevamente para ${nombre}`,
-            icon: 'question',
-            showCancelButton: true,
-            background: '#1a2a3a',
-            color: '#fff',
-            confirmButtonColor: '#ffcc66',
-            confirmButtonText: 'Sí, restaurar'
-        });
-
-        if (res.isConfirmed) {
-            await updateDoc(doc(db, "usuarios", id), {
-                status: deleteField(),
-                fechaEliminacion: deleteField()
-            });
-        }
-    };
-
-    // Cerrar Sesión
-    document.getElementById('btnCerrarSesion').addEventListener('click', (e) => {
-        e.preventDefault();
-        signOut(auth).then(() => { window.location.href = 'index.html'; });
-    });
+    window.restituir = (id) => updateDoc(doc(db, "usuarios", id), { status: deleteField(), fechaEliminacion: deleteField() });
 </script>
 </body>
 </html>
