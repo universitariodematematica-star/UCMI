@@ -1,166 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>html { display: none; }</style>
+    <script type="module" src="auth-guard.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Gestión de Solicitudes</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+
+    <style>
+        :root { --dorado-ucmi: #c5a059; --sidebar-width: 260px; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; color: white; background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed; background-size: cover; overflow: hidden; }
+        .overlay { position: fixed; top: 0; right: 0; bottom: 0; left: var(--sidebar-width); background: radial-gradient(circle, rgba(6, 9, 15, 0.7) 0%, rgba(6, 9, 15, 0.95) 100%); z-index: 0; pointer-events: none; }
+        .wrapper { display: flex; height: 100vh; width: 100vw; }
+        .sidebar { width: var(--sidebar-width); background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(25px); border-right: 1px solid rgba(197, 160, 89, 0.2); display: flex; flex-direction: column; padding: 25px 15px; z-index: 1; }
+        .sidebar-logo { width: 100px; margin: 0 auto 30px; }
+        .nav-item-ucmi { display: flex; align-items: center; color: rgba(255,255,255,0.6); text-decoration: none; padding: 10px 15px; border-radius: 10px; margin-bottom: 5px; font-size: 0.85rem; }
+        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); }
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; z-index: 1; }
+        .glass-panel { background: rgba(255,255,255,0.03); backdrop-filter: blur(25px); border-radius: 30px; padding: 40px; max-width: 1200px; margin: auto; }
+        .select-input-ucmi { background: rgba(26, 42, 58, 0.6) !important; backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.15) !important; color: #fff !important; border-radius: 20px; }
+        .table-custom { width: 100%; border-collapse: separate; border-spacing: 0 12px; color: white; }
+        .table-custom tr { background: rgba(255, 255, 255, 0.05); }
+    </style>
+</head>
+<body>
+
+<div class="overlay"></div>
+<div class="wrapper">
+    <aside class="sidebar">
+        <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" class="sidebar-logo">
+        <nav class="sidebar-nav">
+            <a href="master-postulaciones.html" class="nav-item-ucmi active"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
+            </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="glass-panel">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold text-uppercase">Gestión de Solicitudes</h3>
+                
+                <div class="d-flex gap-3">
+                    <div class="position-relative" style="width: 320px;">
+                        <i class="bi bi-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--dorado-ucmi);"></i>
+                        <input type="text" id="buscadorTexto" class="form-control select-input-ucmi" placeholder="Buscar por nombre o entidad..." style="padding-left: 45px !important;">
+                    </div>
+
+                    <div class="position-relative" style="width: 320px;">
+                        <i class="bi bi-bank" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--dorado-ucmi); pointer-events: none; z-index: 2;"></i>
+                        <select id="filtroPerfil" class="form-select select-input-ucmi" style="padding-left: 45px !important;">
+                            <option value="todos">--- TODAS LAS CATEGORÍAS ---</option>
+                            <option value="Academia">ACADEMIA</option>
+                            <option value="Profesor independiente">PROFESOR INDEPENDIENTE</option>
+                            <option value="Estudiante UCMI">ESTUDIANTE UCMI</option>
+                        </select>
+                    </div>
+
+                    <button onclick="exportarPDF()" class="btn btn-outline-light btn-sm rounded-pill px-3">PDF</button>
+                    <button onclick="exportarExcel()" class="btn btn-outline-success btn-sm rounded-pill px-3">EXCEL</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table-custom" id="tablaUsuariosUcmi">
+                    <thead>
+                        <tr class="text-white-50 small text-uppercase">
+                            <th>Entidad</th>
+                            <th>Responsable</th>
+                            <th>Perfil</th>
+                            <th>Ubicación</th>
+                            <th class="text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaMaestra"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-        authDomain: "ucmi-13796634.firebaseapp.com",
-        projectId: "ucmi-13796634",
-        storageBucket: "ucmi-13796634.firebasestorage.app",
-        messagingSenderId: "1090719609536",
-        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    
-    let currentId = null;
-    let currentData = null;
-    let logoAcademiaGlobal = "";
-    let academiaNombreGlobal = "";
-    let cuposMaximosGlobal = 0;
-    let registrosLocales = [];
-
-    const selectorFiltro = document.getElementById('filtroPerfil');
-
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const userDoc = await getDoc(doc(db, "usuarios", user.email));
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                logoAcademiaGlobal = data.logoCustom || data.logo || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
-                document.getElementById('logoAcademiaPrincipal').src = logoAcademiaGlobal;
-                document.getElementById('logoAcademiaPrincipal').style.opacity = "1";
-                academiaNombreGlobal = data.entidad || "Panel";
-                cuposMaximosGlobal = data.cupos || 0;
-                document.getElementById('nombreAcademiaSidebar').innerText = academiaNombreGlobal.toUpperCase();
-                actualizarMarcadorCupos();
-                iniciarEscuchaFiltrada(academiaNombreGlobal);
-            }
-        } else { window.location.href = "index.html"; }
-    });
-
-    async function actualizarMarcadorCupos() {
-        if (!academiaNombreGlobal) return;
+    // ... AQUÍ VA TU LÓGICA DE FIREBASE ...
+    // Asegúrate de que tu función renderizarTabla use los nuevos elementos:
+    const renderizarTabla = () => {
+        const valorPerfil = document.getElementById('filtroPerfil').value;
+        const valorBusqueda = document.getElementById('buscadorTexto').value.toLowerCase();
+        const tbody = document.getElementById('listaMaestra');
+        tbody.innerHTML = '';
         
-        // Consulta sincronizada: cuenta estudiantes y docentes
-        const qUsuarios = query(
-            collection(db, "usuarios"), 
-            where("entidad", "==", academiaNombreGlobal), 
-            where("rol", "in", ["estudiante", "docente"])
-        );
-        const snap = await getDocs(qUsuarios);
-        document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
-    }
-
-    function iniciarEscuchaFiltrada(academiaNombre) {
-        const q = query(collection(db, "postulaciones"), where("entidad", "==", academiaNombre));
-        onSnapshot(q, (snap) => {
-            registrosLocales = snap.docs;
-            renderizarTabla();
-        });
-    }
-
-    function renderizarTabla() {
-        const lista = document.getElementById('listaMaestra');
-        if (!lista) return;
-        const filtro = selectorFiltro.value; 
-        lista.innerHTML = "";
-        registrosLocales.forEach(docSnap => {
-            const d = docSnap.data();
-            const id = docSnap.id;
-            const esEstudiante = d.perfil === "Estudiante Academia";
-            const esDocente = d.perfil === "Docente Academia";
-            if (filtro === "estudiante" && !esEstudiante) return;
-            if (filtro === "docente" && !esDocente) return;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><div class="fw-bold">${d.nombreResponsable || d.nombre || 'Sin nombre'}</div><div class="small text-muted">${d.email}</div></td><td><span class="badge ${esDocente ? 'bg-categoria-docente' : 'bg-categoria-estudiante'}">${d.perfil}</span></td><td><i class="bi bi-geo-alt me-1"></i>${d.ubicacion || 'No definida'}</td><td class="text-center"><button class="btn btn-dark btn-sm" onclick="verExpediente('${id}')"><i class="bi bi-eye"></i> Detalles</button></td>`;
-            lista.appendChild(tr);
-        });
-    }
-
-    window.verExpediente = async (id) => {
-        currentId = id;
-        const snap = await getDoc(doc(db, "postulaciones", id));
-        if (!snap.exists()) return;
-        currentData = snap.data();
-        const d = currentData;
-        const esDocente = d.perfil === "Docente Academia";
-        document.getElementById('logoModalAspirante').src = logoAcademiaGlobal;
-        // ... (Tu lógica de renderizado de horarios y datos se mantiene igual)
-        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-    };
-
-    document.getElementById('btnConfirmarAcceso').onclick = async () => {
-        if (!currentId || !currentData) return;
-        const esDocente = currentData.perfil === "Docente Academia";
-
-        try {
-            // Lógica unificada de bloqueo por cupos
-            const qUsuarios = query(
-                collection(db, "usuarios"), 
-                where("entidad", "==", academiaNombreGlobal),
-                where("rol", "in", ["estudiante", "docente"])
-            );
-            const snap = await getDocs(qUsuarios);
+        registrosLocales.forEach((d) => {
+            const data = d.data();
+            const perfil = data.tipoSolicitante || data.perfil || "";
+            const nombre = (data.nombreResponsable || "").toLowerCase();
             
-            if (snap.size >= cuposMaximosGlobal) {
-                await Swal.fire('Cupos Agotados', 'No hay vacantes disponibles (límite alcanzado).', 'warning');
-                return;
+            if ((valorPerfil === "todos" || perfil === valorPerfil) && nombre.includes(valorBusqueda)) {
+                tbody.innerHTML += `<tr><td>${data.entidad}</td><td>${data.nombreResponsable}</td><td>${perfil}</td><td>${data.ubicacion}</td><td class="text-center"><button class="btn btn-dark btn-sm rounded-pill">Revisar</button></td></tr>`;
             }
-
-            // 1. Lógica de contraseña
-            let rawPassword = String(currentData.dniDocente || currentData.dniEstudiante || "UCMI2026");
-            const passwordTemp = rawPassword.length >= 6 ? rawPassword : "UCMI2026";
-
-            // 2. Crear autenticación
-            try {
-                await createUserWithEmailAndPassword(auth, currentData.email, passwordTemp);
-            } catch (authError) {
-                if (authError.code !== 'auth/email-already-in-use') throw authError;
-            }
-
-            // 3. Guardar en Usuarios
-            await setDoc(doc(db, "usuarios", currentData.email), {
-                ...currentData,
-                estado: "activo",
-                rol: esDocente ? "docente" : "estudiante"
-            });
-
-            // 4. Guardar en Historial
-            await addDoc(collection(db, "historial_postulaciones"), {
-                ...currentData,
-                fechaProceso: new Date().toISOString(),
-                resultado: "Admitido",
-                decisionFinal: "ACEPTADO"
-            });
-
-            // 5. Borrar de Postulaciones
-            await deleteDoc(doc(db, "postulaciones", currentId));
-
-            await Swal.fire({
-                title: '¡Éxito!',
-                text: 'Usuario aceptado. Su clave inicial es: ' + passwordTemp,
-                icon: 'success'
-            });
-            location.reload();
-
-        } catch (e) {
-            console.error("Error:", e);
-            Swal.fire('Error', 'No se pudo procesar la admisión: ' + e.message, 'error');
-        }
+        });
     };
 
-    document.getElementById('btnEliminar').onclick = async () => {
-        const res = await Swal.fire({ title: '¿Estás seguro?', text: "¡Esta acción eliminará la postulación!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, rechazar' });
-        if (res.isConfirmed) {
-            try {
-                await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Rechazado", decisionFinal: "RECHAZADO" });
-                await deleteDoc(doc(db, "postulaciones", currentId));
-                location.reload();
-            } catch (e) { Swal.fire('Error', 'No se pudo rechazar.', 'error'); }
-        }
-    };
+    document.getElementById('filtroPerfil').addEventListener('change', renderizarTabla);
+    document.getElementById('buscadorTexto').addEventListener('input', renderizarTabla);
 </script>
+</body>
+</html>
