@@ -26,8 +26,8 @@
     .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); flex-grow: 1; min-height: 100vh; transition: filter 0.3s ease; overflow-y: auto; }
     .sidebar { background: rgba(26, 42, 58, 0.4); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.15); width: 260px; flex-shrink: 0; padding: 25px 15px; display: flex; flex-direction: column; }
     
-    /* LOGO CORREGIDO: Tamaño constante y centrado */
-    .logo-sidebar { height: 100px !important; width: 100px !important; object-fit: contain; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto; }
+    /* MODIFICACIÓN: Tamaño y margen del logo actualizado */
+    .logo-sidebar { height: 100px; width: auto; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto; }
     
     .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; margin-bottom: 5px; text-decoration: none; padding: 10px; display: block; }
     .nav-link:hover { color: white; background: rgba(255,255,255,0.1); border-radius: 8px; }
@@ -136,7 +136,6 @@
         </div>
     </main>
 </div>
-
 <div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -183,9 +182,44 @@
     let currentId = null;
     let currentData = null;
 
-    // Funciones auxiliares
-    const enviarEmailAutomatico = (data, decision) => { /* ... (Tu lógica original) */ };
-    const prepararMensajeWhatsApp = (data, decision) => { /* ... (Tu lógica original) */ };
+    const enviarEmailAutomatico = (data, decision) => {
+        const templateParams = {
+            to_name: data.nombreResponsable,
+            to_email: data.email,
+            status: decision,
+            message: decision === "ACEPTADO" 
+                ? "Tu solicitud en UCMI ha sido aprobada. Tus credenciales de acceso son tu correo y la clave UCMI2026." 
+                : "Lamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión."
+        };
+        emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+            .then(() => console.log("Email enviado correctamente"))
+            .catch((err) => console.error("Error Email:", err));
+    };
+
+    const prepararMensajeWhatsApp = (data, decision) => {
+        const nombre = data.nombreResponsable || "Postulante";
+        const telefono = data.whatsapp || "";
+        if (!telefono || telefono === "N/A") return;
+        let textoMensaje = "";
+        if (decision === "ACEPTADO") {
+            const meses = data.mesesAprobados || "1";
+            const expiracion = data.expiracionLicencia || "Ver panel";
+            textoMensaje = `¡Hola *${nombre}*! Te saluda UCMI. %0A%0A` +
+               `Tu solicitud ha sido *ACEPTADA*. ✅%0A%0A` +
+               `*Detalles de acceso:*%0A` +
+               `📧 *Usuario:* ${data.email}%0A` +
+               `🔑 *Clave:* UCMI2026%0A%0A` +
+               `*Vigencia:*%0A` +
+               `📅 *Duración:* ${data.duracionLicencia || data.mesesAprobados + ' mes(es)'}%0A` + 
+               `⏳ *Expira el:* ${expiracion}%0A%0A` +
+               `¡Bienvenido!`;
+        } else {
+            textoMensaje = `Hola *${nombre}*. Gracias por tu interés en UCMI. %0A%0ALamentamos informarte que tu solicitud no ha sido aprobada en esta ocasión.`;
+        }
+        const telLimpio = telefono.toString().replace(/\D/g, '');
+        const url = `https://api.whatsapp.com/send?phone=${telLimpio}&text=${textoMensaje}`;
+        window.open(url, '_blank');
+    };
 
     const selectorFiltro = document.getElementById('filtroPerfil');
     let registrosLocales = [];
@@ -199,20 +233,17 @@
             const id = d.id;
             const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
             const pLow = perfilOriginal.toLowerCase().trim();
-            
             let pasaFiltro = (valorFiltro === "todos") ? true : (perfilOriginal === valorFiltro);
             if (!pasaFiltro) return;
-            
             let colorClass = (perfilOriginal === "Academia") ? "bg-categoria-academia" : (perfilOriginal === "Profesor independiente") ? "bg-categoria-profesor" : (perfilOriginal === "Estudiante UCMI") ? "bg-categoria-estudiante" : "bg-categoria-default";
             const perfilesBloqueados = ["profesora academia", "estudiante academia", "estudiante asociado", "estudiante embajador"];
             const estaInhabilitado = perfilesBloqueados.includes(pLow) ? "disabled" : "";
-            
             tbody.innerHTML += `<tr>
                 <td><div class="fw-bold">${data.entidad !== "N/A" ? data.entidad : "---"}</div><div class="small text-muted">${data.email}</div></td>
                 <td class="small">${data.nombreResponsable || '---'}</td>
                 <td><span class="badge-perfil ${colorClass}">${perfilOriginal}</span></td>
                 <td class="small">${data.ubicacion || '---'}</td>
-                <td class="text-center"><button onclick="window.verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3" ${estaInhabilitado}>${estaInhabilitado ? 'Bloqueado' : 'Revisar'}</button></td>
+                <td class="text-center"><button onclick="verExpediente('${id}')" class="btn btn-dark btn-sm rounded-pill px-3" ${estaInhabilitado}>${estaInhabilitado ? 'Bloqueado' : 'Revisar'}</button></td>
             </tr>`;
         });
     }
@@ -249,15 +280,55 @@
         }
     };
 
-    // Botones de acción y listeners
-    document.getElementById('btnConfirmarAcceso').onclick = async () => { /* ... (Tu lógica original) ... */ };
-    document.getElementById('btnEliminar').onclick = async () => { /* ... (Tu lógica original) ... */ };
-    document.getElementById('btnLogout').onclick = async (e) => { e.preventDefault(); await signOut(auth); window.location.href = "index.html"; };
+    document.getElementById('btnConfirmarAcceso').onclick = async () => {
+        if(!currentId || !currentData) return;
+        try {
+            await createUserWithEmailAndPassword(secondaryAuth, currentData.email.trim().toLowerCase(), "UCMI2026");
+            const meses = parseInt(String(currentData.mesesLicencia || "1").replace(/\D/g, '')) || 1;
+            const exp = new Date(); exp.setMonth(exp.getMonth() + meses);
+            const emailNormalizado = currentData.email.trim().toLowerCase();
+            const usuarioExistente = await getDoc(doc(db, "usuarios", emailNormalizado));
+            if (usuarioExistente.exists()) {
+                await Swal.fire("Error", "Este correo ya está registrado.", "error");
+                return;
+            }
+            const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date(), expiracionLicencia: exp.toLocaleString(), expiracionTimestamp: exp.getTime(), mesesAprobados: meses, duracionLicencia: `${meses} mes(es)` };
+            await setDoc(doc(db, "usuarios", emailNormalizado), dataFinal);
+            await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO", fechaProceso: new Date().toLocaleString() });
+            await deleteDoc(doc(db, "postulaciones", currentId));
+            enviarEmailAutomatico(currentData, "ACEPTADO");
+            prepararMensajeWhatsApp(dataFinal, "ACEPTADO");
+            bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
+            Swal.fire("¡Acceso Activado!", "Usuario creado y datos guardados.", "success");
+        } catch (e) { Swal.fire("Error", e.message, "error"); }
+    };
+
+    document.getElementById('btnEliminar').onclick = async () => {
+        if (!currentId || !currentData) return;
+        const conf = await Swal.fire({ title: '¿Rechazar?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
+        if (conf.isConfirmed) {
+            try {
+                await setDoc(doc(db, "historial_postulaciones", currentId), { ...currentData, decisionFinal: "RECHAZADO", fechaProceso: new Date().toLocaleString() });
+                await deleteDoc(doc(db, "postulaciones", currentId));
+                enviarEmailAutomatico(currentData, "RECHAZADO");
+                const modalElement = document.getElementById('modalDetalles');
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) modalInstance.hide();
+                await Swal.fire("Correcto", "Solicitud rechazada. Se abrirá WhatsApp para informar.", "info");
+                prepararMensajeWhatsApp(currentData, "RECHAZADO");
+            } catch (e) { Swal.fire("Error", e.message, "error"); }
+        }
+    };
+
+    document.getElementById('btnLogout').onclick = async (e) => {
+        e.preventDefault();
+        const result = await Swal.fire({ title: '¿Cerrar sesión?', icon: 'question', showCancelButton: true });
+        if (result.isConfirmed) { await signOut(auth); window.location.href = "index.html"; }
+    };
 
     onSnapshot(collection(db, "postulaciones"), (snap) => {
         registrosLocales = snap.docs;
         renderizarTabla();
     });
 </script>
-</body>
 </html>
