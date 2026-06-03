@@ -2,276 +2,432 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <style>html { display: none; }</style>
-    <script type="module" src="auth-guard.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Historial de Solicitudes</title>
+    <title>Postulación Oficial - UCMI</title>
+    
+    <!-- Fuentes y Estilos Externos -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Scripts Base -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-          <style>
-          :root {
-              --dorado-ucmi: #c5a059;
-              --dorado-neon: #ffcc66;
-              --azul-sidebar: #1a2a3a;
-              --cian-tech: #00f2ff;
-              --rojo-neon: #ff3131;
-              --blanco-neon: #ffffff;
-          }
-  
-          body {
-              background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-              background-size: cover;
-              font-family: 'Segoe UI', sans-serif;
-              color: white;
-              overflow-x: hidden;
-          }
-  
-          .super-overlay {
-              background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.95) 100%);
-              min-height: 100vh;
-          }
-  
-          /* --- SIDEBAR --- */
-          .sidebar {
-              background: rgba(26, 42, 58, 0.95);
-              backdrop-filter: blur(10px);
-              min-height: 100vh;
-              padding: 25px 15px;
-              border-right: 1px solid rgba(197, 160, 89, 0.3);
-              display: flex;
-              flex-direction: column;
-              position: sticky;
-              top: 0;
-          }
-  
-          .nav-section-title {
-              color: rgba(255, 255, 255, 0.3);
-              font-size: 0.65rem;
-              text-transform: uppercase;
-              letter-spacing: 2px;
-              margin-bottom: 15px;
-              padding-left: 10px;
-          }
-  
-          .nav-link-custom {
-              display: flex;
-              align-items: center;
-              width: 100%;
-              background: transparent;
-              border: none;
-              padding: 12px 15px;
-              color: rgba(255, 255, 255, 0.6);
-              text-align: left;
-              border-radius: 12px;
-              font-size: 0.85rem;
-              transition: all 0.3s ease;
-              margin-bottom: 5px;
-              cursor: pointer;
-          }
-  
-          .nav-link-custom i { font-size: 1.1rem; margin-right: 12px; width: 20px; text-align: center; }
-  
-          .nav-link-custom:hover {
-              background: rgba(255, 255, 255, 0.05);
-              color: var(--cian-tech);
-              transform: translateX(5px);
-          }
-  
-          .nav-link-custom.active {
-              background: rgba(188, 19, 254, 0.1);
-              color: #d880ff;
-              border: 1px solid rgba(188, 19, 254, 0.2);
-              box-shadow: 0 0 15px rgba(188, 19, 254, 0.1);
-              text-shadow: 0 0 8px rgba(188, 19, 254, 0.6);
-          }
-  
-          /* --- BOTONES NEÓN --- */
-          .btn-super-admin {
-              background: rgba(255, 255, 255, 0.05);
-              border: 1px solid var(--blanco-neon);
-              color: var(--blanco-neon);
-              padding: 12px;
-              border-radius: 12px;
-              width: 100%;
-              text-align: center;
-              font-weight: bold;
-              text-transform: uppercase;
-              font-size: 0.75rem;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-              margin-bottom: 10px;
-          }
-  
-          .btn-super-admin:hover {
-              background: var(--blanco-neon);
-              color: black;
-              box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-          }
-  
-          .btn-logout {
-              background: rgba(255, 49, 49, 0.05);
-              border: 1px solid var(--rojo-neon);
-              color: var(--rojo-neon);
-              padding: 10px;
-              border-radius: 12px;
-              width: 100%;
-              text-align: center;
-              font-weight: bold;
-              text-transform: uppercase;
-              font-size: 0.75rem;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              box-shadow: 0 0 10px rgba(255, 49, 49, 0.2);
-          }
-  
-          .btn-logout:hover {
-              background: var(--rojo-neon);
-              color: white;
-              box-shadow: 0 0 20px rgba(255, 49, 49, 0.8);
-          }
-  
-          /* --- PANEL DE TABLA --- */
-          .glass-panel {
-              background: rgba(255, 255, 255, 0.02);
-              border: 1px solid rgba(255, 255, 255, 0.1);
-              backdrop-filter: blur(25px);
-              border-radius: 30px;
-              padding: 30px;
-              box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-          }
-  
-          .table-historial { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
-          .table-historial tr { background: rgba(255, 255, 255, 0.03); border-radius: 15px; }
-          .table-historial td { padding: 15px 20px; vertical-align: middle; border: none; }
-  
-          .badge-status { padding: 6px 14px; border-radius: 100px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
-          .status-aprobado { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid #00ff8844; }
-          .status-rechazado { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d44; }
-          .status-pendiente { background: rgba(255, 204, 0, 0.1); color: #ffcc00; border: 1px solid #ffcc0044; }
-  
-          .neon-gold { color: var(--dorado-neon); font-weight: bold; }
-          .date-chip { font-family: 'Courier New', monospace; background: rgba(0, 242, 255, 0.05); color: var(--cian-tech); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(0, 242, 255, 0.2); }
-  
-      </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        :root { --azul-ucmi: #1a2a3a; --dorado-ucmi: #c5a059; }
+        body { 
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover; min-height: 100vh; padding: 40px 0; color: white;
+            font-family: 'Poppins', sans-serif;
+        }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(6, 9, 15, 0.6) 0%, rgba(6, 9, 15, 0.9) 100%); z-index: -1; }
+        .card-form { max-width: 850px; margin: auto; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 30px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden; }
+        .header-institucional { text-align: center; padding: 40px 20px; background: rgba(0, 0, 0, 0.4); border-bottom: 1px solid rgba(197, 160, 89, 0.2); }
+        .inst-logo { height: 100px; margin-bottom: 15px; }
+        .inst-titulo { color: var(--dorado-ucmi); font-family: 'Cinzel', serif; font-weight: 800; font-size: 2rem; }
+        .seccion-titulo { font-family: 'Cinzel', serif; color: var(--dorado-ucmi); border-bottom: 1px solid rgba(197,160,89,0.3); padding-bottom: 8px; margin: 25px 0 15px 0; font-size: 1.1rem; }
+        .form-label { color: var(--dorado-ucmi); font-size: 0.85rem; font-weight: 600; }
+
+        .form-control, .form-select { 
+            border-radius: 10px; 
+            background: rgba(255, 255, 255, 0.05) !important; 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #ffffff !important; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            transition: all 0.3s ease;
+        }
+        .form-control::placeholder { color: rgba(255, 255, 255, 0.5); }
+        .form-select option { background-color: #1a2a3a; color: white; }
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: var(--dorado-ucmi) !important;
+            box-shadow: 0 0 0 0.25rem rgba(197, 160, 89, 0.2);
+        }
+
+        /* Corregir el color blanco del autocompletado */
+        .form-control:-webkit-autofill,
+        .form-control:-webkit-autofill:hover, 
+        .form-control:-webkit-autofill:focus {
+        -webkit-text-fill-color: #ffffff !important; /* Mantiene el texto blanco */
+        -webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.05) inset !important; /* Simula el fondo oscuro */
+        transition: background-color 5000s ease-in-out 0s; /* Evita que el color cambie */
+        backdrop-filter: blur(10px);
+        }
+                
+        .costo-display { background: rgba(197, 160, 100, 0.15); border: 1px dashed var(--dorado-ucmi); border-radius: 15px; padding: 20px; text-align: center; margin-top: 20px; }
+        .costo-monto { color: var(--dorado-ucmi); font-size: 1.8rem; font-weight: 800; }
+        .btn-enviar { background: linear-gradient(135deg, var(--dorado-ucmi), #8a6d3b); color: #000; font-weight: 800; padding: 15px; border-radius: 12px; border: none; width: 100%; margin-top: 20px; transition: 0.3s; cursor: pointer; }
+        .btn-enviar:hover { transform: scale(1.02); filter: brightness(1.1); }
+    </style>
 </head>
 <body>
-<div class="super-overlay">
-      <div class="container-fluid">
-          <div class="row">
-              <div class="col-md-2 sidebar d-none d-md-flex">
-                  <div class="text-center mb-4">
-                      <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" style="height: 50px;" alt="Logo">
-                      <p class="small mt-2 neon-gold">SISTEMA UCMI</p>
-                  </div>
-                   
-                  <nav class="nav flex-column mb-auto">
-                      <p class="nav-section-title">Protocolos</p>
-                      <button class="nav-link-custom" onclick="location.href='master-postulaciones.html'">
-                          <i class="bi bi-person-badge"></i> Solicitudes
-                      </button>
-                      <button class="nav-link-custom" onclick="location.href='master-vigencia.html'">
-                          <i class="bi bi-clock-history"></i> Vigencia
-                      </button>
-                      <button class="nav-link-custom" onclick="location.href='master-usuarios.html'">
-                          <i class="bi bi-people"></i> Usuarios
-                      </button>
-                      <button class="nav-link-custom active" onclick="location.href='historial-postulaciones.html'">
-                          <i class="bi bi-archive"></i> Historial
-                      </button>
-                      <button class="nav-link-custom" onclick="location.href='directorio.html'">
-                          <i class="bi bi-journal-text"></i> Directorio
-                      </button>
-                      <button class="nav-link-custom" onclick="location.href='ofertas-academicas.html'">
-                          <i class="bi bi-mortarboard"></i> Ofertas
-                      </button>
-                      <button class="nav-link-custom" onclick="location.href='master-repositorio.html'">
-                          <i class="bi bi-grid-1x2"></i> Módulos
-                      </button>
-                      <button class="nav-link-custom" onclick="location.href='papelera.html'">
-                          <i class="bi bi-trash3"></i> Papelera
-                      </button>
-                  </nav>
-  
-                  <div class="mt-4">
-                      <p class="nav-section-title">Sistema</p>
-                      <button onclick="location.href='super-admin.html'" class="btn-super-admin">
-                          <i class="bi bi-shield-lock me-2"></i> Panel Maestro
-                      </button>
-                      <button id="btnCerrarSesion" class="btn-logout">
-                          <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
-                      </button>
-                  </div>
-              </div>
-  
-              <div class="col-md-10 p-5">
-                  <h2 class="neon-gold text-uppercase mb-4">Historial de Solicitudes</h2>
-                  <div class="glass-panel">
-                      <div class="table-responsive">
-                          <table class="table-historial text-white">
-                              <thead>
-                                  <tr class="text-white-50 small text-uppercase">
-                                      <th class="ps-4">Solicitante</th>
-                                      <th>Fecha</th>
-                                      <th>Perfil</th>
-                                      <th>Estado</th>
-                                      <th>WhatsApp</th>
-                                  </tr>
-                              </thead>
-                              <tbody id="tablaCuerpo">
-                              </tbody>
-                          </table>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
+<div class="overlay"></div>
+<div class="container">
+    <div class="card-form">
+        <div class="header-institucional">
+            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" alt="Logo UCMI" class="inst-logo">
+            <h1 class="inst-titulo">POSTULACIÓN ACADÉMICA</h1>
+        </div>
+        <form id="formUCMI" class="p-4 p-md-5 pt-2" novalidate>
+            <div class="seccion-titulo">1. Datos de Identidad</div>
+            <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">Nombre Responsable:</label><input type="text" id="nombreInput" class="form-control" required></div>
+                <div class="col-md-6"><label class="form-label">ID (Cédula/RIF):</label><input type="text" id="dniInput" class="form-control" required></div>
+                <div class="col-md-6"><label class="form-label">Fecha de Nacimiento:</label><input type="date" id="fechaNacimientoInput" class="form-control" required onchange="fn_VerificarEdad()"></div>
+                <div class="col-md-6"><label class="form-label">Género:</label><select id="generoInput" class="form-select" required><option value="">Selecciona...</option><option value="Masculino">Masculino</option><option value="Femenino">Femenino</option></select></div>
+            </div>
+
+            <div class="seccion-titulo">2. Contacto</div>
+            <div class="row g-3">
+                <div class="col-md-4"><label class="form-label">Correo:</label><input type="email" id="emailInput" class="form-control" required></div>
+                <div class="col-md-4"><label class="form-label">WhatsApp:</label><input type="tel" id="whatsappInput" class="form-control" required></div>
+                <div class="col-md-4"><label class="form-label">Ubicación:</label><input type="text" id="ubicacionInput" class="form-control" required></div>
+            </div>
+
+<div id="bloqueRepresentante" class="mt-4" style="display:none">
+                <div class="seccion-titulo text-danger">3. Información del Representante Legal</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-danger">Nombre del Representante:</label>
+                        <input type="text" id="repNombre" class="form-control" placeholder="Nombre y Apellido">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-danger">ID del Representante:</label>
+                        <input type="text" id="repCedula" class="form-control" placeholder="Cédula/RIF">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-danger">Correo del Representante:</label>
+                        <input type="email" id="repEmail" class="form-control" placeholder="ejemplo@correo.com">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-danger">WhatsApp del Representante:</label>
+                        <input type="tel" id="repWhatsapp" class="form-control" placeholder="Número de contacto">
+                    </div>
+                </div>
+            </div>
+
+            <div class="seccion-titulo">4. Módulos y Licencia</div>
+            <div id="contenedorModulos" class="row g-2 mb-3"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Perfil:</label>
+                    <select id="perfilUsuario" class="form-select" required onchange="fn_AjustarPerfil()">
+                        <option value="">Selecciona...</option>
+                        <option value="Academia">Academia</option>
+                        <option value="Profesor independiente">Profesor independiente</option>
+                        <option value="Estudiante UCMI">Estudiante UCMI</option>
+                    </select>
+                </div>
+                <div class="col-md-6"><label class="form-label">Duración licencia (meses):</label><input type="number" id="planLicencia" class="form-control" min="1" required oninput="fn_CalcularInversion()"></div>
+                <div class="col-md-6"><label class="form-label">Cupos:</label><input type="number" id="cuposInput" class="form-control" value="1" min="1" oninput="fn_CalcularInversion()"></div>
+                <div class="col-md-6"><label class="form-label">Entidad:</label><input type="text" id="nombreInstitucion" class="form-control"></div>
+            </div>
+
+            <div class="costo-display">
+                <div class="costo-monto">
+                    $ <span id="displayInversion">0.00</span> USD
+                </div>
+                <div id="badgeAhorro" class="mt-2"></div> 
+            </div>
+            
+            <button type="submit" id="btnSubmit" class="btn btn-enviar">ENVIAR POSTULACIÓN</button>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN -->
+<div class="modal fade" id="modalConfirmacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: rgba(26, 42, 58, 0.98); border: 1px solid var(--dorado-ucmi); border-radius: 20px; color: white;">
+            <div class="modal-header border-0"><h5 class="inst-titulo" style="font-size: 1.2rem;">REVISIÓN FINAL</h5></div>
+            <div class="modal-body" id="resumenModal"></div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">CORREGIR</button>
+                <button type="button" id="btnConfirmarFinal" class="btn btn-enviar" style="width: auto; margin-top: 0;">CONFIRMAR Y ENVIAR</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325" };
-    const db = getFirestore(initializeApp(firebaseConfig));
-    const tablaCuerpo = document.getElementById('tablaCuerpo');
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
 
-    onSnapshot(collection(db, "historial_postulaciones"), (snapshot) => {
-        tablaCuerpo.innerHTML = '';
-        snapshot.forEach(doc => {
-            const p = doc.data();
-            const esDocente = String(p.perfil || '').toLowerCase().includes("docente");
-            
-            // Forzamos a convertir el valor a string, mayúsculas y quitamos espacios
-            const decision = String(p.decisionFinal || "").toUpperCase().trim();
-            
-            // Lógica clara:
-            let statusClass = 'status-pendiente';
-            let estadoTexto = 'PENDIENTE';
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-            if (decision === 'ACEPTADO') {
-                statusClass = 'status-aprobado';
-                estadoTexto = 'ACEPTADO';
-            } else if (decision === 'RECHAZADO') {
-                statusClass = 'status-rechazado';
-                estadoTexto = 'RECHAZADO';
-            }
-
-            tablaCuerpo.innerHTML += `
-                <tr>
-                    <td><div class="fw-bold">${p.entidad || 'N/A'}</div><div class="small text-white-50">${p.nombreResponsable || p.nombreEstudiante || '---'}</div></td>
-                    <td><span class="date-chip">${p.fechaProceso || '---'}</span></td>
-                    <td><div class="fw-bold ${esDocente ? 'text-info' : 'text-warning'}">${(p.perfil || 'ACADEMIA').toUpperCase()}</div></td>
-                    <td><span class="badge-status ${statusClass}">${estadoTexto}</span></td>
-                    <td><a href="https://wa.me/${p.whatsapp}" target="_blank" class="text-decoration-none text-info"><i class="bi bi-whatsapp"></i> ${p.whatsapp || '---'}</a></td>
-                </tr>
-            `;
+    // Carga de Módulos
+    onSnapshot(query(collection(db, "ofertas"), where("ofertado", "==", true), orderBy("modulo", "asc")), (snap) => {
+        const contenedor = document.getElementById('contenedorModulos');
+        contenedor.innerHTML = "";
+        snap.forEach(doc => {
+            const d = doc.data();
+            contenedor.innerHTML += `
+                <div class="col-6 col-md-4"><div class="p-2 border rounded" style="background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1) !important;">
+                <input type="checkbox" class="form-check-input check-modulo me-2" value="${d.modulo}" onchange="fn_CalcularInversion()"> 
+                <span class="small">${d.modulo}</span></div></div>`;
         });
     });
 
-    document.getElementById('btnCerrarSesion').addEventListener('click', () => { signOut(getAuth()).then(() => location.href = 'index.html'); });
+    // Lógica Global
+window.fn_VerificarEdad = () => {
+        const f = document.getElementById('fechaNacimientoInput').value;
+        if(!f) return;
+        const edad = new Date().getFullYear() - new Date(f).getFullYear();
+        const esMenor = edad < 18;
+        document.getElementById('bloqueRepresentante').style.display = esMenor ? 'block' : 'none';
+        
+        // Control de obligatoriedad
+        const ids = ['repNombre', 'repCedula', 'repEmail', 'repWhatsapp'];
+        ids.forEach(id => document.getElementById(id).required = esMenor);
+    };
+
+    window.fn_AjustarPerfil = () => {
+        const p = document.getElementById('perfilUsuario').value;
+        const c = document.getElementById('cuposInput');
+        if(p === 'Estudiante UCMI') { c.value = 1; c.readOnly = true; } else { c.readOnly = false; }
+        fn_CalcularInversion();
+    };
+
+window.fn_CalcularInversion = () => {
+    const p = document.getElementById('perfilUsuario').value;
+    const t = parseInt(document.getElementById('planLicencia').value) || 0;
+    const n = document.querySelectorAll('.check-modulo:checked').length;
+    const x = parseInt(document.getElementById('cuposInput').value) || 0;
+    let total = 0;
+    let ahorro = 0;
+
+    if (t > 0 && n > 0) {
+        // 1. Algoritmo de Regresión de Tiempo (ft)
+        const ft = 0.7 + (0.3 / (1 + (0.15 * (t - 1))));
+        
+        // 2. Cálculo del Total según Perfil
+        if (p === 'Estudiante UCMI') {
+            let pb = n === 1 ? 10 : n === 2 ? 18 : n === 3 ? 24 : n >= 4 ? 28 : 0;
+            total = pb * t * ft;
+        } else if (x > 0) {
+            let ix = x <= 10 ? 10 * x * (1 - (x - 1) / 90) : x <= 50 ? 10 * x * (1 - (10 + 0.5 * (x - 10)) / 100) : (5 * x) + 100;
+            total = ix * t * ft;
+        }
+
+        // 3. Cálculo de Ahorro Lógico (Comparado con precio base de mercado de $10/cupo/mes)
+        // Referencia: Lo que pagaría cualquier entidad fuera de la red UCMI
+        const precioReferencia = (p === 'Estudiante UCMI') ? 10 * n * t : 10 * x * t;
+        
+        if (precioReferencia > 0 && total > 0) {
+            ahorro = ((precioReferencia - total) / precioReferencia) * 100;
+        }
+
+        // 4. Límites de seguridad para realismo comercial
+        if (p !== 'Estudiante UCMI' && ahorro > 50) ahorro = 50;
+        if (p === 'Estudiante UCMI' && ahorro > 70) ahorro = 70;
+    }
+
+    // Actualización de la interfaz
+    document.getElementById('displayInversion').innerText = total.toFixed(2);
+    const badgeAhorro = document.getElementById('badgeAhorro');
+    
+    if (ahorro > 5 && total > 0) {
+        badgeAhorro.innerHTML = `
+            <span class="badge bg-success" style="font-size: 0.9rem; padding: 8px 15px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                <i class="bi bi-piggy-bank-fill me-1"></i> ¡Ahorras un ${ahorro.toFixed(0)}%!
+            </span>`;
+    } else {
+        badgeAhorro.innerHTML = "";
+    }
+};
+
+    // Envío y PDF
+    let datosPayload = null;
+    document.getElementById('formUCMI').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(m => m.value);
+        if(!e.target.checkValidity() || modulos.length === 0) {
+            Swal.fire({ title: "Error", text: "Completa los datos y elige al menos un módulo.", icon: "error" });
+            return;
+        }
+
+        datosPayload = {
+            nombreResponsable: document.getElementById('nombreInput').value,
+            cedulaResponsable: document.getElementById('dniInput').value,
+            fechaNacimiento: document.getElementById('fechaNacimientoInput').value,
+            genero: document.getElementById('generoInput').value,
+            email: document.getElementById('emailInput').value,
+            whatsapp: document.getElementById('whatsappInput').value,
+            ubicacion: document.getElementById('ubicacionInput').value,
+            repNombre: document.getElementById('repNombre').value.trim() || "N/A",
+            repCedula: document.getElementById('repCedula').value.trim() || "N/A",
+            repEmail: document.getElementById('repEmail').value.trim() || "N/A",
+            repWhatsapp: document.getElementById('repWhatsapp').value.trim() || "N/A",
+            perfil: document.getElementById('perfilUsuario').value,
+            entidad: document.getElementById('nombreInstitucion').value || "N/A",
+            mesesLicencia: parseInt(document.getElementById('planLicencia').value) || 0, // CAMBIO AQUÍ
+            cupos: parseInt(document.getElementById('cuposInput').value) || 0,
+            total: document.getElementById('displayInversion').innerText,
+            modulos: modulos,
+            timestamp: new Date()
+        };
+
+// Capturamos los nombres de los módulos seleccionados para listarlos
+const nombresModulos = datosPayload.modulos.join(", ");
+const entidad = document.getElementById('nombreInstitucion').value || "N/A";
+
+document.getElementById('resumenModal').innerHTML = `
+    <div style="border-bottom: 1px solid rgba(197,160,89,0.2); padding-bottom: 10px; margin-bottom: 10px;">
+        <p><strong><i class="bi bi-person-fill"></i> Postulante:</strong> ${datosPayload.nombreResponsable.toUpperCase()}</p>
+        <p><strong><i class="bi bi-card-text"></i> ID/Cédula:</strong> ${document.getElementById('dniInput').value}</p>
+        <p><strong><i class="bi bi-calendar-event"></i> Fecha de Nacimiento:</strong> ${document.getElementById('fechaNacimientoInput').value}</p>
+        <p><strong><i class="bi bi-gender-ambiguous"></i> Género:</strong> ${document.getElementById('generoInput').value}</p>
+    </div>
+
+    <div style="border-bottom: 1px solid rgba(197,160,89,0.2); padding-bottom: 10px; margin-bottom: 10px;">
+        <p><strong><i class="bi bi-envelope-at"></i> Correo:</strong> ${document.getElementById('emailInput').value}</p>
+        <p><strong><i class="bi bi-whatsapp"></i> WhatsApp:</strong> ${document.getElementById('whatsappInput').value}</p>
+        <p><strong><i class="bi bi-geo-alt"></i> Ubicación:</strong> ${document.getElementById('ubicacionInput').value}</p>
+    </div>
+    
+${document.getElementById('bloqueRepresentante').style.display === 'block' ? `
+    <div style="border-bottom: 1px solid rgba(255,0,0,0.2); padding-bottom: 10px; margin-bottom: 10px; color: #ffcccc; font-size: 0.85rem;">
+        <p><strong><i class="bi bi-shield-shaded"></i> Representante:</strong> ${document.getElementById('repNombre').value}</p>
+        <p><strong><i class="bi bi-envelope"></i> Correo Rep:</strong> ${document.getElementById('repEmail').value}</p>
+        <p><strong><i class="bi bi-whatsapp"></i> WhatsApp Rep:</strong> ${document.getElementById('repWhatsapp').value}</p>
+    </div>` : ''}
+
+    <div style="background: rgba(197,160,89,0.1); padding: 10px; border-radius: 10px;">
+        <p><strong><i class="bi bi-building"></i> Entidad:</strong> ${entidad}</p>
+        <p><strong><i class="bi bi-briefcase"></i> Perfil:</strong> ${datosPayload.perfil}</p>
+        <p><strong><i class="bi bi-layers"></i> Módulos (${datosPayload.modulos.length}):</strong> <span class="small" style="color: #ddd;">${nombresModulos}</span></p>
+        <p><strong><i class="bi bi-calendar-check"></i> Licencia:</strong> ${document.getElementById('planLicencia').value} meses</p>
+        <p><strong><i class="bi bi-people"></i> Cupos:</strong> ${document.getElementById('cuposInput').value}</p>
+        <hr style="border-color: var(--dorado-ucmi)">
+        <p style="font-size: 1.2rem; color: var(--dorado-ucmi); text-align: center; margin: 0;">
+            <strong>Total a Invertir: $${datosPayload.total} USD</strong>
+        </p>
+    </div>
+`;
+        
+        new bootstrap.Modal(document.getElementById('modalConfirmacion')).show();
+    });
+
+    document.getElementById('btnConfirmarFinal').addEventListener('click', async () => {
+        try {
+            await addDoc(collection(db, "postulaciones"), datosPayload);
+fn_GenerarPDF(datosPayload);
+            await Swal.fire({ title: "¡Éxito!", text: "Postulación registrada. El comprobante se abrirá en una nueva pestaña.", icon: "success", confirmButtonColor: "#c5a059" });
+            location.reload();
+        } catch(err) { Swal.fire({ title: "Error", text: "Falló la conexión.", icon: "error" }); }
+    });
+
+    function fn_GenerarPDF(d) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const imgLogo = new Image();
+        imgLogo.crossOrigin = "Anonymous";
+        imgLogo.src = 'https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png';
+
+        imgLogo.onload = function() {
+            // 1. Cabecera Institucional
+            doc.setFillColor(26, 42, 58); doc.rect(0, 0, 210, 45, 'F');
+            doc.addImage(imgLogo, 'PNG', 10, 5, 30, 30);
+            doc.setTextColor(197, 160, 89);
+            doc.setFontSize(14); doc.setFont("helvetica", "bold");
+            doc.text("UNIVERSITARIO DE CIENCIAS MATEMÁTICAS E IDIOMAS", 120, 20, { align: "center" });
+            doc.setFontSize(22); doc.text("UCMI", 120, 35, { align: "center" });
+
+            // 2. Título del Documento
+            doc.setTextColor(26, 42, 58); doc.setFontSize(16);
+            doc.text("COMPROBANTE OFICIAL DE REGISTRO", 105, 60, { align: "center" });
+
+            doc.setTextColor(0); doc.setFontSize(9);
+            let y = 75;
+
+            // Función auxiliar para filas
+            const row = (label, value, col2 = 75) => {
+                doc.setFont("helvetica", "bold"); doc.text(label, 20, y);
+                doc.setFont("helvetica", "normal"); doc.text(String(value || 'N/A'), col2, y);
+                y += 7;
+            };
+
+            // SECCIÓN 1: DATOS DE IDENTIDAD
+            doc.setFontSize(11); doc.setFont("helvetica", "bold");
+            doc.text("1. DATOS DE IDENTIDAD", 20, y); y += 5;
+            doc.line(20, y, 190, y); y += 7;
+
+            row("Nombre Responsable:", d.nombreResponsable.toUpperCase());
+            row("ID (Cédula/RIF):", d.cedulaResponsable);
+            row("Fecha de Nacimiento:", d.fechaNacimiento);
+            row("Género:", d.genero);
+
+            // SECCIÓN 2: CONTACTO
+            y += 5;
+            doc.setFontSize(11); doc.setFont("helvetica", "bold");
+            doc.text("2. CONTACTO", 20, y); y += 5;
+            doc.line(20, y, 190, y); y += 7;
+
+            row("Correo:", d.email);
+            row("WhatsApp:", d.whatsapp);
+            row("Ubicación:", d.ubicacion);
+
+            // SECCIÓN 3: REPRESENTANTE LEGAL (Solo si no es N/A)
+            if(d.repNombre && d.repNombre !== "N/A") {
+                y += 5;
+                doc.setTextColor(150, 0, 0);
+                doc.setFontSize(11);
+                doc.text("3. INFORMACIÓN DEL REPRESENTANTE LEGAL", 20, y); y += 5;
+                doc.line(20, y, 190, y); y += 7;
+                doc.setTextColor(0); doc.setFontSize(9);
+
+                row("Nombre Rep.:", (d.repNombre || "N/A").toUpperCase());
+                row("ID Rep.:", (d.repCedula || "N/A"));
+                row("Correo Rep.:", (d.repEmail || "N/A").toLowerCase());
+                row("WhatsApp Rep.:", (d.repWhatsapp || "N/A"));
+            }
+
+            // SECCIÓN 4: MÓDULOS Y LICENCIA
+            y += 5;
+            doc.setFontSize(11); doc.setFont("helvetica", "bold");
+            doc.text("4. MÓDULOS Y LICENCIA", 20, y); y += 5;
+            doc.line(20, y, 190, y); y += 7;
+
+            row("Perfil:", d.perfil);
+            row("Entidad:", d.entidad);
+            row("Licencia:", d.mesesLicencia + " meses");
+            row("Cupos:", d.cupos);
+            
+            doc.setFont("helvetica", "bold"); doc.text("Módulos:", 20, y);
+            const modSplit = doc.splitTextToSize(d.modulos.join(", "), 115);
+            doc.setFont("helvetica", "normal"); doc.text(modSplit, 75, y);
+            y += (modSplit.length * 7) + 5;
+
+            // CUADRO FINAL DE INVERSIÓN
+            y += 5;
+            doc.setFillColor(245, 245, 245); doc.rect(20, y, 170, 15, 'F');
+            doc.setFontSize(12); doc.setFont("helvetica", "bold");
+            doc.setTextColor(26, 42, 58);
+            doc.text(`INVERSIÓN TOTAL ESTIMADA: $${d.total} USD`, 105, y + 10, { align: "center" });
+
+            // Salida
+            window.open(doc.output('bloburl'), '_blank');
+        };
+
+        imgLogo.onerror = () => {
+            doc.text("Error al cargar logo. Comprobante UCMI generado.", 20, 20);
+            doc.save(`UCMI_${d.cedulaResponsable}.pdf`);
+        };
+    }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
