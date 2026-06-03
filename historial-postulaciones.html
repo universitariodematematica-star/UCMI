@@ -167,31 +167,25 @@ onAuthStateChanged(getAuth(), (user) => {
     const db = getFirestore(initializeApp(firebaseConfig));
     const tablaCuerpo = document.getElementById('tablaCuerpo');
 
-    onSnapshot(
+onSnapshot(
     collection(db, "historial_postulaciones"),
     (snapshot) => {
+
         console.log("LECTURA EXITOSA");
-    },
-    (error) => {
-        console.error("ERROR FIRESTORE:", error);
-    }
-);
-        // DIAGNÓSTICO: Ver si llega algo de Firestore
-        console.log("DEBUG: Documentos detectados en 'historial_postulaciones':", snapshot.size);
-        
+        console.log("DEBUG: Documentos detectados:", snapshot.size);
+
         tablaCuerpo.innerHTML = '';
-        
+
         if (snapshot.empty) {
             console.warn("DEBUG: La colección está vacía.");
-            tablaCuerpo.innerHTML = '<tr><td colspan="5" class="text-center">No hay registros en el historial.</td></tr>';
+            tablaCuerpo.innerHTML =
+                '<tr><td colspan="5" class="text-center">No hay registros en el historial.</td></tr>';
             return;
         }
 
         snapshot.forEach(doc => {
             const p = doc.data();
-            console.log("DEBUG: Procesando doc:", doc.id, p);
 
-            // Mapeo robusto: intentamos con perfil, si no, con tipoSolicitante
             const perfil = p.perfil || p.tipoSolicitante || 'ACADEMIA';
             const esDocente = String(perfil).toLowerCase().includes("docente");
             const decision = String(p.decisionFinal || "").toUpperCase().trim();
@@ -218,12 +212,19 @@ onAuthStateChanged(getAuth(), (user) => {
                     <td><div class="fw-bold ${esDocente ? 'text-info' : 'text-warning'}">${String(perfil).toUpperCase()}</div></td>
                     <td><span class="badge-status ${statusClass}">${estadoTexto}</span></td>
                     <td>
-                        ${whatsapp ? `<a href="https://wa.me/${whatsapp}" target="_blank" class="text-decoration-none text-info"><i class="bi bi-whatsapp"></i> ${whatsapp}</a>` : '---'}
+                        ${whatsapp
+                            ? `<a href="https://wa.me/${whatsapp}" target="_blank" class="text-decoration-none text-info"><i class="bi bi-whatsapp"></i> ${whatsapp}</a>`
+                            : '---'}
                     </td>
                 </tr>
             `;
         });
-    });
+
+    },
+    (error) => {
+        console.error("ERROR FIRESTORE:", error);
+    }
+);
 
     document.getElementById('btnCerrarSesion').addEventListener('click', () => { signOut(getAuth()).then(() => location.href = 'index.html'); });
 </script>
