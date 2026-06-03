@@ -205,18 +205,25 @@ if (user.uid === MI_UID_MAESTRO) {
                       await cerrarSesionLimpiar();
                   }
               } catch (error) {
-                  // 🛑 CAPTURA EL RECHAZO DE LAS REGLAS DE FIREBASE (PERMISOS INSUFICIENTES)
-                  console.warn("Acceso denegado por políticas de seguridad del sistema:", error);
-                  
-                  alert("ACCESO SUSPENDIDO: Esta cuenta se encuentra en la papelera de reciclaje. Comunícate con el Superadministrador.");
-                  
-                  // Desbloqueamos el botón y restablecemos su texto
-                  navegando = false;
-                  const btn = document.getElementById('btn-submit');
-                  if (btn) {
-                      btn.disabled = false;
-                      btn.innerText = "Entrar a UCMI";
-                  }
+    console.error("ERROR REAL FIREBASE:", error);
+
+    alert(
+        "Código: " + error.code +
+        "\n\nMensaje: " + error.message
+    );
+
+    navegando = false;
+
+    const btn = document.getElementById('btn-submit');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerText = "Entrar a UCMI";
+    }
+
+    limpiarTodo();
+    await signOut(auth);
+    localStorage.clear();
+}
                   
                   // Rompemos la sesión para que no se mantenga logueado de fondo
                   limpiarTodo();
