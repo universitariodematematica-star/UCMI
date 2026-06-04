@@ -9,45 +9,34 @@
         <tbody id="tabla-usuarios"></tbody>
     </table>
 
-    <script type="module">
-        // Para borrar usuarios de Auth, el SDK de cliente (web) NO tiene permiso.
-        // La ÚNICA forma funcional es mediante una Cloud Function.
-        // Aquí tienes la lógica de la llamada:
-        
-        async function listarYBorrar() {
-            const miEmail = "universitariodematematica@gmail.com";
-            
-            // 1. Obtener lista (requiere Cloud Function de lectura)
-            const respuesta = await fetch('/api/listarUsuarios'); 
-            const usuarios = await respuesta.json();
-            
-            const tbody = document.getElementById('tabla-usuarios');
-            
-            usuarios.forEach(user => {
-                if (user.email === miEmail) return; // BLINDAJE: Tu correo no aparece
+  <script type="module">
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
+    
+    const functions = getFunctions();
+    const listarUsuarios = httpsCallable(functions, 'listarUsuariosAuth');
+    const miCorreo = "universitariodematematica@gmail.com";
 
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${user.email}</td>
-                    <td>
-                        <button class="btn btn-danger" onclick="confirmarBorrado('${user.uid}', '${user.email}')">
-                            Borrar
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-        
-        window.confirmarBorrado = async (uid, email) => {
-            if(confirm(`¿Borrar a ${email}?`)) {
-                // Llama a la Cloud Function que creamos antes
-                await fetch('/api/borrarUsuario', { method: 'POST', body: JSON.stringify({uid}) });
-                location.reload();
-            }
-        };
-        
-        listarYBorrar();
-    </script>
+    async function cargarUsuarios() {
+        const result = await listarUsuarios();
+        const tbody = document.getElementById('tabla-usuarios');
+        tbody.innerHTML = '';
+
+        result.data.forEach(user => {
+            // Mostramos todos, y si es el tuyo, le ponemos una etiqueta de protección
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${user.email} ${user.email === miCorreo ? '<b>(TU CUENTA)</b>' : ''}</td>
+                <td>
+                    ${user.email !== miCorreo ? 
+                        `<button class="btn btn-danger" onclick="borrarUsuario('${user.uid}', '${user.email}')">Borrar</button>` : 
+                        '<span class="text-muted">Protegido</span>'}
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+    
+    cargarUsuarios();
+</script>
 </body>
 </html>
