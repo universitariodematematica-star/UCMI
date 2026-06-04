@@ -1,58 +1,53 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Gestión de Usuarios UCMI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background: #06090f; color: white; padding: 30px; font-family: sans-serif; }
-        .table { color: white; }
-        .btn-danger { background: #ff4d4d; border: none; }
-    </style>
 </head>
-<body>
-    <div class="container">
-        <h2>Panel de Control: Usuarios Auth</h2>
-        <table class="table table-dark table-hover mt-4">
-            <thead><tr><th>Email</th><th>UID</th><th>Acción</th></tr></thead>
-            <tbody id="lista-usuarios"></tbody>
-        </table>
-    </div>
+<body class="bg-dark text-white p-4">
+    <table class="table table-dark">
+        <thead><tr><th>Email</th><th>Acción</th></tr></thead>
+        <tbody id="tabla-usuarios"></tbody>
+    </table>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // Para borrar usuarios de Auth, el SDK de cliente (web) NO tiene permiso.
+        // La ÚNICA forma funcional es mediante una Cloud Function.
+        // Aquí tienes la lógica de la llamada:
         
-        const firebaseConfig = { /* TU CONFIGURACIÓN AQUÍ */ };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Como no podemos listar Auth desde el cliente, listamos tu colección de USUARIOS
-        // que es donde tienes los datos maestros.
-        onSnapshot(collection(db, "usuarios"), (snapshot) => {
-            const tbody = document.getElementById('lista-usuarios');
-            tbody.innerHTML = '';
+        async function listarYBorrar() {
+            const miEmail = "universitariodematematica@gmail.com";
             
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                const email = doc.id;
-                
-                // SEGURIDAD: Blindaje total para tu correo
-                if (email === "universitariodematematica@gmail.com") return;
+            // 1. Obtener lista (requiere Cloud Function de lectura)
+            const respuesta = await fetch('/api/listarUsuarios'); 
+            const usuarios = await respuesta.json();
+            
+            const tbody = document.getElementById('tabla-usuarios');
+            
+            usuarios.forEach(user => {
+                if (user.email === miEmail) return; // BLINDAJE: Tu correo no aparece
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${email}</td>
-                    <td>${doc.id}</td>
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.email}</td>
                     <td>
-                        <button class="btn btn-sm btn-danger" onclick="alert('Para seguridad, borra este UID: ${doc.id} desde la consola de Firebase. Esto evita errores accidentales.')">
-                            Borrar Usuario
+                        <button class="btn btn-danger" onclick="confirmarBorrado('${user.uid}', '${user.email}')">
+                            Borrar
                         </button>
                     </td>
                 `;
-                tbody.appendChild(tr);
+                tbody.appendChild(row);
             });
-        });
+        }
+        
+        window.confirmarBorrado = async (uid, email) => {
+            if(confirm(`¿Borrar a ${email}?`)) {
+                // Llama a la Cloud Function que creamos antes
+                await fetch('/api/borrarUsuario', { method: 'POST', body: JSON.stringify({uid}) });
+                location.reload();
+            }
+        };
+        
+        listarYBorrar();
     </script>
 </body>
 </html>
