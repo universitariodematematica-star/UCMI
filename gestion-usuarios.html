@@ -1,27 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Usuarios UCMI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #06090f; color: white; padding: 30px; font-family: sans-serif; }
+        .table { color: white; }
+        .btn-danger { background: #ff4d4d; border: none; }
+    </style>
+</head>
 <body>
-  <h2>Panel de Gestión de Usuarios</h2>
-  <div id="lista-usuarios"></div>
+    <div class="container">
+        <h2>Panel de Control: Usuarios Auth</h2>
+        <table class="table table-dark table-hover mt-4">
+            <thead><tr><th>Email</th><th>UID</th><th>Acción</th></tr></thead>
+            <tbody id="lista-usuarios"></tbody>
+        </table>
+    </div>
 
-  <script type="module">
-    import { getAuth, deleteUser } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-    // Nota: Necesitas la lógica para listar los usuarios desde Firebase Admin SDK
-    // El borrado lo ejecutamos con una validación de seguridad:
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        
+        const firebaseConfig = { /* TU CONFIGURACIÓN AQUÍ */ };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-    const MI_CORREO = "universitariodematematica@gmail.com";
+        // Como no podemos listar Auth desde el cliente, listamos tu colección de USUARIOS
+        // que es donde tienes los datos maestros.
+        onSnapshot(collection(db, "usuarios"), (snapshot) => {
+            const tbody = document.getElementById('lista-usuarios');
+            tbody.innerHTML = '';
+            
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const email = doc.id;
+                
+                // SEGURIDAD: Blindaje total para tu correo
+                if (email === "universitariodematematica@gmail.com") return;
 
-    function borrarUsuarioSeguro(user) {
-      if (user.email === MI_CORREO) {
-        alert("¡Error de seguridad! No puedes borrar el correo principal.");
-        return;
-      }
-      
-      if (confirm(`¿Estás seguro de borrar a ${user.email}?`)) {
-        // Aquí iría la llamada a tu Cloud Function que ejecuta admin.auth().deleteUser(uid)
-        console.log("Borrando usuario...");
-      }
-    }
-  </script>
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${email}</td>
+                    <td>${doc.id}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="alert('Para seguridad, borra este UID: ${doc.id} desde la consola de Firebase. Esto evita errores accidentales.')">
+                            Borrar Usuario
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    </script>
 </body>
 </html>
