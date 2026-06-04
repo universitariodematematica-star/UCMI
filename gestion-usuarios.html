@@ -1,62 +1,83 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Gestión Rápida de Usuarios</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Panel de Usuarios</title>
 </head>
-<body class="bg-dark text-white p-4">
-    <div class="container">
-        <h2>Panel de Borrado Directo</h2>
-        <table class="table table-dark mt-4">
-            <thead><tr><th>Email</th><th>UID</th><th>Acción</th></tr></thead>
-            <tbody id="lista-usuarios"></tbody>
-        </table>
-    </div>
+<body>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  <h1>Usuarios registrados</h1>
+  <button onclick="loadUsers()">Actualizar lista</button>
 
-        // CONFIGURA TUS DATOS AQUÍ
-        const firebaseConfig = { /* TU CONFIGURACIÓN */ };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+  <ul id="userList"></ul>
 
-        // --- LISTAR USUARIOS ---
-        async function listar() {
-            const snap = await getDocs(collection(db, "usuarios"));
-            const tbody = document.getElementById('lista-usuarios');
-            tbody.innerHTML = '';
-            
-            snap.forEach(doc => {
-                const email = doc.id;
-                if (email === "universitariodematematica@gmail.com") return; // Protegido
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${email}</td>
-                        <td>${doc.id}</td>
-                        <td>
-                            <button class="btn btn-danger" onclick="borrar('${doc.id}')">Borrar</button>
-                        </td>
-                    </tr>
-                `;
-            });
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_PROJECT.firebaseapp.com",
+      projectId: "TU_PROJECT"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const API_URL = "https://TU_REGION-TU_PROJECT.cloudfunctions.net/api";
+
+    // 🔐 LOGIN (puedes cambiarlo a tu sistema actual)
+    async function login() {
+      await signInWithEmailAndPassword(auth, "tuemail@dominio.com", "TU_PASSWORD");
+    }
+
+    async function getToken() {
+      const user = auth.currentUser;
+      return user ? await user.getIdToken() : null;
+    }
+
+    window.loadUsers = async function () {
+      await login();
+
+      const token = await getToken();
+
+      const res = await fetch(`${API_URL}/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
+      });
 
-        // --- BORRAR ---
-        window.borrar = async (uid) => {
-            if (confirm("¿Seguro que quieres borrar este usuario?")) {
-                // Aquí es donde el SDK de Admin haría el borrado
-                // Si antes lo hacíamos sin Cloud Functions, era porque llamábamos 
-                // directamente al objeto Auth o a una lógica simplificada
-                alert("Para completar el borrado de " + uid + ", ejecútalo en la consola de Firebase.");
-            }
-        };
+      const users = await res.json();
 
-        listar();
-    </script>
+      const list = document.getElementById("userList");
+      list.innerHTML = "";
+
+      users.forEach(user => {
+        const li = document.createElement("li");
+
+        li.innerHTML = `
+          ${user.email}
+          <button onclick="deleteUser('${user.uid}')">Eliminar</button>
+        `;
+
+        list.appendChild(li);
+      });
+    };
+
+    window.deleteUser = async function (uid) {
+      const token = await getToken();
+
+      await fetch(`${API_URL}/user/${uid}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      alert("Usuario eliminado");
+      loadUsers();
+    };
+  </script>
+
 </body>
 </html>
