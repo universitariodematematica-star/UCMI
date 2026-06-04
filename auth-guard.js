@@ -1,11 +1,10 @@
 // ========================================================
-// PROTECTOR INTEGRAL UCMI (auth-guard.js) - VERSIÓN FINAL
-// Capas: Identidad, Inactividad, Auditoría y Sanitización
+// PROTECTOR INTEGRAL UCMI (auth-guard.js) - VERSIÓN ROBUSTA
 // ========================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -20,82 +19,127 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// TU IDENTIDAD MAESTRA
+// IDENTIDAD MAESTRA
 const MASTER_ID = "x0oBFbDP09d7I3VZvWuN6BOODf32";
 
-// CONFIGURACIÓN DE INACTIVIDAD (30 minutos)
-const TIEMPO_INACTIVIDAD = 30 * 60 * 1000; 
+// INACTIVIDAD
+const TIEMPO_INACTIVIDAD = 30 * 60 * 1000;
 let timer;
 
-// 1. BLOQUEO VISUAL INMEDIATO
+// BLOQUEO INICIAL
 document.documentElement.style.display = "none";
 
-// 2. MONITOR DE ESTADO DE SESIÓN
+// ========================================================
+// MONITOR PRINCIPAL
+// ========================================================
 onAuthStateChanged(auth, async (user) => {
-    console.log("AUTH GUARD EJECUTADO");
-console.log("USER:", user);
-    if (user) {
-        console.log("AUTH GUARD UID:", user.uid);
-console.log("MASTER UID:", MASTER_ID);
-console.log("COINCIDEN:", user.uid === MASTER_ID);
 
-if (user.uid === MASTER_ID) {
-            // ACCESO CONCEDIDO
-            document.documentElement.style.display = "block";
-            iniciarVigilanciaInactividad();
-            console.log("Sesión activa: Bienvenido, Administrador.");
-        } else {
-            // INTRUSO: Usuario autenticado pero sin permisos
-            console.error("UID no autorizado. Registrando intento...");
+    if (!user) {
+        expulsarUsuario();
+        return;
+    }
+
+    try {
+
+        // 1. LEER USUARIO EN FIRESTORE
+        const snap = await getDoc(doc(db, "usuarios", user.email.toLowerCase().trim()));
+
+        if (!snap.exists()) {
             await registrarIntentoIntruso(user);
             expulsarUsuario();
+            return;
         }
-    } else {
-        // SIN SESIÓN INICIADA
+
+        const data = snap.data();
+
+        // 2. MASTER SIEMPRE ENTRA
+        if (user.uid === MASTER_ID) {
+            mostrarSistema();
+            return;
+        }
+
+        // 3. USUARIO INACTIVO
+        if (data.estado !== "activo") {
+            await signOut(auth);
+            expulsarUsuario();
+            return;
+        }
+
+        // 4. CONTROL DE PERFIL POR PÁGINA
+        const perfilRequerido = window.PERFIL_REQUERIDO;
+
+        if (perfilRequerido && data.perfil !== perfilRequerido) {
+            await registrarIntentoIntruso(user);
+            expulsarUsuario();
+            return;
+        }
+
+        // 5. ACCESO OK
+        mostrarSistema();
+
+    } catch (error) {
+        console.error("Error en auth-guard:", error);
         expulsarUsuario();
     }
 });
 
-// 3. CAPA DE AUDITORÍA: Registro en Firestore
+// ========================================================
+// MOSTRAR SISTEMA + INACTIVIDAD
+// ========================================================
+function mostrarSistema() {
+    document.documentElement.style.display = "block";
+    iniciarVigilanciaInactividad();
+}
+
+// ========================================================
+// AUDITORÍA
+// ========================================================
 async function registrarIntentoIntruso(user) {
-    const logId = `intento_${Date.now()}`;
     try {
-        await setDoc(doc(db, "logs_seguridad", logId), {
+        await setDoc(doc(db, "logs_seguridad", `intento_${Date.now()}`), {
             uid: user.uid,
             email: user.email,
             fecha: serverTimestamp(),
             pagina: window.location.pathname,
-            evento: "ACCESO_DENEGADO_NO_MASTER"
+            evento: "ACCESO_DENEGADO"
         });
     } catch (e) {
-        console.error("Error al reportar log de seguridad");
+        console.error("No se pudo registrar log de seguridad");
     }
 }
 
-// 4. CAPA DE INACTIVIDAD: Detecta movimiento
+// ========================================================
+// INACTIVIDAD
+// ========================================================
 function iniciarVigilanciaInactividad() {
     const eventos = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+
     eventos.forEach(ev => document.addEventListener(ev, resetearReloj));
+
     resetearReloj();
 }
 
 function resetearReloj() {
     clearTimeout(timer);
+
     timer = setTimeout(async () => {
-        console.warn("Sesión expirada por inactividad.");
         await signOut(auth);
         expulsarUsuario();
     }, TIEMPO_INACTIVIDAD);
 }
 
-// 5. FUNCIÓN DE LIMPIEZA Y SALIDA
+// ========================================================
+// EXPULSIÓN SEGURA
+// ========================================================
 function expulsarUsuario() {
     sessionStorage.clear();
     localStorage.clear();
     window.location.replace("index.html");
 }
 
-// 6. HERRAMIENTA EXTRA: Sanitización de datos (Prevención XSS)
+// ========================================================
+// SANITIZACIÓN
+// ========================================================
 window.sanitizarTexto = function(str) {
     const temp = document.createElement('div');
     temp.textContent = str;
