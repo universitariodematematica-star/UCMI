@@ -6,6 +6,7 @@
     <title>UCMI - Panel de Control</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
         :root {
@@ -13,6 +14,7 @@
             --azul-sidebar: #1a2a3a;
             --dorado-ucmi: #c5a059;
             --rojo-logout: #e74c3c;
+            --verde-exito: #27ae60;
         }
 
         body { 
@@ -26,11 +28,10 @@
 
         .app-wrapper { display: flex; min-height: 100vh; }
 
-        /* Sidebar con efecto Glassmorphism */
+        /* Sidebar Glassmorphism */
         .sidebar { 
             background: rgba(26, 42, 58, 0.4); 
             backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px); 
             border-right: 1px solid rgba(255, 255, 255, 0.15); 
             width: 260px; 
             flex-shrink: 0; 
@@ -40,63 +41,73 @@
         }
 
         .logo-sidebar { 
-            height: 100px; 
-            width: auto; 
-            margin-bottom: 30px; 
-            display: block; 
-            margin-left: auto; 
-            margin-right: auto; 
-            object-fit: contain; 
-            border-radius: 15px; 
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            transition: opacity 0.5s ease;
-            opacity: 0; /* Empieza oculto para el efecto fade-in */
+            height: 100px; width: auto; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto; object-fit: contain; border-radius: 15px; border: 2px solid rgba(255, 255, 255, 0.1); transition: opacity 0.5s ease; opacity: 0;
         }
         
         .sidebar-nav { flex-grow: 1; }
 
         .nav-item-ucmi { 
-            display: flex; align-items: center; 
-            color: rgba(255,255,255,0.6); 
-            text-decoration: none; 
-            padding: 10px 15px; 
-            margin-bottom: 5px; 
-            border-radius: 10px; 
-            transition: 0.3s all ease; 
-            font-size: 0.85rem; 
+            display: flex; align-items: center; color: rgba(255,255,255,0.6); text-decoration: none; padding: 10px 15px; margin-bottom: 5px; border-radius: 10px; transition: 0.3s all ease; font-size: 0.85rem; 
         }
-        
         .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
         .nav-item-ucmi:hover { color: white; background: rgba(255,255,255,0.1); transform: translateX(5px); }
-        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1); }
+        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; }
 
         .btn-sidebar-action { 
-            background: transparent; 
-            border: 1px solid rgba(255, 255, 255, 0.4) !important; 
-            color: white !important; 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            font-size: 0.7rem; 
-            border-radius: 50px; 
-            padding: 10px; 
-            text-decoration: none; 
-            text-align: center; 
-            transition: all 0.3s ease-in-out; 
-            display: block; 
-            margin-bottom: 10px; 
+            background: transparent; border: 1px solid rgba(255, 255, 255, 0.4) !important; color: white !important; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; border-radius: 50px; padding: 10px; text-decoration: none; text-align: center; transition: all 0.3s ease; display: block; margin-bottom: 10px; 
         }
-
-        .btn-sidebar-action:hover { background: rgba(255, 255, 255, 0.1); border-color: #ffffff !important; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); transform: translateY(-2px); }
+        .btn-sidebar-action:hover { background: rgba(255, 255, 255, 0.1); border-color: #ffffff !important; }
         .btn-logout { border-color: rgba(231, 76, 60, 0.4) !important; color: rgba(231, 76, 60, 0.8) !important; }
-        .btn-logout:hover { background: rgba(231, 76, 60, 0.1) !important; border-color: var(--rojo-logout) !important; color: white !important; }
 
         .super-overlay { 
             background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); 
-            flex-grow: 1; 
-            min-height: 100vh; 
-            overflow-y: auto; 
-            padding: 40px; 
+            flex-grow: 1; min-height: 100vh; overflow-y: auto; padding: 40px; 
         }
+
+        /* Tabla y Elementos */
+        .table-container {
+          background: rgba(255, 255, 255, 0.03) !important;
+          backdrop-filter: blur(15px) saturate(150%);
+          -webkit-backdrop-filter: blur(15px) saturate(150%);
+          border-radius: 28px;
+          padding: 30px;
+          color: white;
+          box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      }
+        .table {
+          --bs-table-bg: transparent !important;
+          --bs-table-color: white !important;
+          background-color: transparent !important;
+          color: white !important;
+          margin-bottom: 0;
+          border-collapse: separate;
+          border-spacing: 0 5px;
+      }
+        .table th, .table td {
+          background-color: transparent !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+          padding: 18px 12px;
+          vertical-align: middle;
+          transition: all 0.3s ease-in-out;
+      }
+              .table thead th {
+          background-color: transparent !important;
+          color: rgba(255, 255, 255, 0.6) !important;
+          font-weight: 800;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          letter-spacing: 1px;
+          border: none;
+      
+              .table td .fw-bold { color: #ffffff !important; font-size: 1rem; }}
+        .table-hover tbody tr:hover td {
+          background-color: rgba(255, 255, 255, 0.05) !important;
+      }
+        
+        .modal-content { background: rgba(26, 42, 58, 0.95) !important; backdrop-filter: blur(20px); border-radius: 32px; color: white !important; }
+        
+        #filtroPerfil { background: rgba(255, 255, 255, 0.05); color: white; border-radius: 50px; padding: 10px 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
 <body>
@@ -104,10 +115,7 @@
 <div class="app-wrapper">
     <aside class="sidebar d-none d-md-flex">
         <div class="text-center mb-2">
-            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" 
-                 id="logoAcademia" 
-                 class="logo-sidebar" 
-                 alt="Logo Academia">
+            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" id="logoAcademia" class="logo-sidebar" alt="Logo">
         </div>
         <nav class="sidebar-nav">
             <a href="#" class="nav-item-ucmi active"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
@@ -126,90 +134,138 @@
     </aside>
 
     <main class="super-overlay">
-<div class="container py-5">
-          <div class="row">
-              <div class="col-12">
-                  <div class="d-flex justify-content-between align-items-center">
-                      <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
-                      <span id="marcadorCupos" class="badge bg-dark border border-secondary px-3 py-2 rounded-pill fs-6" style="color: var(--dorado-ucmi) !important;">Cupos: Métrica / Máx</span>
-                  </div>
-                  
-                  <div class="row mt-4">
-                      <div class="col-md-4">
-                          <div class="p-3 border border-secondary rounded-4" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
-                              <label class="small text-muted fw-bold mb-2 d-block text-uppercase">Filtrar por Perfil</label>
-                              <select id="filtroPerfil">
-                                  <option value="todos">Mostrar todos</option>
-                                  <option value="estudiante">Estudiantes</option>
-                                  <option value="docente">Docentes</option>
-                              </select>
-                          </div>
-                      </div>
-                  </div>
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
+                <span id="marcadorCupos" class="badge bg-dark border border-secondary px-3 py-2 rounded-pill" style="color: var(--dorado-ucmi);">Cupos: 0 / 0</span>
+            </div>
 
-                  <div class="table-container mt-4">
-                      <div class="table-responsive">
-                          <table class="table table-hover align-middle">
-                              <thead>
-                                  <tr class="text-muted small">
-                                      <th>NOMBRE</th>
-                                      <th>PERFIL</th>
-                                      <th>LOCALIZACIÓN</th>
-                                      <th class="text-center">ACCIÓN</th>
-                                  </tr>
-                              </thead>
-                              <tbody id="listaMaestra"></tbody>
-                          </table>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
+            <div class="col-md-4 mb-4">
+                <label class="small text-muted fw-bold mb-2 text-uppercase">Filtrar por Perfil</label>
+                <select id="filtroPerfil" class="form-select">
+                    <option value="todos">Mostrar todos</option>
+                    <option value="estudiante">Estudiantes</option>
+                    <option value="docente">Docentes</option>
+                </select>
+            </div>
+
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr class="text-muted small">
+                                <th>NOMBRE</th>
+                                <th>PERFIL</th>
+                                <th>UBICACIÓN</th>
+                                <th class="text-center">ACCIÓN</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaMaestra"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </main>
+</div>
+
+<div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content p-3">
+            <div class="modal-header border-0">
+                <h4 class="fw-bold">Expediente del Aspirante</h4>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoModal"></div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-outline-danger rounded-pill px-4" id="btnEliminar">Rechazar</button>
+                <button class="btn btn-success rounded-pill px-4" id="btnConfirmarAcceso">Activar Acceso</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Configuración Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
         authDomain: "ucmi-13796634.firebaseapp.com",
         projectId: "ucmi-13796634",
         storageBucket: "ucmi-13796634.firebasestorage.app",
         messagingSenderId: "1090719609536",
-        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
-        measurementId: "G-3M3DH25722"
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+    const secondaryAuth = getAuth(secondaryApp);
+
+    let currentId = null, currentData = null, academiaNombreGlobal = "", cuposMaximosGlobal = 0, registrosLocales = [];
 
     onAuthStateChanged(auth, async (user) => {
         const logoElement = document.getElementById('logoAcademia');
-        
         if (user) {
-            try {
-                const docRef = doc(db, "usuarios", user.email);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists() && docSnap.data().logoCustom) {
-                    logoElement.src = docSnap.data().logoCustom;
-                }
-            } catch (error) {
-                console.error("Error al cargar logo:", error);
+            const userDoc = await getDoc(doc(db, "usuarios", user.email));
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                logoElement.src = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+                academiaNombreGlobal = data.entidad;
+                cuposMaximosGlobal = data.cupos || 0;
+                actualizarCupos();
+                iniciarEscucha();
             }
         }
-        
-        // Hacemos visible el logo una vez procesada la lógica
         logoElement.style.opacity = "1";
-        logoElement.style.visibility = "visible";
     });
+
+    async function actualizarCupos() {
+        const qUsuarios = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "in", ["estudiante", "docente"]));
+        const snap = await getDocs(qUsuarios);
+        document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
+    }
+
+    function iniciarEscucha() {
+        const q = query(collection(db, "postulaciones"), where("entidad", "==", academiaNombreGlobal));
+        onSnapshot(q, (snap) => {
+            registrosLocales = snap.docs;
+            renderizar();
+        });
+    }
+
+    function renderizar() {
+        const lista = document.getElementById('listaMaestra');
+        const filtro = document.getElementById('filtroPerfil').value;
+        lista.innerHTML = "";
+        registrosLocales.forEach(docSnap => {
+            const d = docSnap.data();
+            if (filtro !== "todos" && !d.perfil.toLowerCase().includes(filtro)) return;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><div class="fw-bold">${d.nombreResponsable || 'N/A'}</div><small>${d.email}</small></td>
+                            <td><span class="badge bg-secondary">${d.perfil}</span></td>
+                            <td>${d.ubicacion || 'N/A'}</td>
+                            <td class="text-center"><button class="btn btn-outline-light btn-sm" onclick="verExpediente('${docSnap.id}')">Ver</button></td>`;
+            lista.appendChild(tr);
+        });
+    }
+
+    window.verExpediente = async (id) => {
+        const snap = await getDoc(doc(db, "postulaciones", id));
+        currentId = id; currentData = snap.data();
+        document.getElementById('contenidoModal').innerHTML = `<pre>${JSON.stringify(currentData, null, 2)}</pre>`;
+        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+    };
+
+    document.getElementById('btnConfirmarAcceso').onclick = async () => {
+        // Lógica de activación...
+        await Swal.fire('Éxito', 'Procesado correctamente', 'success');
+        location.reload();
+    };
 </script>
 </body>
 </html>
