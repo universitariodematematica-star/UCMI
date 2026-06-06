@@ -92,7 +92,11 @@
     <aside class="sidebar d-none d-md-flex">
         <div class="text-center mb-2">
             <!-- ID AÑADIDO PARA CAMBIAR EL LOGO DINÁMICAMENTE -->
-            <img src="" id="logoAcademia" class="logo-sidebar" alt="Logo">
+            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" 
+             id="logoAcademia" 
+             class="logo-sidebar" 
+             alt="Logo" 
+             style="visibility: hidden;">
         </div>
         <nav class="sidebar-nav">
             <a href="#" class="nav-item-ucmi active"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
@@ -136,19 +140,26 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            try {
-                const docRef = doc(db, "usuarios", user.email);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists() && docSnap.data().logoCustom) {
-                    document.getElementById('logoAcademia').src = docSnap.data().logoCustom;
-                }
-            } catch (error) {
-                console.error("Error al cargar logo:", error);
+onAuthStateChanged(auth, async (user) => {
+    const logoElement = document.getElementById('logoAcademia');
+    
+    if (user) {
+        try {
+            const docRef = doc(db, "usuarios", user.email);
+            const docSnap = await getDoc(docRef);
+            
+            // Si hay logo, lo cambiamos. Si no, dejamos el de UCMI.
+            if (docSnap.exists() && docSnap.data().logoCustom) {
+                logoElement.src = docSnap.data().logoCustom;
             }
+        } catch (error) {
+            console.error("Error al cargar logo:", error);
         }
-    });
+    }
+    
+    // Una vez terminada la lógica (sea con logo custom o el de UCMI), lo hacemos visible
+    logoElement.style.visibility = "visible";
+});
 </script>
 </body>
 </html>
