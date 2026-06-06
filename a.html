@@ -121,6 +121,43 @@
           text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
           filter: brightness(1.2);
       }
+
+     /* Perfiles */
+
+.bg-super-admin {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.bg-admin {
+    background-color: #fd7e14 !important;
+    color: white !important;
+}
+
+.bg-academia {
+    background-color: #0d6efd !important;
+    color: white !important;
+}
+
+.bg-docente-ucmi {
+    background-color: #20c997 !important;
+    color: white !important;
+}
+
+.bg-estudiante-ucmi {
+    background-color: #198754 !important;
+    color: white !important;
+}
+
+.bg-categoria-docente {
+    background-color: #d63384 !important;
+    color: white !important;
+}
+
+.bg-categoria-estudiante {
+    background-color: #311b92 !important;
+    color: white !important;
+}   
         
         .modal-content { background: rgba(26, 42, 58, 0.95) !important; backdrop-filter: blur(20px); border-radius: 32px; color: white !important; }
         
@@ -255,21 +292,86 @@
         });
     }
 
-    function renderizar() {
-        const lista = document.getElementById('listaMaestra');
-        const filtro = document.getElementById('filtroPerfil').value;
-        lista.innerHTML = "";
-        registrosLocales.forEach(docSnap => {
-            const d = docSnap.data();
-            if (filtro !== "todos" && !d.perfil.toLowerCase().includes(filtro)) return;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><div class="fw-bold">${d.nombreResponsable || 'N/A'}</div><small>${d.email}</small></td>
-                            <td><span class="badge bg-secondary">${d.perfil}</span></td>
-                            <td>${d.ubicacion || 'N/A'}</td>
-                            <td class="text-center"><button class="btn btn-outline-light btn-sm" onclick="verExpediente('${docSnap.id}')">Ver</button></td>`;
-            lista.appendChild(tr);
-        });
-    }
+function renderizar() {
+    const lista = document.getElementById('listaMaestra');
+    const filtro = document.getElementById('filtroPerfil').value;
+
+    lista.innerHTML = "";
+
+    registrosLocales.forEach(docSnap => {
+
+        const d = docSnap.data();
+
+        if (filtro !== "todos" &&
+            !d.perfil.toLowerCase().includes(filtro)) {
+            return;
+        }
+
+        let clasePerfil = "bg-secondary";
+
+        switch (d.perfil) {
+
+            case "Super Administrador":
+                clasePerfil = "bg-super-admin";
+                break;
+
+            case "Administrador":
+                clasePerfil = "bg-admin";
+                break;
+
+            case "Academia":
+                clasePerfil = "bg-academia";
+                break;
+
+            case "Docente UCMI":
+                clasePerfil = "bg-docente-ucmi";
+                break;
+
+            case "Estudiante UCMI":
+                clasePerfil = "bg-estudiante-ucmi";
+                break;
+
+            case "Docente Academia":
+                clasePerfil = "bg-categoria-docente";
+                break;
+
+            case "Estudiante Academia":
+                clasePerfil = "bg-categoria-estudiante";
+                break;
+        }
+
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+            <td>
+                <div class="fw-bold">
+                    ${d.nombreResponsable || 'N/A'}
+                </div>
+                <small>${d.email}</small>
+            </td>
+
+            <td>
+                <span class="badge ${clasePerfil}">
+                    ${d.perfil}
+                </span>
+            </td>
+
+            <td>
+                ${d.ubicacion || 'N/A'}
+            </td>
+
+            <td class="text-center">
+                <button
+                    class="btn btn-outline-light btn-sm"
+                    onclick="verExpediente('${docSnap.id}')">
+                    Ver
+                </button>
+            </td>
+        `;
+
+        lista.appendChild(tr);
+    });
+}
 
     window.verExpediente = async (id) => {
         const snap = await getDoc(doc(db, "postulaciones", id));
