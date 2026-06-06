@@ -257,18 +257,20 @@
         });
     }
 
-    function renderizar() {
+    function renderizarTabla() {
         const lista = document.getElementById('listaMaestra');
-        const filtro = document.getElementById('filtroPerfil').value;
+        if (!lista) return;
+        const filtro = selectorFiltro.value; 
         lista.innerHTML = "";
         registrosLocales.forEach(docSnap => {
             const d = docSnap.data();
-            if (filtro !== "todos" && !d.perfil.toLowerCase().includes(filtro)) return;
+            const id = docSnap.id;
+            const esEstudiante = d.perfil === "Estudiante Academia";
+            const esDocente = d.perfil === "Docente Academia";
+            if (filtro === "estudiante" && !esEstudiante) return;
+            if (filtro === "docente" && !esDocente) return;
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><div class="fw-bold">${d.nombreResponsable || 'N/A'}</div><small>${d.email}</small></td>
-                            <td><span class="badge bg-secondary">${d.perfil}</span></td>
-                            <td>${d.ubicacion || 'N/A'}</td>
-                            <td class="text-center"><button class="btn btn-outline-light btn-sm" onclick="verExpediente('${docSnap.id}')">Ver</button></td>`;
+            tr.innerHTML = `<td><div class="fw-bold">${d.nombreResponsable || d.nombre || 'Sin nombre'}</div><div class="small text-muted">${d.email}</div></td><td><span class="badge ${esDocente ? 'bg-categoria-docente' : 'bg-categoria-estudiante'}">${d.perfil}</span></td><td><i class="bi bi-geo-alt me-1"></i>${d.ubicacion || 'No definida'}</td><td class="text-center"><button class="btn btn-dark btn-sm" onclick="verExpediente('${id}')"><i class="bi bi-eye"></i> Detalles</button></td>`;
             lista.appendChild(tr);
         });
     }
