@@ -434,78 +434,96 @@ document.getElementById('filtroPerfil').addEventListener('change', renderizar);
         document.getElementById('contenidoModal').innerHTML = `<div class="row">${html}</div>`;
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
     };
+
+// --- Lógica de WhatsApp (Función Global) ---
+const prepararMensajeWhatsApp = (data, decision) => {
+    const nombre = data.nombreResponsable || data.nombre || "Postulante";
+    const telefono = data.whatsapp || data.whatsappRepresentante || "";
+    const nombreAcademia = academiaNombreGlobal || "UCMI"; 
+    
+    if (!telefono || telefono === "N/A") return;
+
+    let textoMensaje = (decision === "ACEPTADO") 
+        ? `¡Hola *${nombre}*! Tu solicitud en *${nombreAcademia}* ha sido *ACEPTADA*. ✅%0A%0A📧 *Usuario:* ${data.email}%0A🔑 *Clave:* ${data.claveEnviada}`
+        : `Hola *${nombre}*. Lamentamos informarte que tu solicitud en *${nombreAcademia}* no ha sido aprobada en esta ocasión. Ponte en contacto con nosotros para más información.`;
+    
+    const url = `https://api.whatsapp.com/send?phone=${telefono.toString().replace(/\D/g, '')}&text=${textoMensaje}`;
+    window.open(url, '_blank');
+};
+
 // --- Lógica de Aceptación (Botón "Confirmar Acceso") ---
-    document.getElementById('btnConfirmarAcceso').onclick = async () => {
-        if (!currentId || !currentData) return;
-        const esDocente = currentData.perfil === "Docente Academia";
+document.getElementById('btnConfirmarAcceso').onclick = async () => {
+    if (!currentId || !currentData) return;
+    const esDocente = currentData.perfil === "Docente Academia";
+    
+    try {
+        // 1. Validar cupos
+        const qUsuarios = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "in", ["estudiante", "docente"]));
+        const snap = await getDocs(qUsuarios);
+        if (snap.size >= cuposMaximosGlobal) {
+            await Swal.fire('Cupos Agotados', 'No hay vacantes disponibles (límite alcanzado).', 'warning');
+            return;
+        }
+
+        // 2. Crear cuenta
+        const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
+        const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
+        
         try {
-            // 1. Validar cupos disponibles
-            const qUsuarios = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "in", ["estudiante", "docente"]));
-            const snap = await getDocs(qUsuarios);
-            if (snap.size >= cuposMaximosGlobal) {
-                await Swal.fire('Cupos Agotados', 'No hay vacantes disponibles (límite alcanzado).', 'warning');
-                return;
-            }
+            await createUserWithEmailAndPassword(secondaryAuth, currentData.email, passwordTemp);
+        } catch (authError) { if (authError.code !== 'auth/email-already-in-use') throw authError; }
 
-            // 2. Validar si el usuario ya existe
-            const usuarioExistente = await getDoc(doc(db, "usuarios", currentData.email));
-            if (usuarioExistente.exists()) {
-                await Swal.fire('Error', 'Este correo ya está registrado en el sistema.', 'error');
-                return;
-            }
+        // 3. Guardar en Firestore
+        await setDoc(doc(db, "usuarios", currentData.email), {
+            ...currentData,
+            estado: "activo",
+            rol: esDocente ? "docente" : "estudiante",
+            claveInicial: passwordTemp
+        });
 
-            // 3. Crear cuenta y migrar datos
-            const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
-            const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
+        // 4. Historial y Limpieza
+        await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Admitido", decisionFinal: "ACEPTADO" });
+        await deleteDoc(doc(db, "postulaciones", currentId));
+        
+        // --- Disparador WhatsApp Aceptado ---
+        prepararMensajeWhatsApp({ ...currentData, claveEnviada: passwordTemp }, "ACEPTADO");
+        
+        await Swal.fire({ title: '¡Éxito!', text: 'Usuario aceptado. Su clave inicial es: ' + passwordTemp, icon: 'success' });
+        location.reload();
+    } catch (e) { 
+        console.error("Error:", e); 
+        Swal.fire('Error', 'No se pudo procesar la admisión: ' + e.message, 'error'); 
+    }
+};
+
+// --- Lógica de Rechazo (Botón "btnEliminar") ---
+document.getElementById('btnEliminar').onclick = async () => {
+    const res = await Swal.fire({ 
+        title: '¿Estás seguro?', 
+        text: "¡Esta acción eliminará la postulación!", 
+        icon: 'warning', 
+        showCancelButton: true, 
+        confirmButtonText: 'Sí, rechazar' 
+    });
+    
+    if (res.isConfirmed) {
+        try {
+            // 1. Guardar en historial
+            await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Rechazado", decisionFinal: "RECHAZADO" });
             
-            try {
-                await createUserWithEmailAndPassword(secondaryAuth, currentData.email, passwordTemp);
-            } catch (authError) { if (authError.code !== 'auth/email-already-in-use') throw authError; }
-
-            await setDoc(doc(db, "usuarios", currentData.email), {
-                ...currentData,
-                estado: "activo",
-                rol: esDocente ? "docente" : "estudiante",
-                claveInicial: passwordTemp
-            });
-
-            // 4. Guardar en historial y borrar de pendientes
-            await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Admitido", decisionFinal: "ACEPTADO" });
+            // 2. Borrar de postulaciones
             await deleteDoc(doc(db, "postulaciones", currentId));
             
-            prepararMensajeWhatsApp({ ...currentData, claveEnviada: passwordTemp }, "ACEPTADO");
+            // --- Disparador WhatsApp Rechazado ---
+            prepararMensajeWhatsApp(currentData, "RECHAZADO");
             
-            await Swal.fire({ title: '¡Éxito!', text: 'Usuario aceptado. Su clave inicial es: ' + passwordTemp, icon: 'success' });
             location.reload();
         } catch (e) { 
-            console.error("Error:", e); 
-            Swal.fire('Error', 'No se pudo procesar la admisión: ' + e.message, 'error'); 
+            Swal.fire('Error', 'No se pudo rechazar la solicitud.', 'error'); 
         }
-    };
-
-    // --- Lógica de Rechazo (Botón "btnEliminar") ---
-    document.getElementById('btnEliminar').onclick = async () => {
-        const res = await Swal.fire({ 
-            title: '¿Estás seguro?', 
-            text: "¡Esta acción eliminará la postulación!", 
-            icon: 'warning', 
-            showCancelButton: true, 
-            confirmButtonText: 'Sí, rechazar' 
-        });
-        
-        if (res.isConfirmed) {
-            try {
-                await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Rechazado", decisionFinal: "RECHAZADO" });
-                await deleteDoc(doc(db, "postulaciones", currentId));
-                
-                prepararMensajeWhatsApp(currentData, "RECHAZADO");
-                
-                location.reload();
-            } catch (e) { 
-                Swal.fire('Error', 'No se pudo rechazar la solicitud.', 'error'); 
-            }
-        }
-    };
+    }
+};
+    
 </script>
 </body>
 </html>
