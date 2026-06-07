@@ -461,7 +461,14 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
         const qUsuarios = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "in", ["estudiante", "docente"]));
         const snap = await getDocs(qUsuarios);
         if (snap.size >= cuposMaximosGlobal) {
-            await Swal.fire('Cupos Agotados', 'No hay vacantes disponibles (límite alcanzado).', 'warning');
+            await Swal.fire({
+                title: 'Cupos Agotados',
+                text: 'No hay vacantes disponibles en este momento.',
+                icon: 'warning',
+                background: '#06090f',
+                color: '#fff',
+                confirmButtonColor: '#c5a059'
+            });
             return;
         }
 
@@ -485,14 +492,39 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
         await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Admitido", decisionFinal: "ACEPTADO" });
         await deleteDoc(doc(db, "postulaciones", currentId));
         
-        // --- Disparador WhatsApp Aceptado ---
+        // --- Disparador WhatsApp ---
         prepararMensajeWhatsApp({ ...currentData, claveEnviada: passwordTemp }, "ACEPTADO");
         
-        await Swal.fire({ title: '¡Éxito!', text: 'Usuario aceptado. Su clave inicial es: ' + passwordTemp, icon: 'success' });
+        // --- MODAL DE ÉXITO ESTILIZADO (Igual de hermoso) ---
+        const modalElement = document.getElementById('modalDetalles');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) modal.hide();
+
+        await Swal.fire({
+            title: '<span style="color:#c5a059">¡Postulación Aprobada!</span>',
+            html: `El usuario ha sido activado correctamente.<br><br>
+                   <div style="background:rgba(197, 160, 89, 0.1); padding:15px; border-radius:10px; border:1px solid #c5a059;">
+                    <strong style="color:#2ecc71">CLAVE INICIAL:</strong><br>
+                    <span style="font-size:1.5rem; font-weight:bold;">${passwordTemp}</span>
+                   </div>`,
+            icon: 'success',
+            background: '#06090f',
+            color: '#ffffff',
+            confirmButtonColor: '#c5a059',
+            confirmButtonText: 'Entendido'
+        });
+        
         location.reload();
     } catch (e) { 
         console.error("Error:", e); 
-        Swal.fire('Error', 'No se pudo procesar la admisión: ' + e.message, 'error'); 
+        Swal.fire({
+            title: 'Error',
+            text: 'No se pudo procesar la admisión: ' + e.message,
+            icon: 'error',
+            background: '#06090f',
+            color: '#fff',
+            confirmButtonColor: '#e74c3c'
+        });
     }
 };
 
