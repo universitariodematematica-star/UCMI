@@ -265,7 +265,19 @@
     backdrop-filter: blur(15px) !important;
     -webkit-backdrop-filter: blur(15px) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}       
+}
+
+/* Asegura que el spinner sea visible y el fondo de la tabla sea consistente */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    color: white !important;
+}
+
+/* Evita que el contenedor blanco de Bootstrap afecte el área de carga */
+#tabla-body {
+    background: transparent !important;
+}        
         
     </style>
 </head>
@@ -364,54 +376,66 @@
     });
 
 async function cargarDirectorio(entidad, cuposMax, mods) {
-        const tbody = document.getElementById('tabla-body');
-        
-        // Carga de filtros
-        if(mods) {
-            Object.keys(mods).forEach(m => { 
-                if(mods[m]) document.getElementById('filtroModulo').innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; 
-            });
-        }
-        
-        const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
-        
-        document.getElementById('cupos-utilizados').innerText = snap.size;
-        document.getElementById('cupos-maximos').innerText = cuposMax;
-        
-        tbody.innerHTML = '';
-        
-        snap.forEach(doc => {
-            const d = doc.data();
-            
-            // Creación del elemento fila con la clase necesaria para el diseño
-            const tr = document.createElement('tr');
-            tr.className = 'fila-estudiante'; // <--- ESTO ES VITAL
-            
-            tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
-            
-            // Inyección del contenido
-            tr.innerHTML = `
-                <td>
-                    <div class="fw-bold">${d.nombreResponsable}</div>
-                    <small class="text-secondary">${d.dniEstudiante || ''}</small>
-                </td>
-                <td>
-                    <small>${d.email}<br><span class="text-success">${d.whatsapp || ''}</span></small>
-                </td>
-                <td>
-                    <small>${d.nombreRepresentante || '-'}</small>
-                </td>
-                <td>
-                    ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
-                </td>
-                <td class="text-center">
-                    <button class="btn btn-sm btn-panel"><i class="bi bi-eye"></i></button>
-                </td>
-            `;
-            
-            tbody.appendChild(tr);
+    const tbody = document.getElementById('tabla-body');
+
+    // Muestra estado de carga antes de traer los datos
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="5" style="text-align:center; padding: 40px; border: none !important;">
+                <div class="spinner-border text-light" role="status"></div>
+                <p style="color: white; margin-top: 10px;">Cargando estudiantes...</p>
+            </td>
+        </tr>`;
+
+    // Carga de filtros
+    if(mods) {
+        document.getElementById('filtroModulo').innerHTML = '<option value="">Todos los módulos</option>';
+        Object.keys(mods).forEach(m => { 
+            if(mods[m]) document.getElementById('filtroModulo').innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; 
         });
     }
+
+    const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
+
+    document.getElementById('cupos-utilizados').innerText = snap.size;
+    document.getElementById('cupos-maximos').innerText = cuposMax;
+
+    // Limpiamos el spinner
+    tbody.innerHTML = '';
+
+    // Si no hay resultados
+    if (snap.empty) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="color:white; padding:20px;">No se encontraron registros.</td></tr>';
+        return;
+    }
+
+    snap.forEach(doc => {
+        const d = doc.data();
+        const tr = document.createElement('tr');
+        tr.className = 'fila-estudiante';
+        tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
+
+        tr.innerHTML = `
+            <td>
+                <div class="fw-bold">${d.nombreResponsable}</div>
+                <small class="text-secondary">${d.dniEstudiante || ''}</small>
+            </td>
+            <td>
+                <small>${d.email}<br><span class="text-success">${d.whatsapp || ''}</span></small>
+            </td>
+            <td>
+                <small>${d.nombreRepresentante || '-'}</small>
+            </td>
+            <td>
+                ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
+            </td>
+            <td class="text-center">
+                <button class="btn btn-sm btn-panel"><i class="bi bi-eye"></i></button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
 
     document.getElementById('buscador').addEventListener('input', e => {
         const t = e.target.value.toLowerCase();
