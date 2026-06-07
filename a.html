@@ -314,78 +314,46 @@
         });
     }
 
+// Función para renderizar la tabla aplicando el filtro de perfil
 function renderizar() {
     const lista = document.getElementById('listaMaestra');
-    const filtro = document.getElementById('filtroPerfil').value;
+    const filtro = document.getElementById('filtroPerfil').value; // Captura el valor del select
 
-    lista.innerHTML = "";
+    lista.innerHTML = ""; // Limpia la tabla antes de renderizar
 
     registrosLocales.forEach(docSnap => {
-
         const d = docSnap.data();
 
-        if (filtro !== "todos" &&
-            !d.perfil.toLowerCase().includes(filtro)) {
-            return;
+        // Lógica del filtro: Si no es "todos", compara el perfil del registro con el valor seleccionado
+        if (filtro !== "todos" && !d.perfil.toLowerCase().includes(filtro.toLowerCase())) {
+            return; // Si no coincide, esta iteración no hace nada
         }
 
+        // Asignación de clase CSS según el perfil
         let clasePerfil = "bg-secondary";
-
         switch (d.perfil) {
-
-            case "Super Administrador":
-                clasePerfil = "bg-super-admin";
-                break;
-
-            case "Administrador":
-                clasePerfil = "bg-admin";
-                break;
-
-            case "Academia":
-                clasePerfil = "bg-academia";
-                break;
-
-            case "Docente UCMI":
-                clasePerfil = "bg-docente-ucmi";
-                break;
-
-            case "Estudiante UCMI":
-                clasePerfil = "bg-estudiante-ucmi";
-                break;
-
-            case "Docente Academia":
-                clasePerfil = "bg-categoria-docente";
-                break;
-
-            case "Estudiante Academia":
-                clasePerfil = "bg-categoria-estudiante";
-                break;
+            case "Super Administrador": clasePerfil = "bg-super-admin"; break;
+            case "Administrador": clasePerfil = "bg-admin"; break;
+            case "Academia": clasePerfil = "bg-academia"; break;
+            case "Docente UCMI": clasePerfil = "bg-docente-ucmi"; break;
+            case "Estudiante UCMI": clasePerfil = "bg-estudiante-ucmi"; break;
+            case "Docente Academia": clasePerfil = "bg-categoria-docente"; break;
+            case "Estudiante Academia": clasePerfil = "bg-categoria-estudiante"; break;
         }
 
+        // Creación de la fila de la tabla
         const tr = document.createElement('tr');
-
         tr.innerHTML = `
             <td>
-                <div class="fw-bold">
-                    ${d.nombreResponsable || 'N/A'}
-                </div>
+                <div class="fw-bold">${d.nombreResponsable || 'N/A'}</div>
                 <small>${d.email}</small>
             </td>
-
             <td>
-                <span class="badge ${clasePerfil}">
-                    ${d.perfil}
-                </span>
+                <span class="badge ${clasePerfil}">${d.perfil}</span>
             </td>
-
-            <td>
-                ${d.ubicacion || 'N/A'}
-            </td>
-
+            <td>${d.ubicacion || 'N/A'}</td>
             <td class="text-center">
-                <button
-                    class="btn btn-outline-light btn-sm"
-                    onclick="verExpediente('${docSnap.id}')">
+                <button class="btn btn-outline-light btn-sm" onclick="verExpediente('${docSnap.id}')">
                     Detalles
                 </button>
             </td>
@@ -394,6 +362,8 @@ function renderizar() {
         lista.appendChild(tr);
     });
 }
+
+document.getElementById('filtroPerfil').addEventListener('change', renderizar);    
 
     window.verExpediente = async (id) => {
         const snap = await getDoc(doc(db, "postulaciones", id));
