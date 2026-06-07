@@ -496,7 +496,7 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
     }
 };
 
-// --- Lógica de Rechazo (Botón "btnEliminar") ---
+// --- Lógica de Rechazo (Corregida) ---
 document.getElementById('btnEliminar').onclick = async () => {
     const res = await Swal.fire({ 
         title: '¿Estás seguro?', 
@@ -509,7 +509,12 @@ document.getElementById('btnEliminar').onclick = async () => {
     if (res.isConfirmed) {
         try {
             // 1. Guardar en historial
-            await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Rechazado", decisionFinal: "RECHAZADO" });
+            await addDoc(collection(db, "historial_postulaciones"), { 
+                ...currentData, 
+                fechaProceso: new Date().toISOString(), 
+                resultado: "Rechazado", 
+                decisionFinal: "RECHAZADO" 
+            });
             
             // 2. Borrar de postulaciones
             await deleteDoc(doc(db, "postulaciones", currentId));
@@ -517,8 +522,19 @@ document.getElementById('btnEliminar').onclick = async () => {
             // --- Disparador WhatsApp Rechazado ---
             prepararMensajeWhatsApp(currentData, "RECHAZADO");
             
+            // --- SOLUCIÓN: Cierra el modal antes de recargar ---
+            const modalElement = document.getElementById('modalDetalles');
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+            
+            // Opcional: Pequeña espera para asegurar que el modal se cerró
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
             location.reload();
         } catch (e) { 
+            console.error(e); // Ayuda a ver el error real en consola
             Swal.fire('Error', 'No se pudo rechazar la solicitud.', 'error'); 
         }
     }
