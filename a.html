@@ -122,23 +122,55 @@
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
-.table { 
-    color: white !important; 
-    vertical-align: middle; 
-    border-collapse: separate; 
-    border-spacing: 0 10px; /* Separación entre filas para ver el fondo */
-}
+/* --- ESTILO UNIFICADO PARA TABLAS TIPO CRISTAL --- */
 
-.table thead tr th {
+/* 1. Limpieza total de los estilos por defecto de Bootstrap */
+.table {
+    border-collapse: separate !important;
+    border-spacing: 0 15px !important; /* Espacio entre filas */
     background: transparent !important;
-    color: rgba(255, 255, 255, 0.5) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: white !important;
 }
 
-/* Efecto hover sobre las filas para mantener el cristal */
-.table-hover tbody tr:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
-    transition: 0.3s;
+/* 2. Cabeceras sin fondo */
+.table thead th {
+    background: transparent !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    padding-bottom: 5px;
+}
+
+/* 3. El contenedor de la fila (la tarjeta de cristal) */
+.fila-estudiante {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 4. Celdas transparentes dentro de la fila */
+.fila-estudiante td {
+    background: transparent !important;
+    border: none !important;
+    padding: 20px !important;
+    vertical-align: middle;
+}
+
+/* 5. Bordes redondeados en los extremos */
+.fila-estudiante td:first-child {
+    border-radius: 15px 0 0 15px;
+}
+
+.fila-estudiante td:last-child {
+    border-radius: 0 15px 15px 0;
+}
+
+/* 6. Efecto hover suave */
+.fila-estudiante:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    transition: all 0.3s ease;
 }
 
 .badge-modulo {
@@ -276,19 +308,52 @@
         }
     });
 
-    async function cargarDirectorio(entidad, cuposMax, mods) {
+async function cargarDirectorio(entidad, cuposMax, mods) {
         const tbody = document.getElementById('tabla-body');
-        if(mods) Object.keys(mods).forEach(m => { if(mods[m]) document.getElementById('filtroModulo').innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; });
+        
+        // Carga de filtros
+        if(mods) {
+            Object.keys(mods).forEach(m => { 
+                if(mods[m]) document.getElementById('filtroModulo').innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; 
+            });
+        }
+        
         const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
+        
         document.getElementById('cupos-utilizados').innerText = snap.size;
         document.getElementById('cupos-maximos').innerText = cuposMax;
+        
         tbody.innerHTML = '';
+        
         snap.forEach(doc => {
             const d = doc.data();
+            
+            // Creación del elemento fila con la clase necesaria para el diseño
             const tr = document.createElement('tr');
-            tr.className = 'fila-estudiante';
+            tr.className = 'fila-estudiante'; // <--- ESTO ES VITAL
+            
             tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
-            tr.innerHTML = `<td><div class="fw-bold">${d.nombreResponsable}</div><small class="text-secondary">${d.dniEstudiante || ''}</small></td><td><small>${d.email}<br><span class="text-success">${d.whatsapp || ''}</span></small></td><td><small>${d.nombreRepresentante || '-'}</small></td><td>${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}</td><td class="text-center"><button class="btn btn-sm btn-panel"><i class="bi bi-eye"></i></button></td>`;
+            
+            // Inyección del contenido
+            tr.innerHTML = `
+                <td>
+                    <div class="fw-bold">${d.nombreResponsable}</div>
+                    <small class="text-secondary">${d.dniEstudiante || ''}</small>
+                </td>
+                <td>
+                    <small>${d.email}<br><span class="text-success">${d.whatsapp || ''}</span></small>
+                </td>
+                <td>
+                    <small>${d.nombreRepresentante || '-'}</small>
+                </td>
+                <td>
+                    ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-panel"><i class="bi bi-eye"></i></button>
+                </td>
+            `;
+            
             tbody.appendChild(tr);
         });
     }
