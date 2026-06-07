@@ -451,75 +451,96 @@ const prepararMensajeWhatsApp = (data, decision) => {
     window.open(url, '_blank');
 };
 
-// --- Lógica de Aceptación (Botón "Confirmar Acceso") ---
 document.getElementById('btnConfirmarAcceso').onclick = async () => {
     if (!currentId || !currentData) return;
     const esDocente = currentData.perfil === "Docente Academia";
     
+    // Mostramos un loading mientras procesamos
+    Swal.fire({
+        title: 'Procesando...',
+        text: 'Validando duplicados y creando acceso...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); },
+        background: '#06090f',
+        color: '#fff'
+    });
+
     try {
-        // 1. Validar cupos
-        const qUsuarios = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "in", ["estudiante", "docente"]));
-        const snap = await getDocs(qUsuarios);
-        if (snap.size >= cuposMaximosGlobal) {
+        // 1. VALIDACIÓN: ¿Existe ya el usuario?
+        const docRefUsuario = doc(db, "usuarios", currentData.email);
+        const snapUsuario = await getDoc(docRefUsuario);
+
+        if (snapUsuario.exists()) {
             await Swal.fire({
-                title: 'Cupos Agotados',
-                text: 'No hay vacantes disponibles en este momento.',
-                icon: 'warning',
+                title: 'Error: Registro Duplicado',
+                text: 'El correo ' + currentData.email + ' ya tiene una cuenta activa en el sistema.',
+                icon: 'error',
                 background: '#06090f',
                 color: '#fff',
-                confirmButtonColor: '#c5a059'
+                confirmButtonColor: '#e74c3c'
             });
             return;
         }
 
-        // 2. Crear cuenta
+        // 2. VALIDACIÓN: Cupos
+        const qUsuarios = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "in", ["estudiante", "docente"]));
+        const snapCupos = await getDocs(qUsuarios);
+        if (snapCupos.size >= cuposMaximosGlobal) {
+            throw new Error("No hay cupos disponibles.");
+        }
+
+        // 3. CREACIÓN EN AUTH
         const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
         const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
         
-        try {
-            await createUserWithEmailAndPassword(secondaryAuth, currentData.email, passwordTemp);
-        } catch (authError) { if (authError.code !== 'auth/email-already-in-use') throw authError; }
+        await createUserWithEmailAndPassword(secondaryAuth, currentData.email, passwordTemp);
 
-        // 3. Guardar en Firestore
-        await setDoc(doc(db, "usuarios", currentData.email), {
+        // 4. GUARDAR EN FIRESTORE
+        await setDoc(docRefUsuario, {
             ...currentData,
             estado: "activo",
             rol: esDocente ? "docente" : "estudiante",
-            claveInicial: passwordTemp
+            claveInicial: passwordTemp,
+            fechaRegistro: new Date().toISOString()
         });
 
-        // 4. Historial y Limpieza
-        await addDoc(collection(db, "historial_postulaciones"), { ...currentData, fechaProceso: new Date().toISOString(), resultado: "Admitido", decisionFinal: "ACEPTADO" });
+        // 5. HISTORIAL Y LIMPIEZA
+        await addDoc(collection(db, "historial_postulaciones"), { 
+            ...currentData, 
+            fechaProceso: new Date().toISOString(), 
+            resultado: "Admitido", 
+            decisionFinal: "ACEPTADO" 
+        });
         await deleteDoc(doc(db, "postulaciones", currentId));
         
-        // --- Disparador WhatsApp ---
+        // 6. DISPARO DE WHATSAPP
         prepararMensajeWhatsApp({ ...currentData, claveEnviada: passwordTemp }, "ACEPTADO");
-        
-        // --- MODAL DE ÉXITO ESTILIZADO (Igual de hermoso) ---
+
+        // 7. CIERRE Y CONFIRMACIÓN
         const modalElement = document.getElementById('modalDetalles');
         const modal = bootstrap.Modal.getInstance(modalElement);
         if (modal) modal.hide();
 
         await Swal.fire({
-            title: '<span style="color:#c5a059">¡Postulación Aprobada!</span>',
-            html: `El usuario ha sido activado correctamente.<br><br>
+            title: '<span style="color:#c5a059">¡Usuario Activado!</span>',
+            html: `Se ha creado el acceso correctamente.<br><br>
                    <div style="background:rgba(197, 160, 89, 0.1); padding:15px; border-radius:10px; border:1px solid #c5a059;">
-                    <strong style="color:#2ecc71">CLAVE INICIAL:</strong><br>
+                    <strong style="color:#2ecc71">CLAVE ASIGNADA:</strong><br>
                     <span style="font-size:1.5rem; font-weight:bold;">${passwordTemp}</span>
                    </div>`,
             icon: 'success',
             background: '#06090f',
             color: '#ffffff',
-            confirmButtonColor: '#c5a059',
-            confirmButtonText: 'Entendido'
+            confirmButtonColor: '#c5a059'
         });
         
         location.reload();
+
     } catch (e) { 
-        console.error("Error:", e); 
+        console.error("Error completo:", e); 
         Swal.fire({
-            title: 'Error',
-            text: 'No se pudo procesar la admisión: ' + e.message,
+            title: 'No se pudo activar',
+            text: e.message || 'Error desconocido al procesar la solicitud.',
             icon: 'error',
             background: '#06090f',
             color: '#fff',
