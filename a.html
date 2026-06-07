@@ -370,11 +370,19 @@
 
 async function cargarDirectorio(entidad, cuposMax, mods) {
     const tbody = document.getElementById('tabla-body');
+    const filtroModulo = document.getElementById('filtroModulo');
+
+    // 1. LIMPIEZA TOTAL: Evita duplicados en el selector y la tabla
+    tbody.innerHTML = '';
+    // Mantenemos solo la opción inicial "Todos los Módulos"
+    filtroModulo.innerHTML = '<option value="">Todos los Módulos</option>';
     
-    // Carga de filtros
+    // 2. Carga de filtros (ahora seguro)
     if(mods) {
         Object.keys(mods).forEach(m => { 
-            if(mods[m]) document.getElementById('filtroModulo').innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; 
+            if(mods[m]) {
+                filtroModulo.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; 
+            }
         });
     }
     
@@ -382,30 +390,27 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
     
     document.getElementById('cupos-utilizados').innerText = snap.size;
     
-    tbody.innerHTML = '';
-    
-    // --- NUEVA LÓGICA DE ORDENAMIENTO ---
+    // 3. Ordenamiento con limpieza de espacios (trim)
     const estudiantes = [];
     snap.forEach(doc => estudiantes.push(doc));
     
     estudiantes.sort((a, b) => {
-        const nombreA = (a.data().nombreResponsable || "").toLowerCase();
-        const nombreB = (b.data().nombreResponsable || "").toLowerCase();
+        // .trim() elimina espacios accidentales al inicio o final del nombre
+        const nombreA = (a.data().nombreResponsable || "").trim().toLowerCase();
+        const nombreB = (b.data().nombreResponsable || "").trim().toLowerCase();
         return nombreA.localeCompare(nombreB);
     });
-    // -------------------------------------
     
+    // 4. Renderizado
     estudiantes.forEach(doc => {
         const d = doc.data();
-        
         const tr = document.createElement('tr');
         tr.className = 'fila-estudiante';
-        
         tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
         
         tr.innerHTML = `
             <td>
-                <div class="fw-bold">${d.nombreResponsable}</div>
+                <div class="fw-bold">${d.nombreResponsable || 'Sin Nombre'}</div>
                 <small class="text-secondary">${d.dniEstudiante || ''}</small>
             </td>
             <td>
@@ -421,11 +426,9 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
                 <button class="btn btn-sm btn-panel"><i class="bi bi-eye"></i></button>
             </td>
         `;
-        
         tbody.appendChild(tr);
     });
 }
-
     document.getElementById('buscador').addEventListener('input', e => {
         const t = e.target.value.toLowerCase();
         document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = f.innerText.toLowerCase().includes(t) ? '' : 'none');
