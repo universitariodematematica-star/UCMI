@@ -9,7 +9,7 @@
     <title>Gestión de Módulos - UCMI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    
+
     <style>
     :root { 
         --dorado-ucmi: #c5a059; 
@@ -27,21 +27,11 @@
         overflow: hidden;
     }
 
-.overlay {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: var(--sidebar-width);
-
-    background: radial-gradient(
-        circle,
-        rgba(6, 9, 15, 0.7) 0%,
-        rgba(6, 9, 15, 0.95) 100%
-    );
-
-    z-index: -1;
-}
+    .overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(circle, rgba(6, 9, 15, 0.7) 0%, rgba(6, 9, 15, 0.9) 100%);
+        z-index: -1;
+    }
 
     .wrapper { display: flex; height: 100vh; width: 100vw; }
 
@@ -72,7 +62,7 @@
     }
 
     .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
-    
+
     .nav-item-ucmi:hover { 
         color: white; 
         background: rgba(255,255,255,0.1);
@@ -143,7 +133,7 @@
 
     .table { color: white !important; --bs-table-bg: transparent !important; }
     .table thead th { color: var(--dorado-ucmi) !important; border-bottom: 2px solid var(--dorado-ucmi); }
-    
+
     .form-switch .form-check-input:checked { background-color: var(--dorado-ucmi); border-color: var(--dorado-ucmi); }
 </style>
 </head>
@@ -154,7 +144,7 @@
 <div class="wrapper">
     <aside class="sidebar">
         <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" class="sidebar-logo">
-        
+
         <nav class="sidebar-nav">
             <a href="master-postulaciones.html" class="nav-item-ucmi">
                 <i class="bi bi-person-badge"></i> SOLICITUDES
@@ -187,7 +177,7 @@
             <a href="super-admin.html" class="btn-maestro">
                 <i class="bi bi-cpu me-2"></i> PANEL MAESTRO
             </a>
-            
+
             <a href="#" id="btnLogout" class="btn-cerrar">
                 <i class="bi bi-power me-2"></i> CERRAR SESIÓN
             </a>
@@ -234,7 +224,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    
+
     // IMPORTACIÓN DE AUTH
     import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
@@ -303,6 +293,10 @@
         });
 
         document.querySelectorAll('.toggle-oferta').forEach(sw => {
+            sw.onclick = async (e) => {
+                const docId = e.target.getAttribute('data-id');
+                await updateDoc(doc(db, "ofertas", docId), { ofertado: e.target.checked });
+            };
 sw.onclick = async (e) => {
     const docId = e.target.getAttribute('data-id');
 
