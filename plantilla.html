@@ -50,7 +50,7 @@
             border-radius: 15px; 
             border: 2px solid rgba(255, 255, 255, 0.1);
             transition: opacity 0.5s ease;
-            opacity: 0; /* Empieza oculto para el efecto fade-in */
+            opacity: 0;
         }
         
         .sidebar-nav { flex-grow: 1; }
@@ -128,7 +128,7 @@
     <main class="super-overlay">
         <div class="container-fluid">
             <h1 class="display-6 fw-bold mb-4">Área de Contenido</h1>
-            </div>
+        </div>
     </main>
 </div>
 
@@ -137,9 +137,8 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Configuración Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
         authDomain: "ucmi-13796634.firebaseapp.com",
@@ -154,25 +153,32 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    // Carga de Logo según el usuario
     onAuthStateChanged(auth, async (user) => {
         const logoElement = document.getElementById('logoAcademia');
-        
         if (user) {
             try {
                 const docRef = doc(db, "usuarios", user.email);
                 const docSnap = await getDoc(docRef);
-                
                 if (docSnap.exists() && docSnap.data().logoCustom) {
                     logoElement.src = docSnap.data().logoCustom;
                 }
-            } catch (error) {
-                console.error("Error al cargar logo:", error);
-            }
+            } catch (error) { console.error("Error al cargar logo:", error); }
         }
-        
-        // Hacemos visible el logo una vez procesada la lógica
         logoElement.style.opacity = "1";
         logoElement.style.visibility = "visible";
+    });
+
+    // Acción Cierre de Sesión
+    document.getElementById('btnLogout').addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+            await signOut(auth);
+            window.location.href = "index.html"; // Redirige al login
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+            alert("Ocurrió un error al cerrar la sesión.");
+        }
     });
 </script>
 </body>
