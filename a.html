@@ -369,53 +369,62 @@
     });
 
 async function cargarDirectorio(entidad, cuposMax, mods) {
-        const tbody = document.getElementById('tabla-body');
-        
-        // Carga de filtros
-        if(mods) {
-            Object.keys(mods).forEach(m => { 
-                if(mods[m]) document.getElementById('filtroModulo').innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; 
-            });
-        }
-        
-        const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
-        
-        document.getElementById('cupos-utilizados').innerText = snap.size;
-        
-        tbody.innerHTML = '';
-        
-        snap.forEach(doc => {
-            const d = doc.data();
-            
-            // Creación del elemento fila con la clase necesaria para el diseño
-            const tr = document.createElement('tr');
-            tr.className = 'fila-estudiante'; // <--- ESTO ES VITAL
-            
-            tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
-            
-            // Inyección del contenido
-            tr.innerHTML = `
-                <td>
-                    <div class="fw-bold">${d.nombreResponsable}</div>
-                    <small class="text-secondary">${d.dniEstudiante || ''}</small>
-                </td>
-                <td>
-                    <small>${d.email}<br><span class="text-success">${d.whatsapp || ''}</span></small>
-                </td>
-                <td>
-                    <small>${d.nombreRepresentante || '-'}</small>
-                </td>
-                <td>
-                    ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
-                </td>
-                <td class="text-center">
-                    <button class="btn btn-sm btn-panel"><i class="bi bi-eye"></i></button>
-                </td>
-            `;
-            
-            tbody.appendChild(tr);
+    const tbody = document.getElementById('tabla-body');
+    
+    // Carga de filtros
+    if(mods) {
+        Object.keys(mods).forEach(m => { 
+            if(mods[m]) document.getElementById('filtroModulo').innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; 
         });
     }
+    
+    const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
+    
+    document.getElementById('cupos-utilizados').innerText = snap.size;
+    
+    tbody.innerHTML = '';
+    
+    // --- NUEVA LÓGICA DE ORDENAMIENTO ---
+    const estudiantes = [];
+    snap.forEach(doc => estudiantes.push(doc));
+    
+    estudiantes.sort((a, b) => {
+        const nombreA = (a.data().nombreResponsable || "").toLowerCase();
+        const nombreB = (b.data().nombreResponsable || "").toLowerCase();
+        return nombreA.localeCompare(nombreB);
+    });
+    // -------------------------------------
+    
+    estudiantes.forEach(doc => {
+        const d = doc.data();
+        
+        const tr = document.createElement('tr');
+        tr.className = 'fila-estudiante';
+        
+        tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
+        
+        tr.innerHTML = `
+            <td>
+                <div class="fw-bold">${d.nombreResponsable}</div>
+                <small class="text-secondary">${d.dniEstudiante || ''}</small>
+            </td>
+            <td>
+                <small>${d.email}<br><span class="text-success">${d.whatsapp || ''}</span></small>
+            </td>
+            <td>
+                <small>${d.nombreRepresentante || '-'}</small>
+            </td>
+            <td>
+                ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
+            </td>
+            <td class="text-center">
+                <button class="btn btn-sm btn-panel"><i class="bi bi-eye"></i></button>
+            </td>
+        `;
+        
+        tbody.appendChild(tr);
+    });
+}
 
     document.getElementById('buscador').addEventListener('input', e => {
         const t = e.target.value.toLowerCase();
