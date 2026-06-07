@@ -1,282 +1,173 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>UCMI - Directorio de Alumnos</title>
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-      <style>
-          :root {
-              --ucmi-dark: #06090f;
-              --dorado-ucmi: #c5a059;
-          }
-          
-          body {
-              background-color: #f4f7f9;
-              font-family: 'Segoe UI', sans-serif;
-              margin: 0;
-          }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Directorio de Alumnos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --azul-ucmi: #06090f;
+            --azul-sidebar: #1a2a3a;
+            --dorado-ucmi: #c5a059;
+            --rojo-logout: #e74c3c;
+        }
 
-          /* --- Contenido Principal --- */
-          .main-content {
-              min-height: 100vh;
-              padding: 30px;
-          }
+        body { 
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            color: white;
+            min-height: 100vh;
+        }
 
-          .navbar-top {
-              background: white;
-              padding: 15px 30px;
-              border-radius: 15px;
-              box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-              margin-bottom: 30px;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-          }
+        .app-wrapper { display: flex; min-height: 100vh; }
 
-          .table-container {
-              background: white;
-              border-radius: 15px;
-              padding: 25px;
-              box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-          }
+        /* Sidebar Glassmorphism */
+        .sidebar { 
+            background: rgba(26, 42, 58, 0.4); 
+            backdrop-filter: blur(20px); 
+            border-right: 1px solid rgba(255, 255, 255, 0.15); 
+            width: 260px; 
+            flex-shrink: 0; 
+            padding: 25px 15px; 
+            display: flex; 
+            flex-direction: column; 
+        }
 
-          .badge-modulo {
-              background-color: #fff3e0;
-              color: #e65100;
-              border: 1px solid #ffe0b2;
-              margin: 2px;
-              font-size: 0.7rem;
-              font-weight: bold;
-          }
+        .logo-sidebar { 
+            height: 100px; width: auto; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto;
+            object-fit: contain; border-radius: 15px; border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: opacity 0.5s ease; opacity: 0;
+        }
+        
+        .sidebar-nav { flex-grow: 1; }
+        .nav-item-ucmi { 
+            display: flex; align-items: center; color: rgba(255,255,255,0.6); 
+            text-decoration: none; padding: 10px 15px; margin-bottom: 5px; border-radius: 10px; 
+            transition: 0.3s all ease; font-size: 0.85rem; 
+        }
+        .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
+        .nav-item-ucmi:hover { color: white; background: rgba(255,255,255,0.1); }
+        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); }
 
-          .btn-panel {
-              background: var(--ucmi-dark);
-              color: var(--dorado-ucmi);
-              border: 1px solid var(--dorado-ucmi);
-              border-radius: 8px;
-              transition: 0.3s;
-          }
+        .btn-sidebar-action { 
+            background: transparent; border: 1px solid rgba(255, 255, 255, 0.4); color: white;
+            padding: 10px; text-decoration: none; text-align: center; border-radius: 50px; margin-bottom: 10px; display: block;
+        }
+        
+        .super-overlay { 
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); 
+            flex-grow: 1; min-height: 100vh; padding: 40px; 
+        }
 
-          .btn-panel:hover {
-              background: var(--dorado-ucmi);
-              color: var(--ucmi-dark);
-          }
-      </style>
+        /* Estilos específicos de la tabla */
+        .table-container { background: rgba(255,255,255,0.95); border-radius: 15px; padding: 25px; color: #333; }
+        .badge-modulo { background-color: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; margin: 2px; }
+        .btn-panel { background: var(--azul-ucmi); color: var(--dorado-ucmi); border: 1px solid var(--dorado-ucmi); }
+    </style>
 </head>
 <body>
 
-<div class="main-content">
-      <div class="navbar-top">
-          <div>
-              <h4 class="fw-bold m-0 text-dark">Directorio Académico</h4>
-              <div class="d-flex align-items-center gap-2 mt-1">
-                  <small class="text-muted">Academia: <span id="label-academia" class="fw-bold">...</span></small>
-                  <span id="badge-cupos" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.75rem;">
-                      Cupos: <span id="cupos-utilizados">0</span> / <span id="cupos-maximos">0</span>
-                  </span>
-              </div>
-          </div>
-          <div class="d-flex gap-2">
-              <select id="filtroModulo" class="form-select" style="width: 200px;">
-                  <option value="">Todos los Módulos</option>
-              </select>
-              <input type="text" id="buscador" class="form-control" placeholder="Buscar por nombre o DNI..." style="width: 280px;">
-          </div>
-      </div>
+<div class="app-wrapper">
+    <aside class="sidebar d-none d-md-flex">
+        <div class="text-center mb-2">
+            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" id="logoAcademia" class="logo-sidebar" alt="Logo">
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
+            <a href="#" class="nav-item-ucmi active"><i class="bi bi-people"></i> DIRECTORIO</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
+        </nav>
+        <div class="mt-4 pt-4 border-top border-secondary">
+            <a href="#" id="btnLogout" class="btn-sidebar-action w-100"><i class="bi bi-box-arrow-right"></i> Salir</a>
+        </div>
+    </aside>
 
-      <div class="table-container">
-          <div class="table-responsive">
-              <table class="table align-middle">
-                  <thead>
-                      <tr class="text-muted small">
-                          <th>ESTUDIANTE</th>
-                          <th>CONTACTO</th>
-                          <th>REPRESENTANTE</th>
-                          <th style="width: 25%;">MÓDULOS ACTIVOS</th>
-                          <th class="text-center">GESTIÓN</th>
-                      </tr>
-                  </thead>
-                  <tbody id="tabla-body">
-                      <tr>
-                          <td colspan="5" class="text-center py-5">
-                              <div class="spinner-border text-warning" role="status"></div>
-                              <p class="mt-2 text-muted">Sincronizando con la nube...</p>
-                          </td>
-                      </tr>
-                  </tbody>
-              </table>
-          </div>
-      </div>
+    <main class="super-overlay">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold">Directorio Académico</h2>
+                    <p class="text-white-50">Academia: <span id="label-academia" class="fw-bold text-warning">...</span></p>
+                </div>
+                <div class="d-flex gap-2">
+                    <select id="filtroModulo" class="form-select bg-dark text-white border-secondary"></select>
+                    <input type="text" id="buscador" class="form-control bg-dark text-white border-secondary" placeholder="Buscar alumno...">
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>ESTUDIANTE</th><th>CONTACTO</th><th>REPRESENTANTE</th><th>MÓDULOS</th><th>GESTIÓN</th></tr></thead>
+                        <tbody id="tabla-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
 </div>
 
 <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-      import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-      import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-      const firebaseConfig = {
-          apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-          authDomain: "ucmi-13796634.firebaseapp.com",
-          projectId: "ucmi-13796634",
-          storageBucket: "ucmi-13796634.firebasestorage.app",
-          messagingSenderId: "1090719609536",
-          appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-      };
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
 
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      const auth = getAuth(app);
-      let miEntidad = "";
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-      onAuthStateChanged(auth, async (user) => {
-          if (user) {
-              await obtenerSesion(user.email);
-          } else {
-              window.location.href = 'index.html';
-          }
-      });
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = 'index.html'; return; }
+        
+        // Cargar Logo
+        const logoElement = document.getElementById('logoAcademia');
+        const userDoc = await getDoc(doc(db, "usuarios", user.email));
+        if (userDoc.exists() && userDoc.data().logoCustom) logoElement.src = userDoc.data().logoCustom;
+        logoElement.style.opacity = "1";
 
-      async function obtenerSesion(email) {
-          const userRef = doc(db, "usuarios", email);
-          const snap = await getDoc(userRef);
-          if (snap.exists()) {
-              const data = snap.data();
-              miEntidad = data.entidad || "Sede";
-              
-              const cuposMaximos = data.cupos || 0;
-              
-              document.getElementById('label-academia').innerText = miEntidad;
+        // Cargar datos
+        const data = userDoc.data();
+        const miEntidad = data.entidad;
+        document.getElementById('label-academia').innerText = miEntidad;
+        
+        cargarAlumnos(miEntidad);
+    });
 
-              const selectorModulo = document.getElementById('filtroModulo');
-              selectorModulo.innerHTML = '<option value="">Todos los Módulos</option>';
+    async function cargarAlumnos(entidad) {
+        const tbody = document.getElementById('tabla-body');
+        const q = query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad));
+        const snap = await getDocs(q);
+        tbody.innerHTML = '';
+        snap.forEach(doc => {
+            const d = doc.data();
+            tbody.innerHTML += `<tr>
+                <td><strong>${d.nombreResponsable}</strong><br><small class="text-muted">${d.dniEstudiante}</small></td>
+                <td>${d.email}<br><span class="text-success">${d.whatsapp}</span></td>
+                <td>${d.nombreRepresentante || '-'}</td>
+                <td>${d.modulos ? d.modulos.map(m => `<span class="badge badge-modulo">${m}</span>`).join('') : '-'}</td>
+                <td><button class="btn btn-sm btn-panel">Ver</button></td>
+            </tr>`;
+        });
+    }
 
-              const modulosOfertados = data["modulos-ofertados-academia"];
-              if (modulosOfertados && typeof modulosOfertados === 'object') {
-                  Object.keys(modulosOfertados).forEach(modulo => {
-                      if (modulosOfertados[modulo] === true) {
-                          const opt = document.createElement('option');
-                          opt.value = modulo.toLowerCase();
-                          opt.textContent = modulo;
-                          selectorModulo.appendChild(opt);
-                      }
-                  });
-              }
-
-              try {
-                  const qCupos = query(
-                      collection(db, "usuarios"),
-                      where("perfil", "==", "Estudiante Academia"),
-                      where("entidad", "==", miEntidad)
-                  );
-                  
-                  const snapCupos = await getDocs(qCupos);
-                  const cuposUtilizados = snapCupos.size;
-
-                  document.getElementById('cupos-utilizados').innerText = cuposUtilizados;
-                  document.getElementById('cupos-maximos').innerText = cuposMaximos;
-                  
-                  const badge = document.getElementById('badge-cupos');
-                  if (cuposUtilizados >= cuposMaximos && cuposMaximos > 0) {
-                      badge.className = "badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1";
-                  } else if (cuposUtilizados >= cuposMaximos * 0.9 && cuposMaximos > 0) {
-                      badge.className = "badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1";
-                  } else {
-                      badge.className = "badge bg-success-subtle text-success border border-success-subtle px-2 py-1";
-                  }
-
-              } catch (err) {
-                  console.error("Error al procesar conteo de cupos dinámicos:", err);
-              }
-
-              cargarAlumnos(miEntidad);
-          }
-      }
-
-      async function cargarAlumnos(entidad) {
-          const tbody = document.getElementById('tabla-body');
-
-          try {
-              const q = query(
-                  collection(db, "usuarios"),
-                  where("perfil", "==", "Estudiante Academia"),
-                  where("entidad", "==", entidad)
-              );
-
-              const snap = await getDocs(q);
-              tbody.innerHTML = '';
-
-              snap.forEach((doc) => {
-                  const d = doc.data();
-                  let htmlModulos = '';
-                  let listaModulosDataAttr = [];
-                  
-                  if (d.modulos && Array.isArray(d.modulos)) {
-                      d.modulos.forEach(m => {
-                          htmlModulos += `<span class="badge badge-modulo">${m}</span>`;
-                          listaModulosDataAttr.push(m.toLowerCase());
-                      });
-                  } else if (d.nivel) {
-                      htmlModulos = `<span class="badge badge-modulo">${d.nivel}</span>`;
-                      listaModulosDataAttr.push(d.nivel.toLowerCase());
-                  } else {
-                      htmlModulos = '<span class="text-muted small">Sin módulos</span>';
-                  }
-
-                  const tr = document.createElement('tr');
-                  tr.className = 'fila-estudiante';
-                  tr.setAttribute('data-modulos', listaModulosDataAttr.join(','));
-
-                  tr.innerHTML = `
-                      <td>
-                          <div class="fw-bold text-dark">${d.nombreResponsable || 'N/A'}</div>
-                          <div class="small text-muted">${d.dniEstudiante || ''}</div>
-                      </td>
-                      <td>
-                          <div class="small">${d.email || ''}</div>
-                          <div class="small text-success fw-bold">${d.whatsapp || ''}</div>
-                      </td>
-                      <td><div class="small">${d.nombreRepresentante || '-'}</div></td>
-                      <td>${htmlModulos}</td>
-                      <td class="text-center">
-                          <button class="btn btn-sm btn-panel" onclick="alert('Abriendo ficha de: ${d.nombreResponsable}')">
-                              <i class="bi bi-eye"></i> Ver
-                          </button>
-                      </td>
-                  `;
-                  tbody.appendChild(tr);
-              });
-
-          } catch (e) {
-              console.error(e);
-              tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar datos.</td></tr>';
-          }
-      }
-
-      function aplicarFiltros() {
-          const busquedaTexto = document.getElementById('buscador').value.toLowerCase();
-          const moduloSeleccionado = document.getElementById('filtroModulo').value;
-          
-          document.querySelectorAll('.fila-estudiante').forEach(fila => {
-              const textoFila = fila.innerText.toLowerCase();
-              const modulosFila = fila.getAttribute('data-modulos') || "";
-              
-              const coincideTexto = textoFila.includes(busquedaTexto);
-              const coincideModulo = moduloSeleccionado === "" || modulosFila.split(',').includes(moduloSeleccionado);
-              
-              if (coincideTexto && coincideModulo) {
-                  fila.style.display = '';
-              } else {
-                  fila.style.display = 'none';
-              }
-          });
-      }
-
-      document.getElementById('buscador').addEventListener('input', aplicarFiltros);
-      document.getElementById('filtroModulo').addEventListener('change', aplicarFiltros);
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+        await signOut(auth);
+        window.location.href = "index.html";
+    });
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
