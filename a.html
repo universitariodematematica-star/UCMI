@@ -378,38 +378,62 @@ document.getElementById('filtroPerfil').addEventListener('change', renderizar);
 
     window.verExpediente = async (id) => {
         const snap = await getDoc(doc(db, "postulaciones", id));
-        currentId = id; currentData = snap.data();
-        document.getElementById('contenidoModal').innerHTML = `<pre>${JSON.stringify(currentData, null, 2)}</pre>`;
-        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-        let html = `
-<div class="row">
-    <div class="col-12 mb-3">
-        <h6 style="color: var(--dorado-ucmi); border-bottom: 1px solid rgba(197, 160, 89, 0.3); padding-bottom: 5px;">
-            DATOS DEL ESTUDIANTE
-        </h6>
-    </div>
-    <div class="col-6 mb-3">
-        <label class="text-muted small text-uppercase">Nombre</label>
-        <div class="fw-bold text-white">${currentData.nombreResponsable || 'N/A'}</div>
-    </div>
-    <div class="col-6 mb-3">
-        <label class="text-muted small text-uppercase">DNI / ID</label>
-        <div class="fw-bold text-white">${currentData.dniEstudiante || 'N/A'}</div>
-    </div>
-    <div class="col-12 mt-4 mb-3">
-        <h6 style="color: var(--dorado-ucmi); border-bottom: 1px solid rgba(197, 160, 89, 0.3); padding-bottom: 5px;">
-            INFORMACIÓN DEL REPRESENTANTE
-        </h6>
-    </div>
-    <div class="col-6 mb-3">
-        <label class="text-muted small text-uppercase">Nombre</label>
-        <div class="fw-bold text-white">${currentData.nombreRepresentante || 'N/A'}</div>
-    </div>
-    </div>
-`;
-document.getElementById('contenidoModal').innerHTML = html;
-    };
+        if (!snap.exists()) return;
+        
+        currentId = id; 
+        currentData = snap.data();
+        const d = currentData;
+        const esDocente = d.perfil === "Docente Academia";
+        
+        // Preparar horarios si es docente
+        const diasSemana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+        let htmlHorarios = "";
+        if (esDocente && d.horarios && Array.isArray(d.horarios)) {
+            const agrupado = {};
+            d.horarios.forEach(idx => { const dia = diasSemana[idx % 7]; const hora = Math.floor(idx / 7); if (!agrupado[dia]) agrupado[dia] = []; agrupado[dia].push(`${hora}:00`); });
+            diasSemana.forEach(dia => { if (agrupado[dia]) { htmlHorarios += `<div class="col-12 mb-1" style="border-bottom: 1px solid rgba(197, 160, 89, 0.2); padding: 5px 0;"><span style="color:var(--dorado-ucmi); font-weight:bold; display: inline-block; width: 45px;">${dia}:</span><span style="font-size: 0.85rem; color: #fff;">${agrupado[dia].sort((a,b)=>a-b).join(', ')}</span></div>`; } });
+        }
 
+        let html = `<div class="col-12 mb-4"><h5 style="color:var(--dorado-ucmi)">Expediente del Aspirante</h5></div>`;
+        
+        if (esDocente) {
+            html += `
+            <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Docente</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE COMPLETO</label><br>${d.nombreResponsable}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniDocente}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">TÍTULO</label><br>${d.titulo}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">INSTITUCIÓN DE EGRESO</label><br>${d.institucion_titulo}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">ENLACE A SÍNTESIS CURRICULAR</label><br>${d.enlaceSintesis}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">AÑOS DE EXPERIENCIA</label><br>${d.experienciaDocente}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NIVELES</label><br>${d.niveles_atencion}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">RAZÓN DE PERTENECIA</label><br>${d.razon_deseo_pertenencia}</div>
+            <div class="col-12 mt-2"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DISPONIBILIDAD HORARIA</label></div>${htmlHorarios}`;
+        } else {
+            html += `
+            <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Estudiante</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE</label><br>${d.nombreResponsable}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniEstudiante}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">GÉNERO</label><br>${d.genero}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NACIMIENTO</label><br>${d.fechaNacimiento}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">EDAD</label><br>${d.edadEstudiante}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">PROMEDIO</label><br>${d.promediocatualbachillerato}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO</label><br>${d.email}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">MÓDULOS</label><br>${d.modulos}</div>
+            <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold; border-top: 1px solid #333; padding-top:10px;">Información del Representante</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE</label><br>${d.nombreRepresentante}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO</label><br>${d.email}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI</label><br>${d.dniRepresentante}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsappRepresentante}</div>`;
+        }
+        
+        document.getElementById('contenidoModal').innerHTML = `<div class="row">${html}</div>`;
+        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+    };
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
         // Lógica de activación...
         await Swal.fire('Éxito', 'Procesado correctamente', 'success');
