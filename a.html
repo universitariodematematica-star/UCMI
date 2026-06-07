@@ -1,3 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Panel de Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --azul-ucmi: #06090f;
+            --azul-sidebar: #1a2a3a;
+            --dorado-ucmi: #c5a059;
+            --rojo-logout: #e74c3c;
+        }
+
+        body { 
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            color: white;
+            min-height: 100vh;
+        }
+
+        .app-wrapper { display: flex; min-height: 100vh; }
+
+        /* Sidebar con efecto Glassmorphism */
+        .sidebar { 
+            background: rgba(26, 42, 58, 0.4); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            border-right: 1px solid rgba(255, 255, 255, 0.15); 
+            width: 260px; 
+            flex-shrink: 0; 
+            padding: 25px 15px; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        .logo-sidebar { 
+            height: 100px; 
+            width: auto; 
+            margin-bottom: 30px; 
+            display: block; 
+            margin-left: auto; 
+            margin-right: auto; 
+            object-fit: contain; 
+            border-radius: 15px; 
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: opacity 0.5s ease;
+            opacity: 0;
+        }
+        
+        .sidebar-nav { flex-grow: 1; }
+
+        .nav-item-ucmi { 
+            display: flex; align-items: center; 
+            color: rgba(255,255,255,0.6); 
+            text-decoration: none; 
+            padding: 10px 15px; 
+            margin-bottom: 5px; 
+            border-radius: 10px; 
+            transition: 0.3s all ease; 
+            font-size: 0.85rem; 
+        }
+        
+        .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
+        .nav-item-ucmi:hover { color: white; background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1); }
+
+        .btn-sidebar-action { 
+            background: transparent; 
+            border: 1px solid rgba(255, 255, 255, 0.4) !important; 
+            color: white !important; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            font-size: 0.7rem; 
+            border-radius: 50px; 
+            padding: 10px; 
+            text-decoration: none; 
+            text-align: center; 
+            transition: all 0.3s ease-in-out; 
+            display: block; 
+            margin-bottom: 10px; 
+        }
+
+        .btn-sidebar-action:hover { background: rgba(255, 255, 255, 0.1); border-color: #ffffff !important; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); transform: translateY(-2px); }
+        .btn-logout { border-color: rgba(231, 76, 60, 0.4) !important; color: rgba(231, 76, 60, 0.8) !important; }
+        .btn-logout:hover { background: rgba(231, 76, 60, 0.1) !important; border-color: var(--rojo-logout) !important; color: white !important; }
+
+        .super-overlay { 
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); 
+            flex-grow: 1; 
+            min-height: 100vh; 
+            overflow-y: auto; 
+            padding: 40px; 
+        }
+
 /* --- Estilos del Directorio y Tabla --- */
 .navbar-top {
     background: rgba(255, 255, 255, 0.05);
@@ -47,7 +147,6 @@
     color: var(--azul-ucmi);
 }
 
-/* --- Estilos para Filtros y Cupos --- */
 .form-select, .form-control {
     background: rgba(0, 0, 0, 0.3) !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -61,3 +160,131 @@
     border-radius: 50px;
     font-weight: 600;
 }
+        
+    </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+    <aside class="sidebar d-none d-md-flex">
+        <div class="text-center mb-2">
+            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" 
+                 id="logoAcademia" 
+                 class="logo-sidebar" 
+                 alt="Logo Academia">
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item-ucmi active"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-shield-check"></i> VIGENCIA</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-people"></i> USUARIOS</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-clock-history"></i> HISTORIAL</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-person-vcard"></i> DIRECTORIO</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-tags"></i> OFERTAS</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
+        </nav>
+        <div class="mt-4 pt-4 border-top border-secondary">
+            <a href="admin-academia.html" class="btn-sidebar-action w-100"><i class="bi bi-shield-lock"></i> Panel Maestro</a>
+            <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a>
+        </div>
+    </aside>
+
+    <main class="super-overlay">
+        <div class="navbar-top">
+            <div>
+                <h4 class="fw-bold m-0">Directorio Académico</h4>
+                <div class="d-flex align-items-center gap-2 mt-1">
+                    <small class="text-white-50">Academia: <span id="label-academia" class="fw-bold text-warning">...</span></small>
+                    <span id="badge-cupos" class="badge badge-cupos bg-dark border border-success text-success ms-2">
+                        Cupos: <span id="cupos-utilizados">0</span> / <span id="cupos-maximos">0</span>
+                    </span>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <select id="filtroModulo" class="form-select" style="width: 200px;">
+                    <option value="">Todos los Módulos</option>
+                </select>
+                <input type="text" id="buscador" class="form-control" placeholder="Buscar..." style="width: 280px;">
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ESTUDIANTE</th>
+                            <th>CONTACTO</th>
+                            <th>REPRESENTANTE</th>
+                            <th>MÓDULOS ACTIVOS</th>
+                            <th class="text-center">GESTIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body">
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="spinner-border text-warning" role="status"></div>
+                                <p class="mt-2 text-white-50">Sincronizando con la nube...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
+    const auth = getAuth();
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = "index.html"; return; }
+        const userSnap = await getDoc(doc(db, "usuarios", user.email));
+        if (userSnap.exists()) {
+            const d = userSnap.data();
+            document.getElementById('label-academia').innerText = d.entidad || "Sede";
+            const logo = document.getElementById('logoAcademia');
+            logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+            logo.style.opacity = "1";
+            cargarDirectorio(d.entidad, d.cupos || 0, d["modulos-ofertados-academia"]);
+        }
+    });
+
+    async function cargarDirectorio(entidad, cuposMax, mods) {
+        const tbody = document.getElementById('tabla-body');
+        if(mods) Object.keys(mods).forEach(m => { if(mods[m]) document.getElementById('filtroModulo').innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; });
+        const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
+        document.getElementById('cupos-utilizados').innerText = snap.size;
+        document.getElementById('cupos-maximos').innerText = cuposMax;
+        tbody.innerHTML = '';
+        snap.forEach(doc => {
+            const d = doc.data();
+            const tr = document.createElement('tr');
+            tr.className = 'fila-estudiante';
+            tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
+            tr.innerHTML = `<td><div class="fw-bold">${d.nombreResponsable}</div><small class="text-secondary">${d.dniEstudiante || ''}</small></td><td><small>${d.email}<br><span class="text-success">${d.whatsapp || ''}</span></small></td><td><small>${d.nombreRepresentante || '-'}</small></td><td>${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}</td><td class="text-center"><button class="btn btn-sm btn-panel"><i class="bi bi-eye"></i></button></td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    document.getElementById('buscador').addEventListener('input', e => {
+        const t = e.target.value.toLowerCase();
+        document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = f.innerText.toLowerCase().includes(t) ? '' : 'none');
+    });
+
+    document.getElementById('filtroModulo').addEventListener('change', e => {
+        const m = e.target.value.toLowerCase();
+        document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = (m === "" || f.getAttribute('data-modulos').includes(m)) ? '' : 'none');
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
+</script>
+</body>
+</html>
