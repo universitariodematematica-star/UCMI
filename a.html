@@ -423,7 +423,9 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
                 ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
             </td>
             <td class="text-center">
-                <button class="btn btn-sm btn-panel"><i class="bi bi-eye"></i></button>
+                <button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(d).replace(/'/g, '&#39;')}'>
+                <i class="bi bi-eye"></i>
+                </button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -440,6 +442,58 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
     });
 
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
+
+// Listener para abrir el modal con los datos del alumno
+document.getElementById('tabla-body').addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-ver');
+    if (btn) {
+        // Obtenemos los datos desde el atributo data-info
+        const d = JSON.parse(btn.getAttribute('data-info').replace(/&#39;/g, "'"));
+        
+        // Construimos el contenido HTML del modal
+        let html = `
+            <div class="mb-4" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
+                <h6 class="text-warning fw-bold mb-3"><i class="bi bi-person"></i> DATOS DEL ESTUDIANTE</h6>
+                <p class="mb-1"><strong>Nombre:</strong> ${d.nombreResponsable || 'N/A'}</p>
+                <p class="mb-1"><strong>DNI:</strong> ${d.dniEstudiante || 'N/A'}</p>
+                <p class="mb-1"><strong>Email:</strong> ${d.email || 'N/A'}</p>
+                <p class="mb-1"><strong>WhatsApp:</strong> ${d.whatsapp || 'N/A'}</p>
+            </div>
+        `;
+
+        // Solo mostramos representante si existe
+        if (d.nombreRepresentante) {
+            html += `
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #ffc107;">
+                <h6 class="text-warning fw-bold mb-3"><i class="bi bi-person-badge"></i> DATOS DEL REPRESENTANTE</h6>
+                <p class="mb-1"><strong>Nombre:</strong> ${d.nombreRepresentante}</p>
+                <p class="mb-1"><strong>DNI:</strong> ${d.dniRepresentante || 'N/A'}</p>
+                <p class="mb-1"><strong>WhatsApp:</strong> ${d.whatsappRepresentante || 'N/A'}</p>
+            </div>`;
+        }
+
+        document.getElementById('cuerpoDetalles').innerHTML = html;
+        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+    }
+});
+    
 </script>
+
+<div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content" style="background: #0b0f1a; border: 1px solid #c5a059; border-radius: 25px;">
+      <div class="modal-header border-bottom border-secondary">
+        <h5 class="modal-title fw-bold text-warning">
+            <i class="bi bi-person-lines-fill me-2"></i>DETALLES DEL ESTUDIANTE
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4" id="cuerpoDetalles">
+        <p class="text-center text-white-50">Cargando información...</p>
+      </div>
+    </div>
+  </div>
+</div>
+    
 </body>
 </html>
