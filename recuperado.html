@@ -450,27 +450,52 @@ document.getElementById('tabla-body').addEventListener('click', (e) => {
         // Obtenemos los datos desde el atributo data-info
         const d = JSON.parse(btn.getAttribute('data-info').replace(/&#39;/g, "'"));
         
-        // Construimos el contenido HTML del modal
-        let html = `
-            <div class="mb-4" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
-                <h6 class="text-warning fw-bold mb-3"><i class="bi bi-person"></i> DATOS DEL ESTUDIANTE</h6>
-                <p class="mb-1"><strong>Nombre:</strong> ${d.nombreResponsable || 'N/A'}</p>
-                <p class="mb-1"><strong>DNI:</strong> ${d.dniEstudiante || 'N/A'}</p>
-                <p class="mb-1"><strong>Email:</strong> ${d.email || 'N/A'}</p>
-                <p class="mb-1"><strong>WhatsApp:</strong> ${d.whatsapp || 'N/A'}</p>
-            </div>
-        `;
+// Construimos el contenido HTML del modal
+// Función auxiliar para generar el enlace de WhatsApp
+const waLink = (num) => num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
 
-        // Solo mostramos representante si existe
-        if (d.nombreRepresentante) {
-            html += `
-            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #ffc107;">
-                <h6 class="text-warning fw-bold mb-3"><i class="bi bi-person-badge"></i> DATOS DEL REPRESENTANTE</h6>
-                <p class="mb-1"><strong>Nombre:</strong> ${d.nombreRepresentante}</p>
-                <p class="mb-1"><strong>DNI:</strong> ${d.dniRepresentante || 'N/A'}</p>
-                <p class="mb-1"><strong>WhatsApp:</strong> ${d.whatsappRepresentante || 'N/A'}</p>
-            </div>`;
-        }
+let html = `
+    <div class="resumen-card mb-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
+        <h6 class="text-warning mb-3 fw-bold">DATOS DEL ESTUDIANTE</h6>
+        <div class="row g-2">
+            <div class="col-12"><span class="text-white-50 small">Nombre Completo</span><div class="text-white fw-bold">${d.nombreResponsable || 'N/A'}</div></div>
+            <div class="col-md-6"><span class="text-white-50 small">DNI / ID</span><div class="text-white fw-bold">${d.dniEstudiante || 'N/A'}</div></div>
+            <div class="col-md-6"><span class="text-white-50 small">Género</span><div class="text-white fw-bold">${d.genero || 'N/A'}</div></div>
+            <div class="col-md-6"><span class="text-white-50 small">Nacimiento</span><div class="text-white fw-bold">${d.fechaNacimiento || 'N/A'}</div></div>
+            <div class="col-md-6"><span class="text-white-50 small">Edad</span><div class="text-white fw-bold">${d.edadEstudiante || 'N/A'} años</div></div>
+            <div class="col-12"><span class="text-white-50 small">Ubicación</span><div class="text-white fw-bold">${d.ubicacion || 'N/A'}</div></div>
+            <div class="col-md-6"><span class="text-white-50 small">Email</span><div class="text-white fw-bold">${d.email || 'N/A'}</div></div>
+            <div class="col-md-6">
+                <span class="text-white-50 small">WhatsApp</span>
+                <a href="${waLink(d.whatsapp)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
+                    ${d.whatsapp || 'N/A'} <i class="bi bi-whatsapp"></i>
+                </a>
+            </div>
+            <div class="col-12"><span class="text-white-50 small">Promedio de Bachillerato</span><div class="text-warning fw-bold">${d.promediocatualbachillerato || 'N/A'}</div></div>
+            <div class="col-12 mt-2">
+                <span class="text-white-50 small">Módulos Seleccionados</span>
+                <div class="text-info fw-bold">${(d.modulos || []).join(' • ') || 'Ninguno'}</div>
+            </div>
+        </div>
+    </div>`;
+
+// Si el estudiante tiene representante, mostramos la sección
+if (d.nombreRepresentante) {
+    html += `
+    <div class="resumen-card" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #ffc107;">
+        <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
+        <div class="row g-2">
+            <div class="col-12"><span class="text-white-50 small">Nombre Tutor</span><div class="text-white fw-bold">${d.nombreRepresentante}</div></div>
+            <div class="col-md-6"><span class="text-white-50 small">DNI Tutor</span><div class="text-white fw-bold">${d.dniRepresentante || 'N/A'}</div></div>
+            <div class="col-md-6">
+                <span class="text-white-50 small">WhatsApp Tutor</span>
+                <a href="${waLink(d.whatsappRepresentante)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
+                    ${d.whatsappRepresentante || 'N/A'} <i class="bi bi-whatsapp"></i>
+                </a>
+            </div>
+        </div>
+    </div>`;
+}
 
         document.getElementById('cuerpoDetalles').innerHTML = html;
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
