@@ -324,10 +324,10 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>ESTUDIANTE</th>
+                            <th>DOCENTE</th>
                             <th>CONTACTO</th>
-                            <th>REPRESENTANTE</th>
-                            <th>MÓDULOS ACTIVOS</th>
+                            <th>TÍTULO</th>
+                            <th>MÓDULOS</th>
                             <th class="text-center">DETALLES</th>
                         </tr>
                     </thead>
@@ -386,7 +386,7 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
         });
     }
     
-    const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
+    const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Docente Academia"), where("entidad", "==", entidad)));
     
     document.getElementById('cupos-utilizados').innerText = snap.size;
     
@@ -411,13 +411,19 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
         tr.innerHTML = `
             <td>
                 <div class="fw-bold">${d.nombreResponsable || 'Sin Nombre'}</div>
-                <small class="text-secondary">${d.dniEstudiante || ''}</small>
+                <small class="text-secondary">${d.dniDocente || ''}</small>
             </td>
             <td>
-                <small>${d.email}<br><span class="text-success">${d.whatsapp || ''}</span></small>
+                <small>${d.email}<br>
+                    <a href="https://wa.me/${(d.whatsapp || '').toString().replace(/\D/g, '')}" 
+                       target="_blank" 
+                       class="text-success text-decoration-none fw-bold">
+                       ${d.whatsapp || '-'}
+                    </a>
+                </small>
             </td>
             <td>
-                <small>${d.nombreRepresentante || '-'}</small>
+                <small>${d.titulo || '-'}</small>
             </td>
             <td>
                 ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
