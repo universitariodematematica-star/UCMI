@@ -449,62 +449,65 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
 
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
 
-// Listener para abrir el modal con los datos del alumno
+// Listener para abrir el modal con los datos del docente
 document.getElementById('tabla-body').addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-ver');
     if (btn) {
-        // Obtenemos los datos desde el atributo data-info
         const d = JSON.parse(btn.getAttribute('data-info').replace(/&#39;/g, "'"));
-        
-// Construimos el contenido HTML del modal
-// Función auxiliar para generar el enlace de WhatsApp
-const waLink = (num) => num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
+        const waLink = (num) => num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
 
-let html = `
-    <div class="resumen-card mb-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
-        <h6 class="text-warning mb-3 fw-bold">DATOS DEL DOCENTE</h6>
-        <div class="row g-2">
-            <div class="col-12"><span class="text-white-50 small">Nombre Completo</span><div class="text-white fw-bold">${d.nombreResponsable || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">DNI / ID</span><div class="text-white fw-bold">${d.dniDocente || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Título</span><div class="text-white fw-bold">${d.titulo || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Enlace de la síntesis</span><div class="text-white fw-bold">${d.enlaceSintesis || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Años de experiencia docente</span><div class="text-white fw-bold">${d.experienciaDocente || 'N/A'} años</div></div>
-            <div class="col-12"><span class="text-white-50 small">Ubicación</span><div class="text-white fw-bold">${d.ubicacion || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Email</span><div class="text-white fw-bold">${d.email || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Fecha de adscripción a la academia</span><div class="text-white fw-bold">${d.fechaRegistro || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Institución donde obtuvo el título</span><div class="text-white fw-bold">${d.institucion_titulo || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Niveles de atención</span><div class="text-white fw-bold">${d.niveles_atencion || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Razón de pertenecia</span><div class="text-white fw-bold">${d.razon_deseo_pertenencia || 'N/A'}</div></div>
-            <div class="col-md-6">
-                <span class="text-white-50 small">WhatsApp</span>
-                <a href="${waLink(d.whatsapp)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
-                    ${d.whatsapp || 'N/A'} <i class="bi bi-whatsapp"></i>
-                </a>
-            </div>
-            <div class="col-12 mt-2">
-                <span class="text-white-50 small">Módulos asignados</span>
-                <div class="text-info fw-bold">${(d.modulos || []).join(' • ') || 'Ninguno'}</div>
-            </div>
-        </div>
-    </div>`;
+        // Función definida dentro del alcance para poder ser llamada por el HTML
+        function renderizarDisponibilidad(horariosActivos) {
+            const dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+            let html = `
+                <div class="grid-horaria" style="display: grid; grid-template-columns: 40px repeat(7, 1fr); gap: 2px; font-size: 0.6rem;">
+                    <div class="header-cell"></div>
+                    ${dias.map(day => `<div class="header-cell" style="color:var(--dorado-ucmi)">${day}</div>`).join('')}
+            `;
+            for (let h = 0; h < 24; h++) {
+                html += `<div class="header-cell" style="color:rgba(255,255,255,0.3)">${h}:00</div>`;
+                for (let d = 0; d < 7; d++) {
+                    const index = (h * 7) + d;
+                    const activo = horariosActivos.includes(index) ? 'background:#28a745' : 'background:rgba(255,255,255,0.1)';
+                    html += `<div style="${activo}; height:10px; border-radius:2px;"></div>`;
+                }
+            }
+            return html + `</div>`;
+        }
 
-// Si el estudiante tiene representante, mostramos la sección
-if (d.nombreRepresentante) {
-    html += `
-    <div class="resumen-card" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #ffc107;">
-        <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
-        <div class="row g-2">
-            <div class="col-12"><span class="text-white-50 small">Nombre Tutor</span><div class="text-white fw-bold">${d.nombreRepresentante}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">DNI Tutor</span><div class="text-white fw-bold">${d.dniRepresentante || 'N/A'}</div></div>
-            <div class="col-md-6">
-                <span class="text-white-50 small">WhatsApp Tutor</span>
-                <a href="${waLink(d.whatsappRepresentante)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
-                    ${d.whatsappRepresentante || 'N/A'} <i class="bi bi-whatsapp"></i>
-                </a>
-            </div>
-        </div>
-    </div>`;
-}
+        let html = `
+            <div class="resumen-card mb-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
+                <h6 class="text-warning mb-3 fw-bold">DATOS DEL DOCENTE</h6>
+                <div class="row g-2">
+                    <div class="col-12"><span class="text-white-50 small">Nombre Completo</span><div class="text-white fw-bold">${d.nombreResponsable || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">DNI / ID</span><div class="text-white fw-bold">${d.dniDocente || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Título</span><div class="text-white fw-bold">${d.titulo || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Enlace de la síntesis</span><div class="text-white fw-bold">${d.enlaceSintesis || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Años de experiencia docente</span><div class="text-white fw-bold">${d.experienciaDocente || 'N/A'} años</div></div>
+                    <div class="col-12"><span class="text-white-50 small">Ubicación</span><div class="text-white fw-bold">${d.ubicacion || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Email</span><div class="text-white fw-bold">${d.email || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Fecha de adscripción a la academia</span><div class="text-white fw-bold">${d.fechaRegistro || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Institución donde obtuvo el título</span><div class="text-white fw-bold">${d.institucion_titulo || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Niveles de atención</span><div class="text-white fw-bold">${d.niveles_atencion || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Razón de pertenecia</span><div class="text-white fw-bold">${d.razon_deseo_pertenencia || 'N/A'}</div></div>
+                    <div class="col-md-6">
+                        <span class="text-white-50 small">WhatsApp</span>
+                        <a href="${waLink(d.whatsapp)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
+                            ${d.whatsapp || 'N/A'} <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <span class="text-white-50 small">Módulos asignados</span>
+                        <div class="text-info fw-bold">${(d.modulos || []).join(' • ') || 'Ninguno'}</div>
+                    </div>
+                    <div class="col-12 mt-3">
+                        <span class="text-white-50 small">Disponibilidad Horaria</span>
+                        <div class="mt-2 p-2" style="background:rgba(0,0,0,0.3); border-radius:10px;">
+                            ${d.horarios ? renderizarDisponibilidad(d.horarios) : '<div class="text-white-50">No registra disponibilidad</div>'}
+                        </div>
+                    </div>
+                </div>
+            </div>`;
 
         document.getElementById('cuerpoDetalles').innerHTML = html;
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
