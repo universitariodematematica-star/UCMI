@@ -91,7 +91,7 @@
 
         document.getElementById('btnGuardar').addEventListener('click', async () => {
 
-    const nombre = document.getElementById('inputNombreRama').value;
+    const nombre = document.getElementById('inputNombreRama').value.trim();
 
     if (!nombre) {
         alert("Escribe un nombre");
@@ -100,19 +100,29 @@
 
     try {
 
-        console.log("=== DIAGNÓSTICO FIREBASE ===");
-        console.log("Usuario actual:", auth.currentUser);
-        console.log("UID:", auth.currentUser?.uid);
-        console.log("Email:", auth.currentUser?.email);
-        console.log("Módulo seleccionado:", idModuloSeleccionado);
-        console.log("Nombre rama:", nombre);
+await addDoc(collection(db, "ramas"), {
+    nombre: nombre,
+    moduloId: idModuloSeleccionado,
+    fechaCreacion: new Date()
+});
 
-        console.log("ANTES DEL ADDDOC");
+        alert("¡Rama creada con éxito!");
 
-        const promesa = addDoc(collection(db, "prueba"), {
-            nombre: nombre,
-            moduloId: idModuloSeleccionado
-        });
+        document.getElementById('inputNombreRama').value = "";
+
+        modal.hide();
+
+    } catch (error) {
+
+        console.error("Error al guardar:", error);
+
+        alert(
+            "Error al crear la rama.\n\n" +
+            error.message
+        );
+    }
+
+});
 
         console.log("PROMESA CREADA");
 
