@@ -2,113 +2,62 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Panel de Control Dinámico</title>
+    <title>Lista de Módulos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <style>
-        :root { --azul-ucmi: #06090f; --dorado-ucmi: #c5a059; --rojo-logout: #e74c3c; }
-        body { background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed; background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; min-height: 100vh; }
-        .app-wrapper { display: flex; min-height: 100vh; }
-        .sidebar { background: rgba(26, 42, 58, 0.4); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.15); width: 260px; padding: 25px 15px; display: flex; flex-direction: column; }
-        .logo-sidebar { height: 100px; width: auto; margin: 0 auto 30px; display: block; border-radius: 15px; border: 2px solid rgba(255, 255, 255, 0.1); }
-        .nav-item-ucmi { display: flex; align-items: center; color: rgba(255,255,255,0.6); text-decoration: none; padding: 10px 15px; margin-bottom: 5px; border-radius: 10px; transition: 0.3s; font-size: 0.85rem; }
-        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); }
-        .super-overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); flex-grow: 1; padding: 40px; }
-        .card-glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; }
-        .btn-dorado { background: var(--dorado-ucmi); color: black; font-weight: bold; }
-    </style>
 </head>
-<body>
+<body class="bg-dark text-white p-5">
 
-<div class="app-wrapper">
-    <aside class="sidebar d-none d-md-flex">
-        <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" class="logo-sidebar" id="logoAcademia">
-        <nav class="sidebar-nav">
-            <a href="#" class="nav-item-ucmi active"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
-        </nav>
-        <div class="mt-auto pt-4 border-top border-secondary">
-            <a href="#" id="btnLogout" class="btn btn-outline-danger w-100"><i class="bi bi-box-arrow-right"></i> CERRAR SESIÓN</a>
-        </div>
-    </aside>
-
-    <main class="super-overlay">
-        <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 id="tituloHeader" class="text-warning">CONTROL DE MÓDULOS</h2>
-                <button id="btnVolver" class="btn btn-outline-light d-none" onclick="volver()"><i class="bi bi-arrow-left"></i> VOLVER</button>
-            </div>
-            
-            <div class="card-glass">
-                <table class="table table-dark table-hover bg-transparent align-middle">
-                    <thead><tr><th>Nombre</th><th>Acciones</th></tr></thead>
-                    <tbody id="listaDinamica"></tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-</div>
-
-<div class="modal fade" id="modalRamas" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content bg-dark border-warning">
-            <div class="modal-header"><h5 class="modal-title text-warning" id="tituloModal">Nueva Rama</h5></div>
-            <div class="modal-body">
-                <input type="text" id="inputRama" class="form-control" placeholder="Nombre de la rama...">
-                <button class="btn btn-dorado w-100 mt-3" onclick="guardarRama()">CREAR</button>
-            </div>
-        </div>
+    <div class="container">
+        <h2 class="mb-4">Mis Módulos Creados</h2>
+        <table class="table table-dark table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre del Módulo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaModulos">
+                </tbody>
+        </table>
     </div>
-</div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, query, orderBy, where, addDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const db = getFirestore(initializeApp({ apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app" }));
-    
-    let estado = { nivel: 'MODULO', parentId: null };
-    let idModuloSeleccionado = null;
+        // 1. TU CONFIGURACIÓN (Pégala aquí)
+            const firebaseConfig = {
+              apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+              authDomain: "ucmi-13796634.firebaseapp.com",
+              projectId: "ucmi-13796634",
+              storageBucket: "ucmi-13796634.firebasestorage.app",
+              messagingSenderId: "1090719609536",
+              appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
+              measurementId: "G-3M3DH25722"
+            };
 
-    // Motor de Renderizado
-    window.cargarDatos = () => {
-        const lista = document.getElementById('listaDinamica');
-        const q = estado.nivel === 'MODULO' 
-            ? query(collection(db, "ofertas"), orderBy("modulo"))
-            : query(collection(db, "ramas"), where("moduloId", "==", estado.parentId));
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-        onSnapshot(q, (snap) => {
-            lista.innerHTML = "";
-            snap.forEach(d => {
-                lista.innerHTML += `<tr>
-                    <td>${d.data().modulo || d.data().nombre}</td>
-                    <td>
-                        ${estado.nivel === 'MODULO' 
-                          ? `<button class="btn btn-sm btn-info" onclick="entrar('${d.id}', '${d.data().modulo}')">Entrar</button>
-                             <button class="btn btn-sm btn-warning" onclick="abrirModal('${d.id}', '${d.data().modulo}')">+ Rama</button>`
-                          : `<button class="btn btn-sm btn-danger" onclick="eliminar('${d.id}')">Eliminar</button>`}
-                    </td>
-                </tr>`;
+        // 2. LEER LOS DATOS
+        const q = query(collection(db, "ofertas"), orderBy("modulo", "asc"));
+        
+        onSnapshot(q, (snapshot) => {
+            const tabla = document.getElementById('tablaModulos');
+            tabla.innerHTML = ""; // Limpiamos la tabla antes de cargar
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                tabla.innerHTML += `
+                    <tr>
+                        <td>${data.modulo}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info">Gestionar</button>
+                        </td>
+                    </tr>
+                `;
             });
         });
-        document.getElementById('tituloHeader').innerText = estado.nivel === 'MODULO' ? "CONTROL DE MÓDULOS" : "RAMAS ASOCIADAS";
-        document.getElementById('btnVolver').classList.toggle('d-none', estado.nivel === 'MODULO');
-    };
-
-    window.entrar = (id, nombre) => { estado = { nivel: 'RAMA', parentId: id }; cargarDatos(); };
-    window.volver = () => { estado = { nivel: 'MODULO', parentId: null }; cargarDatos(); };
-    window.abrirModal = (id, nombre) => { idModuloSeleccionado = id; new bootstrap.Modal(document.getElementById('modalRamas')).show(); };
-    window.guardarRama = async () => {
-        await addDoc(collection(db, "ramas"), { nombre: document.getElementById('inputRama').value, moduloId: idModuloSeleccionado });
-        bootstrap.Modal.getInstance(document.getElementById('modalRamas')).hide();
-        document.getElementById('inputRama').value = "";
-    };
-    window.eliminar = async (id) => await deleteDoc(doc(db, "ramas", id));
-
-    cargarDatos();
-    document.getElementById('btnLogout').onclick = () => signOut(getAuth()).then(() => location.href = "index.html");
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </script>
 </body>
 </html>
