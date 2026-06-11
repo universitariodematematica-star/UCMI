@@ -1,43 +1,100 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Módulos y Ramas</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-dark text-white p-5">
 
-    <div class="container">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #121212;
+            color: white;
+        }
+
+        .modal-content {
+            border: 2px solid #ffc107;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container py-5">
+
         <h2 class="mb-4">Mis Módulos Creados</h2>
+
         <table class="table table-dark table-striped">
             <thead>
                 <tr>
-                    <th>Nombre del Módulo</th>
+                    <th>Módulo</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody id="tablaModulos"></tbody>
         </table>
+
     </div>
 
+    <!-- Modal -->
     <div class="modal fade" id="modalRamas" tabindex="-1">
         <div class="modal-dialog">
-            <div class="modal-content bg-dark text-white border-warning">
+            <div class="modal-content bg-dark text-white">
+
                 <div class="modal-header">
-                    <h5 class="modal-title" id="tituloModal">Gestionar Ramas</h5>
+                    <h5 class="modal-title" id="tituloModal">
+                        Gestionar ramas
+                    </h5>
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal">
+                    </button>
                 </div>
+
                 <div class="modal-body">
-                    <input type="text" id="inputNombreRama" class="form-control" placeholder="Nombre de la nueva rama...">
-                    <button id="btnGuardar" class="btn btn-warning w-100 mt-3">CREAR RAMA</button>
+
+                    <input type="text"
+                           id="inputNombreRama"
+                           class="form-control"
+                           placeholder="Nombre de la rama">
+
+                    <button id="btnGuardar"
+                            class="btn btn-warning w-100 mt-3">
+                        CREAR RAMA
+                    </button>
+
                 </div>
+
             </div>
         </div>
     </div>
 
+    <!-- Bootstrap primero -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        import { initializeApp }
+        from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+        import {
+            getFirestore,
+            collection,
+            query,
+            orderBy,
+            onSnapshot,
+            addDoc
+        }
+        from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        import {
+            getAuth,
+            onAuthStateChanged
+        }
+        from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -51,108 +108,202 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        
+
         let idModuloSeleccionado = "";
-        const modalElement = document.getElementById('modalRamas');
-        const modal = new bootstrap.Modal(modalElement);
 
-        // Diagnóstico de Identidad
+        const modal = new bootstrap.Modal(
+            document.getElementById("modalRamas")
+        );
+
+        // =====================================
+        // AUTENTICACIÓN
+        // =====================================
+
         onAuthStateChanged(auth, (user) => {
+
             if (user) {
-                console.log("UID detectado:", user.uid);
-                if (user.uid === "x0oBFbDP09d7I3VZvWuN6BOODf32") {
-                    console.log("✅ Acceso como SuperAdmin confirmado.");
-                } else {
-                    console.warn("⚠️ UID no coincide con SuperAdmin.");
-                }
+
+                console.log("Usuario autenticado");
+                console.log("UID:", user.uid);
+
+            } else {
+
+                console.warn("No hay usuario autenticado");
+
             }
+
         });
 
-        // Cargar Módulos
-        const q = query(collection(db, "ofertas"), orderBy("modulo", "asc"));
+        // =====================================
+        // CARGAR MÓDULOS
+        // =====================================
+
+        const q = query(
+            collection(db, "ofertas"),
+            orderBy("modulo", "asc")
+        );
+
         onSnapshot(q, (snapshot) => {
-            const tabla = document.getElementById('tablaModulos');
-            tabla.innerHTML = ""; 
-            snapshot.forEach((doc) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${doc.data().modulo}</td><td><button class="btn btn-sm btn-outline-warning btn-gestionar" data-id="${doc.id}" data-nombre="${doc.data().modulo}">Gestionar</button></td>`;
+
+            console.log(
+                "Módulos encontrados:",
+                snapshot.size
+            );
+
+            const tabla =
+                document.getElementById("tablaModulos");
+
+            tabla.innerHTML = "";
+
+            snapshot.forEach((docSnap) => {
+
+                const datos = docSnap.data();
+
+                const tr =
+                    document.createElement("tr");
+
+                tr.innerHTML = `
+                    <td>${datos.modulo || ""}</td>
+                    <td>
+                        <button
+                            class="btn btn-sm btn-outline-warning btn-gestionar"
+                            data-id="${docSnap.id}"
+                            data-nombre="${datos.modulo}">
+                            Gestionar
+                        </button>
+                    </td>
+                `;
+
                 tabla.appendChild(tr);
+
             });
+
+        }, (error) => {
+
+            console.error(
+                "Error leyendo módulos:",
+                error
+            );
+
         });
 
-        // Eventos
-        document.getElementById('tablaModulos').addEventListener('click', (e) => {
-            if (e.target.classList.contains('btn-gestionar')) {
-                idModuloSeleccionado = e.target.getAttribute('data-id');
-                document.getElementById('tituloModal').innerText = "Ramas de: " + e.target.getAttribute('data-nombre');
+        // =====================================
+        // ABRIR MODAL
+        // =====================================
+
+        document
+        .getElementById("tablaModulos")
+        .addEventListener("click", (e) => {
+
+            if (
+                e.target.classList.contains(
+                    "btn-gestionar"
+                )
+            ) {
+
+                idModuloSeleccionado =
+                    e.target.dataset.id;
+
+                document
+                    .getElementById("tituloModal")
+                    .innerText =
+                    "Ramas de: " +
+                    e.target.dataset.nombre;
+
                 modal.show();
+
             }
+
         });
 
-        document.getElementById('btnGuardar').addEventListener('click', async () => {
+        // =====================================
+        // CREAR RAMA
+        // =====================================
 
-    const nombre = document.getElementById('inputNombreRama').value.trim();
+        document
+        .getElementById("btnGuardar")
+        .addEventListener("click", async () => {
 
-    if (!nombre) {
-        alert("Escribe un nombre");
-        return;
-    }
+            const nombre =
+                document
+                .getElementById("inputNombreRama")
+                .value
+                .trim();
 
-    try {
+            if (!nombre) {
 
-await addDoc(collection(db, "ramas"), {
-    nombre: nombre,
-    moduloId: idModuloSeleccionado,
-    fechaCreacion: new Date()
-});
+                alert(
+                    "Escribe un nombre para la rama"
+                );
 
-        alert("¡Rama creada con éxito!");
+                return;
+            }
 
-        document.getElementById('inputNombreRama').value = "";
+            if (!idModuloSeleccionado) {
 
-        modal.hide();
+                alert(
+                    "No se seleccionó ningún módulo"
+                );
 
-    } catch (error) {
+                return;
+            }
 
-        console.error("Error al guardar:", error);
+            try {
 
-        alert(
-            "Error al crear la rama.\n\n" +
-            error.message
-        );
-    }
+                console.log(
+                    "Creando rama..."
+                );
 
-});
+                const resultado =
+                    await addDoc(
+                        collection(db, "ramas"),
+                        {
+                            nombre: nombre,
+                            moduloId:
+                                idModuloSeleccionado,
+                            fechaCreacion:
+                                new Date()
+                        }
+                    );
 
-        console.log("PROMESA CREADA");
+                console.log(
+                    "Documento creado:"
+                );
 
-        const resultado = await promesa;
+                console.log(
+                    resultado.id
+                );
 
-        console.log("DESPUÉS DEL ADDDOC");
-        console.log("ID CREADO:", resultado.id);
+                alert(
+                    "¡Rama creada con éxito!"
+                );
 
-        alert("¡Rama creada con éxito!");
+                document
+                    .getElementById(
+                        "inputNombreRama"
+                    )
+                    .value = "";
 
-        document.getElementById('inputNombreRama').value = "";
+                modal.hide();
 
-        modal.hide();
+            } catch (error) {
 
-    } catch (error) {
+                console.error(
+                    "Error Firestore:",
+                    error
+                );
 
-        console.error("=== ERROR FIRESTORE ===");
-        console.error("Código:", error.code);
-        console.error("Mensaje:", error.message);
-        console.error("Objeto completo:", error);
+                alert(
+                    "Error:\n\n" +
+                    error.message
+                );
 
-        alert(
-            "Error Firestore\n\n" +
-            "Código: " + error.code + "\n\n" +
-            "Mensaje: " + error.message
-        );
-    }
+            }
 
-});
+        });
+
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
+
 </html>
