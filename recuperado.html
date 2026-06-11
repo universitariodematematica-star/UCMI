@@ -80,16 +80,7 @@
         import { initializeApp }
         from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
-        import {
-            getFirestore,
-            collection,
-            query,
-            orderBy,
-            onSnapshot,
-            addDoc
-        }
-        from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
+        import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import {
             getAuth,
             onAuthStateChanged
@@ -143,48 +134,42 @@
             orderBy("modulo", "asc")
         );
 
-        onSnapshot(q, (snapshot) => {
-
-            console.log(
-                "Módulos encontrados:",
-                snapshot.size
-            );
-
-            const tabla =
-                document.getElementById("tablaModulos");
-
+onSnapshot(q, (snapshot) => {
+            const tabla = document.getElementById("tablaModulos");
             tabla.innerHTML = "";
 
             snapshot.forEach((docSnap) => {
-
                 const datos = docSnap.data();
+                const idContenedor = `ramas-${docSnap.id}`; // Identificador único
 
-                const tr =
-                    document.createElement("tr");
-
+                const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td>${datos.modulo || ""}</td>
                     <td>
-                        <button
-                            class="btn btn-sm btn-outline-warning btn-gestionar"
-                            data-id="${docSnap.id}"
-                            data-nombre="${datos.modulo}">
+                        <div class="fw-bold fs-5">${datos.modulo || ""}</div>
+                        <ul id="${idContenedor}" class="list-unstyled text-secondary mt-2 ps-3" style="font-size: 0.85em;">
+                            </ul>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-warning btn-gestionar" 
+                                data-id="${docSnap.id}" data-nombre="${datos.modulo}">
                             Gestionar
                         </button>
                     </td>
                 `;
-
                 tabla.appendChild(tr);
 
+                // Escucha en tiempo real para las ramas de ESTE módulo
+                const qRamas = query(collection(db, "ramas"), where("moduloId", "==", docSnap.id));
+                onSnapshot(qRamas, (snapRamas) => {
+                    const lista = document.getElementById(idContenedor);
+                    if (lista) {
+                        lista.innerHTML = ""; // Limpiar lista antes de renderizar
+                        snapRamas.forEach(r => {
+                            lista.innerHTML += `<li>• ${r.data().nombre}</li>`;
+                        });
+                    }
+                });
             });
-
-        }, (error) => {
-
-            console.error(
-                "Error leyendo módulos:",
-                error
-            );
-
         });
 
         // =====================================
