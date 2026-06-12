@@ -80,7 +80,19 @@
         import { initializeApp }
         from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
-        import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import {
+    getFirestore,
+    collection,
+    query,
+    orderBy,
+    onSnapshot,
+    addDoc,
+    where,
+    updateDoc,
+    deleteDoc,
+    doc
+}
+from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import {
             getAuth,
             onAuthStateChanged
@@ -172,9 +184,33 @@ onSnapshot(q, (snapshot) => {
                         )
                     );
                     
-                    ramasOrdenadas.forEach(r => {
-                        lista.innerHTML += `<li>• ${r.data().nombre}</li>`;
-                    });
+ramasOrdenadas.forEach(r => {
+
+    lista.innerHTML += `
+        <li class="d-flex justify-content-between align-items-center mb-1">
+
+            <span>• ${r.data().nombre}</span>
+
+            <div>
+
+                <button
+                    class="btn btn-sm btn-primary btn-editar-rama"
+                    data-id="${r.id}"
+                    data-nombre="${r.data().nombre}">
+                    Editar
+                </button>
+
+                <button
+                    class="btn btn-sm btn-danger btn-borrar-rama"
+                    data-id="${r.id}">
+                    Borrar
+                </button>
+
+            </div>
+
+        </li>
+    `;
+});
                     }
                 });
             });
@@ -276,6 +312,72 @@ onSnapshot(q, (snapshot) => {
                 );
             }
         });
+
+document.addEventListener("click", async (e) => {
+
+    // EDITAR
+    if (e.target.classList.contains("btn-editar-rama")) {
+
+        const idRama = e.target.dataset.id;
+        const nombreActual = e.target.dataset.nombre;
+
+        const nuevoNombre = prompt(
+            "Editar nombre de la rama:",
+            nombreActual
+        );
+
+        if (!nuevoNombre) return;
+
+        try {
+
+            await updateDoc(
+                doc(db, "ramas", idRama),
+                {
+                    nombre: nuevoNombre.trim()
+                }
+            );
+
+            alert("Rama actualizada correctamente");
+
+        } catch (error) {
+
+            console.error(error);
+            alert(error.message);
+
+        }
+
+    }
+
+    // BORRAR
+    if (e.target.classList.contains("btn-borrar-rama")) {
+
+        const idRama = e.target.dataset.id;
+
+        const confirmar = confirm(
+            "¿Seguro que deseas eliminar esta rama?"
+        );
+
+        if (!confirmar) return;
+
+        try {
+
+            await deleteDoc(
+                doc(db, "ramas", idRama)
+            );
+
+            alert("Rama eliminada correctamente");
+
+        } catch (error) {
+
+            console.error(error);
+            alert(error.message);
+
+        }
+
+    }
+
+});
+        
     </script>
 </body>
 </html>
