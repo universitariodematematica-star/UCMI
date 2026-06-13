@@ -116,21 +116,31 @@ document.getElementById("btnGuardarTopico").addEventListener("click", async () =
     console.log("Usuario logueado:", user ? user.email : "Nadie");
 
     if (!nombre) return;
+    console.log("Usuario actual:", auth.currentUser);
+console.log("UID actual:", auth.currentUser?.uid);
 
-    try {
-        await addDoc(collection(db, "topicos"), { 
-            nombre: nombre, 
-            ramaId: ramaId, 
-            visible: true,
-            fechaCreacion: new Date()
-        });
-        alert("¡Éxito! Tópico guardado.");
-        input.value = "";
-        bootstrap.Modal.getInstance(document.getElementById('modalTopico')).hide();
-    } catch (error) {
-        console.error("ERROR DETALLADO:", error);
-        alert("Error de permisos: " + error.message + ". Verifica que tu usuario tenga el rol 'superAdmin' en la colección 'usuarios'.");
-    }
+try {
+    await addDoc(collection(db, "topicos"), { 
+        nombre: nombre, 
+        ramaId: ramaId, 
+        visible: true,
+        fechaCreacion: new Date()
+    });
+
+    alert("¡Éxito! Tópico guardado.");
+    input.value = "";
+    bootstrap.Modal.getInstance(document.getElementById('modalTopico')).hide();
+
+} catch (error) {
+    console.error("ERROR:", error);
+    console.error("CODE:", error.code);
+    console.error("MESSAGE:", error.message);
+
+    alert(
+        "CODE: " + error.code +
+        "\nMESSAGE: " + error.message
+    );
+}
 });
 
     window.updateVisible = async (id, visible) => await updateDoc(doc(db, "topicos", id), { visible });
