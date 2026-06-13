@@ -1,1 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Tópicos - UCMI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body { background: #06090f; color: white; padding: 40px; font-family: sans-serif; }
+        .panel-ucmi { background: rgba(10, 25, 47, 0.82); padding: 30px; border-radius: 25px; }
+        .btn-ucmi { background: #c5a059; color: black; font-weight: bold; }
+    </style>
+</head>
+<body>
 
+<div class="container panel-ucmi">
+    <a href="master-repositorio.html" class="text-white mb-3 d-block"><i class="bi bi-arrow-left"></i> Volver</a>
+    <h2 id="tituloRama" class="text-warning">Cargando...</h2>
+    <p id="tituloModulo" class="text-secondary"></p>
+
+    <button class="btn btn-ucmi mb-4" data-bs-toggle="modal" data-bs-target="#modalTopico">
+        <i class="bi bi-plus"></i> Nuevo Tópico
+    </button>
+
+    <ul id="listaTopicos" class="list-group list-group-flush bg-transparent"></ul>
+</div>
+
+<div class="modal fade" id="modalTopico" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header"><h5>Nuevo Tópico</h5></div>
+            <div class="modal-body">
+                <input id="inputNombreTopico" class="form-control" placeholder="Nombre del tópico">
+                <button id="btnGuardarTopico" class="btn btn-warning w-100 mt-3">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, collection, addDoc, query, where, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = { /* TU CONFIGURACIÓN AQUÍ */ };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const ramaId = params.get("ramaId");
+
+    // 1. Cargar datos de Rama y Módulo
+    async function cargarEncabezado() {
+        const ramaSnap = await getDoc(doc(db, "ramas", ramaId));
+        if (ramaSnap.exists()) {
+            const data = ramaSnap.data();
+            document.getElementById("tituloRama").innerText = "Rama: " + data.nombre;
+            
+            const modSnap = await getDoc(doc(db, "ofertas", data.moduloId));
+            document.getElementById("tituloModulo").innerText = "Módulo: " + modSnap.data().modulo;
+        }
+    }
+
+    // 2. Cargar y listar Tópicos
+    const q = query(collection(db, "topicos"), where("ramaId", "==", ramaId));
+    onSnapshot(q, (snap) => {
+        const lista = document.getElementById("listaTopicos");
+        lista.innerHTML = "";
+        snap.forEach(t => {
+            const d = t.data();
+            lista.innerHTML += `
+                <li class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-center">
+                    ${d.nombre}
+                    <div>
+                        <input type="checkbox" class="form-check-input" ${d.visible ? "checked" : ""} onchange="toggleVisible('${t.id}', this.checked)">
+                        <button class="btn btn-sm btn-outline-light" onclick="editarTopico('${t.id}', '${d.nombre}')">Editar</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="borrarTopico('${t.id}')">Borrar</button>
+                    </div>
+                </li>`;
+        });
+    });
+
+    // 3. Guardar Tópico
+    document.getElementById("btnGuardarTopico").onclick = async () => {
+        const nombre = document.getElementById("inputNombreTopico").value;
+        await addDoc(collection(db, "topicos"), { nombre, ramaId, visible: true });
+        document.getElementById("inputNombreTopico").value = "";
+        bootstrap.Modal.getInstance(document.getElementById("modalTopico")).hide();
+    };
+
+    window.borrarTopico = async (id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db, "topicos", id)); };
+    window.toggleVisible = async (id, visible) => { await updateDoc(doc(db, "topicos", id), { visible }); };
+    
+    cargarEncabezado();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
