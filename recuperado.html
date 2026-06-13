@@ -56,7 +56,8 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, doc, getDoc, collection, addDoc, query, where, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    
     // Configuración (Asegúrate de copiar tu configuración de Firebase aquí)
 const firebaseConfig = {
   apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -69,6 +70,7 @@ const firebaseConfig = {
 };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
     const params = new URLSearchParams(window.location.search);
     const ramaId = params.get("ramaId");
@@ -107,13 +109,41 @@ const firebaseConfig = {
     });
 
     // 3. Lógica Guardar, Editar, Borrar y Visibilidad
-    document.getElementById("btnGuardarTopico").onclick = async () => {
-        const nombre = document.getElementById("inputNombreTopico").value.trim();
-        if (!nombre) return;
-        await addDoc(collection(db, "topicos"), { nombre, ramaId, visible: true });
-        document.getElementById("inputNombreTopico").value = "";
-        bootstrap.Modal.getInstance(document.getElementById("#modalTopico")).hide();
-    };
+document.getElementById("btnGuardarTopico").addEventListener("click", async () => {
+    const input = document.getElementById("inputNombreTopico");
+    const nombre = input.value.trim();
+    
+    // 1. Verificamos quién está intentando guardar
+    const user = auth.currentUser;
+    console.log("Usuario logueado:", user ? user.email : "Nadie");
+
+    if (!nombre) return;
+console.log("VERSION NUEVA CARGADA");
+console.log("Usuario actual:", auth.currentUser);
+
+try {
+    await addDoc(collection(db, "topicos"), { 
+        nombre: nombre, 
+        ramaId: ramaId, 
+        visible: true,
+        fechaCreacion: new Date()
+    });
+
+    alert("¡Éxito! Tópico guardado.");
+    input.value = "";
+    bootstrap.Modal.getInstance(document.getElementById('modalTopico')).hide();
+
+} catch (error) {
+    console.error("ERROR:", error);
+    console.error("CODE:", error.code);
+    console.error("MESSAGE:", error.message);
+
+    alert(
+        "CODE: " + error.code +
+        "\nMESSAGE: " + error.message
+    );
+}
+});
 
     window.updateVisible = async (id, visible) => await updateDoc(doc(db, "topicos", id), { visible });
     
