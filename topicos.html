@@ -107,13 +107,31 @@ const firebaseConfig = {
     });
 
     // 3. Lógica Guardar, Editar, Borrar y Visibilidad
-    document.getElementById("btnGuardarTopico").onclick = async () => {
-        const nombre = document.getElementById("inputNombreTopico").value.trim();
-        if (!nombre) return;
-        await addDoc(collection(db, "topicos"), { nombre, ramaId, visible: true });
-        document.getElementById("inputNombreTopico").value = "";
-        bootstrap.Modal.getInstance(document.getElementById("#modalTopico")).hide();
-    };
+document.getElementById("btnGuardarTopico").addEventListener("click", async () => {
+    const input = document.getElementById("inputNombreTopico");
+    const nombre = input.value.trim();
+    
+    // 1. Verificamos quién está intentando guardar
+    const user = auth.currentUser;
+    console.log("Usuario logueado:", user ? user.email : "Nadie");
+
+    if (!nombre) return;
+
+    try {
+        await addDoc(collection(db, "topicos"), { 
+            nombre: nombre, 
+            ramaId: ramaId, 
+            visible: true,
+            fechaCreacion: new Date()
+        });
+        alert("¡Éxito! Tópico guardado.");
+        input.value = "";
+        bootstrap.Modal.getInstance(document.getElementById('modalTopico')).hide();
+    } catch (error) {
+        console.error("ERROR DETALLADO:", error);
+        alert("Error de permisos: " + error.message + ". Verifica que tu usuario tenga el rol 'superAdmin' en la colección 'usuarios'.");
+    }
+});
 
     window.updateVisible = async (id, visible) => await updateDoc(doc(db, "topicos", id), { visible });
     
