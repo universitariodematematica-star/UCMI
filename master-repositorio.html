@@ -111,27 +111,91 @@
                 <h1 class="fw-bold text-uppercase display-6"><i class="bi bi-journal-bookmark-fill me-3 text-glow-gold"></i>Repositorio Maestro</h1>
                 <p class="text-white-50">Protocolos de Enseñanza Supralógica</p>
             </div>
-            <div class="row g-4 mb-5">
-                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-calculator"></i><h6 class="fw-bold">Matemática AGEM</h6></a></div>
-                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-speedometer2"></i><h6 class="fw-bold">Física</h6></a></div>
-                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-flask"></i><h6 class="fw-bold">Química</h6></a></div>
-                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-tree"></i><h6 class="fw-bold">Biología</h6></a></div>
-                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-diagram-3"></i><h6 class="fw-bold">Lógica</h6></a></div>
-                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-bar-chart"></i><h6 class="fw-bold">Estadística</h6></a></div>
-                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-hash"></i><h6 class="fw-bold">Razonamiento numérico</h6></a></div>
-                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-puzzle"></i><h6 class="fw-bold">Razonamiento abstracto</h6></a></div>
-                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-chat-left-text"></i><h6 class="fw-bold">Lengua</h6></a></div>
-            </div>
+<div class="row g-4 mb-5" id="contenedorModulos">
+</div>
         </div>
     </main>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signOut }
+from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+import {
+    getFirestore,
+    collection,
+    getDocs
+}
+from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     const app = initializeApp({ apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634" });
     const auth = getAuth(app);
+    const db = getFirestore(app);
+
+function obtenerIcono(nombre) {
+    nombre = (nombre || "").toLowerCase();
+
+    if (nombre.includes("mat")) return "bi-calculator";
+    if (nombre.includes("fís") || nombre.includes("fis")) return "bi-speedometer2";
+    if (nombre.includes("quím") || nombre.includes("quim")) return "bi-flask";
+    if (nombre.includes("bio")) return "bi-tree";
+    if (nombre.includes("lóg") || nombre.includes("log")) return "bi-diagram-3";
+    if (nombre.includes("estad")) return "bi-bar-chart";
+    if (nombre.includes("num")) return "bi-hash";
+    if (nombre.includes("abstract")) return "bi-puzzle";
+    if (nombre.includes("leng") || nombre.includes("idioma")) return "bi-chat-left-text";
+    if (nombre.includes("inform") || nombre.includes("program")) return "bi-code-slash";
+    if (nombre.includes("ingen")) return "bi-gear";
+    if (nombre.includes("med")) return "bi-heart-pulse";
+    if (nombre.includes("dere")) return "bi-bank";
+    if (nombre.includes("filo")) return "bi-lightbulb";
+    if (nombre.includes("histo")) return "bi-book";
+    if (nombre.includes("psico")) return "bi-person-heart";
+    if (nombre.includes("astro")) return "bi-stars";
+    if (nombre.includes("geo")) return "bi-globe-americas";
+    if (nombre.includes("arte")) return "bi-palette";
+    if (nombre.includes("music")) return "bi-music-note-beamed";
+    if (nombre.includes("educ")) return "bi-mortarboard";
+    if (nombre.includes("eco")) return "bi-graph-up-arrow";
+
+    return "bi-journal-bookmark-fill";
+}
+    const db = getFirestore(app);
     document.getElementById("btnLogout").onclick = () => signOut(auth).then(() => window.location.href = "index.html");
+    async function cargarModulos() {
+    const contenedor = document.getElementById("contenedorModulos");
+
+    try {
+        const snap = await getDocs(collection(db, "ofertas"));
+
+        contenedor.innerHTML = "";
+
+        snap.forEach(docu => {
+            const d = docu.data();
+
+            const icono = d.icono || obtenerIcono(d.modulo);
+            contenedor.innerHTML += `
+                <div class="col-md-3">
+                    <a href="ramas.html?moduloId=${docu.id}"
+                       class="program-card">
+
+                        <i class="bi ${icono}"></i>
+
+                        <h6 class="fw-bold">
+                            ${d.modulo}
+                        </h6>
+
+                    </a>
+                </div>
+            `;
+        });
+
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+cargarModulos();
 </script>
 </body>
 </html>
