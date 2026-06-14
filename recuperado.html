@@ -1,171 +1,137 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Editor de Contenido</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Repositorio Académico Maestro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { 
+            --dorado-ucmi: #c5a059; 
+            --sidebar-width: 260px;
+            --purpura-neon: #bc13fe;
+            --cian-tech: #00f2ff;
+        }
 
-<style>
-body{
-    margin:0;
-    font-family:Segoe UI;
-    background:#06090f;
-    color:white;
-    padding:40px;
-}
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover;
+            overflow: hidden;
+        }
 
-/* CRISTAL */
-.panel{
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 20px;
-    padding: 20px;
-}
+        .overlay {
+            position: fixed;
+            top: 0; right: 0; bottom: 0; left: var(--sidebar-width);
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.7) 0%, rgba(6, 9, 15, 0.95) 100%);
+            z-index: -1;
+        }
 
-/* editor */
-textarea{
-    width:100%;
-    height:300px;
-    background:#0f172a;
-    color:white;
-    border:none;
-    padding:15px;
-    border-radius:10px;
-}
-button{
-    margin-top:10px;
-    padding:10px 20px;
-    border:none;
-    border-radius:10px;
-    background:#c5a059;
-    font-weight:bold;
-    cursor:pointer;
-}
+        .wrapper { display: flex; height: 100vh; width: 100vw; }
 
-#btnVolver{
-    margin-left:10px;
-}
+        /* SIDEBAR INTEGRADO */
+        .sidebar {
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(25px);
+            border-right: 1px solid rgba(197, 160, 89, 0.2);
+            display: flex;
+            flex-direction: column;
+            padding: 25px 15px;
+        }
 
- button{
-    margin-top:10px;
-    padding:10px 20px;
-    border:none;
-    border-radius:10px;
-    background:#c5a059;
-    font-weight:bold;
-    cursor:pointer;
-}   
-    
-</style>
+        .sidebar-logo { width: 100px; margin: 0 auto 30px; display: block; }
+        .sidebar-nav { flex-grow: 1; }
+        .nav-item-ucmi {
+            display: flex; align-items: center; color: rgba(255,255,255,0.6);
+            text-decoration: none; padding: 10px 15px; margin-bottom: 5px;
+            border-radius: 10px; transition: 0.3s; font-size: 0.85rem;
+        }
+        .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
+        .nav-item-ucmi:hover { color: white; background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; }
+
+        .btn-maestro {
+            background: transparent; border: 1px solid rgba(255,255,255,0.3);
+            color: white; font-weight: 600; text-transform: uppercase;
+            font-size: 0.65rem; border-radius: 50px; padding: 10px;
+            text-align: center; display: block; margin-bottom: 10px; text-decoration: none;
+        }
+        .btn-cerrar {
+            background: transparent; border: 1px solid rgba(231, 76, 60, 0.4);
+            color: rgba(231, 76, 60, 0.9); font-weight: 600; text-transform: uppercase;
+            font-size: 0.65rem; border-radius: 50px; padding: 8px;
+            text-align: center; display: block; text-decoration: none;
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; }
+        .program-card {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px); border-radius: 15px; padding: 25px;
+            color: white; display: flex; flex-direction: column; align-items: center;
+            text-align: center; transition: all 0.3s ease; text-decoration: none;
+        }
+        .program-card i { font-size: 1.6rem; margin-bottom: 12px; color: var(--dorado-ucmi); }
+        .program-card:hover { background: rgba(197, 160, 89, 0.15); border-color: var(--dorado-ucmi); transform: translateY(-5px); }
+        .text-glow-gold { color: var(--dorado-ucmi); text-shadow: 0 0 15px rgba(197, 160, 89, 0.6); }
+    </style>
 </head>
-
 <body>
 
-<div class="panel">
+<div class="overlay"></div>
 
-    <h2>Editor de Contenido</h2>
+<div class="wrapper">
+    <aside class="sidebar">
+        <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" class="sidebar-logo">
+        <nav class="sidebar-nav">
+            <a href="master-postulaciones.html" class="nav-item-ucmi"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
+            <a href="master-vigencia.html" class="nav-item-ucmi"><i class="bi bi-shield-check"></i> VIGENCIA</a>
+            <a href="master-usuarios.html" class="nav-item-ucmi"><i class="bi bi-people"></i> USUARIOS</a>
+            <a href="historial-postulaciones.html" class="nav-item-ucmi"><i class="bi bi-clock-history"></i> HISTORIAL</a>
+            <a href="directorio.html" class="nav-item-ucmi"><i class="bi bi-person-vcard"></i> DIRECTORIO</a>
+            <a href="ofertas-academicas.html" class="nav-item-ucmi"><i class="bi bi-tags"></i> OFERTAS</a>
+            <a href="master-repositorio.html" class="nav-item-ucmi active"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
+            <a href="papelera.html" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
+        </nav>
+        <div class="mt-auto pt-3">
+            <a href="super-admin.html" class="btn-maestro"><i class="bi bi-cpu"></i> PANEL MAESTRO</a>
+            <a href="#" id="btnLogout" class="btn-cerrar"><i class="bi bi-power"></i> CERRAR SESIÓN</a>
+        </div>
+    </aside>
 
-    <h4 id="titulo">Cargando tópico...</h4>
-
-    <textarea id="editor" placeholder="Escribe HTML aquí..."></textarea>
-
-    <button id="btnGuardar">Guardar contenido</button>
-    <button id="btnVolver">← Volver a tópicos</button>
-
-    <h3 style="margin-top:20px;">Vista previa</h3>
-
-<div id="preview" class="panel"></div>
-
+    <main class="main-content">
+        <div class="container-fluid">
+            <div class="text-center mb-5">
+                <h1 class="fw-bold text-uppercase display-6"><i class="bi bi-journal-bookmark-fill me-3 text-glow-gold"></i>Repositorio Maestro</h1>
+                <p class="text-white-50">Protocolos de Enseñanza Supralógica</p>
+            </div>
+            <div class="row g-4 mb-5">
+                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-calculator"></i><h6 class="fw-bold">Matemática AGEM</h6></a></div>
+                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-speedometer2"></i><h6 class="fw-bold">Física</h6></a></div>
+                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-flask"></i><h6 class="fw-bold">Química</h6></a></div>
+                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-tree"></i><h6 class="fw-bold">Biología</h6></a></div>
+                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-diagram-3"></i><h6 class="fw-bold">Lógica</h6></a></div>
+                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-bar-chart"></i><h6 class="fw-bold">Estadística</h6></a></div>
+                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-hash"></i><h6 class="fw-bold">Razonamiento numérico</h6></a></div>
+                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-puzzle"></i><h6 class="fw-bold">Razonamiento abstracto</h6></a></div>
+                <div class="col-md-3"><a href="#" class="program-card"><i class="bi bi-chat-left-text"></i><h6 class="fw-bold">Lengua</h6></a></div>
+            </div>
+        </div>
+    </main>
 </div>
 
 <script type="module">
-
-import { db } from "./firebase-config.js";
-import {
-    doc,
-    getDoc,
-    collection,
-    query,
-    where,
-    getDocs,
-    addDoc,
-    updateDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-const params = new URLSearchParams(window.location.search);
-const topicoId = params.get("topicoId");
-const editor = document.getElementById("editor");
-const preview = document.getElementById("preview");
-
-// actualizar en vivo
-editor.addEventListener("input", () => {
-    preview.innerHTML = editor.value;
-});    
-
-let contenidoId = null;
-
-// 1. cargar tópico
-async function cargarTopico(){
-
-    const snap = await getDoc(doc(db, "topicos", topicoId));
-
-    if(snap.exists()){
-        document.getElementById("titulo").innerText = snap.data().tema;
-    }
-}
-
-// 2. cargar contenido si existe
-async function cargarContenido(){
-
-    const q = query(
-        collection(db, "contenidos"),
-        where("topicoId", "==", topicoId)
-    );
-
-    const snap = await getDocs(q);
-
-    if(!snap.empty){
-        const data = snap.docs[0];
-
-        contenidoId = data.id;
-
-        document.getElementById("editor").value = data.data().html || "";
-        preview.innerHTML = data.data().html || "";
-    }
-}
-
-// 3. guardar contenido
-async function guardar(){
-
-    const html = document.getElementById("editor").value;
-
-    if(contenidoId){
-        // actualizar
-        await updateDoc(doc(db, "contenidos", contenidoId), {
-            html
-        });
-    } else {
-        // crear nuevo
-        await addDoc(collection(db, "contenidos"), {
-            topicoId,
-            html,
-            creado: new Date()
-        });
-    }
-
-    alert("Contenido guardado");
-}
-
-// eventos
-document.getElementById("btnGuardar").addEventListener("click", guardar);
-document.getElementById("btnVolver").addEventListener("click", () => {
-    window.location.href = "topicos.html";
-});    
-
-cargarTopico();
-cargarContenido();
-
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    const app = initializeApp({ apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634" });
+    const auth = getAuth(app);
+    document.getElementById("btnLogout").onclick = () => signOut(auth).then(() => window.location.href = "index.html");
 </script>
-
 </body>
 </html>
