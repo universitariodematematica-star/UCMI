@@ -2,27 +2,44 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Contenido</title>
+<title>Editor de Contenido</title>
 
 <style>
 body{
     margin:0;
     font-family:Segoe UI;
-    background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png')
-    no-repeat center center fixed;
-    background-size:cover;
+    background:#06090f;
     color:white;
     padding:40px;
 }
 
-/* CONTENEDOR CRISTAL */
+/* CRISTAL */
 .panel{
     background: rgba(255,255,255,0.08);
     backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 25px;
-    padding: 30px;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+/* editor */
+textarea{
+    width:100%;
+    height:300px;
+    background:#0f172a;
+    color:white;
+    border:none;
+    padding:15px;
+    border-radius:10px;
+}
+button{
+    margin-top:10px;
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    background:#c5a059;
+    font-weight:bold;
+    cursor:pointer;
 }
 </style>
 </head>
@@ -30,9 +47,15 @@ body{
 <body>
 
 <div class="panel">
-    <h2 id="titulo">Cargando...</h2>
 
-    <div id="contenido"></div>
+    <h2>Editor de Contenido</h2>
+
+    <h4 id="titulo">Cargando tópico...</h4>
+
+    <textarea id="editor" placeholder="Escribe HTML aquí..."></textarea>
+
+    <button id="btnGuardar">Guardar contenido</button>
+
 </div>
 
 <script type="module">
@@ -44,13 +67,27 @@ import {
     collection,
     query,
     where,
-    getDocs
+    getDocs,
+    addDoc,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const params = new URLSearchParams(window.location.search);
 const topicoId = params.get("topicoId");
 
-// 1. Cargar contenido
+let contenidoId = null;
+
+// 1. cargar tópico
+async function cargarTopico(){
+
+    const snap = await getDoc(doc(db, "topicos", topicoId));
+
+    if(snap.exists()){
+        document.getElementById("titulo").innerText = snap.data().tema;
+    }
+}
+
+// 2. cargar contenido si existe
 async function cargarContenido(){
 
     const q = query(
@@ -61,17 +98,40 @@ async function cargarContenido(){
     const snap = await getDocs(q);
 
     if(!snap.empty){
+        const data = snap.docs[0];
 
-        const data = snap.docs[0].data();
+        contenidoId = data.id;
 
-        document.getElementById("contenido").innerHTML = data.html;
-
-    } else {
-        document.getElementById("contenido").innerHTML =
-        "<p>No hay contenido aún.</p>";
+        document.getElementById("editor").value = data.data().html || "";
     }
 }
 
+// 3. guardar contenido
+async function guardar(){
+
+    const html = document.getElementById("editor").value;
+
+    if(contenidoId){
+        // actualizar
+        await updateDoc(doc(db, "contenidos", contenidoId), {
+            html
+        });
+    } else {
+        // crear nuevo
+        await addDoc(collection(db, "contenidos"), {
+            topicoId,
+            html,
+            creado: new Date()
+        });
+    }
+
+    alert("Contenido guardado");
+}
+
+// eventos
+document.getElementById("btnGuardar").addEventListener("click", guardar);
+
+cargarTopico();
 cargarContenido();
 
 </script>
