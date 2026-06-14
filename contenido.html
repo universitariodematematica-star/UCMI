@@ -1,1 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Ver contenido</title>
 
+<style>
+body{
+    margin:0;
+    font-family:Segoe UI;
+    background:#06090f;
+    color:white;
+    padding:40px;
+}
+
+.panel{
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+    <div id="contenido">Cargando...</div>
+</div>
+
+<script type="module">
+
+import { db } from "./firebase-config.js";
+import {
+    collection,
+    query,
+    where,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const params = new URLSearchParams(window.location.search);
+const topicoId = params.get("topicoId");
+
+async function cargar(){
+
+    const q = query(
+        collection(db, "contenidos"),
+        where("topicoId", "==", topicoId)
+    );
+
+    const snap = await getDocs(q);
+
+    if (!snap.empty) {
+
+        const data = snap.docs[0].data();
+
+        document.getElementById("contenido").innerHTML = data.html;
+
+    } else {
+
+        document.getElementById("contenido").innerHTML =
+        "<p>No hay contenido aún</p>";
+    }
+}
+
+cargar();
+
+</script>
+
+</body>
+</html>
