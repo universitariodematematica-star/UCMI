@@ -1,1 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor de Contenido</title>
 
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+    background:#06090f;
+    color:white;
+    font-family:Segoe UI;
+    padding:40px;
+    min-height:100vh;
+}
+
+/* CONTENEDOR CRISTAL */
+.panel{
+    background:rgba(255,255,255,0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius:20px;
+    padding:25px;
+    border:1px solid rgba(255,255,255,0.15);
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+}
+
+/* SUBPANELES */
+.section{
+    margin-bottom:20px;
+    padding:15px;
+    background:rgba(255,255,255,0.04);
+    border-radius:15px;
+    border:1px solid rgba(255,255,255,0.08);
+}
+
+label{
+    color:#c5a059;
+    font-weight:600;
+    margin-bottom:6px;
+}
+
+/* INPUTS */
+input, textarea{
+    background:rgba(255,255,255,0.05)!important;
+    border:1px solid rgba(255,255,255,0.2)!important;
+    color:white!important;
+}
+
+/* BOTÓN */
+.btn-ucmi{
+    background:#c5a059;
+    color:black;
+    font-weight:bold;
+    border-radius:12px;
+}
+
+/* PREVIEW */
+.preview{
+    margin-top:10px;
+    padding:10px;
+    background:rgba(0,0,0,0.3);
+    border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container panel">
+
+    <a href="javascript:history.back()" class="text-white mb-3 d-inline-block">
+        ← Volver
+    </a>
+
+    <h2 id="titulo">Editor de contenido</h2>
+
+    <!-- TEXTO -->
+    <div class="section">
+        <label>📝 Texto</label>
+        <textarea id="texto" class="form-control" rows="6"></textarea>
+    </div>
+
+    <!-- VIDEO -->
+    <div class="section">
+        <label>🎥 Video (YouTube URL)</label>
+        <input id="video" class="form-control" placeholder="https://youtube.com/...">
+
+        <div class="preview" id="videoPreview"></div>
+    </div>
+
+    <!-- IMAGEN -->
+    <div class="section">
+        <label>🖼️ Imagen (URL)</label>
+        <input id="imagen" class="form-control">
+
+        <div class="preview">
+            <img id="imgPreview" style="max-width:100%; border-radius:10px;">
+        </div>
+    </div>
+
+    <!-- AUDIO -->
+    <div class="section">
+        <label>🎧 Audio (URL)</label>
+        <input id="audio" class="form-control">
+
+        <div class="preview">
+            <audio id="audioPreview" controls style="width:100%;"></audio>
+        </div>
+    </div>
+
+    <button id="guardar" class="btn btn-ucmi w-100 mt-3">
+        Guardar contenido
+    </button>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+getFirestore,
+doc,
+getDoc,
+updateDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* 🔥 FIREBASE */
+const firebaseConfig = {
+apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+authDomain: "ucmi-13796634.firebaseapp.com",
+projectId: "ucmi-13796634",
+storageBucket: "ucmi-13796634.firebasestorage.app",
+messagingSenderId: "1090719609536",
+appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* ID DEL TÓPICO */
+const params = new URLSearchParams(window.location.search);
+const topicoId = params.get("topicoId");
+
+const ref = doc(db, "topicos", topicoId);
+
+/* =========================
+   CARGAR CONTENIDO
+========================= */
+async function cargar(){
+    const snap = await getDoc(ref);
+
+    if(snap.exists()){
+        const data = snap.data();
+
+        document.getElementById("titulo").innerText = data.tema;
+
+        const contenido = data.contenido || {};
+
+        document.getElementById("texto").value = contenido.texto || "";
+        document.getElementById("video").value = contenido.video || "";
+        document.getElementById("imagen").value = contenido.imagen || "";
+        document.getElementById("audio").value = contenido.audio || "";
+
+        actualizarPreviews();
+    }
+}
+
+cargar();
+
+/* =========================
+   PREVIEWS DINÁMICOS
+========================= */
+function actualizarPreviews(){
+
+    // IMAGEN
+    const img = document.getElementById("imagen").value;
+    document.getElementById("imgPreview").src = img;
+
+    // AUDIO
+    const audio = document.getElementById("audio").value;
+    document.getElementById("audioPreview").src = audio;
+
+    // VIDEO (YouTube embed simple)
+    const video = document.getElementById("video").value;
+    let embed = "";
+
+    if(video.includes("youtube.com") || video.includes("youtu.be")){
+        let id = video.split("v=")[1] || video.split("/").pop();
+        embed = `<iframe width="100%" height="250"
+        src="https://www.youtube.com/embed/${id}"
+        frameborder="0" allowfullscreen></iframe>`;
+    }
+
+    document.getElementById("videoPreview").innerHTML = embed;
+}
+
+/* listeners preview */
+document.getElementById("video").addEventListener("input", actualizarPreviews);
+document.getElementById("imagen").addEventListener("input", actualizarPreviews);
+document.getElementById("audio").addEventListener("input", actualizarPreviews);
+
+/* =========================
+   GUARDAR
+========================= */
+document.getElementById("guardar").addEventListener("click", async () => {
+
+    await updateDoc(ref, {
+        contenido: {
+            texto: document.getElementById("texto").value,
+            video: document.getElementById("video").value,
+            imagen: document.getElementById("imagen").value,
+            audio: document.getElementById("audio").value
+        }
+    });
+
+    alert("Contenido guardado correctamente ✔");
+});
+
+</script>
+
+</body>
+</html>
