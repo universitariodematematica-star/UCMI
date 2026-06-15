@@ -1,1 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Panel de Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --azul-ucmi: #06090f;
+            --azul-sidebar: #1a2a3a;
+            --dorado-ucmi: #c5a059;
+            --rojo-logout: #e74c3c;
+            --verde-exito: #27ae60;
+        }
 
+        body { 
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            color: white;
+            min-height: 100vh;
+        }
+
+        .app-wrapper { display: flex; min-height: 100vh; }
+
+        /* Sidebar Glassmorphism */
+        .sidebar { 
+            background: rgba(26, 42, 58, 0.4); 
+            backdrop-filter: blur(20px); 
+            border-right: 1px solid rgba(255, 255, 255, 0.15); 
+            width: 260px; 
+            flex-shrink: 0; 
+            padding: 25px 15px; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        .logo-sidebar { 
+            height: 100px; width: auto; margin-bottom: 30px; display: block; margin-left: auto; margin-right: auto; object-fit: contain; border-radius: 15px; border: 2px solid rgba(255, 255, 255, 0.1); transition: opacity 0.5s ease; opacity: 0;
+        }
+        
+        .sidebar-nav { flex-grow: 1; }
+
+        .nav-item-ucmi { 
+            display: flex; align-items: center; color: rgba(255,255,255,0.6); text-decoration: none; padding: 10px 15px; margin-bottom: 5px; border-radius: 10px; transition: 0.3s all ease; font-size: 0.85rem; 
+        }
+        .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
+        .nav-item-ucmi:hover { color: white; background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; }
+
+        .btn-sidebar-action { 
+            background: transparent; border: 1px solid rgba(255, 255, 255, 0.4) !important; color: white !important; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; border-radius: 50px; padding: 10px; text-decoration: none; text-align: center; transition: all 0.3s ease; display: block; margin-bottom: 10px; 
+        }
+        .btn-sidebar-action:hover { background: rgba(255, 255, 255, 0.1); border-color: #ffffff !important; }
+        .btn-logout { border-color: rgba(231, 76, 60, 0.4) !important; color: rgba(231, 76, 60, 0.8) !important; }
+
+        .super-overlay { 
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); 
+            flex-grow: 1; min-height: 100vh; overflow-y: auto; padding: 40px; 
+        }
+
+        /* Tabla y Elementos */
+        .table-container {
+          background: rgba(255, 255, 255, 0.03) !important;
+          backdrop-filter: blur(15px) saturate(150%);
+          -webkit-backdrop-filter: blur(15px) saturate(150%);
+          border-radius: 28px;
+          padding: 30px;
+          color: white;
+          box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      }
+
+      .table {
+          --bs-table-bg: transparent !important;
+          --bs-table-color: white !important;
+          background-color: transparent !important;
+          color: white !important;
+          margin-bottom: 0;
+          border-collapse: separate;
+          border-spacing: 0 5px;
+      }
+
+      .table th, .table td {
+          background-color: transparent !important;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+          padding: 18px 12px;
+          vertical-align: middle;
+          transition: all 0.3s ease-in-out;
+      }
+
+      .table thead th {
+          background-color: transparent !important;
+          color: rgba(255, 255, 255, 0.6) !important;
+          font-weight: 800;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          letter-spacing: 1px;
+          border: none;
+      }
+
+      .table td { color: #ffffff !important; font-size: 1rem; }
+      .table td, .table td .small, .table td span {
+          color: rgba(255, 255, 255, 0.5) !important;
+          transition: all 0.3s ease-in-out;
+      }
+
+        .fw-bold { font-weight: 600; }
+
+        .text-muted { color: #888 !important; }
+        text-uppercase { letter-spacing: 1px; }
+        
+      .table-hover tbody tr:hover td {
+          background-color: rgba(255, 255, 255, 0.05) !important;
+      }
+
+        .table-hover tbody tr:hover td {
+            color: #ffffff !important;
+            opacity: 1 !important;
+            text-shadow: 0 0 10px rgba(255,255,255,0.9);
+            filter: brightness(1.2);
+        }
+
+     /* Perfiles */
+
+.bg-super-admin {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.bg-admin {
+    background-color: #fd7e14 !important;
+    color: white !important;
+}
+
+.bg-academia {
+    background-color: #0d6efd !important;
+    color: white !important;
+}
+
+.bg-docente-ucmi {
+    background-color: #20c997 !important;
+    color: white !important;
+}
+
+.bg-estudiante-ucmi {
+    background-color: #198754 !important;
+    color: white !important;
+}
+
+.bg-categoria-docente {
+    background-color: #d63384 !important;
+    color: white !important;
+}
+
+.bg-categoria-estudiante {
+    background-color: #311b92 !important;
+    color: white !important;
+}   
+        
+        .modal-content {
+    background: rgba(6, 9, 15, 0.95) !important; /* Fondo oscuro tipo cristal */
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 20px;
+    padding: 20px;
+}
+        
+/* Estilo base para el selector */
+#filtroPerfil {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(15px) !important;
+    -webkit-backdrop-filter: blur(15px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border-radius: 50px !important;
+    padding: 10px 20px !important;
+    cursor: pointer;
+    appearance: none; /* Elimina la flecha nativa */
+}
+
+/* Forzamos el color de fondo en el despliegue */
+#filtroPerfil option {
+    background-color: #1a2a3a !important; /* Azul oscuro semi-opaco */
+    color: white !important;
+    padding: 10px;
+}
+#marcadorCupos {
+    font-size: 1.2rem !important; /* Ajusta el tamaño de letra aquí */
+    padding: 12px 25px !important; /* Ajusta el relleno interno (ancho y alto) */
+}
+        
+    </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+    <aside class="sidebar d-none d-md-flex">
+        <div class="text-center mb-2">
+            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" id="logoAcademia" class="logo-sidebar" alt="Logo">
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item-ucmi active"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
+            <a href="alumnos-academia.html" class="nav-item-ucmi"><i class="bi bi-mortarboard"></i> ALUMNOS</a>
+            <a href="docentes-academia.html" class="nav-item-ucmi"><i class="bi bi-people"></i> DOCENTES</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-pencil-square"></i></i> MODIFICACIONES</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-person-vcard"></i> DIRECTORIO</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-tags"></i> OFERTAS</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
+        </nav>
+        <div class="mt-4 pt-4 border-top border-secondary">
+            <a href="admin-academia.html" class="btn-sidebar-action w-100"><i class="bi bi-shield-lock"></i> Panel Maestro</a>
+            <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a>
+        </div>
+    </aside>
+
+    <main class="super-overlay">
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="display-6 fw-bold">Control de Postulaciones</h1>
+                <span id="marcadorCupos" class="badge bg-dark border border-secondary px-3 py-2 rounded-pill" style="color: var(--dorado-ucmi);">Cupos: 0 / 0</span>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <label class="small text-muted fw-bold mb-2 text-uppercase">Filtrar por Perfil</label>
+                <select id="filtroPerfil" class="form-select">
+                    <option value="todos">Mostrar todos</option>
+                    <option value="estudiante">Estudiantes</option>
+                    <option value="docente">Docentes</option>
+                </select>
+            </div>
+
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr class="text-muted small">
+                                <th>NOMBRE</th>
+                                <th>PERFIL</th>
+                                <th>UBICACIÓN</th>
+                                <th class="text-center">ACCIÓN</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaMaestra"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content p-3">
+            <div class="modal-header border-0">
+                <h4 class="fw-bold">Expediente del Aspirante</h4>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoModal"></div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-outline-danger rounded-pill px-4" id="btnEliminar">Rechazar</button>
+                <button class="btn btn-success rounded-pill px-4" id="btnConfirmarAcceso">Activar Acceso</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+    const secondaryAuth = getAuth(secondaryApp);
+
+    let currentId = null, currentData = null, academiaNombreGlobal = "", cuposMaximosGlobal = 0, registrosLocales = [];
+
+    onAuthStateChanged(auth, async (user) => {
+        const logoElement = document.getElementById('logoAcademia');
+        if (user) {
+            const userDoc = await getDoc(doc(db, "usuarios", user.email));
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                logoElement.src = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+                academiaNombreGlobal = data.entidad;
+                cuposMaximosGlobal = data.cupos || 0;
+                actualizarCupos();
+                iniciarEscucha();
+            }
+        }
+        logoElement.style.opacity = "1";
+    });
+
+    async function actualizarCupos() {
+        const qUsuarios = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "in", ["estudiante", "docente"]));
+        const snap = await getDocs(qUsuarios);
+        document.getElementById('marcadorCupos').innerText = `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
+    }
+
+    function iniciarEscucha() {
+        const q = query(collection(db, "postulaciones"), where("entidad", "==", academiaNombreGlobal));
+        onSnapshot(q, (snap) => {
+            registrosLocales = snap.docs;
+            renderizar();
+        });
+    }
+
+// Función para renderizar la tabla aplicando el filtro de perfil
+function renderizar() {
+    const lista = document.getElementById('listaMaestra');
+    const filtro = document.getElementById('filtroPerfil').value; // Captura el valor del select
+
+    lista.innerHTML = ""; // Limpia la tabla antes de renderizar
+
+    registrosLocales.forEach(docSnap => {
+        const d = docSnap.data();
+
+        // Lógica del filtro: Si no es "todos", compara el perfil del registro con el valor seleccionado
+        if (filtro !== "todos" && !d.perfil.toLowerCase().includes(filtro.toLowerCase())) {
+            return; // Si no coincide, esta iteración no hace nada
+        }
+
+        // Asignación de clase CSS según el perfil
+        let clasePerfil = "bg-secondary";
+        switch (d.perfil) {
+            case "Super Administrador": clasePerfil = "bg-super-admin"; break;
+            case "Administrador": clasePerfil = "bg-admin"; break;
+            case "Academia": clasePerfil = "bg-academia"; break;
+            case "Docente UCMI": clasePerfil = "bg-docente-ucmi"; break;
+            case "Estudiante UCMI": clasePerfil = "bg-estudiante-ucmi"; break;
+            case "Docente Academia": clasePerfil = "bg-categoria-docente"; break;
+            case "Estudiante Academia": clasePerfil = "bg-categoria-estudiante"; break;
+        }
+
+        // Creación de la fila de la tabla
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <div class="fw-bold">${d.nombreResponsable || 'N/A'}</div>
+                <small>${d.email}</small>
+            </td>
+            <td>
+                <span class="badge ${clasePerfil}">${d.perfil}</span>
+            </td>
+            <td>${d.ubicacion || 'N/A'}</td>
+            <td class="text-center">
+                <button class="btn btn-outline-light btn-sm" onclick="verExpediente('${docSnap.id}')">
+                    Detalles
+                </button>
+            </td>
+        `;
+
+        lista.appendChild(tr);
+    });
+}
+
+document.getElementById('filtroPerfil').addEventListener('change', renderizar);    
+
+    window.verExpediente = async (id) => {
+        const snap = await getDoc(doc(db, "postulaciones", id));
+        if (!snap.exists()) return;
+        
+        currentId = id; 
+        currentData = snap.data();
+        const d = currentData;
+        const esDocente = d.perfil === "Docente Academia";
+        
+        // Preparar horarios si es docente
+        const diasSemana = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+        let htmlHorarios = "";
+        if (esDocente && d.horarios && Array.isArray(d.horarios)) {
+            const agrupado = {};
+            d.horarios.forEach(idx => { const dia = diasSemana[idx % 7]; const hora = Math.floor(idx / 7); if (!agrupado[dia]) agrupado[dia] = []; agrupado[dia].push(`${hora}:00`); });
+            diasSemana.forEach(dia => { if (agrupado[dia]) { htmlHorarios += `<div class="col-12 mb-1" style="border-bottom: 1px solid rgba(197, 160, 89, 0.2); padding: 5px 0;"><span style="color:var(--dorado-ucmi); font-weight:bold; display: inline-block; width: 45px;">${dia}:</span><span style="font-size: 0.85rem; color: #fff;">${agrupado[dia].sort((a,b)=>a-b).join(', ')}</span></div>`; } });
+        }
+
+        let html = `<div class="col-12 mb-4"><h5 style="color:var(--dorado-ucmi)">Expediente del Aspirante</h5></div>`;
+        
+        if (esDocente) {
+            html += `
+            <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Docente</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE COMPLETO</label><br>${d.nombreResponsable}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniDocente}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">TÍTULO</label><br>${d.titulo}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">INSTITUCIÓN DE EGRESO</label><br>${d.institucion_titulo}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">ENLACE A SÍNTESIS CURRICULAR</label><br>${d.enlaceSintesis}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">AÑOS DE EXPERIENCIA</label><br>${d.experienciaDocente}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NIVELES</label><br>${d.niveles_atencion}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">RAZÓN DE PERTENECIA</label><br>${d.razon_deseo_pertenencia}</div>
+            <div class="col-12 mt-2"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DISPONIBILIDAD HORARIA</label></div>${htmlHorarios}`;
+        } else {
+            html += `
+            <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Estudiante</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE</label><br>${d.nombreResponsable}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI / ID</label><br>${d.dniEstudiante}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">GÉNERO</label><br>${d.genero}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NACIMIENTO</label><br>${d.fechaNacimiento}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">EDAD</label><br>${d.edadEstudiante}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">PROMEDIO</label><br>${d.promediocatualbachillerato}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO</label><br>${d.email}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">MÓDULOS</label><br>${d.modulos}</div>
+            <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold; border-top: 1px solid #333; padding-top:10px;">Información del Representante</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE</label><br>${d.nombreRepresentante}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO</label><br>${d.email}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DNI</label><br>${d.dniRepresentante}</div>
+            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsappRepresentante}</div>`;
+        }
+        
+        document.getElementById('contenidoModal').innerHTML = `<div class="row">${html}</div>`;
+        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+    };
+
+// --- Lógica de WhatsApp (Función Global) ---
+const prepararMensajeWhatsApp = (data, decision) => {
+    const nombre = data.nombreResponsable || data.nombre || "Postulante";
+    const telefono = data.whatsapp || data.whatsappRepresentante || "";
+    const nombreAcademia = academiaNombreGlobal || "UCMI"; 
+    
+    if (!telefono || telefono === "N/A") return;
+
+    let textoMensaje = (decision === "ACEPTADO") 
+        ? `¡Hola *${nombre}*! Tu solicitud en *${nombreAcademia}* ha sido *ACEPTADA*. ✅%0A%0A📧 *Usuario:* ${data.email}%0A🔑 *Clave:* ${data.claveEnviada}`
+        : `Hola *${nombre}*. Lamentamos informarte que tu solicitud en *${nombreAcademia}* no ha sido aprobada en esta ocasión. Ponte en contacto con nosotros para más información.`;
+    
+    const url = `https://api.whatsapp.com/send?phone=${telefono.toString().replace(/\D/g, '')}&text=${textoMensaje}`;
+    window.open(url, '_blank');
+};
+
+document.getElementById('btnConfirmarAcceso').onclick = async () => {
+    if (!currentId || !currentData) return;
+    const esDocente = currentData.perfil === "Docente Academia";
+    
+    // Mostramos un loading mientras procesamos
+    Swal.fire({
+        title: 'Procesando...',
+        text: 'Validando duplicados y creando acceso...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); },
+        background: '#06090f',
+        color: '#fff'
+    });
+
+    try {
+        // 1. VALIDACIÓN: ¿Existe ya el usuario?
+        const docRefUsuario = doc(db, "usuarios", currentData.email);
+        const snapUsuario = await getDoc(docRefUsuario);
+
+        if (snapUsuario.exists()) {
+            await Swal.fire({
+                title: 'Error: Registro Duplicado',
+                text: 'El correo ' + currentData.email + ' ya tiene una cuenta activa en el sistema.',
+                icon: 'error',
+                background: '#06090f',
+                color: '#fff',
+                confirmButtonColor: '#e74c3c'
+            });
+            return;
+        }
+
+        // 2. VALIDACIÓN: Cupos
+        const qUsuarios = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "in", ["estudiante", "docente"]));
+        const snapCupos = await getDocs(qUsuarios);
+        if (snapCupos.size >= cuposMaximosGlobal) {
+            throw new Error("No hay cupos disponibles.");
+        }
+
+        // 3. CREACIÓN EN AUTH
+        const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
+        const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
+        
+        await createUserWithEmailAndPassword(secondaryAuth, currentData.email, passwordTemp);
+
+        // 4. GUARDAR EN FIRESTORE
+        await setDoc(docRefUsuario, {
+            ...currentData,
+            estado: "activo",
+            rol: esDocente ? "docente" : "estudiante",
+            claveInicial: passwordTemp,
+            fechaRegistro: new Date().toISOString()
+        });
+
+        // 5. HISTORIAL Y LIMPIEZA
+        await addDoc(collection(db, "historial_postulaciones"), { 
+            ...currentData, 
+            fechaProceso: new Date().toISOString(), 
+            resultado: "Admitido", 
+            decisionFinal: "ACEPTADO" 
+        });
+        await deleteDoc(doc(db, "postulaciones", currentId));
+        
+        // 6. DISPARO DE WHATSAPP
+        prepararMensajeWhatsApp({ ...currentData, claveEnviada: passwordTemp }, "ACEPTADO");
+
+        // 7. CIERRE Y CONFIRMACIÓN
+        const modalElement = document.getElementById('modalDetalles');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) modal.hide();
+
+        await Swal.fire({
+            title: '<span style="color:#c5a059">¡Usuario Activado!</span>',
+            html: `Se ha creado el acceso correctamente.<br><br>
+                   <div style="background:rgba(197, 160, 89, 0.1); padding:15px; border-radius:10px; border:1px solid #c5a059;">
+                    <strong style="color:#2ecc71">CLAVE ASIGNADA:</strong><br>
+                    <span style="font-size:1.5rem; font-weight:bold;">${passwordTemp}</span>
+                   </div>`,
+            icon: 'success',
+            background: '#06090f',
+            color: '#ffffff',
+            confirmButtonColor: '#c5a059'
+        });
+        
+        location.reload();
+
+    } catch (e) { 
+        console.error("Error completo:", e); 
+        Swal.fire({
+            title: 'No se pudo activar',
+            text: e.message || 'Error desconocido al procesar la solicitud.',
+            icon: 'error',
+            background: '#06090f',
+            color: '#fff',
+            confirmButtonColor: '#e74c3c'
+        });
+    }
+};
+
+// --- Lógica de Rechazo (Corregida) ---
+document.getElementById('btnEliminar').onclick = async () => {
+    const res = await Swal.fire({ 
+        title: '¿Estás seguro?', 
+        text: "¡Esta acción eliminará la postulación!", 
+        icon: 'warning', 
+        showCancelButton: true, 
+        confirmButtonText: 'Sí, rechazar' 
+    });
+    
+    if (res.isConfirmed) {
+        try {
+            // 1. Guardar en historial
+            await addDoc(collection(db, "historial_postulaciones"), { 
+                ...currentData, 
+                fechaProceso: new Date().toISOString(), 
+                resultado: "Rechazado", 
+                decisionFinal: "RECHAZADO" 
+            });
+            
+            // 2. Borrar de postulaciones
+            await deleteDoc(doc(db, "postulaciones", currentId));
+            
+            // --- Disparador WhatsApp Rechazado ---
+            prepararMensajeWhatsApp(currentData, "RECHAZADO");
+            
+            // --- SOLUCIÓN: Cierra el modal antes de recargar ---
+            const modalElement = document.getElementById('modalDetalles');
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+            
+            // Opcional: Pequeña espera para asegurar que el modal se cerró
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            location.reload();
+        } catch (e) { 
+            console.error(e); // Ayuda a ver el error real en consola
+            Swal.fire('Error', 'No se pudo rechazar la solicitud.', 'error'); 
+        }
+    }
+};
+
+ // --- Lógica para cerrar sesión ---
+document.getElementById('btnLogout').addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+        await signOut(auth);
+        // Redirige a tu página de inicio/login. Cambia "index.html" por la que corresponda.
+        window.location.href = "index.html"; 
+    } catch (error) {
+        console.error("Error al cerrar sesión:", error);
+        Swal.fire({
+            title: 'Error',
+            text: 'No se pudo cerrar la sesión.',
+            icon: 'error',
+            background: '#06090f',
+            color: '#fff'
+        });
+    }
+});   
+    
+</script>
+</body>
+</html>
