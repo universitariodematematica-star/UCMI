@@ -3,143 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Tópicos - UCMI</title>
+    <title>UCMI - Panel de Control</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
     <style>
-        body {
-    background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png')
-    no-repeat center center fixed;
+        :root {
+            --azul-ucmi: #06090f;
+            --azul-sidebar: #1a2a3a;
+            --dorado-ucmi: #c5a059;
+            --rojo-logout: #e74c3c;
+        }
 
-    background-size: cover;
-    color: white;
-    padding: 40px;
-    font-family: 'Segoe UI', sans-serif;
-    min-height: 100vh;
-}
+        body { 
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            color: white;
+            min-height: 100vh;
+        }
 
-/* CONTENEDOR PRINCIPAL */
-.panel-ucmi {
+        .app-wrapper { display: flex; min-height: 100vh; }
+
+        /* Sidebar con efecto Glassmorphism */
+        .sidebar { 
+            background: rgba(26, 42, 58, 0.4); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            border-right: 1px solid rgba(255, 255, 255, 0.15); 
+            width: 260px; 
+            flex-shrink: 0; 
+            padding: 25px 15px; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        .logo-sidebar { 
+            height: 100px; 
+            width: auto; 
+            margin-bottom: 30px; 
+            display: block; 
+            margin-left: auto; 
+            margin-right: auto; 
+            object-fit: contain; 
+            border-radius: 15px; 
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: opacity 0.5s ease;
+            opacity: 0;
+        }
+        
+        .sidebar-nav { flex-grow: 1; }
+
+        .nav-item-ucmi { 
+            display: flex; align-items: center; 
+            color: rgba(255,255,255,0.6); 
+            text-decoration: none; 
+            padding: 10px 15px; 
+            margin-bottom: 5px; 
+            border-radius: 10px; 
+            transition: 0.3s all ease; 
+            font-size: 0.85rem; 
+        }
+        
+        .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
+        .nav-item-ucmi:hover { color: white; background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1); }
+
+        .btn-sidebar-action { 
+            background: transparent; 
+            border: 1px solid rgba(255, 255, 255, 0.4) !important; 
+            color: white !important; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            font-size: 0.7rem; 
+            border-radius: 50px; 
+            padding: 10px; 
+            text-decoration: none; 
+            text-align: center; 
+            transition: all 0.3s ease-in-out; 
+            display: block; 
+            margin-bottom: 10px; 
+        }
+
+        .btn-sidebar-action:hover { background: rgba(255, 255, 255, 0.1); border-color: #ffffff !important; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); transform: translateY(-2px); }
+        .btn-logout { border-color: rgba(231, 76, 60, 0.4) !important; color: rgba(231, 76, 60, 0.8) !important; }
+        .btn-logout:hover { background: rgba(231, 76, 60, 0.1) !important; border-color: var(--rojo-logout) !important; color: white !important; }
+
+        .super-overlay { 
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); 
+            flex-grow: 1; 
+            min-height: 100vh; 
+            overflow-y: auto; 
+            padding: 40px; 
+        }
+
+.panel-ucmi{
     background: rgba(255,255,255,0.08);
-
     backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-
-    border: 1px solid rgba(255,255,255,0.15);
-
-    border-radius: 25px;
-    padding: 30px;
-
+    border:1px solid rgba(255,255,255,0.15);
+    border-radius:25px;
+    padding:30px;
     box-shadow:
         0 8px 32px rgba(0,0,0,.25),
         inset 0 1px 0 rgba(255,255,255,.15);
 }
 
-/* SUBCONTENEDOR DE TÍTULOS */
-.info-rama {
-    background: rgba(255,255,255,0.05);
-
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-
-    border: 1px solid rgba(255,255,255,0.10);
-
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 25px;
+.tabla-cristal{
+    background:rgba(255,255,255,.04);
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:20px;
+    overflow:hidden;
 }
 
-/* TABLA DE CRISTAL */
-.tabla-cristal {
-    color: white;
-    background: transparent !important;
+.tabla-cristal th{
+    background:rgba(255,255,255,.08) !important;
+    color:#1e3a8a !important;
 }
 
-.tabla-cristal th,
-.tabla-cristal td {
-    background: rgba(255,255,255,0.03) !important;
-    color: white !important;
-    border-color: rgba(255,255,255,0.1) !important;
+.tabla-cristal td{
+    background:rgba(255,255,255,.03) !important;
+    color:white !important;
 }
 
-.tabla-cristal thead th {
-    background: rgba(255,255,255,0.08) !important;
-    color: #c5a059;
+.tabla-cristal tbody tr:hover td{
+    background:rgba(255,255,255,.08) !important;
 }
 
-.tabla-cristal tbody tr:hover {
-    background: rgba(255,255,255,0.08) !important;
+.btn-ucmi{
+    background:rgba(197,160,89,.85);
+    color:#000;
+    font-weight:bold;
+    border:none;
+    border-radius:12px;
 }
-
-/* BOTÓN */
-.btn-ucmi {
-    background: rgba(197,160,89,.85);
-    color: #000;
-    font-weight: bold;
-    border-radius: 12px;
-    border: none;
-}
-
-.tabla-cristal {
-    background: rgba(255,255,255,0.04) !important;
-
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-
-    border: 1px solid rgba(255,255,255,0.10);
-    border-radius: 20px;
-
-    overflow: hidden;
-    color: white;
-}
-
-.tabla-cristal th {
-    background: rgba(255,255,255,0.08) !important;
-    color: #1e3a8a !important;
-    border-color: rgba(255,255,255,0.08) !important;
-}
-
-.tabla-cristal td {
-    background: rgba(255,255,255,0.03) !important;
-    color: white !important;
-    border-color: rgba(255,255,255,0.08) !important;
-}
-
-.tabla-cristal tbody tr:hover td {
-    background: rgba(255,255,255,0.08) !important;
-}    
 
 .nombre-topico{
-    color: white !important;
-    display: inline-block;
-    transition: all .3s ease;
+    color:white !important;
+    display:inline-block;
+    transition:.3s;
 }
 
 .nombre-topico:hover{
-    color: #ffffff !important;
-    transform: translateX(12px) scale(1.1);
+    transform:translateX(12px) scale(1.1);
+
     text-shadow:
         0 0 5px #ffffff,
         0 0 10px #ffffff,
         0 0 20px #4fc3f7,
-        0 0 40px #4fc3f7,
-        0 0 60px #4fc3f7;
+        0 0 40px #4fc3f7;
 }
         
     </style>
 </head>
 <body>
 
+<div class="app-wrapper">
+    <aside class="sidebar d-none d-md-flex">
+        <div class="text-center mb-2">
+            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" 
+                 id="logoAcademia" 
+                 class="logo-sidebar" 
+                 alt="Logo Academia">
+        </div>
+        <nav class="sidebar-nav">
+            <a href="master-postulaciones.html" class="nav-item-ucmi active"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
+            <a href="master-vigencia.html" class="nav-item-ucmi"><i class="bi bi-shield-check"></i> VIGENCIA</a>
+            <a href="master-usuarios.html" class="nav-item-ucmi"><i class="bi bi-people"></i> USUARIOS</a>
+            <a href="historial-postulaciones.html" class="nav-item-ucmi"><i class="bi bi-clock-history"></i> HISTORIAL</a>
+            <a href="directorio.html" class="nav-item-ucmi"><i class="bi bi-person-vcard"></i> DIRECTORIO</a>
+            <a href="ofertas-academicas.html" class="nav-item-ucmi"><i class="bi bi-tags"></i> OFERTAS</a>
+            <a href="master-repositorio.html" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
+            <a href="papelera.html" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
+        </nav>
+        <div class="mt-4 pt-4 border-top border-secondary">
+            <a href="admin-academia.html" class="btn-sidebar-action w-100"><i class="bi bi-shield-lock"></i> Panel Maestro</a>
+            <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a>
+        </div>
+    </aside>
+
+<main class="super-overlay">
+
 <div class="container panel-ucmi">
-    <a href="gestion-modulos.html" class="text-white mb-3 d-inline-block"><i class="bi bi-arrow-left"></i> Volver a Módulos</a>
-    
+
+    <a href="master-repositorio.html"
+       class="text-white mb-3 d-inline-block">
+        <i class="bi bi-arrow-left"></i>
+        Volver a Módulos
+    </a>
+
     <div class="mb-4">
-        <h2 id="tituloModulo" class="text-white">Módulo: Cargando...</h2>
-        <h4 id="tituloRama" class="text-info">Rama: Cargando...</h4>
+        <h2 id="tituloModulo" class="text-white">
+            Módulo: Cargando...
+        </h2>
+
+        <h4 id="tituloRama" class="text-info">
+            Rama: Cargando...
+        </h4>
     </div>
 
-    <button class="btn btn-ucmi mb-4" data-bs-toggle="modal" data-bs-target="#modalTopico">
-        <i class="bi bi-plus-circle"></i> Registrar Tópico
+    <button
+        class="btn btn-ucmi mb-4"
+        data-bs-toggle="modal"
+        data-bs-target="#modalTopico">
+
+        <i class="bi bi-plus-circle"></i>
+        Registrar Tópico
     </button>
 
     <table class="table table-hover tabla-cristal">
@@ -149,159 +219,196 @@
                 <th class="text-end">Acciones</th>
             </tr>
         </thead>
+
         <tbody id="tablaTopicos"></tbody>
+
     </table>
+
 </div>
 
-<div class="modal fade" id="modalTopico" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content bg-dark text-white">
-            <div class="modal-header border-secondary">
-                <h5>Registrar Nuevo Tópico</h5>
-                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input id="inputNombreTopico" class="form-control" placeholder="Nombre del tópico">
-                <button id="btnGuardarTopico" class="btn btn-warning w-100 mt-3">Guardar Tópico</button>
-            </div>
-        </div>
-    </div>
+</main>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, collection, addDoc, query, where, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    
-    // Configuración (Asegúrate de copiar tu configuración de Firebase aquí)
-const firebaseConfig = {
-  apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-  authDomain: "ucmi-13796634.firebaseapp.com",
-  projectId: "ucmi-13796634",
-  storageBucket: "ucmi-13796634.firebasestorage.app",
-  messagingSenderId: "1090719609536",
-  appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
-  measurementId: "G-3M3DH25722"
-};
+    import {
+    getFirestore,
+    doc,
+    getDoc,
+    collection,
+    addDoc,
+    query,
+    where,
+    onSnapshot,
+    updateDoc,
+    deleteDoc
+}
+from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
+        measurementId: "G-3M3DH25722"
+    };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-
     const params = new URLSearchParams(window.location.search);
     const ramaId = params.get("ramaId");
 
-    // 1. Cargar datos del Módulo y la Rama
-    async function cargarEncabezado() {
-        const ramaSnap = await getDoc(doc(db, "ramas", ramaId));
-        if (ramaSnap.exists()) {
-            const dataRama = ramaSnap.data();
-            document.getElementById("tituloRama").innerText = "Rama: " + dataRama.nombre;
-            
-            const modSnap = await getDoc(doc(db, "ofertas", dataRama.moduloId));
-            document.getElementById("tituloModulo").innerText = "Módulo: " + modSnap.data().modulo;
+    // Carga de Logo según el usuario
+    onAuthStateChanged(auth, async (user) => {
+        const logoElement = document.getElementById('logoAcademia');
+        if (user) {
+            try {
+                const docRef = doc(db, "usuarios", user.email);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists() && docSnap.data().logoCustom) {
+                    logoElement.src = docSnap.data().logoCustom;
+                }
+            } catch (error) { console.error("Error al cargar logo:", error); }
         }
-    }
+        logoElement.style.opacity = "1";
+        logoElement.style.visibility = "visible";
+    });
 
-    // 2. Cargar lista de Tópicos en tiempo real
-    const q = query(collection(db, "topicos"), where("ramaId", "==", ramaId));
-    onSnapshot(q, (snap) => {
-        const tabla = document.getElementById("tablaTopicos");
-        tabla.innerHTML = "";
-snap.docs
-    .sort((a, b) => {
-        return (a.data().fechaCreacion?.seconds || 0) -
-               (b.data().fechaCreacion?.seconds || 0);
-    })
-    .forEach(t => {
+async function cargarEncabezado() {
+    const ramaSnap = await getDoc(doc(db, "ramas", ramaId));
+
+    if (ramaSnap.exists()) {
+
+        const dataRama = ramaSnap.data();
+
+        document.getElementById(
+            "tituloRama"
+        ).innerText =
+            "Rama: " + dataRama.nombre;
+
+        const modSnap =
+            await getDoc(
+                doc(
+                    db,
+                    "ofertas",
+                    dataRama.moduloId
+                )
+            );
+
+        document.getElementById(
+            "tituloModulo"
+        ).innerText =
+            "Módulo: " +
+            modSnap.data().modulo;
+    }
+}
+
+const q = query(
+    collection(db, "topicos"),
+    where("ramaId", "==", ramaId)
+);
+
+onSnapshot(q, (snap) => {
+
+    const tabla =
+        document.getElementById(
+            "tablaTopicos"
+        );
+
+    tabla.innerHTML = "";
+
+    snap.docs
+        .sort((a, b) =>
+            (a.data().fechaCreacion?.seconds || 0) -
+            (b.data().fechaCreacion?.seconds || 0)
+        )
+        .forEach(t => {
+
             const d = t.data();
+
             tabla.innerHTML += `
                 <tr>
                     <td>
-                            <a href="cargar-contenido.html?topicoId=${t.id}&ramaId=${ramaId}" 
-                               class="text-decoration-none nombre-topico">
-                                ${d.tema}
-                            </a>
-                        </td>
-                        <td class="text-end">
-                            <input 
-                                type="checkbox" 
-                                class="form-check-input me-2 toggle-visible"
-                                data-id="${t.id}"
-                                ${d.visible !== false ? "checked" : ""}
-                            >
-                            <button class="btn btn-sm btn-outline-light me-1" onclick="editar('${t.id}', '${d.tema}')">Editar</button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="borrar('${t.id}')">Borrar</button>
-                        </td>
+                        <a
+                           href="cargar-contenido.html?topicoId=${t.id}&ramaId=${ramaId}"
+                           class="text-decoration-none nombre-topico">
+
+                            ${d.tema}
+
+                        </a>
+                    </td>
+
+                    <td class="text-end">
+
+                        <input
+                            type="checkbox"
+                            class="form-check-input me-2 toggle-visible"
+                            data-id="${t.id}"
+                            ${d.visible !== false ? "checked" : ""}>
+
+                        <button
+                            class="btn btn-sm btn-outline-light me-1"
+                            onclick="editar('${t.id}','${d.tema}')">
+
+                            Editar
+
+                        </button>
+
+                        <button
+                            class="btn btn-sm btn-outline-danger"
+                            onclick="borrar('${t.id}')">
+
+                            Borrar
+
+                        </button>
+
+                    </td>
                 </tr>
             `;
         });
-    });
-
-    // 3. Lógica Guardar, Editar, Borrar y Visibilidad
-document.getElementById("btnGuardarTopico").addEventListener("click", async () => {
-    const input = document.getElementById("inputNombreTopico");
-    const nombre = input.value.trim();
-    
-    // 1. Verificamos quién está intentando guardar
-    const user = auth.currentUser;
-    console.log("Usuario logueado:", user ? user.email : "Nadie");
-
-    if (!nombre) return;
-console.log("VERSION NUEVA CARGADA");
-console.log("Usuario actual:", auth.currentUser);
-
-try {
-    await addDoc(collection(db, "topicos"), { 
-    tema: nombre, 
-    ramaId: ramaId, 
-    visible: true,
-    fechaCreacion: new Date()
 });
 
-    alert("¡Éxito! Tópico guardado.");
-    input.value = "";
-    bootstrap.Modal.getInstance(document.getElementById('modalTopico')).hide();
-
-} catch (error) {
-    console.error("ERROR:", error);
-    console.error("CODE:", error.code);
-    console.error("MESSAGE:", error.message);
-
-    alert(
-        "CODE: " + error.code +
-        "\nMESSAGE: " + error.message
-    );
-}
-});
-    
 window.editar = async (id, temaActual) => {
-    const nuevo = prompt("Nuevo nombre:", temaActual);
-    if (nuevo) await updateDoc(doc(db, "topicos", id), { tema: nuevo });
+    const nuevo =
+        prompt(
+            "Nuevo nombre:",
+            temaActual
+        );
+
+    if (nuevo)
+        await updateDoc(
+            doc(db, "topicos", id),
+            { tema: nuevo }
+        );
 };
 
-    window.borrar = async (id) => { if(confirm("¿Eliminar tópico?")) await deleteDoc(doc(db, "topicos", id)); };
-
-    cargarEncabezado();
-
-document.addEventListener("change", async (e) => {
-    if (e.target.classList.contains("toggle-visible")) {
-
-        const id = e.target.dataset.id;
-        const visible = e.target.checked;
-
-        console.log("CAMBIO CHECKBOX:", id, visible);
-
-        try {
-            await updateDoc(doc(db, "topicos", id), {
-                visible: visible
-            });
-        } catch (error) {
-            console.error("ERROR UPDATE VISIBILITY:", error);
-        }
+window.borrar = async (id) => {
+    if (confirm("¿Eliminar tópico?")) {
+        await deleteDoc(
+            doc(db, "topicos", id)
+        );
     }
-});
+};
+
+cargarEncabezado();
     
+    // Acción Cierre de Sesión
+    document.getElementById('btnLogout').addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+            await signOut(auth);
+            window.location.href = "index.html"; // Redirige al login
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+            alert("Ocurrió un error al cerrar la sesión.");
+        }
+    });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
