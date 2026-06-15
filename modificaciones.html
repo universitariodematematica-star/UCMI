@@ -488,23 +488,47 @@ const nuevoEmail = nuevosDatos.email;
 
 if (nuevoEmail !== emailAnterior) {
 
+    nuevosDatos.email = nuevoEmail;
+
     await setDoc(
         doc(db, "usuarios", nuevoEmail),
         nuevosDatos
     );
 
     await addDoc(
-        collection(
-            db,
-            "historialCambiosCorreo"
-        ),
-        {
-            emailAnterior,
-            emailNuevo: nuevoEmail,
-            fecha: new Date().toISOString(),
-            academia: academiaActual
-        }
-    );
+    collection(
+        db,
+        "correosPendientesEliminar"
+    ),
+    {
+        emailAnterior,
+        emailNuevo: nuevoEmail,
+
+        nombre:
+            nuevosDatos.nombreResponsable ||
+            nuevosDatos.nombre ||
+            "",
+
+        perfil:
+            nuevosDatos.perfil || "",
+
+        academia:
+            academiaActual,
+
+        fechaCambio:
+            new Date().toISOString(),
+
+        pendienteEliminar: true,
+        eliminadoAuth: false,
+
+        realizadoPor:
+            auth.currentUser.email,
+
+        fechaEliminacionAuth: null,
+        eliminadoPor: null,
+        observaciones: ""
+    }
+);
 
     await deleteDoc(
         doc(
