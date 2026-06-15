@@ -448,14 +448,83 @@ window.abrirModal =
         emailAnterior =
             usuarioActual.email;
 
-        console.log(usuarioActual);
+        construirFormulario();
+
+        document
+.getElementById(
+    "btnGuardarCambios"
+)
+.onclick =
+async function () {
+
+    const nuevosDatos = {};
+
+    for (const campo in usuarioActual) {
+
+        if (
+            campo === "timestamp"
+            || campo === "fechaRegistro"
+        ) continue;
+
+        const input =
+            document.getElementById(
+                `campo_${campo}`
+            );
+
+        if (!input) continue;
+
+        nuevosDatos[campo] =
+            input.value;
+    }
+
+    console.log(nuevosDatos);
+};
 
         new bootstrap.Modal(
             document.getElementById(
                 "modalEditar"
             )
         ).show();
-    };    
+    };
+
+    function construirFormulario() {
+
+    const contenedor =
+        document.getElementById(
+            "contenedorCampos"
+        );
+
+    contenedor.innerHTML = "";
+
+    for (const campo in usuarioActual) {
+
+        if (
+            campo === "timestamp"
+            || campo === "fechaRegistro"
+        ) continue;
+
+        const valor =
+            Array.isArray(usuarioActual[campo])
+                ? usuarioActual[campo].join(", ")
+                : usuarioActual[campo];
+
+        contenedor.innerHTML += `
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    ${campo}
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    id="campo_${campo}"
+                    value="${valor ?? ""}">
+
+            </div>
+        `;
+    }
+}
     
 </script>
 </body>
