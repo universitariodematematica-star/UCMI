@@ -484,15 +484,57 @@ async function () {
             input.value;
     }
 
-    console.log("Datos:", nuevosDatos);
+const nuevoEmail = nuevosDatos.email;
+
+if (nuevoEmail !== emailAnterior) {
+
+    await setDoc(
+        doc(db, "usuarios", nuevoEmail),
+        nuevosDatos
+    );
+
+    await addDoc(
+        collection(
+            db,
+            "historialCambiosCorreo"
+        ),
+        {
+            emailAnterior,
+            emailNuevo: nuevoEmail,
+            fecha: new Date().toISOString(),
+            academia: academiaActual
+        }
+    );
+
+    await deleteDoc(
+        doc(
+            db,
+            "usuarios",
+            emailAnterior
+        )
+    );
+
+} else {
+
     await updateDoc(
-    doc(
-        db,
-        "usuarios",
-        usuarioActual.id
-    ),
-    nuevosDatos
-);
+        doc(
+            db,
+            "usuarios",
+            emailAnterior
+        ),
+        nuevosDatos
+    );
+}
+
+await cargarUsuarios();
+
+bootstrap.Modal
+.getInstance(
+    document.getElementById(
+        "modalEditar"
+    )
+)
+.hide();    
 
 console.log("Guardado en Firestore");
 await cargarUsuarios();
