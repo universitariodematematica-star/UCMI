@@ -488,55 +488,46 @@ const nuevoEmail = nuevosDatos.email;
 
 if (nuevoEmail !== emailAnterior) {
 
-    nuevosDatos.email = nuevoEmail;
+    try {
 
-    await setDoc(
-        doc(db, "usuarios", nuevoEmail),
-        nuevosDatos
-    );
+        console.log("1 - setDoc");
 
-    await addDoc(
-    collection(
-        db,
-        "correosPendientesEliminar"
-    ),
-    {
-        emailAnterior,
-        emailNuevo: nuevoEmail,
+        await setDoc(
+            doc(db, "usuarios", nuevoEmail),
+            nuevosDatos
+        );
 
-        nombre:
-            nuevosDatos.nombreResponsable ||
-            nuevosDatos.nombre ||
-            "",
+        console.log("2 - addDoc");
 
-        perfil:
-            nuevosDatos.perfil || "",
+        await addDoc(
+            collection(
+                db,
+                "correosPendientesEliminar"
+            ),
+            {
+                emailAnterior,
+                emailNuevo: nuevoEmail,
+                academia: academiaActual
+            }
+        );
 
-        academia:
-            academiaActual,
+        console.log("3 - deleteDoc");
 
-        fechaCambio:
-            new Date().toISOString(),
+        await deleteDoc(
+            doc(
+                db,
+                "usuarios",
+                emailAnterior
+            )
+        );
 
-        pendienteEliminar: true,
-        eliminadoAuth: false,
+        console.log("Todo salió bien");
 
-        realizadoPor:
-            auth.currentUser.email,
-
-        fechaEliminacionAuth: null,
-        eliminadoPor: null,
-        observaciones: ""
     }
-);
-
-    await deleteDoc(
-        doc(
-            db,
-            "usuarios",
-            emailAnterior
-        )
-    );
+    catch (error) {
+        console.error(error);
+        alert(error.message);
+    }
 
 } else {
 
