@@ -159,7 +159,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     emailjs.init("TU_PUBLIC_KEY_AQUÍ");
@@ -287,13 +287,21 @@
             const meses = parseInt(String(currentData.mesesLicencia || "1").replace(/\D/g, '')) || 1;
             const exp = new Date(); exp.setMonth(exp.getMonth() + meses);
             const emailNormalizado = currentData.email.trim().toLowerCase();
-            const usuarioExistente = await getDoc(doc(db, "usuarios", emailNormalizado));
+            import { query, where, getDocs } from "firebase/firestore";
+
+            const q = query(collection(db, "usuarios"), where("email", "==", emailNormalizado));
+            const snap = await getDocs(q);
+            
+            if (!snap.empty) {
+                await Swal.fire("Error", "Este correo ya está registrado.", "error");
+                return;
+            }
             if (usuarioExistente.exists()) {
                 await Swal.fire("Error", "Este correo ya está registrado.", "error");
                 return;
             }
             const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date(), expiracionLicencia: exp.toLocaleString(), expiracionTimestamp: exp.getTime(), mesesAprobados: meses, duracionLicencia: `${meses} mes(es)` };
-            await setDoc(doc(db, "usuarios", emailNormalizado), dataFinal);
+            await addDoc(collection(db, "usuarios"), dataFinal);
             await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO", fechaProceso: new Date().toLocaleString() });
             await deleteDoc(doc(db, "postulaciones", currentId));
             enviarEmailAutomatico(currentData, "ACEPTADO");
