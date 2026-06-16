@@ -147,7 +147,7 @@
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "index.html"; return; }
         try {
-            const userSnap = await getDoc(doc(db, "usuarios", user.email));
+            const userSnap = await getDoc(doc(db, "usuarios", user.uid));
             if (userSnap.exists()) {
                 const data = userSnap.data();
                 entidadActual = data.entidad || "Sede";
@@ -204,7 +204,7 @@
                 canvas.width = 400; canvas.height = img.height * (400 / img.width);
                 canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                 const base64 = canvas.toDataURL('image/jpeg', 0.7);
-                await updateDoc(doc(db, "usuarios", auth.currentUser.email), { logoCustom: base64 });
+                await updateDoc(doc(db, "usuarios", auth.currentUser.uid), { logoCustom: base64 });
                 document.getElementById('navLogo').src = base64;
                 document.getElementById('logoPreview').src = base64;
                 alert("¡Identidad actualizada!");
