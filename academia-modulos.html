@@ -240,13 +240,16 @@
 </div>
 
 <script type="module">
-    import { db } from './firebase-config.js';
+    import { getAuth, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { doc, getDoc, updateDoc } 
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // Variables de estado
-    let rawUserId = localStorage.getItem('userId');
-    const userId = rawUserId ? rawUserId.toLowerCase().trim() : null;
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const auth = getAuth();
+let userId = null;
     console.log("rawUserId:", rawUserId);
     console.log("userId:", userId);
     const userRole = localStorage.getItem('userRole'); 
@@ -371,7 +374,16 @@
     };
 
     // --- 4. Ejecución Inicial ---
+    onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        window.location.href = "index.html";
+        return;
+    }
+
+    userId = user.uid;
+    console.log("UID actual:", userId);
     cargarDatos();
+});
 </script>
 </body>
 </html>
