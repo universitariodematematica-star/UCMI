@@ -1,160 +1,219 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>UCMI - Universitario de Ciencias Matemáticas e Idiomas</title>
-     <link rel="icon" type="image/png" href="https://universitariodematematica-star.github.io/UCMI/logo-ucmi-barra.png">
-     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-     <style>
-         :root { --azul-ucmi: #004dc0; --oscuro-fondo: #0a192f; --gris-suave: #8892b0; --texto-universitario: #333333; --verde-neon: #00ff00; }
-         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Poppins', sans-serif; background-color: #ffffff; overflow: hidden; }
-         .contenedor-principal { display: flex; height: 100vh; width: 100%; }
-         .seccion-visual { flex: 1.2; background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png'); background-size: cover; background-position: center; }
-         .seccion-login { flex: 0.8; background-color: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px; }
-         .login-card { width: 100%; max-width: 400px; text-align: center; }
-         .contenedor-logo-derecho img { width: 150px; height: auto; border-radius: 20px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); margin-bottom: 10px; }
-         .texto-universitario { font-size: 1.1rem; color: var(--texto-universitario); text-transform: uppercase; margin-bottom: 40px; letter-spacing: 2px; }
-         .input-group { margin-bottom: 20px; text-align: left; position: relative; }
-         .input-group label { display: block; font-size: 0.85rem; color: var(--gris-suave); margin-bottom: 8px; }
-         .input-group input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid #eeeeee; font-size: 1rem; box-sizing: border-box; }
-         #card-sesion-activa { display: none; background: #f4f7ff; padding: 25px; border-radius: 15px; border: 2px dashed var(--azul-ucmi); margin-top: 20px; }
-         .caps-indicator { display: none; align-items: center; margin-top: 8px; font-size: 0.75rem; color: #2c3e50; font-weight: 600; }
-         .dot { height: 10px; width: 10px; background-color: var(--verde-neon); border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 8px var(--verde-neon); animation: pulse 1.5s infinite; }
-         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-         .btn-entrar { width: 100%; padding: 15px; background-color: var(--azul-ucmi); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-         .btn-entrar:disabled { background-color: #ccc; cursor: not-allowed; }
-         @media (max-width: 1024px) { .seccion-visual { display: none; } .seccion-login { flex: 1; padding: 30px; } }
-     </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Panel de Academia</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root { --dorado-ucmi: #c5a059; }
+        body {
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover; font-family: 'Segoe UI', sans-serif; color: white; min-height: 100vh;
+        }
+        .overlay { background: radial-gradient(circle, rgba(6, 9, 15, 0.5) 0%, rgba(6, 9, 15, 0.9) 100%); min-height: 100vh; }
+        .navbar-master { background: rgba(6, 9, 15, 0.85); border-bottom: 1px solid var(--dorado-ucmi); backdrop-filter: blur(10px); padding: 0.8rem 2rem; }
+        .logo-nav { height: 50px; object-fit: contain; border-radius: 5px; opacity: 0; transition: opacity 0.4s ease; }
+        .offcanvas { background: rgba(6, 9, 15, 0.98) !important; border-right: 1px solid var(--dorado-ucmi); color: white; }
+        .profile-img-container { width: 110px; height: 110px; margin: 20px auto; border-radius: 50%; border: 2px solid var(--dorado-ucmi); overflow: hidden; background: #000; }
+        #logoPreview { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.4s ease; }
+        .admin-card { 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 20px; 
+            padding: 25px 15px; 
+            transition: 0.3s; 
+            text-align: center; 
+            color: white; 
+            height: 100%; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .admin-card:hover { background: rgba(197, 160, 89, 0.1); border-color: var(--dorado-ucmi); transform: translateY(-5px); }
+        .icon-box { font-size: 2.2rem; color: var(--dorado-ucmi); margin-bottom: 10px; }
+        .text-gold { color: var(--dorado-ucmi); text-shadow: 0 0 10px rgba(197, 160, 89, 0.3); }
+        h4 { font-size: 1.2rem; font-weight: bold; }
+    </style>
 </head>
 <body>
-     <div class="contenedor-principal">
-         <div class="seccion-visual"></div>
-         <div class="seccion-login">
-              <div class="login-card">
-                   <div class="contenedor-logo-derecho"><img src="https://universitariodematematica-star.github.io/UCMI/Aros-ucmi.png" alt="Logo UCMI"></div>
-                   <div class="texto-universitario">Universitario de Ciencias Matemáticas e Idiomas</div>
-                   <div id="seccion-inputs">
-                        <h2>Iniciar Sesión</h2>
-                        <form id="form-login" autocomplete="off">
-                             <div class="input-group">
-                                  <label>Correo Electrónico</label>
-                                  <input type="email" id="email" name="ucmi_email_clean" placeholder="usuario@ejemplo.com" autocomplete="new-password" required>
-                             </div>
-                             <div class="input-group">
-                                  <label>Contraseña</label>
-                                  <input type="password" id="password" name="ucmi_pass_clean" placeholder="••••••••" autocomplete="new-password" required>
-                                  <div id="caps-warning" class="caps-indicator"><span class="dot"></span> MAYÚSCULAS ACTIVADAS</div>
-                             </div>
-                             <button type="submit" id="btn-submit" class="btn-entrar">Entrar a UCMI</button>
-                        </form>
-                   </div>
-                   <div id="card-sesion-activa">
-                        <p style="color: #555; font-size: 0.9rem;">Bienvenido de nuevo:</p>
-                        <b id="user-logged-email" style="color: var(--azul-ucmi); font-size: 1.1rem; display: block; margin-bottom: 20px;"></b>
-                        <button onclick="continuarAlPanel()" class="btn-entrar">Ir a mi Panel</button>
-                        <button onclick="cerrarSesionLimpiar()" style="background:none; border:none; color:#ff4d4d; cursor:pointer; margin-top:15px; font-weight:600; font-size: 0.85rem; text-decoration: underline;">Usar otra cuenta</button>
-                   </div>
-              </div>
-         </div>
-     </div>
-     <script type="module">
-         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-    authDomain: "ucmi-13796634.firebaseapp.com",
-    projectId: "ucmi-13796634",
-    storageBucket: "ucmi-13796634.firebasestorage.app",
-    messagingSenderId: "1090719609536",
-    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-};
-         const app = initializeApp(firebaseConfig);
-         const auth = getAuth(app);
-         const db = getFirestore(app);
-         const MI_UID_MAESTRO = "x0oBFbDP09d7I3VZvWuN6BOODf32";
-         let navegando = false;
+<div class="overlay">
+    <nav class="navbar navbar-master sticky-top">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-outline-warning me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu"><i class="bi bi-list"></i></button>
+                <img src="" id="navLogo" class="logo-nav">
+            </div>
+            <div class="text-end">
+                <small class="d-block opacity-75">Panel de Gestión</small>
+                <span id="navEntidad" class="fw-bold text-gold">Cargando...</span>
+            </div>
+        </div>
+    </nav>
 
-         function limpiarTodo() {
-             const e = document.getElementById('email'); const p = document.getElementById('password');
-             if(e) e.value = ""; if(p) p.value = "";
-             const form = document.getElementById('form-login'); if(form) form.reset();
-         }
-         
-         window.onload = limpiarTodo;
-         document.getElementById('password').addEventListener('keyup', (e) => {
-             document.getElementById('caps-warning').style.display = e.getModifierState("CapsLock") ? 'flex' : 'none';
-         });
+    <div class="offcanvas offcanvas-start" id="sidebarMenu">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <h5 class="offcanvas-title text-warning">CONFIGURACIÓN</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column">
+            <div class="text-center mb-4">
+                <div class="profile-img-container"><img id="logoPreview" src=""></div>
+                <h5 id="sideNombreEntidad" class="fw-bold">Cargando...</h5>
+                <p class="small text-secondary">Sede Oficial</p>
+            </div>
+            <div class="bg-dark p-3 rounded-4 border border-secondary mb-4">
+                <label class="form-label small fw-bold">CAMBIAR LOGO</label>
+                <input type="file" id="inputLogo" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" accept="image/*">
+                <button id="btnSaveLogo" class="btn btn-warning btn-sm w-100 fw-bold">GUARDAR LOGO</button>
+            </div>
+            <button id="btnLogout" class="btn btn-outline-danger mt-auto rounded-pill">Cerrar Sesión</button>
+        </div>
+    </div>
 
-         async function procesarRedireccion(user) {
-             if (navegando) return;
-             navegando = true;
-             if (user.uid === MI_UID_MAESTRO) {
-                 localStorage.setItem('userId', user.email.toLowerCase().trim());
-                 window.location.href = "super-admin.html";
-                 return;
-             }
-             try {
-                 console.log("Usuario autenticado:", user.email);
-                 const docRef = doc(db, "usuarios", user.email.toLowerCase().trim());
-                 const docSnap = await getDoc(docRef);
-                 console.log("Documento existe:", docSnap.exists());
+    <div class="container py-5">
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="admin-card">
+                    <div style="flex-grow: 1; cursor: pointer; width: 100%;" onclick="window.abrirFormulario()">
+                        <div class="icon-box"><i class="bi bi-person-plus"></i></div>
+                        <h4>Captación</h4>
+                        <p class="small opacity-75">Link de registro para alumnos prospectos.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-info w-100 mt-2" onclick="event.stopPropagation(); window.manejarAccionLink(this, 'alumno');">Copiar y Enviar</button>
+                </div>
+            </div>
 
-                 if (docSnap.exists()) {
-                     const datosUsuario = docSnap.data();
-                     if (datosUsuario.status === "eliminado") {
-                         alert("ACCESO SUSPENDIDO: Esta cuenta se encuentra en la papelera de reciclaje.");
-                         await cerrarSesionLimpiar();
-                         return;
-                     }
-                     localStorage.setItem('userId', user.email.toLowerCase().trim());
-                     localStorage.setItem('userRole', datosUsuario.perfil || "");
-                     const perfil = (datosUsuario.perfil || "").toLowerCase().trim().replace(/\s+/g, '_');
-                     const rutas = {
-                                     "academia": "admin-academia.html",
-                                     "docente_academia": "panel-docente-academia.html",
-                                     "estudiante_academia": "aula-academia.html",
-                                     "profesor_independiente": "panel-profesor-independiente.html",
-                                     "estudiante_profesor_independiente": "aula-profesor-independiente.html",
-                                     "estudiante_ucmi": "aula-ucmi.html"
-                                   };
-                     if (rutas[perfil]) { window.location.replace(rutas[perfil]); } else { alert("Perfil no encontrado."); await cerrarSesionLimpiar(); }
-                 } else {
-                     alert("El usuario no existe en el sistema.");
-                     await cerrarSesionLimpiar();
-                 }
-             } catch (error) {
-                 console.error("ERROR COMPLETO:", error);
-                 alert("ERROR\n\nCódigo: " + (error.code || "sin código") + "\n\nMensaje: " + (error.message || "sin mensaje"));
-                 navegando = false;
-                 const btn = document.getElementById('btn-submit');
-                 if (btn) { btn.disabled = false; btn.innerText = "Entrar a UCMI"; }
-                 limpiarTodo();
-                 await signOut(auth);
-                 localStorage.clear();
-             }
-         }
+            <div class="col-md-3">
+                <a href="solicitudes-academia.html" class="admin-card">
+                    <div class="icon-box" style="color: #bc13fe;"><i class="bi bi-file-earmark-text"></i></div>
+                    <h4>Solicitudes</h4>
+                    <p class="small opacity-75">Validación de nuevos ingresos.</p>
+                </a>
+            </div>
 
-         window.continuarAlPanel = () => { const u = auth.currentUser; if (u) procesarRedireccion(u); };
-         window.cerrarSesionLimpiar = async () => { limpiarTodo(); await signOut(auth); localStorage.clear(); window.location.reload(); };
-         
-         onAuthStateChanged(auth, (user) => {
-             limpiarTodo();
-             if (user) { document.getElementById('seccion-inputs').style.display = 'none'; document.getElementById('card-sesion-activa').style.display = 'block'; document.getElementById('user-logged-email').innerText = user.email; }
-             else { document.getElementById('seccion-inputs').style.display = 'block'; document.getElementById('card-sesion-activa').style.display = 'none'; }
-         });
+            <div class="col-md-3">
+               <a href="alumnos-academia.html" class="admin-card">
+                   <div class="icon-box" style="color: #ff8c00;"><i class="bi bi-people-fill"></i></div>
+                   <h4>Alumnos</h4>
+                   <p class="small opacity-75">Gestión y control de aulas.</p>
+               </a>
+            </div>
 
-         document.getElementById('form-login').addEventListener('submit', async (e) => {
-             e.preventDefault();
-             const email = document.getElementById('email').value.trim();
-             const pass = document.getElementById('password').value;
-             const btn = document.getElementById('btn-submit');
-             btn.disabled = true; btn.innerText = "VERIFICANDO...";
-             try { const cred = await signInWithEmailAndPassword(auth, email, pass); limpiarTodo(); procesarRedireccion(cred.user); }
-             catch (error) { alert("Correo o contraseña incorrectos."); limpiarTodo(); btn.disabled = false; btn.innerText = "Entrar a UCMI"; }
-         });
-     </script>
+            <div class="col-md-3">
+                <a href="academia-modulos.html" class="admin-card">
+                    <div class="icon-box" style="color: #00f2ff;"><i class="bi bi-box-seam"></i></div>
+                    <h4>Módulos</h4>
+                    <p class="small opacity-75">Habilitación de visibilidad en formulario.</p>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <div class="admin-card">
+                    <div style="flex-grow: 1; cursor: pointer; width: 100%;" onclick="window.abrirFormularioDocente()">
+                        <div class="icon-box" style="color: #32cd32;"><i class="bi bi-person-badge"></i></div>
+                        <h4>Captación de profesores</h4>
+                        <p class="small opacity-75">Formulario de postulación para docentes.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-success w-100 mt-2" onclick="event.stopPropagation(); window.manejarAccionLink(this, 'docente');">Copiar y Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    let entidadActual = "";
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = "index.html"; return; }
+        try {
+            const userSnap = await getDoc(doc(db, "usuarios", user.email));
+            if (userSnap.exists()) {
+                const data = userSnap.data();
+                entidadActual = data.entidad || "Sede";
+                document.getElementById('navEntidad').innerText = entidadActual;
+                document.getElementById('sideNombreEntidad').innerText = entidadActual;
+                const finalLogo = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
+                document.getElementById('navLogo').src = finalLogo;
+                document.getElementById('logoPreview').src = finalLogo;
+            }
+        } catch (e) { console.error(e); }
+    });
+
+    window.abrirFormulario = () => window.open(`https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`, '_blank');
+    window.abrirFormularioDocente = () => window.open(`https://universitariodematematica-star.github.io/UCMI/postulacion-docente.html?ref=${encodeURIComponent(entidadActual)}`, '_blank');
+
+    window.manejarAccionLink = (btn, tipo) => {
+        const esDocente = (tipo === 'docente');
+        const url = esDocente ? `https://universitariodematematica-star.github.io/UCMI/postulacion-docente.html?ref=${encodeURIComponent(entidadActual)}` : `https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html?ref=${encodeURIComponent(entidadActual)}`;
+        const tarjeta = btn.closest('.admin-card');
+
+        if (btn.dataset.mode === "send") {
+            const phone = btn.previousElementSibling.value;
+            if (!phone) return alert("Ingresa un número");
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent("Hola, te comparto el link: " + url)}`, '_blank');
+            tarjeta.innerHTML = `
+                <div style="flex-grow: 1; cursor: pointer; width: 100%;" onclick="window.${esDocente ? 'abrirFormularioDocente()' : 'abrirFormulario()'}">
+                    <div class="icon-box" style="${esDocente ? 'color: #32cd32;' : ''}"><i class="bi ${esDocente ? 'bi-person-badge' : 'bi-person-plus'}"></i></div>
+                    <h4>${esDocente ? 'Captación de profesores' : 'Captación'}</h4>
+                </div>
+                <button class="btn btn-sm ${esDocente ? 'btn-outline-success' : 'btn-outline-info'} w-100 mt-2" onclick="event.stopPropagation(); window.manejarAccionLink(this, '${tipo}');">Copiar y Enviar</button>
+            `;
+            return;
+        }
+
+        navigator.clipboard.writeText(url);
+        tarjeta.innerHTML = `
+            <div class="icon-box" style="color: #198754;"><i class="bi bi-whatsapp"></i></div>
+            <h4 class="text-success">Enviar por WhatsApp</h4>
+            <input type="text" class="form-control form-control-sm mb-2" placeholder="Ej: 593999999999" style="background:#222; color:white; border:1px solid #555;">
+            <button class="btn btn-sm btn-success w-100" data-mode="send" onclick="event.stopPropagation(); window.manejarAccionLink(this, '${tipo}');">Enviar mensaje</button>
+            <button class="btn btn-sm btn-link text-secondary w-100 mt-1 p-0" onclick="event.stopPropagation(); window.location.reload();">Cancelar</button>
+        `;
+    };
+
+    document.getElementById('btnSaveLogo').onclick = async () => {
+        const file = document.getElementById('inputLogo').files[0];
+        if (!file) return alert("Selecciona una imagen.");
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = async () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 400; canvas.height = img.height * (400 / img.width);
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                const base64 = canvas.toDataURL('image/jpeg', 0.7);
+                await updateDoc(doc(db, "usuarios", auth.currentUser.email), { logoCustom: base64 });
+                document.getElementById('navLogo').src = base64;
+                document.getElementById('logoPreview').src = base64;
+                alert("¡Identidad actualizada!");
+            };
+        };
+        reader.readAsDataURL(file);
+    };
+    document.getElementById('btnLogout').onclick = () => signOut(auth).then(() => window.location.href = "index.html");
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
