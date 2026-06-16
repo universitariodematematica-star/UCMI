@@ -128,7 +128,13 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import {
+    getFirestore,
+    doc,
+    getDoc,
+    updateDoc,
+    setDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -146,8 +152,9 @@
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "index.html"; return; }
+        console.log("UID donde guardo:", auth.currentUser.uid);
         try {
-            const userSnap = await getDoc(doc(db, "usuarios", user.email));
+            const userSnap = await getDoc(doc(db, "usuarios", user.uid));
             if (userSnap.exists()) {
                 const data = userSnap.data();
                 entidadActual = data.entidad || "Sede";
@@ -156,6 +163,8 @@
                 const finalLogo = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
                 document.getElementById('navLogo').src = finalLogo;
                 document.getElementById('logoPreview').src = finalLogo;
+                document.getElementById('navLogo').style.opacity = "1";
+                document.getElementById('logoPreview').style.opacity = "1";
             }
         } catch (e) { console.error(e); }
     });
@@ -204,7 +213,11 @@
                 canvas.width = 400; canvas.height = img.height * (400 / img.width);
                 canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                 const base64 = canvas.toDataURL('image/jpeg', 0.7);
-                await updateDoc(doc(db, "usuarios", auth.currentUser.email), { logoCustom: base64 });
+                await setDoc(
+    doc(db, "usuarios", auth.currentUser.uid),
+    { logoCustom: base64 },
+    { merge: true }
+);
                 document.getElementById('navLogo').src = base64;
                 document.getElementById('logoPreview').src = base64;
                 alert("¡Identidad actualizada!");
