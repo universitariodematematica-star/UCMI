@@ -295,7 +295,7 @@
     document.getElementById('btnConfirmarAcceso').onclick = async () => {
         if(!currentId || !currentData) return;
         try {
-            await createUserWithEmailAndPassword(secondaryAuth, currentData.email.trim().toLowerCase(), "UCMI2026");
+            
             const meses = parseInt(String(currentData.mesesLicencia || "1").replace(/\D/g, '')) || 1;
             const exp = new Date(); exp.setMonth(exp.getMonth() + meses);
             const emailNormalizado = currentData.email.trim().toLowerCase();
@@ -307,15 +307,28 @@
             if (!snap.empty) {
                 await Swal.fire("Error", "Este correo ya está registrado.", "error");
                 return;
+                
             }
-            if (usuarioExistente.exists()) {
-                await Swal.fire("Error", "Este correo ya está registrado.", "error");
-                return;
-            }
+const q = query(
+    collection(db, "usuarios"),
+    where("email", "==", emailNormalizado)
+);
+
+const snap = await getDocs(q);
+
+if (!snap.empty) {
+    await Swal.fire("Error", "Este correo ya está registrado.", "error");
+    return;
+}
             const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date(), expiracionLicencia: exp.toLocaleString(), expiracionTimestamp: exp.getTime(), mesesAprobados: meses, duracionLicencia: `${meses} mes(es)` };
             await addDoc(collection(db, "usuarios"), dataFinal);
             await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO", fechaProceso: new Date().toLocaleString() });
             await deleteDoc(doc(db, "postulaciones", currentId));
+            await createUserWithEmailAndPassword(
+                secondaryAuth,
+                emailNormalizado,
+                "UCMI2026"
+            );
             enviarEmailAutomatico(currentData, "ACEPTADO");
             prepararMensajeWhatsApp(dataFinal, "ACEPTADO");
             bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
