@@ -156,6 +156,8 @@
                 const finalLogo = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo_ucmi.png";
                 document.getElementById('navLogo').src = finalLogo;
                 document.getElementById('logoPreview').src = finalLogo;
+                document.getElementById('navLogo').style.opacity = "1";
+                document.getElementById('logoPreview').style.opacity = "1";
             }
         } catch (e) { console.error(e); }
     });
@@ -204,7 +206,11 @@
                 canvas.width = 400; canvas.height = img.height * (400 / img.width);
                 canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                 const base64 = canvas.toDataURL('image/jpeg', 0.7);
-                await updateDoc(doc(db, "usuarios", auth.currentUser.uid), { logoCustom: base64 });
+                await setDoc(
+    doc(db, "usuarios", auth.currentUser.uid),
+    { logoCustom: base64 },
+    { merge: true }
+);
                 document.getElementById('navLogo').src = base64;
                 document.getElementById('logoPreview').src = base64;
                 alert("¡Identidad actualizada!");
