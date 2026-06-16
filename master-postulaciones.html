@@ -240,13 +240,17 @@
         const tbody = document.getElementById('listaMaestra');
         const valorFiltro = selectorFiltro.value; 
         tbody.innerHTML = '';
+        console.log("RENDER EJECUTADO, registros:", registrosLocales.length);
         registrosLocales.forEach((d) => {
-            console.log("DOC COMPLETO:", data);
-            const data = d.data();
-            const id = d.id;
+    const data = d.data();
+    const id = d.id;
+
+    console.log("DOC COMPLETO:", data);
             const perfilOriginal = data.tipoSolicitante || data.perfil || "Estudiante Autodidacta";
             const pLow = perfilOriginal.toLowerCase().trim();
-            let pasaFiltro = (valorFiltro === "todos") ? true : (perfilOriginal === valorFiltro);
+                    let pasaFiltro =
+            valorFiltro === "todos"
+            || perfilOriginal?.trim().toLowerCase() === valorFiltro.toLowerCase();
             if (!pasaFiltro) return;
             let colorClass = (perfilOriginal === "Academia") ? "bg-categoria-academia" : (perfilOriginal === "Profesor independiente") ? "bg-categoria-profesor" : (perfilOriginal === "Estudiante UCMI") ? "bg-categoria-estudiante" : "bg-categoria-default";
             const perfilesBloqueados = ["docente academia", "estudiante academia", "estudiante asociado", "estudiante embajador"];
@@ -354,9 +358,10 @@
         if (result.isConfirmed) { await signOut(auth); window.location.href = "index.html"; }
     };
 
-    onSnapshot(collection(db, "postulaciones"), (snap) => {
-        registrosLocales = snap.docs;
-        renderizarTabla();
-    });
+        onSnapshot(collection(db, "postulaciones"), (snap) => {
+            console.log("DOCS RECIBIDOS:", snap.docs.length);
+            registrosLocales = snap.docs;
+            renderizarTabla();
+        });
 </script>
 </html>
