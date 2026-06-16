@@ -309,26 +309,20 @@
                 return;
                 
             }
-const q = query(
-    collection(db, "usuarios"),
-    where("email", "==", emailNormalizado)
-);
 
-const snap = await getDocs(q);
-
-if (!snap.empty) {
-    await Swal.fire("Error", "Este correo ya está registrado.", "error");
-    return;
-}
             const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date(), expiracionLicencia: exp.toLocaleString(), expiracionTimestamp: exp.getTime(), mesesAprobados: meses, duracionLicencia: `${meses} mes(es)` };
             await addDoc(collection(db, "usuarios"), dataFinal);
             await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO", fechaProceso: new Date().toLocaleString() });
             await deleteDoc(doc(db, "postulaciones", currentId));
-            await createUserWithEmailAndPassword(
-                secondaryAuth,
-                emailNormalizado,
-                "UCMI2026"
-            );
+            try {
+                await createUserWithEmailAndPassword(
+                    secondaryAuth,
+                    emailNormalizado,
+                    "UCMI2026"
+                );
+            } catch (e) {
+                console.log("Auth ya existía o error:", e.message);
+            }
             enviarEmailAutomatico(currentData, "ACEPTADO");
             prepararMensajeWhatsApp(dataFinal, "ACEPTADO");
             bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
