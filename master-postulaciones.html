@@ -316,7 +316,18 @@
             }
 
             const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date(), expiracionLicencia: exp.toLocaleString(), expiracionTimestamp: exp.getTime(), mesesAprobados: meses, duracionLicencia: `${meses} mes(es)` };
-            await addDoc(collection(db, "usuarios"), dataFinal);
+            const cred = await createUserWithEmailAndPassword(
+    secondaryAuth,
+    emailNormalizado,
+    "UCMI2026"
+);
+
+const uid = cred.user.uid;
+
+await setDoc(doc(db, "usuarios", uid), {
+    ...dataFinal,
+    uid: uid
+});
             await setDoc(doc(db, "historial_postulaciones", currentId), { ...dataFinal, decisionFinal: "ACEPTADO", fechaProceso: new Date().toLocaleString() });
             await deleteDoc(doc(db, "postulaciones", currentId));
             try {
