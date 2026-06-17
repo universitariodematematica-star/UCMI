@@ -97,6 +97,96 @@
             overflow-y: auto; 
         }
 
+.main-content {
+    flex-grow: 1;
+    padding: 60px;
+}
+
+.header-main {
+    margin-bottom: 70px;
+    text-align: center;
+}
+
+.title-repo {
+    font-weight: 900;
+    font-size: 3.5rem;
+    text-transform: uppercase;
+}
+
+.title-icon {
+    color: var(--dorado-ucmi);
+    filter: drop-shadow(0 0 15px rgba(197, 160, 89, 0.5));
+}
+
+.list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 950px;
+    margin: 0 auto;
+}
+
+.module-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(15px);
+    border-radius: 16px;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all .3s ease;
+}
+
+.module-item:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: #00f2ff;
+    transform: translateX(8px);
+}
+
+.status-label {
+    font-size: .65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-right: 15px;
+    letter-spacing: 1px;
+}
+
+.form-check-input {
+    width: 3.2em !important;
+    height: 1.6em !important;
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: #00f2ff !important;
+    border-color: #00f2ff !important;
+}
+
+.text-publico {
+    color: #00f2ff;
+}
+
+.text-oculto {
+    color: rgba(255,255,255,.25);
+}
+
+.footer-system {
+    margin-top: 100px;
+    padding-bottom: 40px;
+    text-align: center;
+    opacity: .3;
+}
+
+@media (max-width:768px) {
+    .main-content {
+        padding: 30px;
+    }
+
+    .title-repo {
+        font-size: 2.2rem;
+    }
+}
         
     </style>
 </head>
@@ -126,6 +216,27 @@
             <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a>
         </div>
     </aside>
+
+<main class="flex-grow-1 main-content">
+    <header class="header-main">
+        <h1 class="title-repo">
+            <i class="bi bi-journal-bookmark-fill title-icon"></i>
+            <span id="section-title">Cargando...</span>
+        </h1>
+    </header>
+
+    <div id="dynamic-content">
+        <div class="list-container" id="modules-container">
+            <!-- Aquí se cargan los módulos -->
+        </div>
+    </div>
+
+    <footer class="footer-system">
+        <p class="mb-1">UCMI — Desarrollo Humano & Excelencia Académica</p>
+        <p class="small text-uppercase">Plataforma Maestra © 2026</p>
+    </footer>
+</main>
+        
     </div>
 </div>
 
@@ -156,7 +267,11 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);    
+const auth = getAuth(app);
+
+let userId = null;
+const contenedor = document.getElementById('modules-container');
+const sectionTitle = document.getElementById('section-title');    
 
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -166,16 +281,22 @@ onAuthStateChanged(auth, async (user) => {
 
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
 
-    if (userSnap.exists()) {
-        const d = userSnap.data();
-        const logo = document.getElementById('logoAcademia');
+if (userSnap.exists()) {
+    const d = userSnap.data();
 
-        logo.src =
-            d.logoCustom ||
-            "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+    const logo = document.getElementById('logoAcademia');
 
+    logo.onload = () => {
         logo.style.opacity = "1";
-    }
+    };
+
+    logo.src =
+        d.logoCustom ||
+        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+
+    userId = user.uid;
+    cargarDatos();
+}
 });
 
 document.getElementById('btnLogout')
