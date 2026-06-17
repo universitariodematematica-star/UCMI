@@ -251,10 +251,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
-    getAuth,
-    onAuthStateChanged,
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    getFirestore,
+    doc,
+    getDoc,
+    updateDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -271,7 +272,110 @@ const auth = getAuth(app);
 
 let userId = null;
 const contenedor = document.getElementById('modules-container');
-const sectionTitle = document.getElementById('section-title');    
+const sectionTitle = document.getElementById('section-title');
+
+const cargarDatos = async () => {
+    if (!userId) {
+        contenedor.innerHTML =
+            '<p class="text-center opacity-50">Sesión expirada.</p>';
+        return;
+    }
+
+    try {
+        const docRef = doc(db, "usuarios", userId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+
+            const misModulos = data.modulos || [];
+            const estados = data['modulos-ofertados-academia'] || {};
+
+            sectionTitle.innerText = "Módulos Académicos";
+
+            if (misModulos.length === 0) {
+                contenedor.innerHTML =
+                    '<p class="text-center opacity-50 mt-5">No tienes módulos asignados.</p>';
+                return;
+            }
+
+            contenedor.innerHTML = misModulos.map((nombre, index) => {
+                const estaActivo = estados[nombre] === true;
+
+                return `
+                    <div class="module-item">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3 opacity-50">
+                                <i class="bi bi-stack"></i>
+                            </div>
+                            <div>
+                                <h3 class="m-0" style="font-size:1rem;">
+                                    ${nombre}
+                                </h3>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center">
+                            <span
+                                id="label-${index}"
+                                class="status-label ${estaActivo ? 'text-publico' : 'text-oculto'}">
+                                ${estaActivo ? 'Público' : 'Oculto'}
+                            </span>
+
+                            <div class="form-check form-switch m-0">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="switch-${index}"
+                                    ${estaActivo ? 'checked' : ''}
+                                    onchange="window.actualizarVisibilidad(${index}, '${nombre}')">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+        } else {
+            contenedor.innerHTML =
+                `<p class="text-center opacity-50">Usuario [${userId}] no encontrado.</p>`;
+        }
+    }
+    catch (error) {
+        console.error(error);
+        contenedor.innerHTML =
+            '<p class="text-center text-danger">Error de conexión.</p>';
+    }
+};
+
+window.actualizarVisibilidad = async (index, nombreModulo) => {
+    const sw = document.getElementById(`switch-${index}`);
+    const label = document.getElementById(`label-${index}`);
+
+    label.innerText = sw.checked ? "Público" : "Oculto";
+    label.className =
+        sw.checked
+            ? "status-label text-publico"
+            : "status-label text-oculto";
+
+    try {
+        const userRef = doc(db, "usuarios", userId);
+
+        await updateDoc(userRef, {
+            [`modulos-ofertados-academia.${nombreModulo}`]: sw.checked
+        });
+    }
+    catch (error) {
+        console.error(error);
+
+        sw.checked = !sw.checked;
+
+        label.innerText = sw.checked ? "Público" : "Oculto";
+        label.className =
+            sw.checked
+                ? "status-label text-publico"
+                : "status-label text-oculto";
+    }
+};    
 
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
