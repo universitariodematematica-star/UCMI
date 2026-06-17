@@ -290,8 +290,9 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-    const secondaryApp = initializeApp(firebaseConfig, "Secondary");
-    const secondaryAuth = getAuth(secondaryApp);
+const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+const secondaryAuth = getAuth(secondaryApp);
+secondaryAuth.languageCode = 'es';
 
     let currentId = null, currentData = null, academiaNombreGlobal = "", cuposMaximosGlobal = 0, registrosLocales = [];
 
@@ -466,20 +467,25 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
     });
 
     try {
-const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
-const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
 
-        if (snapUsuario.exists()) {
-            await Swal.fire({
-                title: 'Error: Registro Duplicado',
-                text: 'El correo ' + currentData.email + ' ya tiene una cuenta activa en el sistema.',
-                icon: 'error',
-                background: '#06090f',
-                color: '#fff',
-                confirmButtonColor: '#e74c3c'
-            });
-            return;
-        }
+        const qCheck = query(
+    collection(db, "usuarios"),
+    where("email", "==", currentData.email)
+);
+
+const snapUsuario = await getDocs(qCheck);
+
+if (!snapUsuario.empty) {
+    await Swal.fire({
+        title: 'Error: Registro Duplicado',
+        text: 'El correo ' + currentData.email + ' ya tiene una cuenta activa en el sistema.',
+        icon: 'error',
+        background: '#06090f',
+        color: '#fff',
+        confirmButtonColor: '#e74c3c'
+    });
+    return;
+}
 
         // 2. VALIDACIÓN: Cupos
         const qUsuarios = query(collection(db, "usuarios"), where("entidad", "==", academiaNombreGlobal), where("rol", "in", ["estudiante", "docente"]));
@@ -488,7 +494,11 @@ const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
             throw new Error("No hay cupos disponibles.");
         }
 
-        let cred;
+// 3. CREACIÓN EN AUTH (PRIMERO define la contraseña)
+const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
+const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
+
+let cred;
 try {
     cred = await createUserWithEmailAndPassword(
         secondaryAuth,
@@ -514,6 +524,7 @@ try {
         const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
 
         // 4. GUARDAR EN FIRESTORE
+        const docRefUsuario = doc(db, "usuarios", cred.user.uid);
         await setDoc(docRefUsuario, {
             ...currentData,
             estado: "activo",
