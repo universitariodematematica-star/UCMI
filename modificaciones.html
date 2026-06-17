@@ -139,7 +139,7 @@
 <div class="app-wrapper">
     <aside class="sidebar d-none d-md-flex">
         <div class="text-center mb-2">
-            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" id="logoAcademia" class="logo-sidebar" alt="Logo">
+            <img id="logoAcademia" class="logo-sidebar" alt="Logo" style="display:none;">
         </div>
         <nav class="sidebar-nav">
             <a href="solicitudes-academia.html" class="nav-item-ucmi"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
@@ -321,6 +321,8 @@ const logoElement =
         "logoAcademia"
     );
     if (user) {
+        console.log("UID:", user.uid);
+        console.log("EMAIL:", user.email);
 
         const userDoc =
             await getDoc(
@@ -332,13 +334,17 @@ const logoElement =
             );
 
         if (userDoc.exists()) {
-
+        console.log("Documento encontrado");
             const data =
                 userDoc.data();
 
             logoElement.src =
-                data.logoCustom ||
-                "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+            data.logoCustom ||
+            "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+
+logoElement.onload = () => {
+    logoElement.style.display = "block";
+};
 
             academiaActual =
                 data.entidad;
@@ -346,6 +352,10 @@ const logoElement =
             await cargarUsuarios();
         }
     }
+
+    else {
+    console.log("NO EXISTE DOCUMENTO DEL USUARIO");
+}    
 
     logoElement.style.opacity = "1";
 });
