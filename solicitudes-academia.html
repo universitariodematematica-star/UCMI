@@ -466,9 +466,8 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
     });
 
     try {
-        // 1. VALIDACIÓN: ¿Existe ya el usuario?
-        const docRefUsuario = doc(db, "usuarios", currentData.email);
-        const snapUsuario = await getDoc(docRefUsuario);
+const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
+const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
 
         if (snapUsuario.exists()) {
             await Swal.fire({
@@ -489,11 +488,30 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
             throw new Error("No hay cupos disponibles.");
         }
 
+        let cred;
+try {
+    cred = await createUserWithEmailAndPassword(
+        secondaryAuth,
+        currentData.email,
+        passwordTemp
+    );
+} catch (error) {
+    if (error.code === "auth/email-already-in-use") {
+        await Swal.fire({
+            title: 'Error: Registro Duplicado',
+            text: 'El correo ' + currentData.email + ' ya tiene una cuenta activa en Auth.',
+            icon: 'error',
+            background: '#06090f',
+            color: '#fff'
+        });
+        return;
+    }
+    throw error;
+}
+
         // 3. CREACIÓN EN AUTH
         const dni = String(currentData.dniDocente || currentData.dniEstudiante || "");
         const passwordTemp = dni.length >= 6 ? dni : "UCMI2026";
-        
-        await createUserWithEmailAndPassword(secondaryAuth, currentData.email, passwordTemp);
 
         // 4. GUARDAR EN FIRESTORE
         await setDoc(docRefUsuario, {
