@@ -476,9 +476,17 @@ window.abrirModal =
             usuarios.find(
                 u => u.id === id
             );
+        console.log("USUARIO ACTUAL:", usuarioActual);
+console.log("usuarioActual.id =", usuarioActual.id);
+console.log("documento seleccionado =", id);
+console.log("ID SELECCIONADO:", id);
 
         emailAnterior =
             usuarioActual.email;
+        console.log(
+    "EMAIL ANTERIOR:",
+    emailAnterior
+);
 
         construirFormulario();
 
@@ -530,18 +538,24 @@ try {
 
         nuevoUID = cred.user.uid;
 
-        await setDoc(
-            doc(db, "usuarios", nuevoUID),
-            {
-                ...usuarioActual,
-                ...nuevosDatos,
-                email: nuevoEmail
-            }
-        );
+const { id, ...datosSinId } = usuarioActual;
+
+await setDoc(
+    doc(db, "usuarios", nuevoUID),
+    {
+        ...datosSinId,
+        ...nuevosDatos,
+        email: nuevoEmail
+    }
+);
 
 console.log("UID AUTH PRINCIPAL:", auth.currentUser?.uid);
 console.log("UID AUTH SECUNDARIO:", secondaryAuth.currentUser?.uid);
 console.log("DOCUMENTO A BORRAR:", usuarioActual.id);
+        console.log(
+    "VOY A CONSULTAR:",
+    `usuarios/${usuarioActual.id}`
+);
 const verificarAntes = await getDoc(
     doc(db, "usuarios", usuarioActual.id)
 );
