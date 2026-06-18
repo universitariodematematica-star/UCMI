@@ -362,7 +362,11 @@ import {
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import {
+    getAuth,
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 /* =========================
    FIREBASE INIT
@@ -393,19 +397,19 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    const snap = await getDoc(doc(db, "usuarios", user.uid));
+    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
 
-    if (snap.exists()) {
-        const d = snap.data();
+    if (!userSnap.exists()) return;
 
-        document.getElementById("label-academia").innerText = d.entidad || "Sede";
+    const d = userSnap.data();
 
-        const logo = document.getElementById("logoAcademia");
-        logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-        logo.style.opacity = "1";
+    document.getElementById('label-academia').innerText = d.entidad || "Sede";
 
-        cargarDirectorio(d.entidad, d.cupos || 0, d["modulos-ofertados-academia"]);
-    }
+    const logo = document.getElementById('logoAcademia');
+    logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+    logo.style.opacity = "1";
+
+    cargarDirectorio(d.entidad, d.cupos || 0, d["modulos-ofertados-academia"]);
 });
 
 /* =========================
@@ -413,27 +417,29 @@ onAuthStateChanged(auth, async (user) => {
 ========================= */
 async function cargarDirectorio(entidad, cuposMax, mods) {
 
-    const tbody = document.getElementById("tabla-body");
-    const filtro = document.getElementById("filtroModulo");
+    const tbody = document.getElementById('tabla-body');
+    const filtroModulo = document.getElementById('filtroModulo');
 
-    tbody.innerHTML = "";
-    filtro.innerHTML = '<option value="">Todos los Módulos</option>';
+    tbody.innerHTML = '';
+    filtroModulo.innerHTML = '<option value="">Todos los Módulos</option>';
 
     if (mods) {
         Object.keys(mods).forEach(m => {
             if (mods[m]) {
-                filtro.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`;
+                filtroModulo.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`;
             }
         });
     }
 
-    const snap = await getDocs(query(
-        collection(db, "usuarios"),
-        where("perfil", "==", "Estudiante Academia"),
-        where("entidad", "==", entidad)
-    ));
+    const snap = await getDocs(
+        query(
+            collection(db, "usuarios"),
+            where("perfil", "==", "Estudiante Academia"),
+            where("entidad", "==", entidad)
+        )
+    );
 
-    document.getElementById("cupos-utilizados").innerText = snap.size;
+    document.getElementById('cupos-utilizados').innerText = snap.size;
 
     const estudiantes = [];
     snap.forEach(d => estudiantes.push(d));
@@ -447,29 +453,29 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
 
         const d = docSnap.data();
 
-        const tr = document.createElement("tr");
-        tr.className = "fila-estudiante";
-        tr.dataset.modulos = (d.modulos || []).join(",").toLowerCase();
+        const tr = document.createElement('tr');
+        tr.className = 'fila-estudiante';
+
+        tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
 
         tr.innerHTML = `
             <td>
-                <div class="fw-bold">${d.nombreResponsable || "Sin Nombre"}</div>
-                <small>${d.dniEstudiante || ""}</small>
+                <div class="fw-bold">${d.nombreResponsable || 'Sin Nombre'}</div>
+                <small>${d.dniEstudiante || ''}</small>
             </td>
 
             <td>
-                <small>
-                    ${d.email}<br>
-                    <a href="https://wa.me/${(d.whatsapp || "").toString().replace(/\D/g,"")}"
-                       class="text-success fw-bold"
+                <small>${d.email}<br>
+                    <a class="text-success"
+                       href="https://wa.me/${(d.whatsapp || '').toString().replace(/\D/g,'')}"
                        target="_blank">
-                        ${d.whatsapp || "-"}
+                       ${d.whatsapp || '-'}
                     </a>
                 </small>
             </td>
 
             <td>
-                ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join("")}
+                ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
             </td>
 
             <td class="text-center">
@@ -494,111 +500,122 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
 /* =========================
    BUSCADOR
 ========================= */
-document.getElementById("buscador").addEventListener("input", (e) => {
-    const v = e.target.value.toLowerCase();
+document.getElementById('buscador').addEventListener('input', e => {
+    const t = e.target.value.toLowerCase();
 
-    document.querySelectorAll(".fila-estudiante").forEach(f => {
-        f.style.display = f.innerText.toLowerCase().includes(v) ? "" : "none";
+    document.querySelectorAll('.fila-estudiante').forEach(f => {
+        f.style.display = f.innerText.toLowerCase().includes(t) ? '' : 'none';
     });
 });
 
 /* =========================
-   FILTRO MODULOS
+   FILTRO MÓDULO
 ========================= */
-document.getElementById("filtroModulo").addEventListener("change", (e) => {
+document.getElementById('filtroModulo').addEventListener('change', e => {
+
     const m = e.target.value.toLowerCase();
 
-    document.querySelectorAll(".fila-estudiante").forEach(f => {
+    document.querySelectorAll('.fila-estudiante').forEach(f => {
         f.style.display =
-            !m || f.dataset.modulos.includes(m)
-            ? ""
-            : "none";
+            (m === "" || f.getAttribute('data-modulos').includes(m))
+            ? '' : 'none';
     });
 });
 
 /* =========================
    LOGOUT
 ========================= */
-document.getElementById("btnLogout").addEventListener("click", () => {
-    signOut(auth).then(() => location.href = "index.html");
+document.getElementById('btnLogout').addEventListener('click', () => {
+    signOut(auth).then(() => window.location.href = "index.html");
 });
 
 /* =========================
-   CLICK EN TABLA
+   EVENT DELEGATION TABLA
 ========================= */
-document.getElementById("tabla-body").addEventListener("click", (e) => {
+document.getElementById('tabla-body').addEventListener('click', (e) => {
 
-    const ver = e.target.closest(".btn-ver");
+    /* -------- VER DETALLES -------- */
+    const btnVer = e.target.closest('.btn-ver');
 
-    if (ver) {
-        const d = JSON.parse(ver.dataset.info.replace(/&#39;/g,"'"));
+    if (btnVer) {
+        const d = JSON.parse(btnVer.dataset.info.replace(/&#39;/g, "'"));
 
-        document.getElementById("cuerpoDetalles").innerHTML =
-            `<pre style="color:white">${JSON.stringify(d, null, 2)}</pre>`;
+        document.getElementById('cuerpoDetalles').innerHTML = `
+            <p><b>${d.nombreResponsable}</b></p>
+            <p>${d.email}</p>
+        `;
 
-        new bootstrap.Modal(document.getElementById("modalDetalles")).show();
+        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
         return;
     }
 
-    const del = e.target.closest(".btn-eliminar");
+    /* -------- ELIMINAR -------- */
+    const btnEliminar = e.target.closest('.btn-eliminar');
 
-    if (del) {
-        usuarioAEliminar = del.dataset.id;
-        new bootstrap.Modal(document.getElementById("modalConfirmDelete")).show();
+    if (btnEliminar) {
+        usuarioAEliminar = btnEliminar.dataset.id;
+
+        new bootstrap.Modal(
+            document.getElementById('modalConfirmDelete')
+        ).show();
     }
 });
 
 /* =========================
-   MODAL PASO 1
+   PASO 1 CONFIRMAR
 ========================= */
-document.getElementById("btnConfirmStep1").addEventListener("click", () => {
+document.getElementById('btnConfirmStep1').addEventListener('click', () => {
 
-    const m1 = document.getElementById("modalConfirmDelete");
-    const m2 = document.getElementById("modalDangerDelete");
+    const modal1 = document.getElementById('modalConfirmDelete');
+    const modal2 = document.getElementById('modalDangerDelete');
 
-    bootstrap.Modal.getInstance(m1).hide();
+    const instance = bootstrap.Modal.getInstance(modal1);
+    instance.hide();
 
-    m1.addEventListener("hidden.bs.modal", () => {
-        new bootstrap.Modal(m2, {
-            backdrop: "static",
+    modal1.addEventListener('hidden.bs.modal', () => {
+
+        new bootstrap.Modal(modal2, {
+            backdrop: 'static',
             keyboard: false
         }).show();
+
     }, { once: true });
 });
 
 /* =========================
-   MODAL PASO 2 (ELIMINACIÓN FINAL)
+   PASO 2 ELIMINAR FINAL
 ========================= */
-document.getElementById("btnFinalDelete").addEventListener("click", async () => {
+document.getElementById('btnFinalDelete').addEventListener('click', async () => {
 
     if (!usuarioAEliminar) return;
 
     const ref = doc(db, "usuarios", usuarioAEliminar);
     const snap = await getDoc(ref);
 
-    if (snap.exists()) {
-        const d = snap.data();
+    if (!snap.exists()) return;
 
-        await addDoc(collection(db, "correosPendientesEliminar"), {
-            correoAnterior: d.email || "",
-            correoNuevo: d.email || "",
-            estado: "pendiente",
-            fecha: serverTimestamp(),
-            uidAnterior: usuarioAEliminar,
-            uidNuevo: ""
-        });
+    const data = snap.data();
 
-        await deleteDoc(ref);
-    }
+    await addDoc(collection(db, "correosPendientesEliminar"), {
+        correoAnterior: data.email || "",
+        correoNuevo: data.email || "",
+        estado: "pendiente",
+        fecha: serverTimestamp(),
+        uidAnterior: usuarioAEliminar,
+        uidNuevo: ""
+    });
+
+    await deleteDoc(ref);
 
     bootstrap.Modal.getInstance(
-        document.getElementById("modalDangerDelete")
+        document.getElementById('modalDangerDelete')
     ).hide();
 
     usuarioAEliminar = null;
 
     location.reload();
 });
+
 </script>
     
 </body>
