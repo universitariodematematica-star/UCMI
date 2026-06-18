@@ -283,8 +283,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import {
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
     getFirestore,
     collection,
     doc,
@@ -297,378 +297,267 @@
     deleteDoc,
     addDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import {
+
+import {
     getAuth,
     onAuthStateChanged,
     signOut,
     createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-        authDomain: "ucmi-13796634.firebaseapp.com",
-        projectId: "ucmi-13796634",
-        storageBucket: "ucmi-13796634.firebasestorage.app",
-        messagingSenderId: "1090719609536",
-        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    const secondaryApp = initializeApp(firebaseConfig, "Secondary");
-    const secondaryAuth = getAuth(secondaryApp);
-    let usuarios = [];
-let usuarioActual = null;
-let emailAnterior = null;
-    let academiaActual = "";
-
-
-    onAuthStateChanged(auth, async (user) => {
-
-   console.log(
-    document.getElementById(
-        "btnGuardarCambios"
-    )
-);
-
-const logoElement =
-    document.getElementById(
-        "logoAcademia"
-    );
-    if (user) {
-        console.log("UID:", user.uid);
-        console.log("EMAIL:", user.email);
-
-        const userDoc =
-            await getDoc(
-                doc(
-                    db,
-                    "usuarios",
-                    user.uid
-                )
-            );
-
-        if (userDoc.exists()) {
-        console.log("Documento encontrado");
-            const data =
-                userDoc.data();
-
-            logoElement.src =
-            data.logoCustom ||
-            "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-
-logoElement.onload = () => {
-    logoElement.style.display = "block";
+const firebaseConfig = {
+    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+    authDomain: "ucmi-13796634.firebaseapp.com",
+    projectId: "ucmi-13796634",
+    storageBucket: "ucmi-13796634.firebasestorage.app",
+    messagingSenderId: "1090719609536",
+    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
 };
 
-            academiaActual =
-                data.entidad;
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-            await cargarUsuarios();
-        }
+const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+const secondaryAuth = getAuth(secondaryApp);
+
+let usuarios = [];
+let usuarioActual = null;
+let emailAnterior = null;
+let academiaActual = "";
+
+/* ================= AUTH ================= */
+
+onAuthStateChanged(auth, async (user) => {
+
+    const logoElement = document.getElementById("logoAcademia");
+
+    if (!user) {
+        console.log("NO USER");
+        return;
     }
 
-    else {
-    console.log("NO EXISTE DOCUMENTO DEL USUARIO");
-}    
+    const userDoc = await getDoc(doc(db, "usuarios", user.uid));
 
-    logoElement.style.opacity = "1";
+    if (!userDoc.exists()) return;
+
+    const data = userDoc.data();
+
+    academiaActual = data.entidad;
+
+    logoElement.src = data.logoCustom ||
+        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+
+    logoElement.onload = () => {
+        logoElement.style.display = "block";
+        logoElement.style.opacity = "1";
+    };
+
+    await cargarUsuarios();
 });
 
+/* ================= LOGOUT ================= */
 
- // --- Lógica para cerrar sesión ---
-document.getElementById('btnLogout').addEventListener('click', async (e) => {
+document.getElementById("btnLogout").addEventListener("click", async (e) => {
     e.preventDefault();
-    try {
-        await signOut(auth);
-        // Redirige a tu página de inicio/login. Cambia "index.html" por la que corresponda.
-        window.location.href = "index.html"; 
-    } catch (error) {
-        console.error("Error al cerrar sesión:", error);
-    }
+    await signOut(auth);
+    window.location.href = "index.html";
 });
+
+/* ================= LOAD USERS ================= */
 
 async function cargarUsuarios() {
 
-    const q =
-        query(
-            collection(db, "usuarios"),
-            where(
-                "entidad",
-                "==",
-                academiaActual
-            ),
-            where(
-                "rol",
-                "in",
-                [
-                    "estudiante",
-                    "docente"
-                ]
-            )
-        );
+    const q = query(
+        collection(db, "usuarios"),
+        where("entidad", "==", academiaActual),
+        where("rol", "in", ["estudiante", "docente"])
+    );
 
-    const snap =
-        await getDocs(q);
+    const snap = await getDocs(q);
 
-    usuarios =
-        snap.docs.map(d => ({
-            id: d.id,
-            ...d.data()
-        }));
+    usuarios = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+    }));
 
     renderizarUsuarios();
 }
 
+/* ================= RENDER ================= */
+
 function renderizarUsuarios() {
 
-    const filtro =
-        document.getElementById(
-            "filtroUsuarios"
-        ).value;
-
-    const tabla =
-        document.getElementById(
-            "tablaUsuarios"
-        );
+    const filtro = document.getElementById("filtroUsuarios").value;
+    const tabla = document.getElementById("tablaUsuarios");
 
     tabla.innerHTML = "";
 
     usuarios
-        .filter(u => {
-
-            if (filtro === "todos")
-                return true;
-
-            return u.rol === filtro;
-        })
+        .filter(u => filtro === "todos" ? true : u.rol === filtro)
         .forEach(u => {
 
             tabla.innerHTML += `
                 <tr>
                     <td>${u.nombreResponsable || ""}</td>
                     <td>${u.email}</td>
-                    <td>${u.perfil}</td>
+                    <td>${u.perfil || ""}</td>
                     <td>
-                        <button
-                            class="btn btn-warning btn-sm"
-                            onclick="abrirModal('${u.id}')">
-                            Modificar
+                        <button class="btn btn-warning btn-sm"
+                        onclick="abrirModal('${u.id}')">
+                        Modificar
                         </button>
                     </td>
                 </tr>
             `;
         });
-}   
-    document
-.getElementById("filtroUsuarios")
-.addEventListener(
-    "change",
-    renderizarUsuarios
-);
-
-window.abrirModal =
-    async function(id) {
-
-        usuarioActual =
-            usuarios.find(
-                u => u.id === id
-            );
-        console.log("USUARIO ACTUAL:", usuarioActual);
-
-        emailAnterior =
-            usuarioActual.email;
-
-        construirFormulario();
-
-        document
-.getElementById(
-    "btnGuardarCambios"
-)
-.onclick =
-async function () {
-
-    const nuevosDatos = {};
-
-    for (const campo in usuarioActual) {
-
-        if (
-            campo === "timestamp"
-            || campo === "fechaRegistro"
-        ) continue;
-
-        const input =
-            document.getElementById(
-                `campo_${campo}`
-            );
-
-        if (!input) continue;
-
-        if (campo === "id") continue;
-
-const valorOriginal = usuarioActual[campo];
-        if (campo === "modulos") {
-    nuevosDatos[campo] = input.value
-        .split(",")
-        .map(v => v.trim())
-        .filter(v => v !== "");
-    continue;
-}
-        if (campo === "email") {
-    nuevosDatos[campo] = input.value.trim().toLowerCase();
-    continue;
 }
 
-// 🔥 FIX: preserva tipo original real de Firestore
-if (Array.isArray(valorOriginal)) {
+document.getElementById("filtroUsuarios")
+    .addEventListener("change", renderizarUsuarios);
 
-    // si es array, lo reconstruimos como array limpio
-    nuevosDatos[campo] = input.value
-        .split(",")
-        .map(v => v.trim())
-        .filter(v => v !== "");
+/* ================= MODAL ================= */
 
-} else if (typeof valorOriginal === "number") {
+window.abrirModal = async function (id) {
 
-    // por si algún campo numérico existe
-    nuevosDatos[campo] = Number(input.value);
+    usuarioActual = usuarios.find(u => u.id === id);
+    emailAnterior = usuarioActual.email;
 
-} else {
+    construirFormulario();
 
-    nuevosDatos[campo] = input.value;
-}
+    document.getElementById("btnGuardarCambios").onclick = async function () {
 
-const nuevoEmail = nuevosDatos.email;
+        const nuevosDatos = {};
 
-let nuevoUID = null;
+        for (const campo in usuarioActual) {
 
-try {
+            if (campo === "timestamp" ||
+                campo === "fechaRegistro" ||
+                campo === "id") continue;
 
-    if (nuevoEmail !== emailAnterior) {
+            const input = document.getElementById(`campo_${campo}`);
+            if (!input) continue;
 
-        const passwordTemp =
-            nuevosDatos.claveInicial || "UCMI2026";
+            const valorOriginal = usuarioActual[campo];
 
-        const cred = await createUserWithEmailAndPassword(
-            secondaryAuth,
-            nuevoEmail,
-            passwordTemp
-        );
-
-        nuevoUID = cred.user.uid;
-
-const { id, ...datosSinId } = usuarioActual;
-
-await setDoc(
-    doc(db, "usuarios", nuevoUID),
-    {
-        ...datosSinId,
-        ...nuevosDatos,
-        email: nuevoEmail
-    }
-);
-
-
-await deleteDoc(
-    doc(db, "usuarios", usuarioActual.id)
-);
-       
-
-        await addDoc(
-            collection(db, "correosPendientesEliminar"),
-            {
-                correoAnterior: emailAnterior,
-                correoNuevo: nuevoEmail,
-                uidAnterior: usuarioActual.id,
-                uidNuevo: nuevoUID,
-                fecha: new Date(),
-                estado: "pendiente"
+            /* EMAIL */
+            if (campo === "email") {
+                nuevosDatos[campo] =
+                    input.value.trim().toLowerCase();
+                continue;
             }
-        );
 
-    } else {
+            /* 🔥 ARRAY REAL (incluye módulos) */
+            if (
+                Array.isArray(valorOriginal) ||
+                campo === "módulos" ||
+                campo === "modulos"
+            ) {
+                nuevosDatos[campo] = input.value
+                    .split(",")
+                    .map(v => v.trim())
+                    .filter(v => v !== "");
+                continue;
+            }
 
-        await updateDoc(
-            doc(
-                db,
-                "usuarios",
-                usuarioActual.id
-            ),
-            nuevosDatos
-        );
+            /* NUMBER */
+            if (typeof valorOriginal === "number") {
+                nuevosDatos[campo] = Number(input.value);
+                continue;
+            }
 
-    }
+            /* STRING DEFAULT */
+            nuevosDatos[campo] = input.value;
+        }
 
-    alert("Datos actualizados correctamente.");
+        const nuevoEmail = nuevosDatos.email;
 
-} catch(error) {
+        try {
 
-    console.error(error);
-    alert(error.message);
-    return;
+            /* SI CAMBIA EMAIL */
+            if (nuevoEmail !== emailAnterior) {
 
-}
+                const cred = await createUserWithEmailAndPassword(
+                    secondaryAuth,
+                    nuevoEmail,
+                    nuevosDatos.claveInicial || "UCMI2026"
+                );
 
-await cargarUsuarios();
+                const nuevoUID = cred.user.uid;
 
-bootstrap.Modal
-.getInstance(
-    document.getElementById(
-        "modalEditar"
-    )
-)
-.hide();    
+                const { id, ...resto } = usuarioActual;
 
-};
+                await setDoc(doc(db, "usuarios", nuevoUID), {
+                    ...resto,
+                    ...nuevosDatos,
+                    email: nuevoEmail
+                });
 
-        new bootstrap.Modal(
-            document.getElementById(
-                "modalEditar"
-            )
-        ).show();
+                await deleteDoc(doc(db, "usuarios", usuarioActual.id));
+
+                await addDoc(collection(db, "correosPendientesEliminar"), {
+                    correoAnterior: emailAnterior,
+                    correoNuevo: nuevoEmail,
+                    uidAnterior: usuarioActual.id,
+                    uidNuevo: nuevoUID,
+                    fecha: new Date(),
+                    estado: "pendiente"
+                });
+
+            } else {
+
+                await updateDoc(
+                    doc(db, "usuarios", usuarioActual.id),
+                    nuevosDatos
+                );
+            }
+
+            alert("Actualizado correctamente");
+            await cargarUsuarios();
+
+            bootstrap.Modal.getInstance(
+                document.getElementById("modalEditar")
+            ).hide();
+
+        } catch (e) {
+            console.error(e);
+            alert(e.message);
+        }
     };
 
-    function construirFormulario() {
+    new bootstrap.Modal(
+        document.getElementById("modalEditar")
+    ).show();
+};
 
-    const contenedor =
-        document.getElementById(
-            "contenedorCampos"
-        );
+/* ================= FORM ================= */
 
+function construirFormulario() {
+
+    const contenedor = document.getElementById("contenedorCampos");
     contenedor.innerHTML = "";
 
     for (const campo in usuarioActual) {
 
-if (
-    campo === "timestamp"
-    || campo === "fechaRegistro"
-    || campo === "id"
-) continue;
+        if (campo === "timestamp" ||
+            campo === "fechaRegistro" ||
+            campo === "id") continue;
 
-        const valor =
-            Array.isArray(usuarioActual[campo])
-                ? usuarioActual[campo].join(", ")
-                : usuarioActual[campo];
+        const valor = Array.isArray(usuarioActual[campo])
+            ? usuarioActual[campo].join(", ")
+            : usuarioActual[campo];
 
         contenedor.innerHTML += `
             <div class="col-md-6 mb-3">
-
-                <label class="form-label">
-                    ${campo}
-                </label>
-
-                <input
-                    type="text"
+                <label class="form-label">${campo}</label>
+                <input type="text"
                     class="form-control"
                     id="campo_${campo}"
                     value="${valor ?? ""}">
-
             </div>
         `;
     }
 }
-    
 </script>
 </body>
 </html>
