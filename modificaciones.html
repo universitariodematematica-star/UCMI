@@ -513,46 +513,38 @@ async function () {
 
 const nuevoEmail = nuevosDatos.email;
 
-if (nuevoEmail !== emailAnterior) {
+try {
 
-    try {
+    if (nuevoEmail !== emailAnterior) {
 
-        await addDoc(
-            collection(db, "cambiosCorreoPendientes"),
-            {
-                uidOriginal: usuarioActual.id,
-                emailAnterior: emailAnterior,
-                emailNuevo: nuevoEmail,
-                academia: academiaActual,
-                datosUsuario: nuevosDatos,
-                fechaSolicitud: new Date(),
-                estado: "pendiente"
-            }
+        const passwordTemp =
+            nuevosDatos.claveInicial || "UCMI2026";
+
+        await createUserWithEmailAndPassword(
+            secondaryAuth,
+            nuevoEmail,
+            passwordTemp
         );
 
-        alert(
-            "Solicitud de cambio de correo registrada. El Super Administrador deberá aprobarla."
-        );
-
-    } catch(error) {
-
-        console.error("ERROR COMPLETO:", error);
-        console.error("CODIGO:", error.code);
-        console.error("MENSAJE:", error.message);
-        alert(error.message);
-        return;
+        alert("Nuevo correo creado en Auth.");
     }
-
-} else {
 
     await updateDoc(
         doc(
             db,
             "usuarios",
-            emailAnterior
+            usuarioActual.id
         ),
         nuevosDatos
     );
+
+    alert("Datos actualizados correctamente.");
+
+} catch(error) {
+
+    console.error(error);
+    alert(error.message);
+    return;
 }
 
 await cargarUsuarios();
