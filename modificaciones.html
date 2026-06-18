@@ -305,6 +305,8 @@ import {
     createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+/* ================= FIREBASE ================= */
+
 const firebaseConfig = {
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -318,40 +320,39 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+/* Secondary auth */
 const secondaryApp = initializeApp(firebaseConfig, "Secondary");
 const secondaryAuth = getAuth(secondaryApp);
 
+/* ================= STATE ================= */
+
 let usuarios = [];
 let usuarioActual = null;
-let emailAnterior = null;
+let emailAnterior = "";
 let academiaActual = "";
 
 /* ================= AUTH ================= */
 
 onAuthStateChanged(auth, async (user) => {
 
-    const logoElement = document.getElementById("logoAcademia");
+    const logo = document.getElementById("logoAcademia");
 
-    if (!user) {
-        console.log("NO USER");
-        return;
-    }
+    if (!user) return;
 
-    const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+    const snapUser = await getDoc(doc(db, "usuarios", user.uid));
 
-    if (!userDoc.exists()) return;
+    if (!snapUser.exists()) return;
 
-    const data = userDoc.data();
+    const data = snapUser.data();
 
-    academiaActual = data.entidad;
+    academiaActual = data.entidad || "";
 
-    logoElement.src = data.logoCustom ||
+    /* LOGO SIEMPRE VISIBLE */
+    logo.src = data.logoCustom ||
         "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
 
-    logoElement.onload = () => {
-        logoElement.style.display = "block";
-        logoElement.style.opacity = "1";
-    };
+    logo.style.display = "block";
+    logo.style.opacity = "1";
 
     await cargarUsuarios();
 });
@@ -364,9 +365,11 @@ document.getElementById("btnLogout").addEventListener("click", async (e) => {
     window.location.href = "index.html";
 });
 
-/* ================= LOAD USERS ================= */
+/* ================= CARGAR USUARIOS ================= */
 
 async function cargarUsuarios() {
+
+    if (!academiaActual) return;
 
     const q = query(
         collection(db, "usuarios"),
@@ -389,18 +392,18 @@ async function cargarUsuarios() {
 function renderizarUsuarios() {
 
     const filtro = document.getElementById("filtroUsuarios").value;
-    const tabla = document.getElementById("tablaUsuarios");
+    const tbody = document.getElementById("tablaUsuarios");
 
-    tabla.innerHTML = "";
+    tbody.innerHTML = "";
 
     usuarios
         .filter(u => filtro === "todos" ? true : u.rol === filtro)
         .forEach(u => {
 
-            tabla.innerHTML += `
+            tbody.innerHTML += `
                 <tr>
                     <td>${u.nombreResponsable || ""}</td>
-                    <td>${u.email}</td>
+                    <td>${u.email || ""}</td>
                     <td>${u.perfil || ""}</td>
                     <td>
                         <button class="btn btn-warning btn-sm"
@@ -418,7 +421,7 @@ document.getElementById("filtroUsuarios")
 
 /* ================= MODAL ================= */
 
-window.abrirModal = async function (id) {
+window.abrirModal = function (id) {
 
     usuarioActual = usuarios.find(u => u.id === id);
     emailAnterior = usuarioActual.email;
@@ -431,9 +434,7 @@ window.abrirModal = async function (id) {
 
         for (const campo in usuarioActual) {
 
-            if (campo === "timestamp" ||
-                campo === "fechaRegistro" ||
-                campo === "id") continue;
+            if (["id", "timestamp", "fechaRegistro"].includes(campo)) continue;
 
             const input = document.getElementById(`campo_${campo}`);
             if (!input) continue;
@@ -442,21 +443,18 @@ window.abrirModal = async function (id) {
 
             /* EMAIL */
             if (campo === "email") {
-                nuevosDatos[campo] =
-                    input.value.trim().toLowerCase();
+                nuevosDatos[campo] = input.value.trim().toLowerCase();
                 continue;
             }
 
-            /* 🔥 ARRAY REAL (incluye módulos) */
-            if (
-                Array.isArray(valorOriginal) ||
-                campo === "módulos" ||
-                campo === "modulos"
-            ) {
+            /* 🔥 ARRAY REAL (módulos incluidos SIEMPRE) */
+            if (Array.isArray(valorOriginal) || campo === "módulos" || campo === "modulos") {
+
                 nuevosDatos[campo] = input.value
                     .split(",")
                     .map(v => v.trim())
                     .filter(v => v !== "");
+
                 continue;
             }
 
@@ -466,7 +464,7 @@ window.abrirModal = async function (id) {
                 continue;
             }
 
-            /* STRING DEFAULT */
+            /* DEFAULT STRING */
             nuevosDatos[campo] = input.value;
         }
 
@@ -474,7 +472,6 @@ window.abrirModal = async function (id) {
 
         try {
 
-            /* SI CAMBIA EMAIL */
             if (nuevoEmail !== emailAnterior) {
 
                 const cred = await createUserWithEmailAndPassword(
@@ -534,20 +531,18 @@ window.abrirModal = async function (id) {
 
 function construirFormulario() {
 
-    const contenedor = document.getElementById("contenedorCampos");
-    contenedor.innerHTML = "";
+    const cont = document.getElementById("contenedorCampos");
+    cont.innerHTML = "";
 
     for (const campo in usuarioActual) {
 
-        if (campo === "timestamp" ||
-            campo === "fechaRegistro" ||
-            campo === "id") continue;
+        if (["id", "timestamp", "fechaRegistro"].includes(campo)) continue;
 
         const valor = Array.isArray(usuarioActual[campo])
             ? usuarioActual[campo].join(", ")
             : usuarioActual[campo];
 
-        contenedor.innerHTML += `
+        cont.innerHTML += `
             <div class="col-md-6 mb-3">
                 <label class="form-label">${campo}</label>
                 <input type="text"
