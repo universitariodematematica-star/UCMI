@@ -518,70 +518,55 @@ let nuevoUID = null;
 try {
 
     if (nuevoEmail !== emailAnterior) {
+
         const passwordTemp =
             nuevosDatos.claveInicial || "UCMI2026";
 
-const cred = await createUserWithEmailAndPassword(
-    secondaryAuth,
-    nuevoEmail,
-    passwordTemp
-);
+        const cred = await createUserWithEmailAndPassword(
+            secondaryAuth,
+            nuevoEmail,
+            passwordTemp
+        );
 
-nuevoUID = cred.user.uid;
+        nuevoUID = cred.user.uid;
 
-await setDoc(
-    doc(db, "usuarios", nuevoUID),
-    {
-        ...usuarioActual,
-        ...nuevosDatos,
-        email: nuevoEmail
+        await setDoc(
+            doc(db, "usuarios", nuevoUID),
+            {
+                ...usuarioActual,
+                ...nuevosDatos,
+                email: nuevoEmail
+            }
+        );
+
+        await deleteDoc(
+            doc(db, "usuarios", usuarioActual.id)
+        );
+
+        await addDoc(
+            collection(db, "correosPendientesEliminar"),
+            {
+                correoAnterior: emailAnterior,
+                correoNuevo: nuevoEmail,
+                uidAnterior: usuarioActual.id,
+                uidNuevo: nuevoUID,
+                fecha: new Date(),
+                estado: "pendiente"
+            }
+        );
+
+    } else {
+
+        await updateDoc(
+            doc(
+                db,
+                "usuarios",
+                usuarioActual.id
+            ),
+            nuevosDatos
+        );
+
     }
-);
-
-await deleteDoc(
-    doc(db, "usuarios", usuarioActual.id)
-);
-
-alert("Usuario migrado al nuevo UID.");
-
-    console.log(
-        "Documento a modificar:",
-        usuarioActual.id
-    );
-
-    console.log(
-        "Usuario conectado:",
-        auth.currentUser.uid
-    );
-
-if (nuevoEmail === emailAnterior) {
-
-    await updateDoc(
-        doc(
-            db,
-            "usuarios",
-            usuarioActual.id
-        ),
-        nuevosDatos
-    );
-
-}
-
-if (nuevoEmail !== emailAnterior) {
-
-    await addDoc(
-        collection(db, "correosPendientesEliminar"),
-        {
-            correoAnterior: emailAnterior,
-            correoNuevo: nuevoEmail,
-            uidAnterior: usuarioActual.id,
-            uidNuevo: nuevoUID,
-            fecha: new Date(),
-            estado: "pendiente"
-        }
-    );
-
-}  
 
     alert("Datos actualizados correctamente.");
 
@@ -590,6 +575,7 @@ if (nuevoEmail !== emailAnterior) {
     console.error(error);
     alert(error.message);
     return;
+
 }
 
 await cargarUsuarios();
