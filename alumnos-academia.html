@@ -364,24 +364,16 @@ import {
 
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-/* =========================
-   FIREBASE INIT
-========================= */
-const app = initializeApp({
+const db = getFirestore(initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
     projectId: "ucmi-13796634",
     storageBucket: "ucmi-13796634.firebasestorage.app",
     messagingSenderId: "1090719609536",
     appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-});
+}));
 
-const db = getFirestore(app);
 const auth = getAuth();
-
-/* =========================
-   ESTADO GLOBAL
-========================= */
 let usuarioAEliminar = null;
 
 /* =========================
@@ -409,7 +401,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 /* =========================
-   CARGAR DIRECTORIO
+   DIRECTORIO
 ========================= */
 async function cargarDirectorio(entidad, cuposMax, mods) {
 
@@ -427,18 +419,15 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
         });
     }
 
-    const snap = await getDocs(
-        query(
-            collection(db, "usuarios"),
-            where("perfil", "==", "Estudiante Academia"),
-            where("entidad", "==", entidad)
-        )
-    );
+    const snap = await getDocs(query(
+        collection(db, "usuarios"),
+        where("perfil", "==", "Estudiante Academia"),
+        where("entidad", "==", entidad)
+    ));
 
     document.getElementById('cupos-utilizados').innerText = snap.size;
 
     const estudiantes = [];
-
     snap.forEach(d => estudiantes.push(d));
 
     estudiantes.sort((a, b) =>
@@ -458,14 +447,14 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
         tr.innerHTML = `
             <td>
                 <div class="fw-bold">${d.nombreResponsable || 'Sin Nombre'}</div>
-                <small class="text-secondary">${d.dniEstudiante || ''}</small>
+                <small>${d.dniEstudiante || ''}</small>
             </td>
 
             <td>
                 <small>${d.email}<br>
                     <a href="https://wa.me/${(d.whatsapp || '').toString().replace(/\D/g, '')}"
                        target="_blank"
-                       class="text-success text-decoration-none fw-bold">
+                       class="text-success fw-bold">
                        ${d.whatsapp || '-'}
                     </a>
                 </small>
@@ -476,15 +465,15 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
             </td>
 
             <td class="text-center">
-                <button class="btn btn-sm btn-panel btn-ver"
-                        data-info='${JSON.stringify(d).replace(/'/g, "&#39;")}'>
+                <button class="btn btn-panel btn-ver"
+                    data-info='${JSON.stringify(d).replace(/'/g, "&#39;")}'>
                     <i class="bi bi-eye"></i>
                 </button>
             </td>
 
             <td class="text-center">
-                <button class="btn btn-sm btn-danger btn-eliminar"
-                        data-id="${docSnap.id}">
+                <button class="btn btn-danger btn-eliminar"
+                    data-id="${docSnap.id}">
                     <i class="bi bi-trash3"></i>
                 </button>
             </td>
@@ -495,57 +484,44 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
 }
 
 /* =========================
-   BUSCADOR
+   BUSCAR / FILTRAR
 ========================= */
 document.getElementById('buscador').addEventListener('input', e => {
     const t = e.target.value.toLowerCase();
-    document.querySelectorAll('.fila-estudiante').forEach(f => {
-        f.style.display = f.innerText.toLowerCase().includes(t) ? '' : 'none';
-    });
+    document.querySelectorAll('.fila-estudiante').forEach(f =>
+        f.style.display = f.innerText.toLowerCase().includes(t) ? '' : 'none'
+    );
 });
 
-/* =========================
-   FILTRO MODULOS
-========================= */
 document.getElementById('filtroModulo').addEventListener('change', e => {
     const m = e.target.value.toLowerCase();
-
-    document.querySelectorAll('.fila-estudiante').forEach(f => {
-        f.style.display =
-            (!m || f.getAttribute('data-modulos').includes(m))
-                ? ''
-                : 'none';
-    });
+    document.querySelectorAll('.fila-estudiante').forEach(f =>
+        f.style.display = (!m || f.getAttribute('data-modulos').includes(m)) ? '' : 'none'
+    );
 });
 
 /* =========================
    LOGOUT
 ========================= */
 document.getElementById('btnLogout').addEventListener('click', () => {
-    signOut(auth).then(() => window.location.href = "index.html");
+    signOut(auth).then(() => location.href = "index.html");
 });
 
 /* =========================
-   CLICK EN TABLA (EVENT DELEGATION)
+   CLICK TABLA
 ========================= */
 document.getElementById('tabla-body').addEventListener('click', (e) => {
 
-    /* -------- VER -------- */
     const btnVer = e.target.closest('.btn-ver');
-
     if (btnVer) {
-        const d = JSON.parse(btnVer.getAttribute('data-info').replace(/&#39;/g, "'"));
-
+        const d = JSON.parse(btnVer.dataset.info.replace(/&#39;/g, "'"));
         document.getElementById('cuerpoDetalles').innerHTML =
             `<pre style="color:white">${JSON.stringify(d, null, 2)}</pre>`;
-
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
         return;
     }
 
-    /* -------- ELIMINAR (PASO 1) -------- */
     const btnEliminar = e.target.closest('.btn-eliminar');
-
     if (btnEliminar) {
         usuarioAEliminar = btnEliminar.dataset.id;
         new bootstrap.Modal(document.getElementById('modalConfirmDelete')).show();
@@ -554,57 +530,49 @@ document.getElementById('tabla-body').addEventListener('click', (e) => {
 });
 
 /* =========================
-   PASO 1 → abrir segundo modal
+   PASO 1 MODAL
 ========================= */
 document.getElementById('btnConfirmStep1').onclick = () => {
 
-    const modal1El = document.getElementById('modalConfirmDelete');
-    const modal2El = document.getElementById('modalDangerDelete');
+    const m1 = document.getElementById('modalConfirmDelete');
+    const m2 = document.getElementById('modalDangerDelete');
 
-    const modal1 = bootstrap.Modal.getInstance(modal1El);
+    bootstrap.Modal.getInstance(m1).hide();
 
-    modal1.hide();
-
-    modal1El.addEventListener('hidden.bs.modal', () => {
-        setTimeout(() => {
-            new bootstrap.Modal(modal2El, {
-                backdrop: 'static',
-                keyboard: false
-            }).show();
-        }, 120);
+    m1.addEventListener('hidden.bs.modal', () => {
+        new bootstrap.Modal(m2, {
+            backdrop: 'static',
+            keyboard: false
+        }).show();
     }, { once: true });
 };
 
 /* =========================
-   PASO 2 → ELIMINAR FINAL
+   PASO 2 ELIMINAR
 ========================= */
 document.getElementById('btnFinalDelete').onclick = async () => {
 
     if (!usuarioAEliminar) return;
 
-    const docRef = doc(db, "usuarios", usuarioAEliminar);
-    const snap = await getDoc(docRef);
+    const ref = doc(db, "usuarios", usuarioAEliminar);
+    const snap = await getDoc(ref);
 
     if (snap.exists()) {
-        const data = snap.data();
+        const d = snap.data();
 
         await addDoc(collection(db, "correosPendientesEliminar"), {
-            correoAnterior: data.email || "",
-            correoNuevo: data.email || "",
+            correoAnterior: d.email || "",
+            correoNuevo: d.email || "",
             estado: "pendiente",
             fecha: serverTimestamp(),
             uidAnterior: usuarioAEliminar,
             uidNuevo: ""
         });
 
-        await deleteDoc(docRef);
+        await deleteDoc(ref);
     }
 
-    const modal2 = bootstrap.Modal.getInstance(
-        document.getElementById('modalDangerDelete')
-    );
-
-    modal2.hide();
+    bootstrap.Modal.getInstance(document.getElementById('modalDangerDelete')).hide();
 
     usuarioAEliminar = null;
 
