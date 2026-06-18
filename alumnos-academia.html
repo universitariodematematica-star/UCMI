@@ -354,6 +354,7 @@
 
     const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
     const auth = getAuth();
+    let usuarioAEliminar = null;
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "index.html"; return; }
@@ -454,60 +455,81 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
 
 // Listener para abrir el modal con los datos del alumno
 document.getElementById('tabla-body').addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn-ver');
-    if (btn) {
-        // Obtenemos los datos desde el atributo data-info
-        const d = JSON.parse(btn.getAttribute('data-info').replace(/&#39;/g, "'"));
-        
-// Construimos el contenido HTML del modal
-// Función auxiliar para generar el enlace de WhatsApp
-const waLink = (num) => num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
 
-let html = `
-    <div class="resumen-card mb-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
-        <h6 class="text-warning mb-3 fw-bold">DATOS DEL ESTUDIANTE</h6>
-        <div class="row g-2">
-            <div class="col-12"><span class="text-white-50 small">Nombre Completo</span><div class="text-white fw-bold">${d.nombreResponsable || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">DNI / ID</span><div class="text-white fw-bold">${d.dniEstudiante || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Género</span><div class="text-white fw-bold">${d.genero || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Nacimiento</span><div class="text-white fw-bold">${d.fechaNacimiento || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Edad</span><div class="text-white fw-bold">${d.edadEstudiante || 'N/A'} años</div></div>
-            <div class="col-12"><span class="text-white-50 small">Ubicación</span><div class="text-white fw-bold">${d.ubicacion || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Email</span><div class="text-white fw-bold">${d.email || 'N/A'}</div></div>
-            <div class="col-md-6">
-                <span class="text-white-50 small">WhatsApp</span>
-                <a href="${waLink(d.whatsapp)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
-                    ${d.whatsapp || 'N/A'} <i class="bi bi-whatsapp"></i>
-                </a>
-            </div>
-            <div class="col-12"><span class="text-white-50 small">Promedio de Bachillerato</span><div class="text-warning fw-bold">${d.promediocatualbachillerato || 'N/A'}</div></div>
-            <div class="col-12 mt-2">
-                <span class="text-white-50 small">Módulos Seleccionados</span>
-                <div class="text-info fw-bold">${(d.modulos || []).join(' • ') || 'Ninguno'}</div>
-            </div>
-        </div>
-    </div>`;
+    // =========================
+    // 1. BOTÓN VER DETALLES
+    // =========================
+    const btnVer = e.target.closest('.btn-ver');
 
-// Si el estudiante tiene representante, mostramos la sección
-if (d.nombreRepresentante) {
-    html += `
-    <div class="resumen-card" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #ffc107;">
-        <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
-        <div class="row g-2">
-            <div class="col-12"><span class="text-white-50 small">Nombre Tutor</span><div class="text-white fw-bold">${d.nombreRepresentante}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">DNI Tutor</span><div class="text-white fw-bold">${d.dniRepresentante || 'N/A'}</div></div>
-            <div class="col-md-6">
-                <span class="text-white-50 small">WhatsApp Tutor</span>
-                <a href="${waLink(d.whatsappRepresentante)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
-                    ${d.whatsappRepresentante || 'N/A'} <i class="bi bi-whatsapp"></i>
-                </a>
+    if (btnVer) {
+
+        const d = JSON.parse(
+            btnVer.getAttribute('data-info').replace(/&#39;/g, "'")
+        );
+
+        const waLink = (num) =>
+            num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
+
+        let html = `
+            <div class="resumen-card mb-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
+                <h6 class="text-warning mb-3 fw-bold">DATOS DEL ESTUDIANTE</h6>
+                <div class="row g-2">
+                    <div class="col-12"><span class="text-white-50 small">Nombre Completo</span><div class="text-white fw-bold">${d.nombreResponsable || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">DNI / ID</span><div class="text-white fw-bold">${d.dniEstudiante || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Género</span><div class="text-white fw-bold">${d.genero || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Nacimiento</span><div class="text-white fw-bold">${d.fechaNacimiento || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Edad</span><div class="text-white fw-bold">${d.edadEstudiante || 'N/A'} años</div></div>
+                    <div class="col-12"><span class="text-white-50 small">Ubicación</span><div class="text-white fw-bold">${d.ubicacion || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Email</span><div class="text-white fw-bold">${d.email || 'N/A'}</div></div>
+                    <div class="col-md-6">
+                        <span class="text-white-50 small">WhatsApp</span>
+                        <a href="${waLink(d.whatsapp)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
+                            ${d.whatsapp || 'N/A'} <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+                    <div class="col-12"><span class="text-white-50 small">Promedio de Bachillerato</span><div class="text-warning fw-bold">${d.promediocatualbachillerato || 'N/A'}</div></div>
+                    <div class="col-12 mt-2">
+                        <span class="text-white-50 small">Módulos Seleccionados</span>
+                        <div class="text-info fw-bold">${(d.modulos || []).join(' • ') || 'Ninguno'}</div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>`;
-}
+        `;
+
+        if (d.nombreRepresentante) {
+            html += `
+            <div class="resumen-card" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #ffc107;">
+                <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
+                <div class="row g-2">
+                    <div class="col-12"><span class="text-white-50 small">Nombre Tutor</span><div class="text-white fw-bold">${d.nombreRepresentante}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">DNI Tutor</span><div class="text-white fw-bold">${d.dniRepresentante || 'N/A'}</div></div>
+                    <div class="col-md-6">
+                        <span class="text-white-50 small">WhatsApp Tutor</span>
+                        <a href="${waLink(d.whatsappRepresentante)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
+                            ${d.whatsappRepresentante || 'N/A'} <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
 
         document.getElementById('cuerpoDetalles').innerHTML = html;
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+    }
+
+    // =========================
+    // 2. BOTÓN ELIMINAR
+    // =========================
+    const btnEliminar = e.target.closest('.btn-eliminar');
+
+    if (btnEliminar) {
+
+        usuarioAEliminar = btnEliminar.dataset.id;
+
+        new bootstrap.Modal(
+            document.getElementById('modalConfirmDelete')
+        ).show();
     }
 });
     
@@ -528,6 +550,48 @@ if (d.nombreRepresentante) {
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="modalConfirmDelete" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white border border-danger">
+
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title text-danger">Confirmación</h5>
+      </div>
+
+      <div class="modal-body">
+        ¿Seguro que quieres eliminar el usuario?
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnConfirmStep1">Sí, continuar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalDangerDelete" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white border border-warning">
+
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title text-warning">Advertencia crítica</h5>
+      </div>
+
+      <div class="modal-body">
+        Si lo eliminas se borrarán todos los datos, ¿procedes?
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnFinalDelete">Eliminar definitivamente</button>
+      </div>
+
+    </div>
+  </div>
+</div>    
     
 </body>
 </html>
