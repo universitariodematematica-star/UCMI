@@ -521,16 +521,85 @@ document.getElementById('tabla-body').addEventListener('click', (e) => {
     // =========================
     // 2. BOTÓN ELIMINAR
     // =========================
-    const btnEliminar = e.target.closest('.btn-eliminar');
+const btnEliminar = e.target.closest('.btn-eliminar');
 
-    if (btnEliminar) {
+if (btnEliminar) {
 
-        usuarioAEliminar = btnEliminar.dataset.id;
+    usuarioAEliminar = btnEliminar.dataset.id;
 
-        new bootstrap.Modal(
-            document.getElementById('modalConfirmDelete')
-        ).show();
-    }
+    // abrir primer modal
+    new bootstrap.Modal(
+        document.getElementById('modalConfirmDelete')
+    ).show();
+}
+
+/* =========================
+   PASO 1 → abrir segundo modal
+   ========================= */
+document.getElementById('btnConfirmStep1').onclick = () => {
+
+    const modal1El = document.getElementById('modalConfirmDelete');
+    const modal2El = document.getElementById('modalDangerDelete');
+
+    const modal1 = bootstrap.Modal.getInstance(modal1El);
+
+    // 1. cerrar primer modal
+    modal1.hide();
+
+    // 2. esperar a que termine la animación de Bootstrap (150–300ms realista)
+    modal1El.addEventListener('hidden.bs.modal', () => {
+
+        // pequeño delay para suavizar aún más la transición visual
+        setTimeout(() => {
+            const modal2 = new bootstrap.Modal(modal2El, {
+                backdrop: 'static',
+                keyboard: false
+            });
+
+            modal2.show();
+        }, 120);
+
+    }, { once: true });
+};
+
+/* =========================
+   PASO 2 → eliminación final
+   ========================= */
+document.getElementById('btnFinalDelete').onclick = async () => {
+
+    if (!usuarioAEliminar) return;
+
+    const docRef = doc(db, "usuarios", usuarioAEliminar);
+    const snap = await getDoc(docRef);
+
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+
+    // 1. guardar en colección de pendientes
+    await addDoc(collection(db, "correosPendientesEliminar"), {
+        correoAnterior: data.email || "",
+        correoNuevo: data.email || "",
+        estado: "pendiente",
+        fecha: new Date(),
+        uidAnterior: usuarioAEliminar,
+        uidNuevo: ""
+    });
+
+    // 2. eliminar de usuarios
+    await deleteDoc(docRef);
+
+    // cerrar modal final
+    const modal2 = bootstrap.Modal.getInstance(
+        document.getElementById('modalDangerDelete')
+    );
+    modal2.hide();
+
+    usuarioAEliminar = null;
+
+    // recargar tabla
+    location.reload();
+};
 });
     
 </script>
