@@ -513,21 +513,36 @@ async function () {
 
 const nuevoEmail = nuevosDatos.email;
 
+let nuevoUID = null;
+
 try {
 
     if (nuevoEmail !== emailAnterior) {
-
         const passwordTemp =
             nuevosDatos.claveInicial || "UCMI2026";
 
-        await createUserWithEmailAndPassword(
-            secondaryAuth,
-            nuevoEmail,
-            passwordTemp
-        );
+const cred = await createUserWithEmailAndPassword(
+    secondaryAuth,
+    nuevoEmail,
+    passwordTemp
+);
 
-        alert("Nuevo correo creado en Auth.");
+nuevoUID = cred.user.uid;
+
+await setDoc(
+    doc(db, "usuarios", nuevoUID),
+    {
+        ...usuarioActual,
+        ...nuevosDatos,
+        email: nuevoEmail
     }
+);
+
+await deleteDoc(
+    doc(db, "usuarios", usuarioActual.id)
+);
+
+alert("Usuario migrado al nuevo UID.");
 
     console.log(
         "Documento a modificar:",
@@ -539,6 +554,8 @@ try {
         auth.currentUser.uid
     );
 
+if (nuevoEmail === emailAnterior) {
+
     await updateDoc(
         doc(
             db,
@@ -548,16 +565,23 @@ try {
         nuevosDatos
     );
 
-  await addDoc(
-    collection(db, "correosPendientesEliminar"),
-    {
-        correoAnterior: emailAnterior,
-        correoNuevo: nuevoEmail,
-        uidUsuario: usuarioActual.id,
-        fecha: new Date(),
-        estado: "pendiente"
-    }
-);  
+}
+
+if (nuevoEmail !== emailAnterior) {
+
+    await addDoc(
+        collection(db, "correosPendientesEliminar"),
+        {
+            correoAnterior: emailAnterior,
+            correoNuevo: nuevoEmail,
+            uidAnterior: usuarioActual.id,
+            uidNuevo: nuevoUID,
+            fecha: new Date(),
+            estado: "pendiente"
+        }
+    );
+
+}  
 
     alert("Datos actualizados correctamente.");
 
