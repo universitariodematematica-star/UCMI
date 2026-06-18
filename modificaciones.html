@@ -507,9 +507,26 @@ async function () {
 
         if (campo === "id") continue;
 
-nuevosDatos[campo] =
-    input.value;
-    }
+const valorOriginal = usuarioActual[campo];
+
+// 🔥 FIX: preserva tipo original real de Firestore
+if (Array.isArray(valorOriginal)) {
+
+    // si es array, lo reconstruimos como array limpio
+    nuevosDatos[campo] = input.value
+        .split(",")
+        .map(v => v.trim())
+        .filter(v => v !== "");
+
+} else if (typeof valorOriginal === "number") {
+
+    // por si algún campo numérico existe
+    nuevosDatos[campo] = Number(input.value);
+
+} else {
+
+    nuevosDatos[campo] = input.value;
+}
 
 const nuevoEmail = nuevosDatos.email;
 
