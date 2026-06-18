@@ -453,14 +453,12 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
 
 // Listener para abrir el modal con los datos del docente
 document.getElementById('tabla-body').addEventListener('click', (e) => {
-
-    const btnVer = e.target.closest('.btn-ver');
-    const btnEliminar = e.target.closest('.btn-eliminar');
-
-    if (btnVer) {
-        const d = JSON.parse(btnVer.getAttribute('data-info').replace(/&#39;/g, "'"));
+    const btn = e.target.closest('.btn-ver');
+    if (btn) {
+        const d = JSON.parse(btn.getAttribute('data-info').replace(/&#39;/g, "'"));
         const waLink = (num) => num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
 
+        // Función definida dentro del alcance para poder ser llamada por el HTML
         function renderizarDisponibilidad(horariosActivos) {
             const dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
             let html = `
@@ -468,20 +466,14 @@ document.getElementById('tabla-body').addEventListener('click', (e) => {
                     <div class="header-cell"></div>
                     ${dias.map(day => `<div class="header-cell" style="color:var(--dorado-ucmi)">${day}</div>`).join('')}
             `;
-
             for (let h = 0; h < 24; h++) {
                 html += `<div class="header-cell" style="color:rgba(255,255,255,0.3)">${h}:00</div>`;
-
                 for (let d = 0; d < 7; d++) {
                     const index = (h * 7) + d;
-                    const activo = (horariosActivos || []).includes(index)
-                        ? 'background:#28a745'
-                        : 'background:rgba(255,255,255,0.1)';
-
+                    const activo = horariosActivos.includes(index) ? 'background:#28a745' : 'background:rgba(255,255,255,0.1)';
                     html += `<div style="${activo}; height:10px; border-radius:2px;"></div>`;
                 }
             }
-
             return html + `</div>`;
         }
 
@@ -513,9 +505,7 @@ document.getElementById('tabla-body').addEventListener('click', (e) => {
                     <div class="col-12 mt-3">
                         <span class="text-white-50 small">Disponibilidad Horaria</span>
                         <div class="mt-2 p-2" style="background:rgba(0,0,0,0.3); border-radius:10px;">
-                            ${d.horarios
-                                ? renderizarDisponibilidad(d.horarios)
-                                : '<div class="text-white-50">No registra disponibilidad</div>'}
+                            ${d.horarios ? renderizarDisponibilidad(d.horarios) : '<div class="text-white-50">No registra disponibilidad</div>'}
                         </div>
                     </div>
                 </div>
@@ -524,15 +514,6 @@ document.getElementById('tabla-body').addEventListener('click', (e) => {
         document.getElementById('cuerpoDetalles').innerHTML = html;
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
     }
-
-    if (btnEliminar) {
-        docenteAEliminar = btnEliminar.dataset.id;
-
-        new bootstrap.Modal(
-            document.getElementById('modalConfirmDelete')
-        ).show();
-    }
-
 });
     
 </script>
