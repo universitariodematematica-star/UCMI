@@ -357,14 +357,13 @@ import {
   getDocs,
   doc,
   getDoc,
-  deleteDoc,
-  addDoc
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 /* =========================
-   FIREBASE INIT
+   INIT FIREBASE
 ========================= */
 const app = initializeApp({
   apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -378,13 +377,10 @@ const app = initializeApp({
 const db = getFirestore(app);
 const auth = getAuth();
 
-/* =========================
-   ESTADO GLOBAL
-========================= */
 let usuarioAEliminar = null;
 
 /* =========================
-   LOGIN + CARGA INICIAL
+   AUTH + INIT
 ========================= */
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -403,82 +399,80 @@ onAuthStateChanged(auth, async (user) => {
     logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
     logo.style.opacity = "1";
 
-    cargarDirectorio(
-      d.entidad,
-      d.cupos || 0,
-      d["modulos-ofertados-academia"]
-    );
+    cargarDirectorio(d.entidad);
   }
 });
 
 /* =========================
-   CARGAR DIRECTORIO
+   CARGAR DOCENTES
 ========================= */
-async function cargarDirectorio(entidad, cuposMax, mods) {
+async function cargarDirectorio(entidad) {
+
   const tbody = document.getElementById('tabla-body');
   const filtroModulo = document.getElementById('filtroModulo');
 
   tbody.innerHTML = '';
   filtroModulo.innerHTML = '<option value="">Todos los Módulos</option>';
 
-  if (mods) {
-    Object.keys(mods).forEach(m => {
-      if (mods[m]) {
-        filtroModulo.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`;
-      }
-    });
-  }
-
   const snap = await getDocs(
     query(
       collection(db, "usuarios"),
-      where("perfil", "==", "Estudiante Academia"),
+      where("perfil", "==", "Docente Academia"),
       where("entidad", "==", entidad)
     )
   );
 
   document.getElementById('cupos-utilizados').innerText = snap.size;
 
-  const estudiantes = [];
-  snap.forEach(d => estudiantes.push(d));
+  const docentes = [];
+  snap.forEach(d => docentes.push(d));
 
-  estudiantes.sort((a, b) => {
-    const na = (a.data().nombreResponsable || "").trim().toLowerCase();
-    const nb = (b.data().nombreResponsable || "").trim().toLowerCase();
-    return na.localeCompare(nb);
+  docentes.sort((a, b) => {
+    return (a.data().nombreResponsable || "")
+      .trim()
+      .toLowerCase()
+      .localeCompare((b.data().nombreResponsable || "").trim().toLowerCase());
   });
 
-  estudiantes.forEach(docSnap => {
+  docentes.forEach(docSnap => {
+
     const d = docSnap.data();
 
     const tr = document.createElement('tr');
     tr.className = 'fila-estudiante';
-    tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
+
+    tr.setAttribute(
+      'data-modulos',
+      (d.modulos || []).join(',').toLowerCase()
+    );
 
     tr.innerHTML = `
       <td>
         <div class="fw-bold">${d.nombreResponsable || 'Sin Nombre'}</div>
-        <small class="text-secondary">${d.dniEstudiante || ''}</small>
+        <small class="text-secondary">${d.dniDocente || ''}</small>
       </td>
 
       <td>
         <small>
-          ${d.email}<br>
-          <a href="https://wa.me/${(d.whatsapp || '').toString().replace(/\D/g,'')}"
-             target="_blank"
-             class="text-success fw-bold text-decoration-none">
+          ${d.email || ''}
+          <br>
+          <a class="text-success fw-bold text-decoration-none"
+             href="https://wa.me/${(d.whatsapp || '').toString().replace(/\D/g,'')}"
+             target="_blank">
              ${d.whatsapp || '-'}
           </a>
         </small>
       </td>
 
       <td>
-        ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
+        ${(d.modulos || []).map(m =>
+          `<span class="badge badge-modulo">${m}</span>`
+        ).join('')}
       </td>
 
       <td class="text-center">
         <button class="btn btn-sm btn-panel btn-ver"
-          data-info='${JSON.stringify(d).replace(/'/g, "&#39;")}'>
+          data-info='${JSON.stringify(d).replace(/'/g,"&#39;")}'>
           <i class="bi bi-eye"></i>
         </button>
       </td>
@@ -507,130 +501,89 @@ document.getElementById('buscador').addEventListener('input', e => {
 });
 
 /* =========================
-   FILTRO MÓDULOS
+   FILTRO MODULOS
 ========================= */
 document.getElementById('filtroModulo').addEventListener('change', e => {
   const m = e.target.value.toLowerCase();
 
   document.querySelectorAll('.fila-estudiante').forEach(f => {
-    f.style.display =
-      m === "" || f.getAttribute('data-modulos').includes(m)
-        ? ''
-        : 'none';
+    const mods = f.getAttribute('data-modulos') || '';
+    f.style.display = (m === "" || mods.includes(m)) ? '' : 'none';
   });
 });
 
 /* =========================
    LOGOUT
 ========================= */
-document.getElementById('btnLogout').addEventListener('click', () =>
-  signOut(auth).then(() => window.location.href = "index.html")
-);
+document.getElementById('btnLogout').addEventListener('click', () => {
+  signOut(auth).then(() => window.location.href = "index.html");
+});
 
 /* =========================
-   EVENTOS DE TABLA
+   MODALES (EVENT DELEGATION)
 ========================= */
 document.getElementById('tabla-body').addEventListener('click', (e) => {
 
-  /* ========= VER DETALLES ========= */
+  /* -------- VER DOCENTE -------- */
   const btnVer = e.target.closest('.btn-ver');
 
   if (btnVer) {
-    const d = JSON.parse(btnVer.dataset.info.replace(/&#39;/g, "'"));
 
-    const wa = (n) =>
-      n ? `https://wa.me/${n.toString().replace(/\D/g,'')}` : "#";
+    const d = JSON.parse(
+      btnVer.getAttribute('data-info').replace(/&#39;/g, "'")
+    );
 
-    let html = `
-      <div class="mb-3 p-3 rounded" style="background:rgba(255,255,255,0.05)">
-        <h6 class="text-warning fw-bold">DATOS DEL ESTUDIANTE</h6>
+    const wa = n => n ? `https://wa.me/${n.toString().replace(/\D/g,'')}` : "#";
 
-        <div class="text-white">
-          <div><b>Nombre:</b> ${d.nombreResponsable || 'N/A'}</div>
-          <div><b>DNI:</b> ${d.dniEstudiante || 'N/A'}</div>
-          <div><b>Email:</b> ${d.email || 'N/A'}</div>
-          <div><b>WhatsApp:</b> <a class="text-success" href="${wa(d.whatsapp)}">${d.whatsapp || 'N/A'}</a></div>
-        </div>
+    const html = `
+      <div class="p-3">
+        <h6 class="text-warning mb-3">DATOS DEL DOCENTE</h6>
 
-        <div class="mt-2 text-info">
-          ${(d.modulos || []).join(' • ') || 'Sin módulos'}
-        </div>
+        <p><b>Nombre:</b> ${d.nombreResponsable || 'N/A'}</p>
+        <p><b>DNI:</b> ${d.dniDocente || 'N/A'}</p>
+        <p><b>Email:</b> ${d.email || 'N/A'}</p>
+
+        <p>
+          <b>WhatsApp:</b>
+          <a class="text-success fw-bold" target="_blank"
+             href="${wa(d.whatsapp)}">
+             ${d.whatsapp || 'N/A'}
+          </a>
+        </p>
+
+        <p><b>Módulos:</b> ${(d.modulos || []).join(' • ') || 'Ninguno'}</p>
       </div>
     `;
 
     document.getElementById('cuerpoDetalles').innerHTML = html;
-
-    new bootstrap.Modal(
-      document.getElementById('modalDetalles')
-    ).show();
+    new bootstrap.Modal(document.getElementById('modalDetalles')).show();
   }
 
-  /* ========= ELIMINAR ========= */
-  const btnEliminar = e.target.closest('.btn-eliminar');
+  /* -------- ELIMINAR DOCENTE -------- */
+  const btnDel = e.target.closest('.btn-eliminar');
 
-  if (btnEliminar) {
-    usuarioAEliminar = btnEliminar.dataset.id;
-
-    bootstrap.Modal.getOrCreateInstance(
-      document.getElementById('modalConfirmDelete')
-    ).show();
+  if (btnDel) {
+    usuarioAEliminar = btnDel.dataset.id;
+    new bootstrap.Modal(document.getElementById('modalConfirmDelete')).show();
   }
 });
 
 /* =========================
-   CONFIRMAR ELIMINACIÓN
+   CONFIRM DELETE
 ========================= */
-document.getElementById('btnConfirmStep1').addEventListener('click', () => {
-
-  const modal1El = document.getElementById('modalConfirmDelete');
-  const modal2El = document.getElementById('modalDangerDelete');
-
-  const modal1 = bootstrap.Modal.getInstance(modal1El);
-  modal1.hide();
-
-  modal1El.addEventListener('hidden.bs.modal', () => {
-
-    setTimeout(() => {
-      bootstrap.Modal.getOrCreateInstance(modal2El, {
-        backdrop: 'static',
-        keyboard: false
-      }).show();
-    }, 120);
-
-  }, { once: true });
-});
-
-/* =========================
-   ELIMINACIÓN FINAL
-========================= */
-document.getElementById('btnFinalDelete').addEventListener('click', async () => {
+document.getElementById('btnConfirmDelete').addEventListener('click', async () => {
 
   if (!usuarioAEliminar) return;
 
-  const ref = doc(db, "usuarios", usuarioAEliminar);
-  const snap = await getDoc(ref);
-
-  if (!snap.exists()) return;
-
-  const data = snap.data();
-
-  await addDoc(collection(db, "correosPendientesEliminar"), {
-    correoAnterior: data.email || "",
-    estado: "pendiente",
-    uidAnterior: usuarioAEliminar,
-    fecha: new Date()
-  });
-
-  await deleteDoc(ref);
+  await deleteDoc(doc(db, "usuarios", usuarioAEliminar));
 
   bootstrap.Modal.getInstance(
-    document.getElementById('modalDangerDelete')
+    document.getElementById('modalConfirmDelete')
   ).hide();
-
-  usuarioAEliminar = null;
 
   location.reload();
 });
+
 </script>
 </body>
 </html>
