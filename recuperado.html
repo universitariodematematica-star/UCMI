@@ -434,7 +434,9 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
 </td>
 
 <td class="text-center">
-    <button class="btn btn-sm btn-danger btn-eliminar">
+    <button 
+        class="btn btn-sm btn-danger btn-eliminar"
+        data-id="${doc.id}">
         <i class="bi bi-trash"></i>
     </button>
 </td>
@@ -518,6 +520,20 @@ document.getElementById('tabla-body').addEventListener('click', (e) => {
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
     }
 });
+
+document.getElementById('tabla-body').addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-eliminar');
+    if (!btn) return;
+
+    const id = btn.getAttribute('data-id');
+
+    // guardamos el id temporalmente para el segundo paso
+    document.getElementById('btnConfirmDeleteStep1').setAttribute('data-id', id);
+
+    // ABRIR MODAL
+    const modal = new bootstrap.Modal(document.getElementById('modalConfirmDelete'));
+    modal.show();
+});    
     
 </script>
 
@@ -536,6 +552,32 @@ document.getElementById('tabla-body').addEventListener('click', (e) => {
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="modalConfirmDelete" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white border border-danger">
+
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title text-danger">Confirmación</h5>
+      </div>
+
+      <div class="modal-body">
+        ¿Seguro que quieres eliminar el usuario?
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+
+        <button class="btn btn-danger" id="btnConfirmDeleteStep1">
+          Sí, eliminar
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>    
     
 </body>
 </html>
