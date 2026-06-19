@@ -78,7 +78,7 @@ document
     .getElementById("btnIrEliminarCorreo")
     .addEventListener("click", () => {
 
-        window.location.href = "papelera.html";
+        window.location.href = "correos-desechados.html";
     });
 
 // ===== Sonido =====
