@@ -349,7 +349,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc, deleteDoc, setDoc, serverTimestamp }  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
@@ -541,6 +541,50 @@ document.getElementById('btnConfirmDeleteStep1').addEventListener('click', () =>
 
     const modal2 = new bootstrap.Modal(document.getElementById('modalFinalDelete'));
     modal2.show();
+}); 
+
+document.getElementById('btnFinalDelete').addEventListener('click', async () => {
+    try {
+        const btn = document.getElementById('btnConfirmDeleteStep1');
+        const uid = btn.getAttribute('data-id');
+
+        if (!uid) return;
+
+        // 1. Obtener usuario
+        const ref = doc(db, "usuarios", uid);
+        const snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+            alert("El usuario ya no existe");
+            return;
+        }
+
+        const data = snap.data();
+        const correo = data.email || "";
+
+        // 2. Eliminar usuario de Firestore
+        await deleteDoc(ref);
+
+        // 3. Registrar en correosPendientesEliminar
+        await setDoc(doc(collection(db, "correosPendientesEliminar")), {
+            correoAnterior: correo,
+            correoNuevo: correo,
+            estado: "pendiente",
+            fecha: serverTimestamp(),
+            uidAnterior: uid,
+            uidNuevo: ""
+        });
+
+        // 4. Cerrar modal
+        bootstrap.Modal.getInstance(document.getElementById('modalFinalDelete')).hide();
+
+        // 5. Opcional: refrescar tabla
+        location.reload();
+
+    } catch (err) {
+        console.error(err);
+        alert("Error al eliminar el usuario");
+    }
 });    
     
 </script>
