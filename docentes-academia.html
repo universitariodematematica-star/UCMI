@@ -350,216 +350,286 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
-    getFirestore,
-    collection,
-    query,
-    where,
-    getDocs,
-    doc,
-    getDoc,
-    deleteDoc
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  getDoc,
+  deleteDoc,
+  addDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-import {
-    getAuth,
-    onAuthStateChanged,
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-/* ================= FIREBASE ================= */
-const db = getFirestore(initializeApp({
-    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-    authDomain: "ucmi-13796634.firebaseapp.com",
-    projectId: "ucmi-13796634",
-    storageBucket: "ucmi-13796634.firebasestorage.app",
-    messagingSenderId: "1090719609536",
-    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-}));
+/* =========================
+   FIREBASE INIT
+========================= */
+const app = initializeApp({
+  apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+  authDomain: "ucmi-13796634.firebaseapp.com",
+  projectId: "ucmi-13796634",
+  storageBucket: "ucmi-13796634.firebasestorage.app",
+  messagingSenderId: "1090719609536",
+  appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+});
 
+const db = getFirestore(app);
 const auth = getAuth();
 
-/* ================= ESTADO GLOBAL ================= */
+/* =========================
+   ESTADO GLOBAL
+========================= */
 let usuarioAEliminar = null;
 
-/* ================= AUTH ================= */
+/* =========================
+   LOGIN + CARGA INICIAL
+========================= */
 onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-        window.location.href = "index.html";
-        return;
-    }
+  if (!user) {
+    window.location.href = "index.html";
+    return;
+  }
 
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
+  const userSnap = await getDoc(doc(db, "usuarios", user.uid));
 
-    if (userSnap.exists()) {
-        const d = userSnap.data();
+  if (userSnap.exists()) {
+    const d = userSnap.data();
 
-        document.getElementById('label-academia').innerText = d.entidad || "Sede";
+    document.getElementById('label-academia').innerText = d.entidad || "Sede";
 
-        const logo = document.getElementById('logoAcademia');
-        logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-        logo.style.opacity = "1";
+    const logo = document.getElementById('logoAcademia');
+    logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+    logo.style.opacity = "1";
 
-        cargarDirectorio(d.entidad, d.cupos || 0, d["modulos-ofertados-academia"]);
-    }
+    cargarDirectorio(
+      d.entidad,
+      d.cupos || 0,
+      d["modulos-ofertados-academia"]
+    );
+  }
 });
 
-/* ================= DIRECTORIO ================= */
+/* =========================
+   CARGAR DIRECTORIO
+========================= */
 async function cargarDirectorio(entidad, cuposMax, mods) {
+  const tbody = document.getElementById('tabla-body');
+  const filtroModulo = document.getElementById('filtroModulo');
 
-    const tbody = document.getElementById('tabla-body');
-    const filtroModulo = document.getElementById('filtroModulo');
+  tbody.innerHTML = '';
+  filtroModulo.innerHTML = '<option value="">Todos los Módulos</option>';
 
-    tbody.innerHTML = '';
-    filtroModulo.innerHTML = '<option value="">Todos los Módulos</option>';
-
-    if (mods) {
-        Object.keys(mods).forEach(m => {
-            if (mods[m]) {
-                filtroModulo.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`;
-            }
-        });
-    }
-
-    const snap = await getDocs(
-        query(
-            collection(db, "usuarios"),
-            where("perfil", "==", "Docente Academia"),
-            where("entidad", "==", entidad)
-        )
-    );
-
-    document.getElementById('cupos-utilizados').innerText = snap.size;
-
-    const docentes = [];
-    snap.forEach(d => docentes.push(d));
-
-    docentes.sort((a, b) => {
-        const na = (a.data().nombreResponsable || "").trim().toLowerCase();
-        const nb = (b.data().nombreResponsable || "").trim().toLowerCase();
-        return na.localeCompare(nb);
+  if (mods) {
+    Object.keys(mods).forEach(m => {
+      if (mods[m]) {
+        filtroModulo.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`;
+      }
     });
+  }
 
-    docentes.forEach(docSnap => {
-        const d = docSnap.data();
+  const snap = await getDocs(
+    query(
+      collection(db, "usuarios"),
+      where("perfil", "==", "Estudiante Academia"),
+      where("entidad", "==", entidad)
+    )
+  );
 
-        const tr = document.createElement('tr');
-        tr.className = 'fila-estudiante';
+  document.getElementById('cupos-utilizados').innerText = snap.size;
 
-        tr.innerHTML = `
-            <td>
-                <div class="fw-bold">${d.nombreResponsable || 'Sin Nombre'}</div>
-                <small class="text-secondary">${d.dniDocente || ''}</small>
-            </td>
-            <td>
-                <small>
-                    ${d.email}<br>
-                    <a href="https://wa.me/${(d.whatsapp || '').toString().replace(/\D/g, '')}"
-                       target="_blank"
-                       class="text-success text-decoration-none fw-bold">
-                       ${d.whatsapp || '-'}
-                    </a>
-                </small>
-            </td>
-            <td>
-                ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
-            </td>
-            <td class="text-center">
-                <button class="btn btn-sm btn-panel btn-ver"
-                        data-info='${JSON.stringify(d).replace(/'/g, '&#39;')}'>
-                    <i class="bi bi-eye"></i>
-                </button>
-            </td>
-            <td class="text-center">
-                <button class="btn btn-sm btn-danger btn-eliminar"
-                        data-id="${docSnap.id}">
-                    <i class="bi bi-trash3"></i>
-                </button>
-            </td>
-        `;
+  const estudiantes = [];
+  snap.forEach(d => estudiantes.push(d));
 
-        tbody.appendChild(tr);
-    });
+  estudiantes.sort((a, b) => {
+    const na = (a.data().nombreResponsable || "").trim().toLowerCase();
+    const nb = (b.data().nombreResponsable || "").trim().toLowerCase();
+    return na.localeCompare(nb);
+  });
+
+  estudiantes.forEach(docSnap => {
+    const d = docSnap.data();
+
+    const tr = document.createElement('tr');
+    tr.className = 'fila-estudiante';
+    tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
+
+    tr.innerHTML = `
+      <td>
+        <div class="fw-bold">${d.nombreResponsable || 'Sin Nombre'}</div>
+        <small class="text-secondary">${d.dniEstudiante || ''}</small>
+      </td>
+
+      <td>
+        <small>
+          ${d.email}<br>
+          <a href="https://wa.me/${(d.whatsapp || '').toString().replace(/\D/g,'')}"
+             target="_blank"
+             class="text-success fw-bold text-decoration-none">
+             ${d.whatsapp || '-'}
+          </a>
+        </small>
+      </td>
+
+      <td>
+        ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
+      </td>
+
+      <td class="text-center">
+        <button class="btn btn-sm btn-panel btn-ver"
+          data-info='${JSON.stringify(d).replace(/'/g, "&#39;")}'>
+          <i class="bi bi-eye"></i>
+        </button>
+      </td>
+
+      <td class="text-center">
+        <button class="btn btn-sm btn-danger btn-eliminar"
+          data-id="${docSnap.id}">
+          <i class="bi bi-trash3"></i>
+        </button>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
 }
 
-/* ================= BUSCADOR ================= */
-document.getElementById('buscador').addEventListener('input', (e) => {
-    const t = e.target.value.toLowerCase();
-    document.querySelectorAll('.fila-estudiante').forEach(f => {
-        f.style.display = f.innerText.toLowerCase().includes(t) ? '' : 'none';
-    });
+/* =========================
+   BUSCADOR
+========================= */
+document.getElementById('buscador').addEventListener('input', e => {
+  const t = e.target.value.toLowerCase();
+
+  document.querySelectorAll('.fila-estudiante').forEach(f => {
+    f.style.display = f.innerText.toLowerCase().includes(t) ? '' : 'none';
+  });
 });
 
-/* ================= FILTRO MÓDULOS ================= */
-document.getElementById('filtroModulo').addEventListener('change', (e) => {
-    const m = e.target.value.toLowerCase();
-    document.querySelectorAll('.fila-estudiante').forEach(f => {
-        f.style.display =
-            m === "" || f.getAttribute('data-modulos')?.includes(m)
-                ? ''
-                : 'none';
-    });
+/* =========================
+   FILTRO MÓDULOS
+========================= */
+document.getElementById('filtroModulo').addEventListener('change', e => {
+  const m = e.target.value.toLowerCase();
+
+  document.querySelectorAll('.fila-estudiante').forEach(f => {
+    f.style.display =
+      m === "" || f.getAttribute('data-modulos').includes(m)
+        ? ''
+        : 'none';
+  });
 });
 
-/* ================= LOGOUT ================= */
-document.getElementById('btnLogout').addEventListener('click', () => {
-    signOut(auth).then(() => window.location.href = "index.html");
-});
+/* =========================
+   LOGOUT
+========================= */
+document.getElementById('btnLogout').addEventListener('click', () =>
+  signOut(auth).then(() => window.location.href = "index.html")
+);
 
-/* ================= CLICK EN TABLA ================= */
+/* =========================
+   EVENTOS DE TABLA
+========================= */
 document.getElementById('tabla-body').addEventListener('click', (e) => {
 
-    /* -------- VER DETALLES -------- */
-    const btnVer = e.target.closest('.btn-ver');
-    if (btnVer) {
+  /* ========= VER DETALLES ========= */
+  const btnVer = e.target.closest('.btn-ver');
 
-        const d = JSON.parse(btnVer.getAttribute('data-info').replace(/&#39;/g, "'"));
+  if (btnVer) {
+    const d = JSON.parse(btnVer.dataset.info.replace(/&#39;/g, "'"));
 
-        document.getElementById('cuerpoDetalles').innerHTML = `
-            <div class="text-white">
-                <h5 class="text-warning">${d.nombreResponsable || 'N/A'}</h5>
-                <p>${d.email || ''}</p>
-            </div>
-        `;
+    const wa = (n) =>
+      n ? `https://wa.me/${n.toString().replace(/\D/g,'')}` : "#";
 
-        new bootstrap.Modal(
-            document.getElementById('modalDetalles')
-        ).show();
+    let html = `
+      <div class="mb-3 p-3 rounded" style="background:rgba(255,255,255,0.05)">
+        <h6 class="text-warning fw-bold">DATOS DEL ESTUDIANTE</h6>
 
-        return;
-    }
+        <div class="text-white">
+          <div><b>Nombre:</b> ${d.nombreResponsable || 'N/A'}</div>
+          <div><b>DNI:</b> ${d.dniEstudiante || 'N/A'}</div>
+          <div><b>Email:</b> ${d.email || 'N/A'}</div>
+          <div><b>WhatsApp:</b> <a class="text-success" href="${wa(d.whatsapp)}">${d.whatsapp || 'N/A'}</a></div>
+        </div>
 
-    /* -------- ELIMINAR -------- */
-    const btnEliminar = e.target.closest('.btn-eliminar');
-    if (btnEliminar) {
+        <div class="mt-2 text-info">
+          ${(d.modulos || []).join(' • ') || 'Sin módulos'}
+        </div>
+      </div>
+    `;
 
-        usuarioAEliminar = btnEliminar.dataset.id;
+    document.getElementById('cuerpoDetalles').innerHTML = html;
 
-        const modalEl = document.getElementById('modalConfirmDelete');
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    new bootstrap.Modal(
+      document.getElementById('modalDetalles')
+    ).show();
+  }
 
-        modal.show();
-    }
+  /* ========= ELIMINAR ========= */
+  const btnEliminar = e.target.closest('.btn-eliminar');
+
+  if (btnEliminar) {
+    usuarioAEliminar = btnEliminar.dataset.id;
+
+    bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('modalConfirmDelete')
+    ).show();
+  }
 });
 
-/* ================= CONFIRMAR ELIMINACIÓN ================= */
-document.getElementById('btnConfirmDelete').addEventListener('click', async () => {
+/* =========================
+   CONFIRMAR ELIMINACIÓN
+========================= */
+document.getElementById('btnConfirmStep1').addEventListener('click', () => {
 
-    if (!usuarioAEliminar) return;
+  const modal1El = document.getElementById('modalConfirmDelete');
+  const modal2El = document.getElementById('modalDangerDelete');
 
-    try {
-        await deleteDoc(doc(db, "usuarios", usuarioAEliminar));
+  const modal1 = bootstrap.Modal.getInstance(modal1El);
+  modal1.hide();
 
-        usuarioAEliminar = null;
+  modal1El.addEventListener('hidden.bs.modal', () => {
 
-        const modalEl = document.getElementById('modalConfirmDelete');
-        bootstrap.Modal.getInstance(modalEl)?.hide();
+    setTimeout(() => {
+      bootstrap.Modal.getOrCreateInstance(modal2El, {
+        backdrop: 'static',
+        keyboard: false
+      }).show();
+    }, 120);
 
-        location.reload();
+  }, { once: true });
+});
 
-    } catch (err) {
-        console.error(err);
-        alert("Error al eliminar docente");
-    }
+/* =========================
+   ELIMINACIÓN FINAL
+========================= */
+document.getElementById('btnFinalDelete').addEventListener('click', async () => {
+
+  if (!usuarioAEliminar) return;
+
+  const ref = doc(db, "usuarios", usuarioAEliminar);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) return;
+
+  const data = snap.data();
+
+  await addDoc(collection(db, "correosPendientesEliminar"), {
+    correoAnterior: data.email || "",
+    estado: "pendiente",
+    uidAnterior: usuarioAEliminar,
+    fecha: new Date()
+  });
+
+  await deleteDoc(ref);
+
+  bootstrap.Modal.getInstance(
+    document.getElementById('modalDangerDelete')
+  ).hide();
+
+  usuarioAEliminar = null;
+
+  location.reload();
 });
 </script>
 </body>
