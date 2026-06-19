@@ -349,11 +349,23 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import {
+    getFirestore,
+    collection,
+    query,
+    where,
+    getDocs,
+    doc,
+    getDoc,
+    deleteDoc,
+    addDoc,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
     const auth = getAuth();
+    let usuarioAEliminar = null;
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "index.html"; return; }
@@ -434,8 +446,10 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
 </td>
 
 <td class="text-center">
-    <button class="btn btn-sm btn-danger btn-eliminar">
-        <i class="bi bi-trash"></i>
+    <button
+        class="btn btn-sm btn-danger btn-eliminar"
+        data-id="${doc.id}">
+        <i class="bi bi-trash3"></i>
     </button>
 </td>
         `;
@@ -516,6 +530,20 @@ document.getElementById('tabla-body').addEventListener('click', (e) => {
 
         document.getElementById('cuerpoDetalles').innerHTML = html;
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+}
+
+const btnEliminar = e.target.closest('.btn-eliminar');
+
+if (btnEliminar) {
+
+    usuarioAEliminar = btnEliminar.dataset.id;
+
+    new bootstrap.Modal(
+        document.getElementById('modalConfirmDelete')
+    ).show();
+}
+
+});
     }
 });
     
@@ -536,6 +564,8 @@ document.getElementById('tabla-body').addEventListener('click', (e) => {
     </div>
   </div>
 </div>
+
+    
     
 </body>
 </html>
