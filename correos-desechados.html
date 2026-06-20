@@ -206,19 +206,94 @@ import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/fi
             item.className = "correo-item";
 
 item.innerHTML = `
-    <div class="correo-texto">
-        <i class="bi bi-envelope me-2"></i>
+<div class="w-100">
+
+    <div class="correo-texto mb-2">
+        <strong>Correo:</strong><br>
         ${data.correoAnterior || data.correoNuevo || "Sin correo"}
     </div>
-    <button class="btn btn-sm btn-outline-danger">
-        Eliminar
-    </button>
+
+    <div class="correo-texto mb-2">
+        <strong>UID:</strong><br>
+        ${data.uidAnterior || "No disponible"}
+    </div>
+
+    <div class="correo-texto mb-3">
+        <strong>Estado:</strong>
+        <span class="badge bg-danger">
+            Pendiente de Auth
+        </span>
+    </div>
+
+    <div class="d-flex gap-2">
+
+        <button class="btn btn-warning btnAbrirAuth">
+            <i class="bi bi-box-arrow-up-right"></i>
+            Abrir Auth
+        </button>
+
+        <button class="btn btn-success btnConfirmar">
+            <i class="bi bi-check-circle"></i>
+            Confirmar borrado
+        </button>
+
+    </div>
+
+</div>
 `;
 
-            item.querySelector("button").addEventListener("click", async () => {
-                await deleteDoc(doc(db, "correosPendientesEliminar", docSnap.id));
-                cargarCorreosPendientes();
-            });
+const btnAbrirAuth = item.querySelector(".btnAbrirAuth");
+const btnConfirmar = item.querySelector(".btnConfirmar");
+
+btnAbrirAuth.addEventListener("click", async () => {
+
+    try {
+
+        await navigator.clipboard.writeText(
+            data.uidAnterior || ""
+        );
+
+        window.open(
+            "https://console.firebase.google.com/project/ucmi-13796634/authentication/users?hl=es-419",
+            "_blank"
+        );
+
+        alert(
+            "UID copiado.\n\n" +
+            "En Firebase Auth pulse Ctrl+F y luego Ctrl+V."
+        );
+
+    } catch(error) {
+
+        console.error(error);
+
+        window.open(
+            "https://console.firebase.google.com/project/ucmi-13796634/authentication/users?hl=es-419",
+            "_blank"
+        );
+    }
+
+});
+
+btnConfirmar.addEventListener("click", async () => {
+
+    const confirmar = confirm(
+        "¿Ya eliminaste este usuario en Firebase Authentication?"
+    );
+
+    if (!confirmar) return;
+
+    await deleteDoc(
+        doc(
+            db,
+            "correosPendientesEliminar",
+            docSnap.id
+        )
+    );
+
+    cargarCorreosPendientes();
+
+});            
 
             lista.appendChild(item);
         });
