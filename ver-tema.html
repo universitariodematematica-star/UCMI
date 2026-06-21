@@ -196,7 +196,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import {
+    import {
     getFirestore,
     doc,
     getDoc,
@@ -205,78 +205,111 @@ import {
     where,
     getDocs
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
+        measurementId: "G-3M3DH25722"
+    };
 
-/* ================= FIREBASE ================= */
-const firebaseConfig = {
-    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-    authDomain: "ucmi-13796634.firebaseapp.com",
-    projectId: "ucmi-13796634",
-    storageBucket: "ucmi-13796634.firebasestorage.app",
-    messagingSenderId: "1090719609536",
-    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
-};
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const params = new URLSearchParams(window.location.search);
+    const moduloId = params.get("moduloId");
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+    // Carga de Logo según el usuario
+    onAuthStateChanged(auth, async (user) => {
+        const logoElement = document.getElementById('logoAcademia');
+        if (user) {
+            try {
+                const docRef = doc(db, "usuarios", user.email);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists() && docSnap.data().logoCustom) {
+                    logoElement.src = docSnap.data().logoCustom;
+                }
+            } catch (error) { console.error("Error al cargar logo:", error); }
+        }
+        logoElement.style.opacity = "1";
+        logoElement.style.visibility = "visible";
+    });
 
-const moduloId = new URLSearchParams(location.search).get("moduloId");
+  async function cargarModulo() {
 
-/* ================= MODULO ================= */
-async function cargarModulo() {
-    const snap = await getDoc(doc(db, "ofertas", moduloId));
+    const moduloSnap =
+        await getDoc(
+            doc(db, "ofertas", moduloId)
+        );
 
-    if (snap.exists()) {
-        document.getElementById("tituloModulo").innerText =
-            snap.data().modulo;
+    if (moduloSnap.exists()) {
+        document.getElementById(
+            "tituloModulo"
+        ).innerText =
+            moduloSnap.data().modulo;
     }
 }
 
-/* ================= RAMAS + TOPICOS ================= */
 async function cargarRamas() {
 
-    const contenedor = document.getElementById("contenedorRamas");
+    const contenedor =
+        document.getElementById(
+            "contenedorRamas"
+        );
+
     contenedor.innerHTML = "";
 
-    const ramasSnap = await getDocs(
-        query(collection(db, "ramas"),
-        where("moduloId", "==", moduloId))
+    const q = query(
+        collection(db, "ramas"),
+        where("moduloId", "==", moduloId)
     );
 
-    const ramas = ramasSnap.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-    }));
+    const ramasSnap = await getDocs(q);
 
-    for (const rama of ramas) {
+    for (const ramaDoc of ramasSnap.docs) {
 
-        const topicosSnap = await getDocs(
-            query(collection(db, "topicos"),
-            where("ramaId", "==", rama.id))
+        const rama = ramaDoc.data();
+
+        const qTopicos = query(
+            collection(db, "topicos"),
+            where(
+                "ramaId",
+                "==",
+                ramaDoc.id
+            )
         );
+
+        const topicosSnap =
+            await getDocs(qTopicos);
 
         let htmlTopicos = "";
 
         topicosSnap.forEach(t => {
+
             const d = t.data();
-            if (d.visible === false) return;
 
-            htmlTopicos += `
-                <div class="topico-item"
-                     draggable="true"
-                     data-id="${t.id}">
+            if (d.visible === false)
+                return;
 
-                    <i class="bi bi-journal-text me-2"></i>
-                    ${d.tema}
-
-                </div>
-            `;
+                htmlTopicos += `
+                    <a
+                       class="topico-link"
+                       href="contenido.html?topicoId=${t.id}"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                
+                       <i class="bi bi-journal-text me-2"></i>
+                       ${d.tema}
+                    </a>
+                `;
         });
 
         contenedor.innerHTML += `
-            <div class="col-lg-4 rama-box">
+            <div class="col-lg-4">
 
                 <div class="rama-card">
 
@@ -290,67 +323,26 @@ async function cargarRamas() {
                     </div>
 
                 </div>
+
             </div>
         `;
     }
-
-    activarDragTopicos();
 }
 
-/* ================= DRAG TOPICOS ================= */
-function activarDragTopicos() {
-
-    let dragged = null;
-
-    const items = document.querySelectorAll(".topico-item");
-
-    items.forEach(item => {
-
-        item.addEventListener("dragstart", () => {
-            dragged = item;
-            item.style.opacity = "0.5";
-        });
-
-        item.addEventListener("dragend", () => {
-            item.style.opacity = "1";
-            dragged = null;
-        });
-
-        item.addEventListener("dragover", (e) => {
-            e.preventDefault();
-        });
-
-        item.addEventListener("drop", (e) => {
-            e.preventDefault();
-
-            if (!dragged || dragged === item) return;
-
-            const container = item.closest(".lista-topicos");
-
-            const all = [...container.children];
-
-            const fromIndex = all.indexOf(dragged);
-            const toIndex = all.indexOf(item);
-
-            if (fromIndex < toIndex) {
-                container.insertBefore(dragged, item.nextSibling);
-            } else {
-                container.insertBefore(dragged, item);
-            }
-        });
-    });
-}
-
-/* ================= INIT ================= */
 cargarModulo();
 cargarRamas();
 
-/* ================= LOGOUT ================= */
-document.getElementById("btnLogout").addEventListener("click", async (e) => {
-    e.preventDefault();
-    await signOut(auth);
-    location.href = "index.html";
-});
+    // Acción Cierre de Sesión
+    document.getElementById('btnLogout').addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+            await signOut(auth);
+            window.location.href = "index.html"; // Redirige al login
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+            alert("Ocurrió un error al cerrar la sesión.");
+        }
+    });
 </script>
 <script type="module" src="js/alertas-globales.js"></script>    
 </body>
