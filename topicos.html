@@ -289,6 +289,9 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+/* =========================
+   FIREBASE INIT
+========================= */
 const firebaseConfig = {
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -303,33 +306,36 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+/* =========================
+   PARAMS
+========================= */
 const params = new URLSearchParams(window.location.search);
 const ramaId = params.get("ramaId");
 
 /* =========================
-   LOGO ACADEMIA
+   LOGO
 ========================= */
 onAuthStateChanged(auth, async (user) => {
-    const logoElement = document.getElementById("logoAcademia");
+    const logo = document.getElementById("logoAcademia");
 
     if (user) {
         try {
-            const docRef = doc(db, "usuarios", user.email);
-            const docSnap = await getDoc(docRef);
+            const ref = doc(db, "usuarios", user.email);
+            const snap = await getDoc(ref);
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
+            if (snap.exists()) {
+                const data = snap.data();
                 if (data.logoCustom) {
-                    logoElement.src = data.logoCustom;
+                    logo.src = data.logoCustom;
                 }
             }
-        } catch (error) {
-            console.error("Error al cargar logo:", error);
+        } catch (e) {
+            console.error("Logo error:", e);
         }
     }
 
-    logoElement.style.opacity = "1";
-    logoElement.style.visibility = "visible";
+    logo.style.opacity = "1";
+    logo.style.visibility = "visible";
 });
 
 /* =========================
@@ -341,13 +347,13 @@ async function cargarEncabezado() {
 
         if (!ramaSnap.exists()) return;
 
-        const dataRama = ramaSnap.data();
+        const rama = ramaSnap.data();
 
         document.getElementById("tituloRama").innerText =
-            "Rama: " + dataRama.nombre;
+            "Rama: " + rama.nombre;
 
         const modSnap = await getDoc(
-            doc(db, "ofertas", dataRama.moduloId)
+            doc(db, "ofertas", rama.moduloId)
         );
 
         if (modSnap.exists()) {
@@ -355,13 +361,13 @@ async function cargarEncabezado() {
                 "Módulo: " + modSnap.data().modulo;
         }
 
-    } catch (error) {
-        console.error("Error encabezado:", error);
+    } catch (e) {
+        console.error("Error encabezado:", e);
     }
 }
 
 /* =========================
-   ORDEN QUERY
+   ORDEN QUERY (IMPORTANTE)
 ========================= */
 const q = query(
     collection(db, "topicos"),
@@ -370,7 +376,7 @@ const q = query(
 );
 
 /* =========================
-   OBTENER SIGUIENTE ORDEN
+   NEXT ORDER
 ========================= */
 async function getNextOrden(ramaId) {
     const q = query(
@@ -394,6 +400,17 @@ onSnapshot(q, (snap) => {
 
     tabla.innerHTML = "";
 
+    if (snap.empty) {
+        tabla.innerHTML = `
+            <tr>
+                <td colspan="2" class="text-center text-white">
+                    No hay tópicos en esta rama
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
     snap.forEach((t) => {
         const d = t.data();
 
@@ -402,7 +419,7 @@ onSnapshot(q, (snap) => {
                 <td>
                     <a href="cargar-contenido.html?topicoId=${t.id}&ramaId=${ramaId}"
                        class="text-decoration-none nombre-topico">
-                        ${d.tema}
+                        ${d.tema ?? ""}
                     </a>
                 </td>
 
@@ -425,6 +442,9 @@ onSnapshot(q, (snap) => {
             </tr>
         `;
     });
+
+}, (error) => {
+    console.error("ERROR onSnapshot:", error);
 });
 
 /* =========================
@@ -450,7 +470,7 @@ window.borrar = async (id) => {
 };
 
 /* =========================
-   CREAR TÓPICO
+   CREAR
 ========================= */
 document.getElementById("btnGuardarTopico")
 .addEventListener("click", async () => {
@@ -475,28 +495,21 @@ document.getElementById("btnGuardarTopico")
             .getInstance(document.getElementById("modalTopico"))
             .hide();
 
-    } catch (error) {
-        console.error(error);
-        alert(error.message);
+    } catch (e) {
+        console.error("ERROR CREANDO:", e);
+        alert(e.message);
     }
 });
 
 /* =========================
-   TOGGLE VISIBILIDAD
+   VISIBILIDAD
 ========================= */
 document.addEventListener("change", async (e) => {
     if (!e.target.classList.contains("toggle-visible")) return;
 
-    const id = e.target.dataset.id;
-    const visible = e.target.checked;
-
-    try {
-        await updateDoc(doc(db, "topicos", id), {
-            visible: visible
-        });
-    } catch (error) {
-        console.error("ERROR VISIBILIDAD:", error);
-    }
+    await updateDoc(doc(db, "topicos", e.target.dataset.id), {
+        visible: e.target.checked
+    });
 });
 
 /* =========================
@@ -506,13 +519,8 @@ document.getElementById("btnLogout")
 .addEventListener("click", async (e) => {
     e.preventDefault();
 
-    try {
-        await signOut(auth);
-        window.location.href = "index.html";
-    } catch (error) {
-        console.error("Error logout:", error);
-        alert("Error al cerrar sesión");
-    }
+    await signOut(auth);
+    window.location.href = "index.html";
 });
 
 /* =========================
