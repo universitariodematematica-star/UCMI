@@ -424,11 +424,45 @@ window.editar = async (id, temaActual) => {
         );
 };
 
+async function reindexarTopicos() {
+
+    const q = query(
+        collection(db, "topicos"),
+        where("ramaId", "==", ramaId)
+    );
+
+    const snap = await getDocs(q);
+
+    const topicosOrdenados = snap.docs.sort(
+        (a, b) =>
+            (a.data().orden || 0) -
+            (b.data().orden || 0)
+    );
+
+    for (let i = 0; i < topicosOrdenados.length; i++) {
+
+        await updateDoc(
+            doc(
+                db,
+                "topicos",
+                topicosOrdenados[i].id
+            ),
+            {
+                orden: i + 1
+            }
+        );
+    }
+}    
+
 window.borrar = async (id) => {
+
     if (confirm("¿Eliminar tópico?")) {
+
         await deleteDoc(
             doc(db, "topicos", id)
         );
+
+        await reindexarTopicos();
     }
 };
 
