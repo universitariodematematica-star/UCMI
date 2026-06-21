@@ -276,50 +276,61 @@ const q = query(
     }))
     .sort((a, b) => (a.orden || 0) - (b.orden || 0));
 
-    for (const rama of ramasOrdenadas) {
+for (const rama of ramasOrdenadas) {
 
-        const rama = rama;
+    const qTopicos = query(
+        collection(db, "topicos"),
+        where("ramaId", "==", rama.id)
+    );
 
-        const qTopicos = query(
-            collection(db, "topicos"),
-            where(
-                "ramaId",
-                "==",
-                rama.id
-            )
-        );
+    const topicosSnap = await getDocs(qTopicos);
 
-        const topicosSnap =
-            await getDocs(qTopicos);
+    let htmlTopicos = "";
 
-        let htmlTopicos = "";
+    topicosSnap.forEach(t => {
+        const d = t.data();
 
-        topicosSnap.forEach(t => {
+        if (d.visible === false) return;
 
-            const d = t.data();
+        htmlTopicos += `
+            <a class="topico-link"
+               href="contenido.html?topicoId=${t.id}"
+               target="_blank"
+               rel="noopener noreferrer">
 
-            if (d.visible === false)
-                return;
+               <i class="bi bi-journal-text me-2"></i>
+               ${d.tema}
+            </a>
+        `;
+    });
 
-                htmlTopicos += `
-                    <a
-                       class="topico-link"
-                       href="contenido.html?topicoId=${t.id}"
-                       target="_blank"
-                       rel="noopener noreferrer">
-                
-                       <i class="bi bi-journal-text me-2"></i>
-                       ${d.tema}
-                    </a>
-                `;
-        });
+    contenedor.innerHTML += `
+        <div class="col-lg-4">
 
+            <div class="rama-card"
+                 draggable="true"
+                 data-id="${rama.id}">
+
+                <div class="nombre-rama">
+                    <i class="bi bi-diagram-3 me-2"></i>
+                    ${rama.nombre}
+                </div>
+
+                <div class="lista-topicos">
+                    ${htmlTopicos}
+                </div>
+
+            </div>
+
+        </div>
+    `;
+}
         contenedor.innerHTML += `
             <div class="col-lg-4">
 
             <div class="rama-card"
                  draggable="true"
-                 data-id="${ramaDoc.id}">
+                 data-id="${rama.id}">
 
                     <div class="nombre-rama">
                         <i class="bi bi-diagram-3 me-2"></i>
