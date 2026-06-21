@@ -289,6 +289,9 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+/* =========================
+   FIREBASE
+========================= */
 const firebaseConfig = {
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -310,16 +313,16 @@ const ramaId = params.get("ramaId");
    LOGO
 ========================= */
 onAuthStateChanged(auth, async (user) => {
-    const logoElement = document.getElementById('logoAcademia');
+    const logoElement = document.getElementById("logoAcademia");
 
     if (!user) return;
 
     try {
-        const docRef = doc(db, "usuarios", user.email);
-        const docSnap = await getDoc(docRef);
+        const ref = doc(db, "usuarios", user.email);
+        const snap = await getDoc(ref);
 
-        if (docSnap.exists()) {
-            const data = docSnap.data();
+        if (snap.exists()) {
+            const data = snap.data();
             if (data.logoCustom) {
                 logoElement.src = data.logoCustom;
             }
@@ -340,13 +343,13 @@ async function cargarEncabezado() {
 
     if (!ramaSnap.exists()) return;
 
-    const dataRama = ramaSnap.data();
+    const data = ramaSnap.data();
 
     document.getElementById("tituloRama").innerText =
-        "Rama: " + dataRama.nombre;
+        "Rama: " + data.nombre;
 
     const modSnap = await getDoc(
-        doc(db, "ofertas", dataRama.moduloId)
+        doc(db, "ofertas", data.moduloId)
     );
 
     document.getElementById("tituloModulo").innerText =
@@ -354,16 +357,37 @@ async function cargarEncabezado() {
 }
 
 /* =========================
-   QUERY TOPICOS (CORREGIDO)
+   ORDEN BASE (DRAG & DROP READY)
+========================= */
+async function getNextOrden(ramaId) {
+    const q = query(
+        collection(db, "topicos"),
+        where("ramaId", "==", ramaId)
+    );
+
+    const snap = await getDocs(q);
+
+    if (snap.empty) return 1000;
+
+    let max = 0;
+
+    snap.forEach(d => {
+        const o = d.data().orden ?? 0;
+        if (o > max) max = o;
+    });
+
+    return max + 1000;
+}
+
+/* =========================
+   QUERY + RENDER
 ========================= */
 const q = query(
     collection(db, "topicos"),
-    where("ramaId", "==", ramaId)
+    where("ramaId", "==", ramaId),
+    orderBy("orden", "asc")
 );
 
-/* =========================
-   RENDER TOPICOS
-========================= */
 onSnapshot(q, (snap) => {
 
     const tabla = document.getElementById("tablaTopicos");
@@ -373,20 +397,14 @@ onSnapshot(q, (snap) => {
         tabla.innerHTML = `
             <tr>
                 <td colspan="2" class="text-center text-white-50">
-                    No hay tópicos aún
+                    No hay tópicos registrados
                 </td>
             </tr>
         `;
         return;
     }
 
-    const docsOrdenados = snap.docs.sort((a, b) => {
-        const oa = a.data().orden ?? 0;
-        const ob = b.data().orden ?? 0;
-        return oa - ob;
-    });
-
-    docsOrdenados.forEach(t => {
+    snap.docs.forEach(t => {
         const d = t.data();
 
         tabla.innerHTML += `
@@ -399,6 +417,7 @@ onSnapshot(q, (snap) => {
                 </td>
 
                 <td class="text-end">
+
                     <input type="checkbox"
                         class="form-check-input me-2 toggle-visible"
                         data-id="${t.id}"
@@ -413,6 +432,7 @@ onSnapshot(q, (snap) => {
                         onclick="borrar('${t.id}')">
                         Borrar
                     </button>
+
                 </td>
             </tr>
         `;
@@ -420,61 +440,8 @@ onSnapshot(q, (snap) => {
 });
 
 /* =========================
-   EDITAR / BORRAR
+   CREAR TOPICO
 ========================= */
-window.editar = async (id, temaActual) => {
-    const nuevo = prompt("Nuevo nombre:", temaActual);
-
-    if (!nuevo) return;
-
-    await updateDoc(doc(db, "topicos", id), {
-        tema: nuevo
-    });
-};
-
-window.borrar = async (id) => {
-    if (!confirm("¿Eliminar tópico?")) return;
-
-    await deleteDoc(doc(db, "topicos", id));
-};
-
-/* =========================
-   CREAR TOPICO (ORDEN FIJO)
-========================= */
-async function getNextOrden(ramaId) {
-    const q = query(
-        collection(db, "topicos"),
-        where("ramaId", "==", ramaId)
-    );
-
-    const snap = await getDocs(q);
-
-    if (snap.empty) return 1000;
-
-    let max = 0;
-
-    snap.forEach(doc => {
-        const o = doc.data().orden ?? 0;
-        if (o > max) max = o;
-    });
-
-    return max + 1000;
-}
-
-    const snap = await getDocs(q);
-
-    if (snap.empty) return 10;
-
-    let max = 0;
-
-    snap.forEach(doc => {
-        const o = doc.data().orden ?? 0;
-        if (o > max) max = o;
-    });
-
-    return max + 10;
-}
-
 document.getElementById("btnGuardarTopico")
 .addEventListener("click", async () => {
 
@@ -497,6 +464,24 @@ document.getElementById("btnGuardarTopico")
         document.getElementById("modalTopico")
     ).hide();
 });
+
+/* =========================
+   EDITAR / BORRAR
+========================= */
+window.editar = async (id, temaActual) => {
+    const nuevo = prompt("Nuevo nombre:", temaActual);
+    if (!nuevo) return;
+
+    await updateDoc(doc(db, "topicos", id), {
+        tema: nuevo
+    });
+};
+
+window.borrar = async (id) => {
+    if (!confirm("¿Eliminar tópico?")) return;
+
+    await deleteDoc(doc(db, "topicos", id));
+};
 
 /* =========================
    VISIBILIDAD
