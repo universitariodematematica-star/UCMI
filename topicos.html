@@ -267,8 +267,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import {
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
     getFirestore,
     doc,
     getDoc,
@@ -278,80 +278,100 @@
     where,
     onSnapshot,
     updateDoc,
-    deleteDoc
+    deleteDoc,
     getDocs,
-    orderBy    
-}
-from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    orderBy
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-        authDomain: "ucmi-13796634.firebaseapp.com",
-        projectId: "ucmi-13796634",
-        storageBucket: "ucmi-13796634.firebasestorage.app",
-        messagingSenderId: "1090719609536",
-        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
-        measurementId: "G-3M3DH25722"
-    };
+import {
+    getAuth,
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    const params = new URLSearchParams(window.location.search);
-    const ramaId = params.get("ramaId");
+const firebaseConfig = {
+    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+    authDomain: "ucmi-13796634.firebaseapp.com",
+    projectId: "ucmi-13796634",
+    storageBucket: "ucmi-13796634.firebasestorage.app",
+    messagingSenderId: "1090719609536",
+    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
+    measurementId: "G-3M3DH25722"
+};
 
-    // Carga de Logo según el usuario
-    onAuthStateChanged(auth, async (user) => {
-        const logoElement = document.getElementById('logoAcademia');
-        if (user) {
-            try {
-                const docRef = doc(db, "usuarios", user.email);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists() && docSnap.data().logoCustom) {
-                    logoElement.src = docSnap.data().logoCustom;
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const params = new URLSearchParams(window.location.search);
+const ramaId = params.get("ramaId");
+
+/* =========================
+   LOGO ACADEMIA
+========================= */
+onAuthStateChanged(auth, async (user) => {
+    const logoElement = document.getElementById("logoAcademia");
+
+    if (user) {
+        try {
+            const docRef = doc(db, "usuarios", user.email);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.logoCustom) {
+                    logoElement.src = data.logoCustom;
                 }
-            } catch (error) { console.error("Error al cargar logo:", error); }
+            }
+        } catch (error) {
+            console.error("Error al cargar logo:", error);
         }
-        logoElement.style.opacity = "1";
-        logoElement.style.visibility = "visible";
-    });
+    }
 
+    logoElement.style.opacity = "1";
+    logoElement.style.visibility = "visible";
+});
+
+/* =========================
+   ENCABEZADO
+========================= */
 async function cargarEncabezado() {
-    const ramaSnap = await getDoc(doc(db, "ramas", ramaId));
+    try {
+        const ramaSnap = await getDoc(doc(db, "ramas", ramaId));
 
-    if (ramaSnap.exists()) {
+        if (!ramaSnap.exists()) return;
 
         const dataRama = ramaSnap.data();
 
-        document.getElementById(
-            "tituloRama"
-        ).innerText =
+        document.getElementById("tituloRama").innerText =
             "Rama: " + dataRama.nombre;
 
-        const modSnap =
-            await getDoc(
-                doc(
-                    db,
-                    "ofertas",
-                    dataRama.moduloId
-                )
-            );
+        const modSnap = await getDoc(
+            doc(db, "ofertas", dataRama.moduloId)
+        );
 
-        document.getElementById(
-            "tituloModulo"
-        ).innerText =
-            "Módulo: " +
-            modSnap.data().modulo;
+        if (modSnap.exists()) {
+            document.getElementById("tituloModulo").innerText =
+                "Módulo: " + modSnap.data().modulo;
+        }
+
+    } catch (error) {
+        console.error("Error encabezado:", error);
     }
 }
 
+/* =========================
+   ORDEN QUERY
+========================= */
 const q = query(
     collection(db, "topicos"),
     where("ramaId", "==", ramaId),
     orderBy("orden", "asc")
 );
 
+/* =========================
+   OBTENER SIGUIENTE ORDEN
+========================= */
 async function getNextOrden(ramaId) {
     const q = query(
         collection(db, "topicos"),
@@ -364,166 +384,141 @@ async function getNextOrden(ramaId) {
     if (snap.empty) return 10;
 
     return snap.docs[0].data().orden + 10;
-}    
+}
 
+/* =========================
+   LISTADO EN TIEMPO REAL
+========================= */
 onSnapshot(q, (snap) => {
-
-    const tabla =
-        document.getElementById(
-            "tablaTopicos"
-        );
+    const tabla = document.getElementById("tablaTopicos");
 
     tabla.innerHTML = "";
 
-        .forEach(t => {
+    snap.forEach((t) => {
+        const d = t.data();
 
-            const d = t.data();
+        tabla.innerHTML += `
+            <tr>
+                <td>
+                    <a href="cargar-contenido.html?topicoId=${t.id}&ramaId=${ramaId}"
+                       class="text-decoration-none nombre-topico">
+                        ${d.tema}
+                    </a>
+                </td>
 
-            tabla.innerHTML += `
-                <tr>
-                    <td>
-                        <a
-                           href="cargar-contenido.html?topicoId=${t.id}&ramaId=${ramaId}"
-                           class="text-decoration-none nombre-topico">
+                <td class="text-end">
+                    <input type="checkbox"
+                           class="form-check-input me-2 toggle-visible"
+                           data-id="${t.id}"
+                           ${d.visible !== false ? "checked" : ""}>
 
-                            ${d.tema}
-
-                        </a>
-                    </td>
-
-                    <td class="text-end">
-
-                        <input
-                            type="checkbox"
-                            class="form-check-input me-2 toggle-visible"
-                            data-id="${t.id}"
-                            ${d.visible !== false ? "checked" : ""}>
-
-                        <button
-                            class="btn btn-sm btn-outline-light me-1"
+                    <button class="btn btn-sm btn-outline-light me-1"
                             onclick="editar('${t.id}','${d.tema}')">
+                        Editar
+                    </button>
 
-                            Editar
-
-                        </button>
-
-                        <button
-                            class="btn btn-sm btn-outline-danger"
+                    <button class="btn btn-sm btn-outline-danger"
                             onclick="borrar('${t.id}')">
-
-                            Borrar
-
-                        </button>
-
-                    </td>
-                </tr>
-            `;
-        });
+                        Borrar
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
 });
 
+/* =========================
+   EDITAR
+========================= */
 window.editar = async (id, temaActual) => {
-    const nuevo =
-        prompt(
-            "Nuevo nombre:",
-            temaActual
-        );
+    const nuevo = prompt("Nuevo nombre:", temaActual);
 
-    if (nuevo)
-        await updateDoc(
-            doc(db, "topicos", id),
-            { tema: nuevo }
-        );
-};
-
-window.borrar = async (id) => {
-    if (confirm("¿Eliminar tópico?")) {
-        await deleteDoc(
-            doc(db, "topicos", id)
-        );
+    if (nuevo) {
+        await updateDoc(doc(db, "topicos", id), {
+            tema: nuevo
+        });
     }
 };
 
-cargarEncabezado();
+/* =========================
+   BORRAR
+========================= */
+window.borrar = async (id) => {
+    if (confirm("¿Eliminar tópico?")) {
+        await deleteDoc(doc(db, "topicos", id));
+    }
+};
 
+/* =========================
+   CREAR TÓPICO
+========================= */
 document.getElementById("btnGuardarTopico")
 .addEventListener("click", async () => {
 
-    const input =
-        document.getElementById(
-            "inputNombreTopico"
-        );
-
-    const nombre =
-        input.value.trim();
+    const input = document.getElementById("inputNombreTopico");
+    const nombre = input.value.trim();
 
     if (!nombre) return;
 
     try {
-
-        await addDoc(
-            collection(db, "topicos"),
-            {
-                tema: nombre,
-                ramaId: ramaId,
-                visible: true,
-                fechaCreacion: new Date(),
-                orden: await getNextOrden(ramaId)
-            }
-        );
+        await addDoc(collection(db, "topicos"), {
+            tema: nombre,
+            ramaId: ramaId,
+            visible: true,
+            fechaCreacion: new Date(),
+            orden: await getNextOrden(ramaId)
+        });
 
         input.value = "";
 
         bootstrap.Modal
-            .getInstance(
-                document.getElementById(
-                    "modalTopico"
-                )
-            )
+            .getInstance(document.getElementById("modalTopico"))
             .hide();
 
-    }
-    catch (error) {
+    } catch (error) {
         console.error(error);
         alert(error.message);
     }
-});  
+});
 
+/* =========================
+   TOGGLE VISIBILIDAD
+========================= */
 document.addEventListener("change", async (e) => {
-
-    if (!e.target.classList.contains("toggle-visible"))
-        return;
+    if (!e.target.classList.contains("toggle-visible")) return;
 
     const id = e.target.dataset.id;
     const visible = e.target.checked;
 
     try {
-
-        await updateDoc(
-            doc(db, "topicos", id),
-            {
-                visible: visible
-            }
-        );
-
+        await updateDoc(doc(db, "topicos", id), {
+            visible: visible
+        });
     } catch (error) {
-        console.error(
-            "ERROR UPDATE VISIBILITY:",
-            error
-        );
+        console.error("ERROR VISIBILIDAD:", error);
     }
-});    
-    
-    // Acción Cierre de Sesión
-    document.getElementById('btnLogout').addEventListener('click', async (e) => {
-        e.preventDefault();
-        try {
-            await signOut(auth);
-            window.location.href = "index.html"; // Redirige al login
-        } catch (error) {
-            console.error("Error al cerrar sesión:", error);
-            alert("Ocurrió un error al cerrar la sesión.");
-        }
-    });
+});
+
+/* =========================
+   LOGOUT
+========================= */
+document.getElementById("btnLogout")
+.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    try {
+        await signOut(auth);
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("Error logout:", error);
+        alert("Error al cerrar sesión");
+    }
+});
+
+/* =========================
+   INIT
+========================= */
+cargarEncabezado();
 </script>
 <script type="module" src="js/alertas-globales.js"></script>    
 </body>
