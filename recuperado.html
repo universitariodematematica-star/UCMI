@@ -278,7 +278,8 @@
     where,
     onSnapshot,
     updateDoc,
-    deleteDoc
+    deleteDoc,
+    getDocs    
 }
 from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -360,9 +361,9 @@ onSnapshot(q, (snap) => {
 
     snap.docs
         .sort((a, b) =>
-            (a.data().fechaCreacion?.seconds || 0) -
-            (b.data().fechaCreacion?.seconds || 0)
-        )
+    (a.data().orden || 0) - (b.data().orden || 0)
+)
+
         .forEach(t => {
 
             const d = t.data();
@@ -448,6 +449,15 @@ document.getElementById("btnGuardarTopico")
 
     try {
 
+        const q = query(
+    collection(db, "topicos"),
+    where("ramaId", "==", ramaId)
+);
+
+const snap = await getDocs(q);
+
+const nuevoOrden = snap.size + 1;
+
         await addDoc(
             collection(db, "topicos"),
             {
@@ -455,9 +465,10 @@ document.getElementById("btnGuardarTopico")
                 ramaId: ramaId,
                 visible: true,
                 fechaCreacion: new Date(),
-                orden: Date.now()
+                orden: nuevoOrden
             }
         );
+
 
         input.value = "";
 
