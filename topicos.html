@@ -561,6 +561,32 @@ document.addEventListener("change", async (e) => {
             alert("Ocurrió un error al cerrar la sesión.");
         }
     });
+
+const tabla = document.getElementById("tablaTopicos");
+
+new Sortable(tabla, {
+    animation: 150,
+
+    onEnd: async function () {
+
+        const filas = Array.from(tabla.querySelectorAll("tr"));
+
+        const batch = [];
+
+        filas.forEach((fila, index) => {
+            const id = fila.dataset.id;
+
+            batch.push(
+                updateDoc(doc(db, "topicos", id), {
+                    orden: index + 1
+                })
+            );
+        });
+
+        await Promise.all(batch);
+    }
+});
+    
 </script>
 <script type="module" src="js/alertas-globales.js"></script>    
 </body>
