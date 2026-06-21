@@ -279,15 +279,14 @@ import {
     onSnapshot,
     updateDoc,
     deleteDoc,
-    getDocs,
-    orderBy
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 /* ================= FIREBASE ================= */
 const firebaseConfig = {
-    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjHNI",
+    apiKey: "AIzaSyA2eMtX0I2u",
     authDomain: "ucmi-13796634.firebaseapp.com",
     projectId: "ucmi-13796634"
 };
@@ -296,29 +295,41 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-/* ================= RUTA ================= */
+/* ================= RAMA ID ================= */
 const ramaId = new URLSearchParams(window.location.search).get("ramaId");
+
+console.log("RAMA ID:", ramaId);
 
 /* ================= LOGO ================= */
 onAuthStateChanged(auth, async (user) => {
     if (!user) return;
 
-    const ref = doc(db, "usuarios", user.email);
-    const snap = await getDoc(ref);
+    const snap = await getDoc(doc(db, "usuarios", user.email));
 
-    const logo = document.getElementById("logoAcademia");
-
-    if (snap.exists() && snap.data().logoCustom) {
-        logo.src = snap.data().logoCustom;
+    if (snap.exists()) {
+        const data = snap.data();
+        if (data.logoCustom) {
+            document.getElementById("logoAcademia").src = data.logoCustom;
+        }
     }
 
-    logo.style.opacity = "1";
+    document.getElementById("logoAcademia").style.opacity = "1";
 });
 
 /* ================= ENCABEZADO ================= */
 async function cargarEncabezado() {
+
+    if (!ramaId) {
+        console.error("ramaId es NULL");
+        return;
+    }
+
     const ramaSnap = await getDoc(doc(db, "ramas", ramaId));
-    if (!ramaSnap.exists()) return;
+
+    if (!ramaSnap.exists()) {
+        console.error("No existe la rama");
+        return;
+    }
 
     const rama = ramaSnap.data();
 
@@ -333,45 +344,40 @@ async function cargarEncabezado() {
     }
 }
 
-/* ================= ORDEN SEGURO ================= */
-async function getNextOrden() {
-
-    const q = query(
-        collection(db, "topicos"),
-        where("ramaId", "==", ramaId),
-        orderBy("orden", "desc")
-    );
-
-    const snap = await getDocs(q);
-
-    if (snap.empty) return 10;
-
-    const max = snap.docs[0].data().orden;
-
-    return max + 10;
-}
-
-/* ================= QUERY PRINCIPAL ================= */
+/* ================= TOPICOS QUERY SIMPLE (DEBUG SAFE) ================= */
 const qTopicos = query(
     collection(db, "topicos"),
-    where("ramaId", "==", ramaId),
-    orderBy("orden", "asc")
+    where("ramaId", "==", ramaId)
 );
 
 /* ================= RENDER ================= */
 onSnapshot(qTopicos, (snap) => {
 
+    console.log("TOPICOS ENCONTRADOS:", snap.size);
+
     const tabla = document.getElementById("tablaTopicos");
     tabla.innerHTML = "";
 
-    snap.docs.forEach(docSnap => {
+    if (snap.empty) {
+        tabla.innerHTML = `<tr><td colspan="2">No hay tópicos</td></tr>`;
+        return;
+    }
 
-        const d = docSnap.data();
+    let docs = [];
+
+    snap.forEach(d => {
+        docs.push({ id: d.id, ...d.data() });
+    });
+
+    // orden seguro en frontend
+    docs.sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+
+    docs.forEach(d => {
 
         tabla.innerHTML += `
-            <tr data-id="${docSnap.id}" data-orden="${d.orden}">
-                <td class="drag-handle">
-                    <a href="cargar-contenido.html?topicoId=${docSnap.id}&ramaId=${ramaId}"
+            <tr>
+                <td>
+                    <a href="cargar-contenido.html?topicoId=${d.id}&ramaId=${ramaId}"
                        class="nombre-topico">
                         ${d.tema}
                     </a>
@@ -381,14 +387,14 @@ onSnapshot(qTopicos, (snap) => {
 
                     <input type="checkbox"
                         class="toggle-visible"
-                        data-id="${docSnap.id}"
+                        data-id="${d.id}"
                         ${d.visible !== false ? "checked" : ""}>
 
-                    <button onclick="editar('${docSnap.id}','${d.tema}')">
+                    <button onclick="editar('${d.id}','${d.tema}')">
                         Editar
                     </button>
 
-                    <button onclick="borrar('${docSnap.id}')">
+                    <button onclick="borrar('${d.id}')">
                         Borrar
                     </button>
 
@@ -398,23 +404,42 @@ onSnapshot(qTopicos, (snap) => {
     });
 });
 
+/* ================= ORDEN SEGURO ================= */
+async function getNextOrden() {
+
+    const snap = await getDocs(query(
+        collection(db, "topicos"),
+        where("ramaId", "==", ramaId)
+    ));
+
+    if (snap.empty) return 10;
+
+    let max = 0;
+
+    snap.forEach(d => {
+        const o = d.data().orden ?? 0;
+        if (o > max) max = o;
+    });
+
+    return max + 10;
+}
+
 /* ================= CREAR ================= */
 document.getElementById("btnGuardarTopico").addEventListener("click", async () => {
 
-    const input = document.getElementById("inputNombreTopico");
-    const nombre = input.value.trim();
+    const nombre = document.getElementById("inputNombreTopico").value.trim();
 
     if (!nombre) return;
 
     await addDoc(collection(db, "topicos"), {
         tema: nombre,
-        ramaId: ramaId,
+        ramaId,
         visible: true,
-        fechaCreacion: new Date(),
-        orden: await getNextOrden()
+        orden: await getNextOrden(),
+        fechaCreacion: new Date()
     });
 
-    input.value = "";
+    document.getElementById("inputNombreTopico").value = "";
 
     bootstrap.Modal.getInstance(
         document.getElementById("modalTopico")
@@ -423,7 +448,7 @@ document.getElementById("btnGuardarTopico").addEventListener("click", async () =
 
 /* ================= EDITAR ================= */
 window.editar = async (id, actual) => {
-    const nuevo = prompt("Nuevo nombre:", actual);
+    const nuevo = prompt("Editar:", actual);
     if (!nuevo) return;
 
     await updateDoc(doc(db, "topicos", id), {
@@ -433,13 +458,12 @@ window.editar = async (id, actual) => {
 
 /* ================= BORRAR ================= */
 window.borrar = async (id) => {
-    if (!confirm("Eliminar tópico?")) return;
+    if (!confirm("Eliminar?")) return;
     await deleteDoc(doc(db, "topicos", id));
 };
 
 /* ================= VISIBILIDAD ================= */
 document.addEventListener("change", async (e) => {
-
     if (!e.target.classList.contains("toggle-visible")) return;
 
     await updateDoc(doc(db, "topicos", e.target.dataset.id), {
