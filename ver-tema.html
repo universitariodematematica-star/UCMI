@@ -203,7 +203,8 @@
     collection,
     query,
     where,
-    getDocs
+    getDocs,
+    orderBy    
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
@@ -263,10 +264,11 @@ async function cargarRamas() {
 
     contenedor.innerHTML = "";
 
-    const q = query(
-        collection(db, "ramas"),
-        where("moduloId", "==", moduloId)
-    );
+const q = query(
+    collection(db, "ramas"),
+    where("moduloId", "==", moduloId),
+    orderBy("orden", "asc")
+);
 
     const ramasSnap = await getDocs(q);
 
@@ -274,14 +276,11 @@ async function cargarRamas() {
 
         const rama = ramaDoc.data();
 
-        const qTopicos = query(
-            collection(db, "topicos"),
-            where(
-                "ramaId",
-                "==",
-                ramaDoc.id
-            )
-        );
+const qTopicos = query(
+    collection(db, "topicos"),
+    where("ramaId", "==", ramaDoc.id),
+    orderBy("orden", "asc")
+);
 
         const topicosSnap =
             await getDocs(qTopicos);
