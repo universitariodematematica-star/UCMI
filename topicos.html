@@ -283,135 +283,96 @@ import {
     orderBy
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-import {
-    getAuth,
-    onAuthStateChanged,
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-/* =========================
-   FIREBASE
-========================= */
+/* ================= FIREBASE ================= */
 const firebaseConfig = {
-    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
-    projectId: "ucmi-13796634",
-    storageBucket: "ucmi-13796634.firebasestorage.app",
-    messagingSenderId: "1090719609536",
-    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
-    measurementId: "G-3M3DH25722"
+    projectId: "ucmi-13796634"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-const params = new URLSearchParams(window.location.search);
-const ramaId = params.get("ramaId");
+/* ================= RUTA ================= */
+const ramaId = new URLSearchParams(window.location.search).get("ramaId");
 
-/* =========================
-   LOGO
-========================= */
+/* ================= LOGO ================= */
 onAuthStateChanged(auth, async (user) => {
-    const logoElement = document.getElementById("logoAcademia");
-
     if (!user) return;
 
-    try {
-        const ref = doc(db, "usuarios", user.email);
-        const snap = await getDoc(ref);
+    const ref = doc(db, "usuarios", user.email);
+    const snap = await getDoc(ref);
 
-        if (snap.exists()) {
-            const data = snap.data();
-            if (data.logoCustom) {
-                logoElement.src = data.logoCustom;
-            }
-        }
-    } catch (e) {
-        console.error(e);
+    const logo = document.getElementById("logoAcademia");
+
+    if (snap.exists() && snap.data().logoCustom) {
+        logo.src = snap.data().logoCustom;
     }
 
-    logoElement.style.opacity = "1";
-    logoElement.style.visibility = "visible";
+    logo.style.opacity = "1";
 });
 
-/* =========================
-   ENCABEZADO
-========================= */
+/* ================= ENCABEZADO ================= */
 async function cargarEncabezado() {
     const ramaSnap = await getDoc(doc(db, "ramas", ramaId));
-
     if (!ramaSnap.exists()) return;
 
-    const data = ramaSnap.data();
+    const rama = ramaSnap.data();
 
     document.getElementById("tituloRama").innerText =
-        "Rama: " + data.nombre;
+        "Rama: " + rama.nombre;
 
-    const modSnap = await getDoc(
-        doc(db, "ofertas", data.moduloId)
-    );
+    const modSnap = await getDoc(doc(db, "ofertas", rama.moduloId));
 
-    document.getElementById("tituloModulo").innerText =
-        "Módulo: " + (modSnap.exists() ? modSnap.data().modulo : "—");
+    if (modSnap.exists()) {
+        document.getElementById("tituloModulo").innerText =
+            "Módulo: " + modSnap.data().modulo;
+    }
 }
 
-/* =========================
-   ORDEN BASE (DRAG & DROP READY)
-========================= */
-async function getNextOrden(ramaId) {
+/* ================= ORDEN SEGURO ================= */
+async function getNextOrden() {
+
     const q = query(
         collection(db, "topicos"),
-        where("ramaId", "==", ramaId)
+        where("ramaId", "==", ramaId),
+        orderBy("orden", "desc")
     );
 
     const snap = await getDocs(q);
 
-    if (snap.empty) return 1000;
+    if (snap.empty) return 10;
 
-    let max = 0;
+    const max = snap.docs[0].data().orden;
 
-    snap.forEach(d => {
-        const o = d.data().orden ?? 0;
-        if (o > max) max = o;
-    });
-
-    return max + 1000;
+    return max + 10;
 }
 
-/* =========================
-   QUERY + RENDER
-========================= */
-const q = query(
+/* ================= QUERY PRINCIPAL ================= */
+const qTopicos = query(
     collection(db, "topicos"),
     where("ramaId", "==", ramaId),
     orderBy("orden", "asc")
 );
 
-onSnapshot(q, (snap) => {
+/* ================= RENDER ================= */
+onSnapshot(qTopicos, (snap) => {
 
     const tabla = document.getElementById("tablaTopicos");
     tabla.innerHTML = "";
 
-    if (snap.empty) {
-        tabla.innerHTML = `
-            <tr>
-                <td colspan="2" class="text-center text-white-50">
-                    No hay tópicos registrados
-                </td>
-            </tr>
-        `;
-        return;
-    }
+    snap.docs.forEach(docSnap => {
 
-    snap.docs.forEach(t => {
-        const d = t.data();
+        const d = docSnap.data();
 
         tabla.innerHTML += `
-            <tr>
-                <td>
-                    <a href="cargar-contenido.html?topicoId=${t.id}&ramaId=${ramaId}"
-                       class="text-decoration-none nombre-topico">
+            <tr data-id="${docSnap.id}" data-orden="${d.orden}">
+                <td class="drag-handle">
+                    <a href="cargar-contenido.html?topicoId=${docSnap.id}&ramaId=${ramaId}"
+                       class="nombre-topico">
                         ${d.tema}
                     </a>
                 </td>
@@ -419,17 +380,15 @@ onSnapshot(q, (snap) => {
                 <td class="text-end">
 
                     <input type="checkbox"
-                        class="form-check-input me-2 toggle-visible"
-                        data-id="${t.id}"
+                        class="toggle-visible"
+                        data-id="${docSnap.id}"
                         ${d.visible !== false ? "checked" : ""}>
 
-                    <button class="btn btn-sm btn-outline-light me-1"
-                        onclick="editar('${t.id}','${d.tema}')">
+                    <button onclick="editar('${docSnap.id}','${d.tema}')">
                         Editar
                     </button>
 
-                    <button class="btn btn-sm btn-outline-danger"
-                        onclick="borrar('${t.id}')">
+                    <button onclick="borrar('${docSnap.id}')">
                         Borrar
                     </button>
 
@@ -439,11 +398,8 @@ onSnapshot(q, (snap) => {
     });
 });
 
-/* =========================
-   CREAR TOPICO
-========================= */
-document.getElementById("btnGuardarTopico")
-.addEventListener("click", async () => {
+/* ================= CREAR ================= */
+document.getElementById("btnGuardarTopico").addEventListener("click", async () => {
 
     const input = document.getElementById("inputNombreTopico");
     const nombre = input.value.trim();
@@ -455,7 +411,7 @@ document.getElementById("btnGuardarTopico")
         ramaId: ramaId,
         visible: true,
         fechaCreacion: new Date(),
-        orden: await getNextOrden(ramaId)
+        orden: await getNextOrden()
     });
 
     input.value = "";
@@ -465,11 +421,9 @@ document.getElementById("btnGuardarTopico")
     ).hide();
 });
 
-/* =========================
-   EDITAR / BORRAR
-========================= */
-window.editar = async (id, temaActual) => {
-    const nuevo = prompt("Nuevo nombre:", temaActual);
+/* ================= EDITAR ================= */
+window.editar = async (id, actual) => {
+    const nuevo = prompt("Nuevo nombre:", actual);
     if (!nuevo) return;
 
     await updateDoc(doc(db, "topicos", id), {
@@ -477,38 +431,32 @@ window.editar = async (id, temaActual) => {
     });
 };
 
+/* ================= BORRAR ================= */
 window.borrar = async (id) => {
-    if (!confirm("¿Eliminar tópico?")) return;
-
+    if (!confirm("Eliminar tópico?")) return;
     await deleteDoc(doc(db, "topicos", id));
 };
 
-/* =========================
-   VISIBILIDAD
-========================= */
+/* ================= VISIBILIDAD ================= */
 document.addEventListener("change", async (e) => {
 
     if (!e.target.classList.contains("toggle-visible")) return;
 
-    await updateDoc(
-        doc(db, "topicos", e.target.dataset.id),
-        { visible: e.target.checked }
-    );
+    await updateDoc(doc(db, "topicos", e.target.dataset.id), {
+        visible: e.target.checked
+    });
 });
 
-/* =========================
-   LOGOUT
-========================= */
+/* ================= LOGOUT ================= */
 document.getElementById("btnLogout").addEventListener("click", async (e) => {
     e.preventDefault();
     await signOut(auth);
     window.location.href = "index.html";
 });
 
-/* =========================
-   INIT
-========================= */
+/* ================= INIT ================= */
 cargarEncabezado();
+
 </script>
 <script type="module" src="js/alertas-globales.js"></script>    
 </body>
