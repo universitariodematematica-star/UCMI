@@ -289,9 +289,6 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-/* =========================
-   FIREBASE INIT
-========================= */
 const firebaseConfig = {
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -306,9 +303,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-/* =========================
-   PARAMS
-========================= */
 const params = new URLSearchParams(window.location.search);
 const ramaId = params.get("ramaId");
 
@@ -316,102 +310,83 @@ const ramaId = params.get("ramaId");
    LOGO
 ========================= */
 onAuthStateChanged(auth, async (user) => {
-    const logo = document.getElementById("logoAcademia");
+    const logoElement = document.getElementById('logoAcademia');
 
-    if (user) {
-        try {
-            const ref = doc(db, "usuarios", user.email);
-            const snap = await getDoc(ref);
+    if (!user) return;
 
-            if (snap.exists()) {
-                const data = snap.data();
-                if (data.logoCustom) {
-                    logo.src = data.logoCustom;
-                }
+    try {
+        const docRef = doc(db, "usuarios", user.email);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.logoCustom) {
+                logoElement.src = data.logoCustom;
             }
-        } catch (e) {
-            console.error("Logo error:", e);
         }
+    } catch (e) {
+        console.error(e);
     }
 
-    logo.style.opacity = "1";
-    logo.style.visibility = "visible";
+    logoElement.style.opacity = "1";
+    logoElement.style.visibility = "visible";
 });
 
 /* =========================
    ENCABEZADO
 ========================= */
 async function cargarEncabezado() {
-    try {
-        const ramaSnap = await getDoc(doc(db, "ramas", ramaId));
+    const ramaSnap = await getDoc(doc(db, "ramas", ramaId));
 
-        if (!ramaSnap.exists()) return;
+    if (!ramaSnap.exists()) return;
 
-        const rama = ramaSnap.data();
+    const dataRama = ramaSnap.data();
 
-        document.getElementById("tituloRama").innerText =
-            "Rama: " + rama.nombre;
+    document.getElementById("tituloRama").innerText =
+        "Rama: " + dataRama.nombre;
 
-        const modSnap = await getDoc(
-            doc(db, "ofertas", rama.moduloId)
-        );
+    const modSnap = await getDoc(
+        doc(db, "ofertas", dataRama.moduloId)
+    );
 
-        if (modSnap.exists()) {
-            document.getElementById("tituloModulo").innerText =
-                "Módulo: " + modSnap.data().modulo;
-        }
-
-    } catch (e) {
-        console.error("Error encabezado:", e);
-    }
+    document.getElementById("tituloModulo").innerText =
+        "Módulo: " + (modSnap.exists() ? modSnap.data().modulo : "—");
 }
 
 /* =========================
-   ORDEN QUERY (IMPORTANTE)
+   QUERY TOPICOS (CORREGIDO)
 ========================= */
 const q = query(
     collection(db, "topicos"),
-    where("ramaId", "==", ramaId),
-    orderBy("orden", "asc")
+    where("ramaId", "==", ramaId)
 );
 
 /* =========================
-   NEXT ORDER
-========================= */
-async function getNextOrden(ramaId) {
-    const q = query(
-        collection(db, "topicos"),
-        where("ramaId", "==", ramaId),
-        orderBy("orden", "desc")
-    );
-
-    const snap = await getDocs(q);
-
-    if (snap.empty) return 10;
-
-    return snap.docs[0].data().orden + 10;
-}
-
-/* =========================
-   LISTADO EN TIEMPO REAL
+   RENDER TOPICOS
 ========================= */
 onSnapshot(q, (snap) => {
-    const tabla = document.getElementById("tablaTopicos");
 
+    const tabla = document.getElementById("tablaTopicos");
     tabla.innerHTML = "";
 
     if (snap.empty) {
         tabla.innerHTML = `
             <tr>
-                <td colspan="2" class="text-center text-white">
-                    No hay tópicos en esta rama
+                <td colspan="2" class="text-center text-white-50">
+                    No hay tópicos aún
                 </td>
             </tr>
         `;
         return;
     }
 
-    snap.forEach((t) => {
+    const docsOrdenados = snap.docs.sort((a, b) => {
+        const oa = a.data().orden ?? 0;
+        const ob = b.data().orden ?? 0;
+        return oa - ob;
+    });
+
+    docsOrdenados.forEach(t => {
         const d = t.data();
 
         tabla.innerHTML += `
@@ -419,59 +394,73 @@ onSnapshot(q, (snap) => {
                 <td>
                     <a href="cargar-contenido.html?topicoId=${t.id}&ramaId=${ramaId}"
                        class="text-decoration-none nombre-topico">
-                        ${d.tema ?? ""}
+                        ${d.tema}
                     </a>
                 </td>
 
                 <td class="text-end">
                     <input type="checkbox"
-                           class="form-check-input me-2 toggle-visible"
-                           data-id="${t.id}"
-                           ${d.visible !== false ? "checked" : ""}>
+                        class="form-check-input me-2 toggle-visible"
+                        data-id="${t.id}"
+                        ${d.visible !== false ? "checked" : ""}>
 
                     <button class="btn btn-sm btn-outline-light me-1"
-                            onclick="editar('${t.id}','${d.tema}')">
+                        onclick="editar('${t.id}','${d.tema}')">
                         Editar
                     </button>
 
                     <button class="btn btn-sm btn-outline-danger"
-                            onclick="borrar('${t.id}')">
+                        onclick="borrar('${t.id}')">
                         Borrar
                     </button>
                 </td>
             </tr>
         `;
     });
-
-}, (error) => {
-    console.error("ERROR onSnapshot:", error);
 });
 
 /* =========================
-   EDITAR
+   EDITAR / BORRAR
 ========================= */
 window.editar = async (id, temaActual) => {
     const nuevo = prompt("Nuevo nombre:", temaActual);
 
-    if (nuevo) {
-        await updateDoc(doc(db, "topicos", id), {
-            tema: nuevo
-        });
-    }
+    if (!nuevo) return;
+
+    await updateDoc(doc(db, "topicos", id), {
+        tema: nuevo
+    });
 };
 
-/* =========================
-   BORRAR
-========================= */
 window.borrar = async (id) => {
-    if (confirm("¿Eliminar tópico?")) {
-        await deleteDoc(doc(db, "topicos", id));
-    }
+    if (!confirm("¿Eliminar tópico?")) return;
+
+    await deleteDoc(doc(db, "topicos", id));
 };
 
 /* =========================
-   CREAR
+   CREAR TOPICO (ORDEN FIJO)
 ========================= */
+async function getNextOrden(ramaId) {
+    const q = query(
+        collection(db, "topicos"),
+        where("ramaId", "==", ramaId)
+    );
+
+    const snap = await getDocs(q);
+
+    if (snap.empty) return 10;
+
+    let max = 0;
+
+    snap.forEach(doc => {
+        const o = doc.data().orden ?? 0;
+        if (o > max) max = o;
+    });
+
+    return max + 10;
+}
+
 document.getElementById("btnGuardarTopico")
 .addEventListener("click", async () => {
 
@@ -480,45 +469,39 @@ document.getElementById("btnGuardarTopico")
 
     if (!nombre) return;
 
-    try {
-        await addDoc(collection(db, "topicos"), {
-            tema: nombre,
-            ramaId: ramaId,
-            visible: true,
-            fechaCreacion: new Date(),
-            orden: await getNextOrden(ramaId)
-        });
+    await addDoc(collection(db, "topicos"), {
+        tema: nombre,
+        ramaId: ramaId,
+        visible: true,
+        fechaCreacion: new Date(),
+        orden: await getNextOrden(ramaId)
+    });
 
-        input.value = "";
+    input.value = "";
 
-        bootstrap.Modal
-            .getInstance(document.getElementById("modalTopico"))
-            .hide();
-
-    } catch (e) {
-        console.error("ERROR CREANDO:", e);
-        alert(e.message);
-    }
+    bootstrap.Modal.getInstance(
+        document.getElementById("modalTopico")
+    ).hide();
 });
 
 /* =========================
    VISIBILIDAD
 ========================= */
 document.addEventListener("change", async (e) => {
+
     if (!e.target.classList.contains("toggle-visible")) return;
 
-    await updateDoc(doc(db, "topicos", e.target.dataset.id), {
-        visible: e.target.checked
-    });
+    await updateDoc(
+        doc(db, "topicos", e.target.dataset.id),
+        { visible: e.target.checked }
+    );
 });
 
 /* =========================
    LOGOUT
 ========================= */
-document.getElementById("btnLogout")
-.addEventListener("click", async (e) => {
+document.getElementById("btnLogout").addEventListener("click", async (e) => {
     e.preventDefault();
-
     await signOut(auth);
     window.location.href = "index.html";
 });
