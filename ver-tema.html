@@ -224,20 +224,6 @@ const auth = getAuth(app);
 
 const moduloId = new URLSearchParams(location.search).get("moduloId");
 
-/* ================= LOGO ================= */
-onAuthStateChanged(auth, async (user) => {
-    const logo = document.getElementById("logoAcademia");
-
-    if (user) {
-        const snap = await getDoc(doc(db, "usuarios", user.email));
-        if (snap.exists() && snap.data().logoCustom) {
-            logo.src = snap.data().logoCustom;
-        }
-    }
-
-    logo.style.opacity = "1";
-});
-
 /* ================= MODULO ================= */
 async function cargarModulo() {
     const snap = await getDoc(doc(db, "ofertas", moduloId));
@@ -248,7 +234,7 @@ async function cargarModulo() {
     }
 }
 
-/* ================= RAMAS ================= */
+/* ================= RAMAS + TOPICOS ================= */
 async function cargarRamas() {
 
     const contenedor = document.getElementById("contenedorRamas");
@@ -259,9 +245,10 @@ async function cargarRamas() {
         where("moduloId", "==", moduloId))
     );
 
-    const ramas = ramasSnap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+    const ramas = ramasSnap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+    }));
 
     for (const rama of ramas) {
 
@@ -277,20 +264,21 @@ async function cargarRamas() {
             if (d.visible === false) return;
 
             htmlTopicos += `
-                <a class="topico-link"
-                   href="contenido.html?topicoId=${t.id}"
-                   target="_blank">
+                <div class="topico-item"
+                     draggable="true"
+                     data-id="${t.id}">
+
                     <i class="bi bi-journal-text me-2"></i>
                     ${d.tema}
-                </a>
+
+                </div>
             `;
         });
 
         contenedor.innerHTML += `
-            <div class="col-lg-4 rama-wrapper">
-                <div class="rama-card"
-                     draggable="true"
-                     data-id="${rama.id}">
+            <div class="col-lg-4 rama-box">
+
+                <div class="rama-card">
 
                     <div class="nombre-rama">
                         <i class="bi bi-diagram-3 me-2"></i>
@@ -306,57 +294,49 @@ async function cargarRamas() {
         `;
     }
 
-    activarDragDrop();
+    activarDragTopicos();
 }
 
-/* ================= DRAG & DROP REAL ================= */
-function activarDragDrop() {
+/* ================= DRAG TOPICOS ================= */
+function activarDragTopicos() {
 
-    const contenedor = document.getElementById("contenedorRamas");
     let dragged = null;
 
-    const cards = contenedor.querySelectorAll(".rama-card");
+    const items = document.querySelectorAll(".topico-item");
 
-    cards.forEach(card => {
+    items.forEach(item => {
 
-        card.addEventListener("dragstart", () => {
-            dragged = card;
-            card.style.opacity = "0.5";
+        item.addEventListener("dragstart", () => {
+            dragged = item;
+            item.style.opacity = "0.5";
         });
 
-        card.addEventListener("dragend", () => {
-            card.style.opacity = "1";
+        item.addEventListener("dragend", () => {
+            item.style.opacity = "1";
             dragged = null;
         });
 
-        card.addEventListener("dragover", (e) => {
+        item.addEventListener("dragover", (e) => {
             e.preventDefault();
         });
 
-        card.addEventListener("drop", (e) => {
+        item.addEventListener("drop", (e) => {
             e.preventDefault();
 
-            if (!dragged || dragged === card) return;
+            if (!dragged || dragged === item) return;
 
-            const from = dragged.closest(".rama-wrapper");
-            const to = card.closest(".rama-wrapper");
+            const container = item.closest(".lista-topicos");
 
-            const all = [...contenedor.children];
+            const all = [...container.children];
 
-            const fromIndex = all.indexOf(from);
-            const toIndex = all.indexOf(to);
+            const fromIndex = all.indexOf(dragged);
+            const toIndex = all.indexOf(item);
 
             if (fromIndex < toIndex) {
-                contenedor.insertBefore(from, to.nextSibling);
+                container.insertBefore(dragged, item.nextSibling);
             } else {
-                contenedor.insertBefore(from, to);
+                container.insertBefore(dragged, item);
             }
-
-            console.log("Reordenado:", {
-                from: dragged.dataset.id,
-                to: card.dataset.id
-            });
-
         });
     });
 }
