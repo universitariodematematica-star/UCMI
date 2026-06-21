@@ -274,21 +274,22 @@ async function cargarRamas() {
 
         const rama = ramaDoc.data();
 
-        const qTopicos = query(
-            collection(db, "topicos"),
-            where(
-                "ramaId",
-                "==",
-                ramaDoc.id
-            )
-        );
+const qTopicos = query(
+    collection(db, "topicos"),
+    where("ramaId", "==", ramaDoc.id)
+);
 
-        const topicosSnap =
-            await getDocs(qTopicos);
+const topicosSnap = await getDocs(qTopicos);
+
+// 🔥 ORDENAR EN MEMORIA POR "orden"
+const topicosOrdenados = topicosSnap.docs.sort(
+    (a, b) =>
+        (a.data().orden || 0) - (b.data().orden || 0)
+);
 
         let htmlTopicos = "";
 
-        topicosSnap.forEach(t => {
+        topicosOrdenados.forEach(t => {
 
             const d = t.data();
 
