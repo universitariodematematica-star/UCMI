@@ -266,21 +266,26 @@ async function cargarRamas() {
 
 const q = query(
     collection(db, "ramas"),
-    where("moduloId", "==", moduloId),
-    orderBy("orden", "asc")
+    where("moduloId", "==", moduloId)
 );
     const ramasSnap = await getDocs(q);
+    const ramasOrdenadas = ramasSnap.docs
+    .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    }))
+    .sort((a, b) => (a.orden || 0) - (b.orden || 0));
 
-    for (const ramaDoc of ramasSnap.docs) {
+    for (const rama of ramasOrdenadas) {
 
-        const rama = ramaDoc.data();
+        const rama = rama;
 
         const qTopicos = query(
             collection(db, "topicos"),
             where(
                 "ramaId",
                 "==",
-                ramaDoc.id
+                rama.id
             )
         );
 
