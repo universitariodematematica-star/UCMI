@@ -279,6 +279,8 @@
     onSnapshot,
     updateDoc,
     deleteDoc
+    getDocs,
+    orderBy    
 }
 from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -346,8 +348,23 @@ async function cargarEncabezado() {
 
 const q = query(
     collection(db, "topicos"),
-    where("ramaId", "==", ramaId)
+    where("ramaId", "==", ramaId),
+    orderBy("orden", "asc")
 );
+
+async function getNextOrden(ramaId) {
+    const q = query(
+        collection(db, "topicos"),
+        where("ramaId", "==", ramaId),
+        orderBy("orden", "desc")
+    );
+
+    const snap = await getDocs(q);
+
+    if (snap.empty) return 10;
+
+    return snap.docs[0].data().orden + 10;
+}    
 
 onSnapshot(q, (snap) => {
 
@@ -358,11 +375,6 @@ onSnapshot(q, (snap) => {
 
     tabla.innerHTML = "";
 
-    snap.docs
-        .sort((a, b) =>
-            (a.data().fechaCreacion?.seconds || 0) -
-            (b.data().fechaCreacion?.seconds || 0)
-        )
         .forEach(t => {
 
             const d = t.data();
@@ -455,7 +467,7 @@ document.getElementById("btnGuardarTopico")
                 ramaId: ramaId,
                 visible: true,
                 fechaCreacion: new Date(),
-                orden: Date.now()
+                orden: await getNextOrden(ramaId)
             }
         );
 
