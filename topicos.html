@@ -269,7 +269,6 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import {
-import {
     getFirestore,
     doc,
     getDoc,
@@ -279,8 +278,7 @@ import {
     where,
     onSnapshot,
     updateDoc,
-    deleteDoc,
-    getDocs
+    deleteDoc
 }
 from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -360,9 +358,11 @@ onSnapshot(q, (snap) => {
 
     tabla.innerHTML = "";
 
-.sort((a, b) =>
-    (a.data().orden || 0) - (b.data().orden || 0)
-)
+    snap.docs
+        .sort((a, b) =>
+            (a.data().fechaCreacion?.seconds || 0) -
+            (b.data().fechaCreacion?.seconds || 0)
+        )
         .forEach(t => {
 
             const d = t.data();
@@ -436,23 +436,18 @@ cargarEncabezado();
 document.getElementById("btnGuardarTopico")
 .addEventListener("click", async () => {
 
-    const input = document.getElementById("inputNombreTopico");
-    const nombre = input.value.trim();
+    const input =
+        document.getElementById(
+            "inputNombreTopico"
+        );
+
+    const nombre =
+        input.value.trim();
+
     if (!nombre) return;
 
     try {
 
-        // 1. contar tópicos existentes en esa rama
-        const q = query(
-            collection(db, "topicos"),
-            where("ramaId", "==", ramaId)
-        );
-
-        const snap = await getDocs(q);
-
-        const nuevoOrden = snap.size + 1;
-
-        // 2. crear tópico con orden incremental
         await addDoc(
             collection(db, "topicos"),
             {
@@ -460,7 +455,7 @@ document.getElementById("btnGuardarTopico")
                 ramaId: ramaId,
                 visible: true,
                 fechaCreacion: new Date(),
-                orden: nuevoOrden
+                orden: Date.now()
             }
         );
 
@@ -468,11 +463,14 @@ document.getElementById("btnGuardarTopico")
 
         bootstrap.Modal
             .getInstance(
-                document.getElementById("modalTopico")
+                document.getElementById(
+                    "modalTopico"
+                )
             )
             .hide();
 
-    } catch (error) {
+    }
+    catch (error) {
         console.error(error);
         alert(error.message);
     }
