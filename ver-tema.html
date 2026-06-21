@@ -208,6 +208,7 @@ import {
 
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+/* ================= FIREBASE ================= */
 const firebaseConfig = {
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -221,19 +222,14 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-const params = new URLSearchParams(window.location.search);
-const moduloId = params.get("moduloId");
+const moduloId = new URLSearchParams(location.search).get("moduloId");
 
-/* =========================
-   LOGO
-========================= */
+/* ================= LOGO ================= */
 onAuthStateChanged(auth, async (user) => {
     const logo = document.getElementById("logoAcademia");
 
     if (user) {
-        const ref = doc(db, "usuarios", user.email);
-        const snap = await getDoc(ref);
-
+        const snap = await getDoc(doc(db, "usuarios", user.email));
         if (snap.exists() && snap.data().logoCustom) {
             logo.src = snap.data().logoCustom;
         }
@@ -242,9 +238,7 @@ onAuthStateChanged(auth, async (user) => {
     logo.style.opacity = "1";
 });
 
-/* =========================
-   MODULO TITULO
-========================= */
+/* ================= MODULO ================= */
 async function cargarModulo() {
     const snap = await getDoc(doc(db, "ofertas", moduloId));
 
@@ -254,19 +248,16 @@ async function cargarModulo() {
     }
 }
 
-/* =========================
-   RAMAS + TOPICOS
-========================= */
+/* ================= RAMAS ================= */
 async function cargarRamas() {
+
     const contenedor = document.getElementById("contenedorRamas");
     contenedor.innerHTML = "";
 
-    const ramasQuery = query(
-        collection(db, "ramas"),
-        where("moduloId", "==", moduloId)
+    const ramasSnap = await getDocs(
+        query(collection(db, "ramas"),
+        where("moduloId", "==", moduloId))
     );
-
-    const ramasSnap = await getDocs(ramasQuery);
 
     const ramas = ramasSnap.docs
         .map(d => ({ id: d.id, ...d.data() }))
@@ -274,12 +265,10 @@ async function cargarRamas() {
 
     for (const rama of ramas) {
 
-        const topicosQuery = query(
-            collection(db, "topicos"),
-            where("ramaId", "==", rama.id)
+        const topicosSnap = await getDocs(
+            query(collection(db, "topicos"),
+            where("ramaId", "==", rama.id))
         );
-
-        const topicosSnap = await getDocs(topicosQuery);
 
         let htmlTopicos = "";
 
@@ -291,7 +280,6 @@ async function cargarRamas() {
                 <a class="topico-link"
                    href="contenido.html?topicoId=${t.id}"
                    target="_blank">
-
                     <i class="bi bi-journal-text me-2"></i>
                     ${d.tema}
                 </a>
@@ -299,7 +287,7 @@ async function cargarRamas() {
         });
 
         contenedor.innerHTML += `
-            <div class="col-lg-4">
+            <div class="col-lg-4 rama-wrapper">
                 <div class="rama-card"
                      draggable="true"
                      data-id="${rama.id}">
@@ -318,16 +306,16 @@ async function cargarRamas() {
         `;
     }
 
-    habilitarDrag(); // opcional base
+    activarDragDrop();
 }
 
-/* =========================
-   DRAG & DROP (BASE)
-   ========================= */
-function habilitarDrag() {
-    const cards = document.querySelectorAll(".rama-card");
+/* ================= DRAG & DROP REAL ================= */
+function activarDragDrop() {
 
+    const contenedor = document.getElementById("contenedorRamas");
     let dragged = null;
+
+    const cards = contenedor.querySelectorAll(".rama-card");
 
     cards.forEach(card => {
 
@@ -338,6 +326,7 @@ function habilitarDrag() {
 
         card.addEventListener("dragend", () => {
             card.style.opacity = "1";
+            dragged = null;
         });
 
         card.addEventListener("dragover", (e) => {
@@ -347,42 +336,40 @@ function habilitarDrag() {
         card.addEventListener("drop", (e) => {
             e.preventDefault();
 
-            if (dragged && dragged !== card) {
-                const contenedor = document.getElementById("contenedorRamas");
+            if (!dragged || dragged === card) return;
 
-                const all = [...contenedor.children];
-                const a = all.indexOf(dragged.parentElement);
-                const b = all.indexOf(card.parentElement);
+            const from = dragged.closest(".rama-wrapper");
+            const to = card.closest(".rama-wrapper");
 
-                if (a < b) {
-                    contenedor.insertBefore(
-                        dragged.parentElement,
-                        card.parentElement.nextSibling
-                    );
-                } else {
-                    contenedor.insertBefore(
-                        dragged.parentElement,
-                        card.parentElement
-                    );
-                }
+            const all = [...contenedor.children];
+
+            const fromIndex = all.indexOf(from);
+            const toIndex = all.indexOf(to);
+
+            if (fromIndex < toIndex) {
+                contenedor.insertBefore(from, to.nextSibling);
+            } else {
+                contenedor.insertBefore(from, to);
             }
+
+            console.log("Reordenado:", {
+                from: dragged.dataset.id,
+                to: card.dataset.id
+            });
+
         });
     });
 }
 
-/* =========================
-   INIT
-========================= */
+/* ================= INIT ================= */
 cargarModulo();
 cargarRamas();
 
-/* =========================
-   LOGOUT
-========================= */
+/* ================= LOGOUT ================= */
 document.getElementById("btnLogout").addEventListener("click", async (e) => {
     e.preventDefault();
     await signOut(auth);
-    window.location.href = "index.html";
+    location.href = "index.html";
 });
 </script>
 <script type="module" src="js/alertas-globales.js"></script>    
