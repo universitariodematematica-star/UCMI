@@ -208,241 +208,247 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
-    getFirestore,
-    doc,
-    getDoc,
-    collection,
-    addDoc,
-    query,
-    where,
-    getDocs
+  getFirestore,
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
-    getAuth,
-    onAuthStateChanged,
-    signOut
+  getAuth,
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const app = initializeApp({
-    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-    authDomain: "ucmi-13796634.firebaseapp.com",
-    projectId: "ucmi-13796634",
-    storageBucket: "ucmi-13796634.firebasestorage.app",
-    messagingSenderId: "1090719609536",
-    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+  apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+  authDomain: "ucmi-13796634.firebaseapp.com",
+  projectId: "ucmi-13796634"
 });
 
 const db = getFirestore(app);
 const auth = getAuth();
 
-let entidadAcademia = null;
+let entidadAcademia = "";
+let asignaturasCache = [];
 
-/* =========================
-   AUTH + RENDER MODULOS
-========================= */
 onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "index.html";
+    return;
+  }
 
-    if (!user) {
-        window.location.href = "index.html";
-        return;
-    }
+  const userSnap = await getDoc(doc(db, "usuarios", user.uid));
 
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
+  if (!userSnap.exists()) return;
 
-    if (!userSnap.exists()) return;
+  const d = userSnap.data();
+  entidadAcademia = d.entidad;
 
-    const d = userSnap.data();
-    entidadAcademia = d.entidad;
+  const contenedor = document.getElementById("contenedorModulos");
+  const modulos = d.modulos || [];
 
-    document.getElementById("logoAcademia").src =
-        d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+  contenedor.innerHTML = "";
 
-    document.getElementById("logoAcademia").style.opacity = "1";
+  modulos.forEach((modulo, index) => {
 
-    const contenedor = document.getElementById("contenedorModulos");
-    const modulos = d.modulos || [];
+    const moduloId = typeof modulo === "object" ? modulo.id : index;
+    const moduloNombre = typeof modulo === "object" ? modulo.nombre : modulo;
 
-    contenedor.innerHTML = "";
+    contenedor.innerHTML += `
+      <div class="col-lg-4 col-md-6">
+        <div class="modulo-card">
 
-    if (modulos.length === 0) {
-        contenedor.innerHTML = `
-            <div class="col-12">
-                <div class="modulo-card text-center">
-                    <h4>No hay módulos asignados</h4>
-                </div>
-            </div>`;
-        return;
-    }
+          <div class="modulo-nombre">
+            ${moduloNombre}
+          </div>
 
-    modulos.forEach(modulo => {
+          <div class="asignaturas-container mb-2"
+               data-modulo-id="${moduloId}">
+          </div>
 
-        contenedor.innerHTML += `
-        <div class="col-lg-4 col-md-6">
-            <div class="modulo-card">
+          <div class="d-flex gap-2 flex-wrap">
 
-                <div class="modulo-nombre">${modulo}</div>
+            <button class="btn btn-success btn-modulo btn-crear-asignatura"
+                    data-modulo-id="${moduloId}"
+                    data-modulo="${moduloNombre}">
+              <i class="bi bi-plus-circle"></i> Crear
+            </button>
 
-                <div class="d-flex gap-2 flex-wrap">
+          </div>
 
-                    <button class="btn btn-success btn-modulo btn-crear-asignatura"
-                        data-modulo="${modulo}">
-                        Crear
-                    </button>
+        </div>
+      </div>
+    `;
+  });
 
-                </div>
+  await cargarAsignaturasPorModulo();
 
-            </div>
-        </div>`;
-    });
-
-    await cargarAsignaturas();
+  activarEventosCrear();
+  activarClickAsignaturas();
 });
 
-/* =========================
-   CARGAR ASIGNATURAS
-========================= */
-async function cargarAsignaturas() {
 
-    const cards = document.querySelectorAll(".modulo-card");
+// =========================
+// CARGAR ASIGNATURAS
+// =========================
+async function cargarAsignaturasPorModulo() {
 
-    for (const card of cards) {
+  const bloques = document.querySelectorAll(".asignaturas-container");
 
-        const modulo = card.querySelector(".modulo-nombre").innerText.trim();
+  for (const bloque of bloques) {
 
-        const q = query(
-            collection(db, "asignaturas"),
-            where("entidad", "==", entidadAcademia),
-            where("modulo", "==", modulo)
-        );
-
-        const snap = await getDocs(q);
-
-        let cont = card.querySelector(".asignaturas-container");
-
-        if (!cont) {
-            cont = document.createElement("div");
-            cont.className = "asignaturas-container mt-3";
-            card.appendChild(cont);
-        }
-
-        cont.innerHTML = "";
-
-        snap.forEach(docu => {
-            const data = docu.data();
-
-            cont.innerHTML += `
-                <div class="badge bg-secondary me-1 mb-1 asignatura-click"
-                     style="cursor:pointer"
-                     data-asignatura="${data.asignatura}"
-                     data-modulo="${modulo}">
-                    ${data.asignatura}
-                </div>
-            `;
-        });
-    }
-}
-
-/* =========================
-   CREAR ASIGNATURA
-========================= */
-document.addEventListener("click", async (e) => {
-
-    const btn = e.target.closest(".btn-crear-asignatura");
-    if (!btn) return;
-
-    const modulo = btn.dataset.modulo;
-
-    const nombre = prompt("Nueva asignatura:");
-    if (!nombre) return;
-
-    const limpio = nombre.trim();
-    if (!limpio) return;
+    const moduloId = bloque.dataset.moduloId;
 
     const q = query(
-        collection(db, "asignaturas"),
-        where("entidad", "==", entidadAcademia),
-        where("modulo", "==", modulo),
-        where("asignatura", "==", limpio)
-    );
-
-    const exist = await getDocs(q);
-
-    if (!exist.empty) {
-        alert("Ya existe");
-        return;
-    }
-
-    await addDoc(collection(db, "asignaturas"), {
-        entidad: entidadAcademia,
-        modulo,
-        asignatura: limpio,
-        fechaCreacion: new Date()
-    });
-
-    await cargarAsignaturas();
-});
-
-/* =========================
-   ABRIR MODAL + TÓPICOS
-========================= */
-document.addEventListener("click", async (e) => {
-
-    const el = e.target.closest(".asignatura-click");
-    if (!el) return;
-
-    const asignatura = el.dataset.asignatura;
-    const modulo = el.dataset.modulo;
-
-    const modalEl = document.getElementById("modalTopicos");
-    const modal = new bootstrap.Modal(modalEl);
-    modal.show();
-
-    const cont = document.getElementById("contenedorTopicos");
-    cont.innerHTML = "<p class='text-muted'>Cargando tópicos...</p>";
-
-    const q = query(
-        collection(db, "topicos"),
-        where("entidad", "==", entidadAcademia),
-        where("modulo", "==", modulo)
+      collection(db, "asignaturas"),
+      where("entidad", "==", entidadAcademia),
+      where("moduloId", "==", moduloId)
     );
 
     const snap = await getDocs(q);
 
-    let html = "";
+    bloque.innerHTML = "";
 
     snap.forEach(docu => {
-        const t = docu.data();
+      const data = docu.data();
 
-        html += `
-            <div class="p-2 border rounded mb-2 topico-item"
-                 data-topico-id="${docu.id}"
-                 style="cursor:pointer">
-                ${t.nombre}
-            </div>
-        `;
+      bloque.innerHTML += `
+        <div class="badge bg-secondary me-1 mb-1 asignatura-click"
+             style="cursor:pointer"
+             data-modulo-id="${moduloId}"
+             data-asignatura="${data.asignatura}">
+          ${data.asignatura}
+        </div>
+      `;
+    });
+  }
+}
+
+
+// =========================
+// CREAR ASIGNATURA
+// =========================
+function activarEventosCrear() {
+
+  document.querySelectorAll(".btn-crear-asignatura").forEach(btn => {
+
+    btn.addEventListener("click", async () => {
+
+      const moduloId = btn.dataset.moduloId;
+      const modulo = btn.dataset.modulo;
+
+      const nombre = prompt(`Nueva asignatura para ${modulo}`);
+      if (!nombre) return;
+
+      const limpio = nombre.trim();
+      if (!limpio) return;
+
+      await addDoc(collection(db, "asignaturas"), {
+        entidad: entidadAcademia,
+        moduloId,
+        asignatura: limpio,
+        fechaCreacion: new Date()
+      });
+
+      await cargarAsignaturasPorModulo();
     });
 
-    cont.innerHTML = html || "<p class='text-muted'>No hay tópicos</p>";
-});
+  });
+}
 
-/* =========================
-   SELECCIÓN TÓPICOS
-========================= */
+
+// =========================
+// CLICK ASIGNATURA -> MODAL
+// =========================
+function activarClickAsignaturas() {
+
+  document.addEventListener("click", async (e) => {
+
+    const el = e.target.closest(".asignatura-click");
+    if (!el) return;
+
+    const moduloId = el.dataset.moduloId;
+
+    const modalEl = document.getElementById("modalTopicos");
+    const modal = new bootstrap.Modal(modalEl);
+
+    modal.show();
+
+    const cont = document.getElementById("contenedorTopicos");
+    cont.innerHTML = "Cargando...";
+
+    const q = query(
+      collection(db, "topicos"),
+      where("entidad", "==", entidadAcademia),
+      where("moduloId", "==", moduloId)
+    );
+
+    const snap = await getDocs(q);
+
+    cont.innerHTML = "";
+
+    snap.forEach(docu => {
+      const t = docu.data();
+
+      cont.innerHTML += `
+        <div class="p-2 border rounded mb-2 topico-item"
+             data-topico-id="${docu.id}">
+          ${t.nombre}
+        </div>
+      `;
+    });
+
+    if (!snap.size) {
+      cont.innerHTML = "<p>No hay tópicos</p>";
+    }
+
+  });
+
+}
+
+
+// =========================
+// TOGGLE TÓPICOS
+// =========================
 document.addEventListener("click", (e) => {
+  const el = e.target.closest(".topico-item");
+  if (!el) return;
 
-    const t = e.target.closest(".topico-item");
-    if (!t) return;
-
-    t.classList.toggle("active");
+  el.classList.toggle("active");
 });
 
-/* =========================
-   LOGOUT
-========================= */
+
+// =========================
+// LOGOUT
+// =========================
 document.getElementById("btnLogout").addEventListener("click", () => {
-    signOut(auth).then(() => window.location.href = "index.html");
+  signOut(auth).then(() => {
+    window.location.href = "index.html";
+  });
 });
 </script>
+
+<div class="modal fade" id="modalTopicos" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-dark text-white">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Tópicos</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="contenedorTopicos"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+    
 </body>
 </html>
