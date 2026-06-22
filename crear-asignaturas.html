@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -10,56 +9,66 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
 <style>
-body {
-  background: #0b0f14;
-  color: white;
-  font-family: Arial;
+:root{
+  --dorado-ucmi:#c5a059;
 }
 
-.sidebar {
-  width: 260px;
-  background: rgba(0,0,0,0.4);
-  min-height: 100vh;
-  padding: 20px;
+body{
+  background:#0b0f14;
+  color:white;
+  font-family:Segoe UI;
 }
 
-.app {
-  display: flex;
+.app-wrapper{display:flex;min-height:100vh;}
+
+.sidebar{
+  width:260px;
+  background:#1a2a3a;
 }
 
-.modulo-card {
-  background: rgba(255,255,255,0.08);
-  border-radius: 15px;
-  padding: 20px;
+.super-overlay{
+  flex:1;
+  padding:30px;
 }
 
-.modulo-nombre {
-  font-weight: bold;
-  color: gold;
-  margin-bottom: 10px;
+.modulo-card{
+  background:rgba(255,255,255,0.08);
+  border-radius:15px;
+  padding:20px;
 }
 
-.asignatura-click {
-  cursor: pointer;
+.modulo-nombre{
+  color:var(--dorado-ucmi);
+  font-size:1.2rem;
+  font-weight:600;
+}
+
+.asignatura-click{
+  cursor:pointer;
+}
+
+.asignatura-click:hover{
+  background:#444;
 }
 </style>
 </head>
 
 <body>
 
-<div class="app">
+<div class="app-wrapper">
 
 <!-- SIDEBAR -->
-<div class="sidebar">
-  <img id="logoAcademia" style="width:100%;opacity:0;">
-</div>
+<aside class="sidebar">
+  <img id="logoAcademia" style="width:100%;padding:20px;">
+</aside>
 
 <!-- MAIN -->
-<div class="container-fluid p-4">
-  <h2>Asignaturas</h2>
-  <div id="contenedorModulos" class="row g-3"></div>
-</div>
+<main class="super-overlay">
 
+<h3>Asignaturas</h3>
+<div id="contenedorModulos" class="row g-3"></div>
+
+</main>
 </div>
 
 <!-- MODAL -->
@@ -69,7 +78,7 @@ body {
 
       <div class="modal-header">
         <h5 class="modal-title">Tópicos</h5>
-        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body">
@@ -83,22 +92,16 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
-  getFirestore,
-  doc,
-  getDoc,
-  collection,
-  addDoc,
-  query,
-  where,
-  getDocs
+  getFirestore, doc, getDoc,
+  collection, addDoc, query,
+  where, getDocs
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
-  getAuth,
-  onAuthStateChanged,
-  signOut
+  getAuth, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const app = initializeApp({
@@ -110,144 +113,179 @@ const app = initializeApp({
 const db = getFirestore(app);
 const auth = getAuth();
 
-let entidad = "";
-let modulosData = [];
+let entidadAcademia = "";
 
+/* =======================
+AUTH
+======================= */
 onAuthStateChanged(auth, async (user) => {
+  if (!user) return location.href = "index.html";
 
-if (!user) return (location.href="index.html");
+  const snap = await getDoc(doc(db,"usuarios",user.uid));
+  if (!snap.exists()) return;
 
-const snap = await getDoc(doc(db,"usuarios",user.uid));
-if(!snap.exists()) return;
+  const d = snap.data();
+  entidadAcademia = d.entidad;
 
-const d = snap.data();
-entidad = d.entidad;
+  document.getElementById("logoAcademia").src =
+    d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
 
-// LOGO
-const logo = document.getElementById("logoAcademia");
-logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-logo.style.opacity = 1;
-
-// MODULOS
-const cont = document.getElementById("contenedorModulos");
-cont.innerHTML = "";
-
-modulosData = d.modulos || [];
-
-modulosData.forEach((m,i)=>{
-
-const nombre = typeof m === "object" ? m.nombre : m;
-const id = typeof m === "object" ? m.id : i;
-
-cont.innerHTML += `
-<div class="col-md-4">
-  <div class="modulo-card">
-
-    <div class="modulo-nombre">${nombre}</div>
-
-    <div class="asignaturas-container" data-id="${id}"></div>
-
-    <button class="btn btn-success btn-crear"
-            data-id="${id}"
-            data-modulo="${nombre}">
-      Crear
-    </button>
-
-  </div>
-</div>`;
+  renderModulos(d.modulos || []);
+  await cargarAsignaturas();
 });
 
-await cargarAsignaturas();
-activarCrear();
-activarModal();
+/* =======================
+RENDER MODULOS
+======================= */
+function renderModulos(modulos){
 
-});
+  const cont = document.getElementById("contenedorModulos");
+  cont.innerHTML = "";
 
-// ASIGNATURAS
+  modulos.forEach((m, i)=>{
+
+    const moduloId = m.id || i;
+    const nombre = m.nombre || m;
+
+    cont.innerHTML += `
+      <div class="col-md-6">
+        <div class="modulo-card">
+
+          <div class="modulo-nombre">${nombre}</div>
+
+          <div class="asignaturas-container" data-modulo-id="${moduloId}"></div>
+
+          <button class="btn btn-success btn-sm btn-crear"
+                  data-modulo-id="${moduloId}"
+                  data-modulo="${nombre}">
+            Crear asignatura
+          </button>
+
+        </div>
+      </div>
+    `;
+  });
+
+  activarCrear();
+  activarClicks();
+}
+
+/* =======================
+CARGAR ASIGNATURAS
+======================= */
 async function cargarAsignaturas(){
 
-const bloques = document.querySelectorAll(".asignaturas-container");
+  const bloques = document.querySelectorAll(".asignaturas-container");
 
-for(const b of bloques){
+  for(const b of bloques){
 
-const id = b.dataset.id;
+    const moduloId = b.dataset.moduloId;
 
-const q = query(collection(db,"asignaturas"),
-where("entidad","==",entidad),
-where("moduloId","==",id));
+    const q = query(
+      collection(db,"asignaturas"),
+      where("entidad","==",entidadAcademia),
+      where("moduloId","==",moduloId)
+    );
 
-const snap = await getDocs(q);
+    const snap = await getDocs(q);
 
-b.innerHTML="";
+    b.innerHTML = "";
 
-snap.forEach(d=>{
+    snap.forEach(d=>{
+      const data = d.data();
 
-b.innerHTML += `
-<div class="badge bg-secondary me-1 mb-1 asignatura-click"
-     data-id="${id}">
-${d.data().asignatura}
-</div>`;
-});
+      b.innerHTML += `
+        <span class="badge bg-secondary me-1 asignatura-click"
+              data-modulo-id="${moduloId}">
+          ${data.asignatura}
+        </span>
+      `;
+    });
+  }
 }
-}
 
-// CREAR
+/* =======================
+CREAR ASIGNATURA
+======================= */
 function activarCrear(){
 
-document.querySelectorAll(".btn-crear").forEach(btn=>{
+  document.querySelectorAll(".btn-crear").forEach(btn=>{
 
-btn.onclick = async ()=>{
+    btn.onclick = async ()=>{
 
-const id = btn.dataset.id;
-const modulo = btn.dataset.modulo;
+      const moduloId = btn.dataset.moduloId;
 
-const name = prompt("Asignatura");
-if(!name) return;
+      const nombre = prompt("Nombre asignatura");
+      if(!nombre) return;
 
-await addDoc(collection(db,"asignaturas"),{
-entidad,
-moduloId:id,
-asignatura:name.trim()
-});
+      await addDoc(collection(db,"asignaturas"),{
+        entidad: entidadAcademia,
+        moduloId,
+        asignatura: nombre.trim()
+      });
 
-await cargarAsignaturas();
-};
-});
+      await cargarAsignaturas();
+    };
+  });
 }
 
-// MODAL
-function activarModal(){
+/* =======================
+CLICK ASIGNATURA -> MODAL
+======================= */
+function activarClicks(){
 
-document.addEventListener("click",async(e)=>{
+  document.addEventListener("click", async (e)=>{
 
-const el = e.target.closest(".asignatura-click");
-if(!el) return;
+    const el = e.target.closest(".asignatura-click");
+    if(!el) return;
 
-const id = el.dataset.id;
+    const moduloId = el.dataset.moduloId;
 
-const modal = new bootstrap.Modal(document.getElementById("modalTopicos"));
-modal.show();
+    const modal = new bootstrap.Modal(
+      document.getElementById("modalTopicos")
+    );
 
-const cont = document.getElementById("contenedorTopicos");
-cont.innerHTML="Cargando...";
+    modal.show();
 
-const q = query(collection(db,"topicos"),
-where("entidad","==",entidad),
-where("moduloId","==",id));
+    const cont = document.getElementById("contenedorTopicos");
+    cont.innerHTML = "Cargando...";
 
-const snap = await getDocs(q);
+    const q = query(
+      collection(db,"topicos"),
+      where("entidad","==",entidadAcademia),
+      where("moduloId","==",moduloId)
+    );
 
-cont.innerHTML="";
+    const snap = await getDocs(q);
 
-snap.forEach(t=>{
+    cont.innerHTML = "";
 
-cont.innerHTML += `
-<div class="p-2 border mb-2">
-${t.data().nombre}
-</div>`;
-});
-});
+    snap.forEach(d=>{
+      cont.innerHTML += `
+        <div class="p-2 border mb-2 topico-item">
+          ${d.data().nombre}
+        </div>
+      `;
+    });
+
+    if(!snap.size){
+      cont.innerHTML = "Sin tópicos";
+    }
+  });
 }
+
+/* =======================
+TOGGLE TOPICOS
+======================= */
+document.addEventListener("click",(e)=>{
+  const el = e.target.closest(".topico-item");
+  if(el) el.classList.toggle("active");
+});
+
+/* =======================
+LOGOUT
+======================= */
+window.btnLogout.onclick = ()=> signOut(auth).then(()=>location.href="index.html");
 
 </script>
 
