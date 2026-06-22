@@ -132,6 +132,25 @@
     font-size: .8rem;
     font-weight: 600;
 }
+
+.topico-item {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    color: white;
+    transition: 0.2s ease;
+}
+
+.topico-item:hover {
+    transform: translateX(3px);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.topico-item.active {
+    background: rgba(197, 160, 89, 0.25);
+    border-color: var(--dorado-ucmi);
+    box-shadow: 0 0 10px rgba(197, 160, 89, 0.2);
+}        
         
     </style>
 </head>
@@ -263,7 +282,8 @@ if (modulos.length === 0) {
 
                         <button
                             class="btn btn-success btn-modulo btn-crear-asignatura"
-                            data-modulo="${modulo}">
+                            data-modulo-id="${modulo.id}"
+                            data-modulo="${modulo.nombre}">
                             <i class="bi bi-plus-circle"></i>
                             Crear
                         </button>
@@ -301,7 +321,7 @@ async function cargarAsignaturasPorModulo() {
         const q = query(
             collection(db, "asignaturas"),
             where("entidad", "==", entidadAcademia),
-            where("modulo", "==", modulo)
+            where("moduloId", "==", moduloId)
         );
 
         const snap = await getDocs(q);
@@ -319,11 +339,14 @@ async function cargarAsignaturasPorModulo() {
         snap.forEach(doc => {
             const data = doc.data();
 
-            cont.innerHTML += `
-                <div class="badge bg-secondary me-1 mb-1">
-                    ${data.asignatura}
-                </div>
-            `;
+        cont.innerHTML += `
+            <div class="badge bg-secondary me-1 mb-1 asignatura-click"
+                 style="cursor:pointer"
+                 data-asignatura="${data.asignatura}"
+                 data-modulo="${modulo}">
+                ${data.asignatura}
+            </div>
+        `;
         });
     }
 }
@@ -378,6 +401,56 @@ await addDoc(
 );
 
 await cargarAsignaturasPorModulo();
+
+document.addEventListener("click", async (e) => {
+    const el = e.target.closest(".asignatura-click");
+    if (!el) return;
+
+    const asignatura = el.dataset.asignatura;
+    const moduloId = el.dataset.moduloId;
+
+    // abrir modal
+    const modal = new bootstrap.Modal(
+        document.getElementById("modalTopicos")
+    );
+    modal.show();
+
+    const cont = document.getElementById("contenedorTopicos");
+    cont.innerHTML = "<p class='text-muted'>Cargando tópicos...</p>";
+
+    // consulta a Firestore
+    const q = query(
+        collection(db, "topicos"),
+        where("entidad", "==", entidadAcademia),
+        where("moduloId", "==", moduloId)
+    );
+
+    const snap = await getDocs(q);
+
+    let html = "";
+
+    snap.forEach(doc => {
+        const t = doc.data();
+
+        html += `
+            <div class="p-2 border rounded mb-2 topico-item"
+                 data-topico-id="${doc.id}"
+                 style="cursor:pointer; transition:0.2s">
+                ${t.nombre}
+            </div>
+        `;
+    });
+
+    cont.innerHTML =
+        html || "<p class='text-muted'>No hay tópicos disponibles</p>";
+});
+
+document.addEventListener("click", (e) => {
+    const el = e.target.closest(".topico-item");
+    if (!el) return;
+
+    el.classList.toggle("active");
+});            
             
 alert("Asignatura creada correctamente.");
 
