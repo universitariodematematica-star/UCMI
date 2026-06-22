@@ -238,6 +238,9 @@ const auth = getAuth();
 
 let entidadAcademia = null;
 
+/* =========================
+   AUTH + RENDER MODULOS
+========================= */
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -252,9 +255,10 @@ onAuthStateChanged(auth, async (user) => {
     const d = userSnap.data();
     entidadAcademia = d.entidad;
 
-    const logo = document.getElementById("logoAcademia");
-    logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-    logo.style.opacity = "1";
+    document.getElementById("logoAcademia").src =
+        d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+
+    document.getElementById("logoAcademia").style.opacity = "1";
 
     const contenedor = document.getElementById("contenedorModulos");
     const modulos = d.modulos || [];
@@ -267,8 +271,7 @@ onAuthStateChanged(auth, async (user) => {
                 <div class="modulo-card text-center">
                     <h4>No hay módulos asignados</h4>
                 </div>
-            </div>
-        `;
+            </div>`;
         return;
     }
 
@@ -284,7 +287,7 @@ onAuthStateChanged(auth, async (user) => {
 
                     <button class="btn btn-success btn-modulo btn-crear-asignatura"
                         data-modulo="${modulo}">
-                        <i class="bi bi-plus-circle"></i> Crear
+                        Crear
                     </button>
 
                 </div>
@@ -293,13 +296,13 @@ onAuthStateChanged(auth, async (user) => {
         </div>`;
     });
 
-    cargarAsignaturasPorModulo();
+    await cargarAsignaturas();
 });
 
 /* =========================
-   ASIGNATURAS POR MÓDULO
+   CARGAR ASIGNATURAS
 ========================= */
-async function cargarAsignaturasPorModulo() {
+async function cargarAsignaturas() {
 
     const cards = document.querySelectorAll(".modulo-card");
 
@@ -330,9 +333,9 @@ async function cargarAsignaturasPorModulo() {
 
             cont.innerHTML += `
                 <div class="badge bg-secondary me-1 mb-1 asignatura-click"
-                    style="cursor:pointer"
-                    data-asignatura="${data.asignatura}"
-                    data-modulo="${modulo}">
+                     style="cursor:pointer"
+                     data-asignatura="${data.asignatura}"
+                     data-modulo="${modulo}">
                     ${data.asignatura}
                 </div>
             `;
@@ -350,17 +353,17 @@ document.addEventListener("click", async (e) => {
 
     const modulo = btn.dataset.modulo;
 
-    const nombre = prompt(`Nueva asignatura para ${modulo}`);
+    const nombre = prompt("Nueva asignatura:");
     if (!nombre) return;
 
-    const nombreLimpio = nombre.trim();
-    if (!nombreLimpio) return;
+    const limpio = nombre.trim();
+    if (!limpio) return;
 
     const q = query(
         collection(db, "asignaturas"),
         where("entidad", "==", entidadAcademia),
         where("modulo", "==", modulo),
-        where("asignatura", "==", nombreLimpio)
+        where("asignatura", "==", limpio)
     );
 
     const exist = await getDocs(q);
@@ -373,15 +376,15 @@ document.addEventListener("click", async (e) => {
     await addDoc(collection(db, "asignaturas"), {
         entidad: entidadAcademia,
         modulo,
-        asignatura: nombreLimpio,
+        asignatura: limpio,
         fechaCreacion: new Date()
     });
 
-    await cargarAsignaturasPorModulo();
+    await cargarAsignaturas();
 });
 
 /* =========================
-   CLICK ASIGNATURA → MODAL
+   ABRIR MODAL + TÓPICOS
 ========================= */
 document.addEventListener("click", async (e) => {
 
@@ -391,14 +394,12 @@ document.addEventListener("click", async (e) => {
     const asignatura = el.dataset.asignatura;
     const modulo = el.dataset.modulo;
 
-    const modal = new bootstrap.Modal(
-        document.getElementById("modalTopicos")
-    );
-
+    const modalEl = document.getElementById("modalTopicos");
+    const modal = new bootstrap.Modal(modalEl);
     modal.show();
 
     const cont = document.getElementById("contenedorTopicos");
-    cont.innerHTML = "Cargando...";
+    cont.innerHTML = "<p class='text-muted'>Cargando tópicos...</p>";
 
     const q = query(
         collection(db, "topicos"),
@@ -415,17 +416,18 @@ document.addEventListener("click", async (e) => {
 
         html += `
             <div class="p-2 border rounded mb-2 topico-item"
-                 data-topico-id="${docu.id}">
+                 data-topico-id="${docu.id}"
+                 style="cursor:pointer">
                 ${t.nombre}
             </div>
         `;
     });
 
-    cont.innerHTML = html || "No hay tópicos";
+    cont.innerHTML = html || "<p class='text-muted'>No hay tópicos</p>";
 });
 
 /* =========================
-   SELECCIÓN DE TÓPICOS
+   SELECCIÓN TÓPICOS
 ========================= */
 document.addEventListener("click", (e) => {
 
@@ -435,7 +437,9 @@ document.addEventListener("click", (e) => {
     t.classList.toggle("active");
 });
 
-/* LOGOUT */
+/* =========================
+   LOGOUT
+========================= */
 document.getElementById("btnLogout").addEventListener("click", () => {
     signOut(auth).then(() => window.location.href = "index.html");
 });
