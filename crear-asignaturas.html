@@ -286,6 +286,47 @@ if (modulos.length === 0) {
         `;
     });
 
+    await cargarAsignaturasPorModulo();
+
+    // ===============================
+// RENDER ASIGNATURAS POR MÓDULO
+// ===============================
+async function cargarAsignaturasPorModulo() {
+    const modulosDOM = document.querySelectorAll(".modulo-card");
+
+    for (const card of modulosDOM) {
+        const titulo = card.querySelector(".modulo-nombre");
+        const modulo = titulo.innerText.trim();
+
+        const q = query(
+            collection(db, "asignaturas"),
+            where("entidad", "==", entidadAcademia),
+            where("modulo", "==", modulo)
+        );
+
+        const snap = await getDocs(q);
+
+        let cont = card.querySelector(".asignaturas-container");
+
+        if (!cont) {
+            cont = document.createElement("div");
+            cont.className = "asignaturas-container mt-3";
+            card.appendChild(cont);
+        }
+
+        cont.innerHTML = "";
+
+        snap.forEach(doc => {
+            const data = doc.data();
+
+            cont.innerHTML += `
+                <div class="badge bg-secondary me-1 mb-1">
+                    ${data.asignatura}
+                </div>
+            `;
+        });
+    }
+}
     const botonesCrear =
         document.querySelectorAll(".btn-crear-asignatura");
 
@@ -336,7 +377,12 @@ await addDoc(
     }
 );
 
+await cargarAsignaturasPorModulo();
+            
 alert("Asignatura creada correctamente.");
+
+// 🔥 REFRESCAR UI
+await cargarAsignaturasPorModulo();
 
     });
 
