@@ -188,7 +188,16 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import {
+    getFirestore,
+    doc,
+    getDoc,
+    collection,
+    addDoc,
+    query,
+    where,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
@@ -208,6 +217,7 @@ onAuthStateChanged(auth, async (user) => {
     if (userSnap.exists()) {
 
         const d = userSnap.data();
+        const entidadAcademia = d.entidad;
 
         const logo = document.getElementById('logoAcademia');
 
@@ -240,53 +250,110 @@ if (modulos.length === 0) {
 
     modulos.forEach(modulo => {
 
-contenedor.innerHTML += `
-    <div class="col-lg-4 col-md-6">
+        contenedor.innerHTML += `
+            <div class="col-lg-4 col-md-6">
 
-        <div class="modulo-card">
+                <div class="modulo-card">
 
-            <div class="modulo-nombre">
-                ${modulo}
+                    <div class="modulo-nombre">
+                        ${modulo}
+                    </div>
+
+                    <div class="d-flex gap-2 flex-wrap">
+
+                        <button
+                            class="btn btn-success btn-modulo btn-crear-asignatura"
+                            data-modulo="${modulo}">
+                            <i class="bi bi-plus-circle"></i>
+                            Crear
+                        </button>
+
+                        <button class="btn btn-warning btn-modulo">
+                            <i class="bi bi-pencil"></i>
+                            Editar
+                        </button>
+
+                        <button class="btn btn-danger btn-modulo">
+                            <i class="bi bi-trash"></i>
+                            Borrar
+                        </button>
+
+                    </div>
+
+                </div>
+
             </div>
-
-            <div class="d-flex gap-2 flex-wrap">
-
-                <button class="btn btn-success btn-modulo">
-                    <i class="bi bi-plus-circle"></i>
-                    Crear
-                </button>
-
-                <button class="btn btn-warning btn-modulo">
-                    <i class="bi bi-pencil"></i>
-                    Editar
-                </button>
-
-                <button class="btn btn-danger btn-modulo">
-                    <i class="bi bi-trash"></i>
-                    Borrar
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-`;
+        `;
     });
 
-}
+    const botonesCrear =
+        document.querySelectorAll(".btn-crear-asignatura");
 
-        
+    botonesCrear.forEach(boton => {
+
+        boton.addEventListener("click", async () => {
+
+            const modulo =
+                boton.dataset.modulo;
+
+            const nombreAsignatura = prompt(
+                `Nueva asignatura para ${modulo}`
+            );
+
+            if (!nombreAsignatura) return;
+
+            const nombreLimpio =
+                nombreAsignatura.trim();
+
+            if (!nombreLimpio) return;
+
+            const q = query(
+                collection(db, "asignaturas"),
+                where("entidad", "==", entidadAcademia),
+                where("modulo", "==", modulo),
+                where("asignatura", "==", nombreLimpio)
+            );
+
+            const existente =
+                await getDocs(q);
+
+            if (!existente.empty) {
+
+                alert(
+                    "Ya existe una asignatura con ese nombre en este módulo."
+                );
+
+                return;
+            }
+
+await addDoc(
+    collection(db, "asignaturas"),
+    {
+        entidad: entidadAcademia,
+        modulo: modulo,
+        asignatura: nombreLimpio,
+        fechaCreacion: new Date()
     }
+);
+
+alert("Asignatura creada correctamente.");
+
+    });
 
 });
 
-    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
+}
+
+}
+
+});
+
+document.getElementById('btnLogout').addEventListener(
+    'click',
+    () => signOut(auth).then(() => window.location.href = "index.html")
+);
     
 </script>
 
-
-
-    
 </body>
 </html>
