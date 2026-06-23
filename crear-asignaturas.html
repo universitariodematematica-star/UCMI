@@ -198,7 +198,8 @@ import {
     getDocs,
     serverTimestamp,
     onSnapshot,
-    updateDoc
+    updateDoc,
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -331,6 +332,11 @@ onAuthStateChanged(auth, async (user) => {
                             Editar
                         </button>
 
+                        <button class="btn btn-sm btn-danger btnEliminarAsignatura"
+                            data-id="${data.id}">
+                            Borrar
+                        </button>
+
                     </div>
                 `);
             }
@@ -357,6 +363,19 @@ document.addEventListener("click", async (e) => {
         asignatura: nuevoNombre
     });
 });
+
+document.addEventListener("click", async (e) => {
+
+    if (!e.target.classList.contains("btnEliminarAsignatura")) return;
+
+    const id = e.target.dataset.id;
+
+    const confirmacion = confirm("¿Seguro que quieres borrar esta asignatura?");
+
+    if (!confirmacion) return;
+
+    await deleteDoc(doc(db, "asignaturas", id));
+});    
 
 /* =========================
    GUARDAR ASIGNATURA
