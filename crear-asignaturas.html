@@ -129,6 +129,28 @@
     .modulo-item:hover{
         background: rgba(255,255,255,0.05);
     }
+
+    .asignatura-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 6px 10px;
+    margin-top: 6px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+}
+
+.col-nombre {
+    color: #00c2ff;
+    font-weight: 500;
+    padding-left: 10px;
+}
+
+.col-botones {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}    
         
     </style>
 </head>
@@ -208,9 +230,7 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// =====================
-// INIT FIREBASE
-// =====================
+// INIT
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -224,11 +244,9 @@ const db = getFirestore(app);
 const auth = getAuth();
 
 let moduloSeleccionado = null;
-let userEntidadGlobal = null;
+let entidadGlobal = null;
 
-// =====================
-// AUTH
-// =====================
+// ===================== AUTH =====================
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -240,7 +258,7 @@ onAuthStateChanged(auth, async (user) => {
     if (!userSnap.exists()) return;
 
     const d = userSnap.data();
-    userEntidadGlobal = d.entidad;
+    entidadGlobal = d.entidad;
 
     const contenedorModulos = document.getElementById("contenedorModulos");
     contenedorModulos.innerHTML = "";
@@ -251,17 +269,15 @@ onAuthStateChanged(auth, async (user) => {
             <div class="modulo-item">
 
                 <div class="d-flex justify-content-between align-items-center">
-
-                    <span><strong>${modulo}</strong></span>
+                    <strong>${modulo}</strong>
 
                     <button class="btn btn-sm btn-success btnCrearAsignatura"
                         data-modulo="${modulo}">
                         Crear asignatura
                     </button>
-
                 </div>
 
-                <div class="listaAsignaturas mt-2"
+                <div class="listaAsignaturas"
                      id="asignaturas-${modulo}">
                 </div>
 
@@ -276,11 +292,9 @@ onAuthStateChanged(auth, async (user) => {
 
             moduloSeleccionado = btn.dataset.modulo;
 
-            const modal = new bootstrap.Modal(
+            new bootstrap.Modal(
                 document.getElementById("modalAsignatura")
-            );
-
-            modal.show();
+            ).show();
         });
 
     });
@@ -288,29 +302,34 @@ onAuthStateChanged(auth, async (user) => {
     const logo = document.getElementById("logoAcademia");
     logo.src = d.logoCustom ||
         "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-
     logo.style.opacity = "1";
 
-    // =====================
-    // REALTIME ASIGNATURAS
-    // =====================
-    if (!userEntidadGlobal) return;
+    // ===================== REALTIME =====================
+    if (!entidadGlobal) return;
 
     const q = query(
         collection(db, "asignaturas"),
-        where("entidad", "==", userEntidadGlobal)
+        where("entidad", "==", entidadGlobal)
     );
 
     onSnapshot(q, (snapshot) => {
 
-        // limpiar UI
-        document.querySelectorAll(".listaAsignaturas").forEach(el => {
-            el.innerHTML = "";
-        });
+        // limpiar
+        document.querySelectorAll(".listaAsignaturas")
+            .forEach(el => el.innerHTML = "");
+
+        // 🔥 ORDEN ALFABÉTICO REAL
+        const lista = [];
 
         snapshot.forEach(docu => {
+            lista.push({ id: docu.id, ...docu.data() });
+        });
 
-            const data = docu.data();
+        lista.sort((a, b) =>
+            a.asignatura.localeCompare(b.asignatura, "es")
+        );
+
+        lista.forEach(data => {
 
             const contenedor = document.getElementById(
                 `asignaturas-${data.modulo}`
@@ -319,27 +338,22 @@ onAuthStateChanged(auth, async (user) => {
             if (!contenedor) return;
 
             contenedor.insertAdjacentHTML("beforeend", `
-                <div class="d-flex align-items-center justify-content-between ms-3 mt-1 asignatura-item">
+                <div class="asignatura-row">
 
-                    <button
-                        type="button"
-                        class="btn btn-link text-info p-0 nombre-asignatura clicable-asignatura"
-                        style="text-decoration:none;font-weight:500;">
+                    <div class="col-nombre">
                         ${data.asignatura}
-                    </button>
+                    </div>
 
-                    <div class="d-flex align-items-center gap-2">
+                    <div class="col-botones">
 
-                        <button
-                            class="btn btn-sm btn-warning btnEditarAsignatura"
-                            data-id="${docu.id}"
+                        <button class="btn btn-sm btn-warning btnEditarAsignatura"
+                            data-id="${data.id}"
                             data-nombre="${data.asignatura}">
                             Editar
                         </button>
 
-                        <button
-                            class="btn btn-sm btn-danger btnEliminarAsignatura"
-                            data-id="${docu.id}">
+                        <button class="btn btn-sm btn-danger btnEliminarAsignatura"
+                            data-id="${data.id}">
                             Borrar
                         </button>
 
@@ -353,14 +367,11 @@ onAuthStateChanged(auth, async (user) => {
 
 });
 
-// =====================
-// CREAR ASIGNATURA
-// =====================
+// ===================== CREAR =====================
 document.getElementById("btnGuardarAsignatura")
 .addEventListener("click", async () => {
 
     const nombre = document.getElementById("nombreAsignatura").value.trim();
-
     if (!nombre || !moduloSeleccionado) return;
 
     const user = auth.currentUser;
@@ -373,7 +384,6 @@ document.getElementById("btnGuardarAsignatura")
     );
 
     const snap = await getDocs(q);
-
     if (snap.empty) return;
 
     const docOferta = snap.docs[0];
@@ -393,9 +403,7 @@ document.getElementById("btnGuardarAsignatura")
     ).hide();
 });
 
-// =====================
-// EDITAR
-// =====================
+// ===================== EDITAR =====================
 document.addEventListener("click", async (e) => {
 
     if (!e.target.classList.contains("btnEditarAsignatura")) return;
@@ -412,31 +420,25 @@ document.addEventListener("click", async (e) => {
     });
 });
 
-// =====================
-// ELIMINAR
-// =====================
+// ===================== ELIMINAR =====================
 document.addEventListener("click", async (e) => {
 
     if (!e.target.classList.contains("btnEliminarAsignatura")) return;
 
     const id = e.target.dataset.id;
 
-    const ok = confirm("¿Seguro que quieres borrar esta asignatura?");
-    if (!ok) return;
+    if (!confirm("¿Eliminar asignatura?")) return;
 
     await deleteDoc(doc(db, "asignaturas", id));
 });
 
-// =====================
-// LOGOUT
-// =====================
+// ===================== LOGOUT =====================
 document.getElementById("btnLogout")
 .addEventListener("click", () =>
     signOut(auth).then(() =>
         window.location.href = "index.html"
     )
 );
-
 </script>
 <div class="modal fade" id="modalAsignatura" tabindex="-1">
     <div class="modal-dialog">
