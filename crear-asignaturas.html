@@ -270,6 +270,23 @@ onAuthStateChanged(auth, async (user) => {
         `;
     });
 
+    document.addEventListener("click", async (e) => {
+
+    if (!e.target.classList.contains("btnEditarAsignatura")) return;
+
+    const id = e.target.dataset.id;
+    const actual = e.target.dataset.nombre;
+
+    const nuevoNombre = prompt("Editar asignatura:", actual);
+
+    if (!nuevoNombre || nuevoNombre === actual) return;
+
+    await updateDoc(doc(db, "asignaturas", id), {
+        asignatura: nuevoNombre
+    });
+
+});
+
     // =========================
     // BOTONES MODAL
     // =========================
@@ -307,48 +324,54 @@ onAuthStateChanged(auth, async (user) => {
 
     if (!userEntidad) return;
 
-    const q = query(
-        collection(db, "asignaturas"),
-        where("entidad", "==", userEntidad)
-    );
-
     onSnapshot(q, (snapshot) => {
 
-        document.querySelectorAll(".listaAsignaturas").forEach(el => {
-            el.innerHTML = "";
+    document.querySelectorAll(".listaAsignaturas").forEach(el => {
+        el.innerHTML = "";
+    });
+
+    const asignaturas = [];
+
+    snapshot.forEach(docu => {
+        asignaturas.push({
+            id: docu.id,
+            ...docu.data()
         });
+    });
 
-        const asignaturasOrdenadas = [];
-
-snapshot.forEach(docu => {
-
-    const data = docu.data();
-
-    const contenedor = document.getElementById(
-        `asignaturas-${data.modulo}`
+    // ordenar alfabéticamente
+    asignaturas.sort((a, b) =>
+        a.asignatura.localeCompare(b.asignatura)
     );
 
-    if (contenedor) {
+    asignaturas.forEach(data => {
 
-        contenedor.insertAdjacentHTML("beforeend", `
-            <div class="d-flex align-items-center justify-content-between ms-3 mt-1 asignatura-item">
+        const contenedor = document.getElementById(
+            `asignaturas-${data.modulo}`
+        );
 
-                <span class="text-info nombre-asignatura">
-                    ${data.asignatura}
-                </span>
+        if (contenedor) {
 
-                <button
-                    class="btn btn-sm btn-warning btnEditarAsignatura"
-                    data-id="${docu.id}"
-                    data-nombre="${data.asignatura}">
-                    Editar
-                </button>
+            contenedor.insertAdjacentHTML("beforeend", `
+                <div class="d-flex align-items-center justify-content-between ms-3 mt-1 asignatura-item">
 
-            </div>
-        `);
-    }
-});
+                    <span class="text-info nombre-asignatura">
+                        ${data.asignatura}
+                    </span>
+
+                    <button
+                        class="btn btn-sm btn-warning btnEditarAsignatura"
+                        data-id="${data.id}"
+                        data-nombre="${data.asignatura}">
+                        Editar
+                    </button>
+
+                </div>
+            `);
+        }
     });
+
+});
 
 });
 
