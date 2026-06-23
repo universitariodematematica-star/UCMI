@@ -341,12 +341,15 @@ onAuthStateChanged(auth, async (user) => {
                 <div class="asignatura-row">
 
                     <div class="col-nombre">
+
                         <button
-                            class="btn btn-link p-0 text-info asignatura-click"
+                            class="btn btn-link p-0 text-info btnAbrirTopicos"
                             data-id="${data.id}"
+                            data-nombre="${data.asignatura}"
                             style="text-decoration:none;font-weight:500;">
                             ${data.asignatura}
                         </button>
+                    
                     </div>
 
                     <div class="col-botones">
@@ -444,6 +447,33 @@ document.getElementById("btnLogout")
         window.location.href = "index.html"
     )
 );
+
+document.addEventListener("click", (e) => {
+
+    const btn = e.target.closest(".btnAbrirTopicos");
+    if (!btn) return;
+
+    const idAsignatura = btn.dataset.id;
+    const nombreAsignatura = btn.dataset.nombre;
+
+    // Guardamos contexto (opcional pero útil para después)
+    window.asignaturaActual = {
+        id: idAsignatura,
+        nombre: nombreAsignatura
+    };
+
+    // Pintamos nombre en el modal
+    const titulo = document.getElementById("nombreAsignaturaTopicos");
+    if (titulo) {
+        titulo.textContent = nombreAsignatura;
+    }
+
+    // Abrimos modal
+    new bootstrap.Modal(
+        document.getElementById("modalTopicos")
+    ).show();
+});
+    
 </script>
 <div class="modal fade" id="modalAsignatura" tabindex="-1">
     <div class="modal-dialog">
@@ -494,6 +524,52 @@ document.getElementById("btnLogout")
             </div>
 
         </div>
+
+<div class="modal fade" id="modalTopicos" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Agregar tópicos
+                </h5>
+
+                <button type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <p class="mb-2 text-info">
+                    Asignatura: <span id="nombreAsignaturaTopicos"></span>
+                </p>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Escribe un tópico...">
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+
+                <button class="btn btn-success">
+                    Agregar
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+        
     </div>
 </div>    
     
