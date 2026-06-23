@@ -197,7 +197,8 @@ import {
     where,
     getDocs,
     serverTimestamp,
-    onSnapshot
+    onSnapshot,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -320,28 +321,29 @@ onAuthStateChanged(auth, async (user) => {
         const asignaturasOrdenadas = [];
 
 snapshot.forEach(docu => {
-    asignaturasOrdenadas.push(docu.data());
-});
 
-asignaturasOrdenadas.sort((a, b) =>
-    a.asignatura.localeCompare(b.asignatura, "es", { sensitivity: "base" })
-);
-
-// limpiar todas las listas
-document.querySelectorAll(".listaAsignaturas").forEach(el => {
-    el.innerHTML = "";
-});
-
-asignaturasOrdenadas.forEach(data => {
+    const data = docu.data();
 
     const contenedor = document.getElementById(
         `asignaturas-${data.modulo}`
     );
 
     if (contenedor) {
+
         contenedor.insertAdjacentHTML("beforeend", `
-            <div class="ms-4 mt-1 text-info asignatura-item">
-                ${data.asignatura}
+            <div class="d-flex align-items-center justify-content-between ms-3 mt-1 asignatura-item">
+
+                <span class="text-info nombre-asignatura">
+                    ${data.asignatura}
+                </span>
+
+                <button
+                    class="btn btn-sm btn-warning btnEditarAsignatura"
+                    data-id="${docu.id}"
+                    data-nombre="${data.asignatura}">
+                    Editar
+                </button>
+
             </div>
         `);
     }
