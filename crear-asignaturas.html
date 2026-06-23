@@ -279,7 +279,18 @@ onAuthStateChanged(auth, async (user) => {
     logo.style.opacity = "1";
 });
 
-onSnapshot(collection(db, "asignaturas"), (snapshot) => {
+import { query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// IMPORTANTE: esto va dentro de onAuthStateChanged después de tener "d"
+
+const userEntidad = d.entidad;
+
+const q = query(
+    collection(db, "asignaturas"),
+    where("entidad", "==", userEntidad)
+);
+
+onSnapshot(q, (snapshot) => {
 
     document.querySelectorAll(".listaAsignaturas").forEach(el => {
         el.innerHTML = "";
@@ -295,14 +306,14 @@ onSnapshot(collection(db, "asignaturas"), (snapshot) => {
 
         if (contenedor) {
             contenedor.insertAdjacentHTML("beforeend", `
-                <div class="ms-3 mt-1 text-info asignatura-item">
-                     ${data.asignatura}
+                <div class="ms-4 mt-1 text-info asignatura-item">
+                    ${data.asignatura}
                 </div>
             `);
         }
     });
 
-});    
+}); 
 
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
 
@@ -334,6 +345,7 @@ await addDoc(collection(db, "asignaturas"), {
     asignatura: nombre,
     modulo: moduloSeleccionado,
     moduloId: docOferta.id,
+    entidad: d.entidad,
     fechaCreacion: serverTimestamp()
 
 });
