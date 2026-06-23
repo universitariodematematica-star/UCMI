@@ -246,7 +246,7 @@ const auth = getAuth();
 let moduloSeleccionado = null;
 let entidadGlobal = null;
 
-// ===================== AUTH =====================
+// ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -260,12 +260,12 @@ onAuthStateChanged(auth, async (user) => {
     const d = userSnap.data();
     entidadGlobal = d.entidad;
 
-    const contenedorModulos = document.getElementById("contenedorModulos");
-    contenedorModulos.innerHTML = "";
+    const contenedor = document.getElementById("contenedorModulos");
+    contenedor.innerHTML = "";
 
     (d.modulos || []).forEach(modulo => {
 
-        contenedorModulos.innerHTML += `
+        contenedor.innerHTML += `
             <div class="modulo-item">
 
                 <div class="d-flex justify-content-between align-items-center">
@@ -277,34 +277,23 @@ onAuthStateChanged(auth, async (user) => {
                     </button>
                 </div>
 
-                <div class="listaAsignaturas"
-                     id="asignaturas-${modulo}">
-                </div>
+                <div class="listaAsignaturas" id="asignaturas-${modulo}"></div>
 
             </div>
         `;
     });
 
-    document.querySelectorAll(".btnCrearAsignatura")
-    .forEach(btn => {
-
+    document.querySelectorAll(".btnCrearAsignatura").forEach(btn => {
         btn.addEventListener("click", () => {
-
             moduloSeleccionado = btn.dataset.modulo;
 
             new bootstrap.Modal(
                 document.getElementById("modalAsignatura")
             ).show();
         });
-
     });
 
-    const logo = document.getElementById("logoAcademia");
-    logo.src = d.logoCustom ||
-        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-    logo.style.opacity = "1";
-
-    // ===================== REALTIME =====================
+    // ================= REALTIME =================
     if (!entidadGlobal) return;
 
     const q = query(
@@ -314,17 +303,16 @@ onAuthStateChanged(auth, async (user) => {
 
     onSnapshot(q, (snapshot) => {
 
-        // limpiar
         document.querySelectorAll(".listaAsignaturas")
             .forEach(el => el.innerHTML = "");
 
-        // 🔥 ORDEN ALFABÉTICO REAL
         const lista = [];
 
         snapshot.forEach(docu => {
             lista.push({ id: docu.id, ...docu.data() });
         });
 
+        // ORDEN ALFABÉTICO
         lista.sort((a, b) =>
             a.asignatura.localeCompare(b.asignatura, "es")
         );
@@ -341,15 +329,12 @@ onAuthStateChanged(auth, async (user) => {
                 <div class="asignatura-row">
 
                     <div class="col-nombre">
-
-                        <button
-                            class="btn btn-link p-0 text-info btnAbrirTopicos"
+                        <button class="btn btn-link p-0 text-info btnAbrirTopicos"
                             data-id="${data.id}"
                             data-nombre="${data.asignatura}"
                             style="text-decoration:none;font-weight:500;">
                             ${data.asignatura}
                         </button>
-                    
                     </div>
 
                     <div class="col-botones">
@@ -370,12 +355,10 @@ onAuthStateChanged(auth, async (user) => {
                 </div>
             `);
         });
-
     });
-
 });
 
-// ===================== CREAR =====================
+// ================= CREAR =================
 document.getElementById("btnGuardarAsignatura")
 .addEventListener("click", async () => {
 
@@ -394,12 +377,12 @@ document.getElementById("btnGuardarAsignatura")
     const snap = await getDocs(q);
     if (snap.empty) return;
 
-    const docOferta = snap.docs[0];
+    const oferta = snap.docs[0];
 
     await addDoc(collection(db, "asignaturas"), {
         asignatura: nombre,
         modulo: moduloSeleccionado,
-        moduloId: docOferta.id,
+        moduloId: oferta.id,
         entidad: d.entidad,
         fechaCreacion: serverTimestamp()
     });
@@ -411,7 +394,7 @@ document.getElementById("btnGuardarAsignatura")
     ).hide();
 });
 
-// ===================== EDITAR =====================
+// ================= EDITAR =================
 document.addEventListener("click", async (e) => {
 
     if (!e.target.classList.contains("btnEditarAsignatura")) return;
@@ -428,7 +411,7 @@ document.addEventListener("click", async (e) => {
     });
 });
 
-// ===================== ELIMINAR =====================
+// ================= BORRAR =================
 document.addEventListener("click", async (e) => {
 
     if (!e.target.classList.contains("btnEliminarAsignatura")) return;
@@ -440,39 +423,34 @@ document.addEventListener("click", async (e) => {
     await deleteDoc(doc(db, "asignaturas", id));
 });
 
-// ===================== LOGOUT =====================
+// ================= ABRIR TÓPICOS =================
+document.addEventListener("click", (e) => {
+
+    const btn = e.target.closest(".btnAbrirTopicos");
+    if (!btn) return;
+
+    const nombre = btn.dataset.nombre;
+
+    window.asignaturaActual = {
+        id: btn.dataset.id,
+        nombre
+    };
+
+    const titulo = document.getElementById("nombreAsignaturaTopicos");
+    if (titulo) titulo.textContent = nombre;
+
+    new bootstrap.Modal(
+        document.getElementById("modalTopicos")
+    ).show();
+});
+
+// ================= LOGOUT =================
 document.getElementById("btnLogout")
 .addEventListener("click", () =>
     signOut(auth).then(() =>
         window.location.href = "index.html"
     )
 );
-
-document.addEventListener("click", (e) => {
-
-    const btn = e.target.closest(".btnAbrirTopicos");
-    if (!btn) return;
-
-    const idAsignatura = btn.dataset.id;
-    const nombreAsignatura = btn.dataset.nombre;
-
-    // Guardamos contexto (opcional pero útil para después)
-    window.asignaturaActual = {
-        id: idAsignatura,
-        nombre: nombreAsignatura
-    };
-
-    // Pintamos nombre en el modal
-    const titulo = document.getElementById("nombreAsignaturaTopicos");
-    if (titulo) {
-        titulo.textContent = nombreAsignatura;
-    }
-
-    // Abrimos modal
-    new bootstrap.Modal(
-        document.getElementById("modalTopicos")
-    ).show();
-});
     
 </script>
 <div class="modal fade" id="modalAsignatura" tabindex="-1">
