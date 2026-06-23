@@ -298,11 +298,25 @@ document.getElementById("btnGuardarAsignatura")
 
     console.log("Modulo seleccionado:", moduloSeleccionado);
 
+const q = query(
+    collection(db, "ofertas"),
+    where("modulo", "==", moduloSeleccionado)
+);
+
+const snap = await getDocs(q);
+
+if (snap.empty) {
+    alert("No se encontró el módulo en ofertas");
+    return;
+}
+
+const docOferta = snap.docs[0];
+
 await addDoc(collection(db, "asignaturas"), {
 
     asignatura: nombre,
     modulo: moduloSeleccionado,
-    moduloId: moduloSeleccionado,
+    moduloId: docOferta.id,
     fechaCreacion: serverTimestamp()
 
 });
