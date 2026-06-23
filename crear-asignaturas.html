@@ -186,11 +186,23 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import {
+    getFirestore,
+    doc,
+    getDoc,
+    collection,
+    addDoc,
+    query,
+    where,
+    getDocs,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
     const auth = getAuth();
+
+    let moduloSeleccionado = null;
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -199,35 +211,72 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
+    const userSnap = await getDoc(
+        doc(db, "usuarios", user.uid)
+    );
 
     if (userSnap.exists()) {
 
         const d = userSnap.data();
 
-        const contenedorModulos = document.getElementById("contenedorModulos");
+        const contenedorModulos =
+            document.getElementById("contenedorModulos");
 
         contenedorModulos.innerHTML = "";
 
         (d.modulos || []).forEach(modulo => {
-            contenedorModulos.innerHTML += `
-                <div class="modulo-item d-flex justify-content-between align-items-center w-100">
 
-                    <span>${modulo}</span>
+    contenedorModulos.innerHTML += `
+        <div class="modulo-item d-flex justify-content-between align-items-center w-100">
 
-                    <button class="btn btn-sm btn-success">
-                        Crear asignatura
-                    </button>
+            <span>${modulo}</span>
 
-                </div>
-            `;
-        });
+            <button
+                class="btn btn-sm btn-success btnCrearAsignatura"
+                data-modulo="${modulo}">
+                Crear asignatura
+            </button>
 
-    }
+        </div>
+    `;
 
 });
 
-        const logo = document.getElementById('logoAcademia');
+document.querySelectorAll(".btnCrearAsignatura")
+.forEach(btn => {
+
+    btn.addEventListener("click", () => {
+
+        moduloSeleccionado = btn.dataset.modulo;
+
+        const modal = new bootstrap.Modal(
+            document.getElementById("modalAsignatura")
+        );
+
+        modal.show();
+
+    });
+
+});        
+
+document.querySelectorAll(".btnCrearAsignatura")
+.forEach(btn => {
+
+    btn.addEventListener("click", () => {
+
+        moduloSeleccionado = btn.dataset.modulo;
+
+        const modal = new bootstrap.Modal(
+            document.getElementById("modalAsignatura")
+        );
+
+        modal.show();
+
+    });
+
+});
+
+        const logo = document.getElementById("logoAcademia");
 
         logo.src =
             d.logoCustom ||
@@ -241,6 +290,58 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
     
 </script>
+
+<div class="modal fade" id="modalAsignatura" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Crear asignatura
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <label class="form-label">
+                    Nombre de la asignatura
+                </label>
+
+                <input
+                    type="text"
+                    id="nombreAsignatura"
+                    class="form-control"
+                    placeholder="Ejemplo: Inglés A2 Kids">
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-success"
+                    id="btnGuardarAsignatura">
+                    Guardar
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>    
     
 </body>
 </html>
