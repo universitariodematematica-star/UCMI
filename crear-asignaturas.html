@@ -195,7 +195,8 @@
     query,
     where,
     getDocs,
-    serverTimestamp
+    serverTimestamp,
+    onSnapshot    
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
@@ -215,77 +216,93 @@ onAuthStateChanged(auth, async (user) => {
         doc(db, "usuarios", user.uid)
     );
 
-    if (userSnap.exists()) {
+    if (!userSnap.exists()) return;
 
-        const d = userSnap.data();
+    const d = userSnap.data();
 
-        const contenedorModulos =
-            document.getElementById("contenedorModulos");
+    const contenedorModulos =
+        document.getElementById("contenedorModulos");
 
-        contenedorModulos.innerHTML = "";
+    contenedorModulos.innerHTML = "";
 
-        (d.modulos || []).forEach(modulo => {
+    (d.modulos || []).forEach(modulo => {
 
-    contenedorModulos.innerHTML += `
-        <div class="modulo-item d-flex justify-content-between align-items-center w-100">
+        contenedorModulos.innerHTML += `
+            <div class="modulo-item">
 
-            <span>${modulo}</span>
+                <div class="d-flex justify-content-between align-items-center">
 
-            <button
-                class="btn btn-sm btn-success btnCrearAsignatura"
-                data-modulo="${modulo}">
-                Crear asignatura
-            </button>
+                    <span>
+                        <strong>${modulo}</strong>
+                    </span>
 
-        </div>
-    `;
+                    <button
+                        class="btn btn-sm btn-success btnCrearAsignatura"
+                        data-modulo="${modulo}">
+                        Crear asignatura
+                    </button>
 
-});
+                </div>
 
-document.querySelectorAll(".btnCrearAsignatura")
-.forEach(btn => {
+                <div
+                    class="listaAsignaturas mt-2"
+                    id="asignaturas-${modulo}">
+                </div>
 
-    btn.addEventListener("click", () => {
+            </div>
+        `;
+    });
 
-        moduloSeleccionado = btn.dataset.modulo;
+    document.querySelectorAll(".btnCrearAsignatura")
+    .forEach(btn => {
 
-        const modal = new bootstrap.Modal(
-            document.getElementById("modalAsignatura")
-        );
+        btn.addEventListener("click", () => {
 
-        modal.show();
+            moduloSeleccionado = btn.dataset.modulo;
+
+            const modal = new bootstrap.Modal(
+                document.getElementById("modalAsignatura")
+            );
+
+            modal.show();
+
+        });
 
     });
 
-});        
+    const logo = document.getElementById("logoAcademia");
 
-document.querySelectorAll(".btnCrearAsignatura")
-.forEach(btn => {
+    logo.src =
+        d.logoCustom ||
+        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
 
-    btn.addEventListener("click", () => {
+    logo.style.opacity = "1";
+});
 
-        moduloSeleccionado = btn.dataset.modulo;
+onSnapshot(collection(db, "asignaturas"), (snapshot) => {
 
-        const modal = new bootstrap.Modal(
-            document.getElementById("modalAsignatura")
-        );
-
-        modal.show();
-
+    document.querySelectorAll(".listaAsignaturas").forEach(el => {
+        el.innerHTML = "";
     });
 
-});
+    snapshot.forEach(docu => {
 
-        const logo = document.getElementById("logoAcademia");
+        const data = docu.data();
 
-        logo.src =
-            d.logoCustom ||
-            "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+        const contenedor = document.getElementById(
+            `asignaturas-${data.modulo}`
+        );
 
-        logo.style.opacity = "1";
-    }
+        if (contenedor) {
+            contenedor.insertAdjacentHTML("beforeend", `
+                <div class="ms-3 mt-1 text-info asignatura-item">
+                    └ ${data.asignatura}
+                </div>
+            `);
+        }
+    });
 
-});
+});    
 
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
 
@@ -321,13 +338,25 @@ await addDoc(collection(db, "asignaturas"), {
 
 });
 
-    // limpiar input
-    document.getElementById("nombreAsignatura").value = "";
+const contenedor = document.getElementById(
+    `asignaturas-${moduloSeleccionado}`
+);
 
-    // cerrar modal
-    bootstrap.Modal.getInstance(
-        document.getElementById("modalAsignatura")
-    ).hide();
+if (contenedor) {
+    contenedor.insertAdjacentHTML("beforeend", `
+        <div class="ms-3 mt-1 text-info asignatura-item">
+            └ ${nombre}
+        </div>
+    `);
+}
+
+// limpiar input
+document.getElementById("nombreAsignatura").value = "";
+
+// cerrar modal
+bootstrap.Modal.getInstance(
+    document.getElementById("modalAsignatura")
+).hide();
 
 });    
     
