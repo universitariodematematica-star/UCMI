@@ -207,7 +207,7 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// FIREBASE INIT
+// INIT FIREBASE
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -222,9 +222,9 @@ const auth = getAuth();
 
 let moduloSeleccionado = null;
 
-// =========================
-// AUTH + CARGA PRINCIPAL
-// =========================
+/* =========================
+   AUTH
+========================= */
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -233,19 +233,13 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-
     if (!userSnap.exists()) return;
 
     const d = userSnap.data();
 
-    const contenedorModulos =
-        document.getElementById("contenedorModulos");
-
+    const contenedorModulos = document.getElementById("contenedorModulos");
     contenedorModulos.innerHTML = "";
 
-    // =========================
-    // RENDER MÓDULOS
-    // =========================
     (d.modulos || []).forEach(modulo => {
 
         contenedorModulos.innerHTML += `
@@ -270,7 +264,85 @@ onAuthStateChanged(auth, async (user) => {
         `;
     });
 
-    document.addEventListener("click", async (e) => {
+    document.querySelectorAll(".btnCrearAsignatura").forEach(btn => {
+
+        btn.addEventListener("click", () => {
+
+            moduloSeleccionado = btn.dataset.modulo;
+
+            new bootstrap.Modal(
+                document.getElementById("modalAsignatura")
+            ).show();
+        });
+
+    });
+
+    const logo = document.getElementById("logoAcademia");
+    logo.src = d.logoCustom ||
+        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+    logo.style.opacity = "1";
+
+    /* =========================
+       ASIGNATURAS EN TIEMPO REAL
+    ========================= */
+
+    const q = query(
+        collection(db, "asignaturas"),
+        where("entidad", "==", d.entidad)
+    );
+
+    onSnapshot(q, (snapshot) => {
+
+        document.querySelectorAll(".listaAsignaturas").forEach(el => {
+            el.innerHTML = "";
+        });
+
+        const lista = [];
+
+        snapshot.forEach(docu => {
+            lista.push({
+                id: docu.id,
+                ...docu.data()
+            });
+        });
+
+        lista.sort((a, b) =>
+            a.asignatura.localeCompare(b.asignatura)
+        );
+
+        lista.forEach(data => {
+
+            const contenedor = document.getElementById(
+                `asignaturas-${data.modulo}`
+            );
+
+            if (contenedor) {
+
+                contenedor.insertAdjacentHTML("beforeend", `
+                    <div class="d-flex justify-content-between align-items-center ms-3 mt-1 asignatura-item">
+
+                        <span class="text-info">
+                            ${data.asignatura}
+                        </span>
+
+                        <button class="btn btn-sm btn-warning btnEditarAsignatura"
+                            data-id="${data.id}"
+                            data-nombre="${data.asignatura}">
+                            Editar
+                        </button>
+
+                    </div>
+                `);
+            }
+        });
+    });
+
+});
+
+/* =========================
+   EDITAR ASIGNATURA
+========================= */
+document.addEventListener("click", async (e) => {
 
     if (!e.target.classList.contains("btnEditarAsignatura")) return;
 
@@ -284,122 +356,18 @@ onAuthStateChanged(auth, async (user) => {
     await updateDoc(doc(db, "asignaturas", id), {
         asignatura: nuevoNombre
     });
-
 });
 
-    // =========================
-    // BOTONES MODAL
-    // =========================
-    document.querySelectorAll(".btnCrearAsignatura")
-    .forEach(btn => {
-
-        btn.addEventListener("click", () => {
-
-            moduloSeleccionado = btn.dataset.modulo;
-
-            const modal = new bootstrap.Modal(
-                document.getElementById("modalAsignatura")
-            );
-
-            modal.show();
-        });
-
-    });
-
-    // =========================
-    // LOGO
-    // =========================
-    const logo = document.getElementById("logoAcademia");
-
-    logo.src =
-        d.logoCustom ||
-        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-
-    logo.style.opacity = "1";
-
-    // =========================
-    // REALTIME ASIGNATURAS (CORRECTO)
-    // =========================
-    const userEntidad = d.entidad;
-
-    if (!userEntidad) return;
-
-    onSnapshot(q, (snapshot) => {
-
-    document.querySelectorAll(".listaAsignaturas").forEach(el => {
-        el.innerHTML = "";
-    });
-
-    const asignaturas = [];
-
-    snapshot.forEach(docu => {
-        asignaturas.push({
-            id: docu.id,
-            ...docu.data()
-        });
-    });
-
-    // ordenar alfabéticamente
-    asignaturas.sort((a, b) =>
-        a.asignatura.localeCompare(b.asignatura)
-    );
-
-    asignaturas.forEach(data => {
-
-        const contenedor = document.getElementById(
-            `asignaturas-${data.modulo}`
-        );
-
-        if (contenedor) {
-
-            contenedor.insertAdjacentHTML("beforeend", `
-                <div class="d-flex align-items-center justify-content-between ms-3 mt-1 asignatura-item">
-
-                    <span class="text-info nombre-asignatura">
-                        ${data.asignatura}
-                    </span>
-
-                    <button
-                        class="btn btn-sm btn-warning btnEditarAsignatura"
-                        data-id="${data.id}"
-                        data-nombre="${data.asignatura}">
-                        Editar
-                    </button>
-
-                </div>
-            `);
-        }
-    });
-
-});
-
-});
-
-// =========================
-// LOGOUT
-// =========================
-document.getElementById("btnLogout")
-.addEventListener("click", () =>
-    signOut(auth).then(() =>
-        window.location.href = "index.html"
-    )
-);
-
-// =========================
-// CREAR ASIGNATURA
-// =========================
+/* =========================
+   GUARDAR ASIGNATURA
+========================= */
 document.getElementById("btnGuardarAsignatura")
 .addEventListener("click", async () => {
 
-    const nombre = document
-        .getElementById("nombreAsignatura")
-        .value
-        .trim();
-
+    const nombre = document.getElementById("nombreAsignatura").value.trim();
     if (!nombre || !moduloSeleccionado) return;
 
     const user = auth.currentUser;
-
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
     const d = userSnap.data();
 
@@ -409,32 +377,34 @@ document.getElementById("btnGuardarAsignatura")
     );
 
     const snap = await getDocs(q);
-
-    if (snap.empty) {
-        alert("No se encontró el módulo en ofertas");
-        return;
-    }
+    if (snap.empty) return;
 
     const docOferta = snap.docs[0];
 
     await addDoc(collection(db, "asignaturas"), {
-
         asignatura: nombre,
         modulo: moduloSeleccionado,
         moduloId: docOferta.id,
         entidad: d.entidad,
         fechaCreacion: serverTimestamp()
-
     });
 
-    // limpiar input
     document.getElementById("nombreAsignatura").value = "";
 
-    // cerrar modal
     bootstrap.Modal.getInstance(
         document.getElementById("modalAsignatura")
     ).hide();
 });
+
+/* =========================
+   LOGOUT
+========================= */
+document.getElementById("btnLogout")
+.addEventListener("click", () =>
+    signOut(auth).then(() =>
+        window.location.href = "index.html"
+    )
+);
 
 </script>
 <div class="modal fade" id="modalAsignatura" tabindex="-1">
