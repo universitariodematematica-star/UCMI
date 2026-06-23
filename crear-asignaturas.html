@@ -317,22 +317,35 @@ onAuthStateChanged(auth, async (user) => {
             el.innerHTML = "";
         });
 
-        snapshot.forEach(docu => {
+        const asignaturasOrdenadas = [];
 
-            const data = docu.data();
+snapshot.forEach(docu => {
+    asignaturasOrdenadas.push(docu.data());
+});
 
-            const contenedor = document.getElementById(
-                `asignaturas-${data.modulo}`
-            );
+asignaturasOrdenadas.sort((a, b) =>
+    a.asignatura.localeCompare(b.asignatura, "es", { sensitivity: "base" })
+);
 
-            if (contenedor) {
-                contenedor.insertAdjacentHTML("beforeend", `
-                    <div class="ms-3 mt-1 text-info asignatura-item">
-                        ${data.asignatura}
-                    </div>
-                `);
-            }
-        });
+// limpiar todas las listas
+document.querySelectorAll(".listaAsignaturas").forEach(el => {
+    el.innerHTML = "";
+});
+
+asignaturasOrdenadas.forEach(data => {
+
+    const contenedor = document.getElementById(
+        `asignaturas-${data.modulo}`
+    );
+
+    if (contenedor) {
+        contenedor.insertAdjacentHTML("beforeend", `
+            <div class="ms-4 mt-1 text-info asignatura-item">
+                ${data.asignatura}
+            </div>
+        `);
+    }
+});
     });
 
 });
