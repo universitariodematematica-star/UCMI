@@ -197,7 +197,8 @@ import {
     where,
     getDocs,
     serverTimestamp,
-    onSnapshot
+    onSnapshot,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -206,7 +207,7 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// FIREBASE INIT
+// INIT FIREBASE
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -221,9 +222,9 @@ const auth = getAuth();
 
 let moduloSeleccionado = null;
 
-// =========================
-// AUTH + CARGA PRINCIPAL
-// =========================
+/* =========================
+   AUTH
+========================= */
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -232,19 +233,13 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-
     if (!userSnap.exists()) return;
 
     const d = userSnap.data();
 
-    const contenedorModulos =
-        document.getElementById("contenedorModulos");
-
+    const contenedorModulos = document.getElementById("contenedorModulos");
     contenedorModulos.innerHTML = "";
 
-    // =========================
-    // RENDER MÓDULOS
-    // =========================
     (d.modulos || []).forEach(modulo => {
 
         contenedorModulos.innerHTML += `
@@ -269,46 +264,31 @@ onAuthStateChanged(auth, async (user) => {
         `;
     });
 
-    // =========================
-    // BOTONES MODAL
-    // =========================
-    document.querySelectorAll(".btnCrearAsignatura")
-    .forEach(btn => {
+    document.querySelectorAll(".btnCrearAsignatura").forEach(btn => {
 
         btn.addEventListener("click", () => {
 
             moduloSeleccionado = btn.dataset.modulo;
 
-            const modal = new bootstrap.Modal(
+            new bootstrap.Modal(
                 document.getElementById("modalAsignatura")
-            );
-
-            modal.show();
+            ).show();
         });
 
     });
 
-    // =========================
-    // LOGO
-    // =========================
     const logo = document.getElementById("logoAcademia");
-
-    logo.src =
-        d.logoCustom ||
+    logo.src = d.logoCustom ||
         "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-
     logo.style.opacity = "1";
 
-    // =========================
-    // REALTIME ASIGNATURAS (CORRECTO)
-    // =========================
-    const userEntidad = d.entidad;
-
-    if (!userEntidad) return;
+    /* =========================
+       ASIGNATURAS EN TIEMPO REAL
+    ========================= */
 
     const q = query(
         collection(db, "asignaturas"),
-        where("entidad", "==", userEntidad)
+        where("entidad", "==", d.entidad)
     );
 
     onSnapshot(q, (snapshot) => {
@@ -317,64 +297,77 @@ onAuthStateChanged(auth, async (user) => {
             el.innerHTML = "";
         });
 
-        const asignaturasOrdenadas = [];
+        const lista = [];
 
-snapshot.forEach(docu => {
-    asignaturasOrdenadas.push(docu.data());
-});
+        snapshot.forEach(docu => {
+            lista.push({
+                id: docu.id,
+                ...docu.data()
+            });
+        });
 
-asignaturasOrdenadas.sort((a, b) =>
-    a.asignatura.localeCompare(b.asignatura, "es", { sensitivity: "base" })
-);
+        lista.sort((a, b) =>
+            a.asignatura.localeCompare(b.asignatura)
+        );
 
-// limpiar todas las listas
-document.querySelectorAll(".listaAsignaturas").forEach(el => {
-    el.innerHTML = "";
-});
+        lista.forEach(data => {
 
-asignaturasOrdenadas.forEach(data => {
+            const contenedor = document.getElementById(
+                `asignaturas-${data.modulo}`
+            );
 
-    const contenedor = document.getElementById(
-        `asignaturas-${data.modulo}`
-    );
+            if (contenedor) {
 
-    if (contenedor) {
-        contenedor.insertAdjacentHTML("beforeend", `
-            <div class="ms-4 mt-1 text-info asignatura-item">
-                ${data.asignatura}
-            </div>
-        `);
-    }
-});
+                contenedor.insertAdjacentHTML("beforeend", `
+                    <div class="d-flex justify-content-between align-items-center ms-3 mt-1 asignatura-item">
+
+                        <span class="text-info">
+                            ${data.asignatura}
+                        </span>
+
+                        <button class="btn btn-sm btn-warning btnEditarAsignatura"
+                            data-id="${data.id}"
+                            data-nombre="${data.asignatura}">
+                            Editar
+                        </button>
+
+                    </div>
+                `);
+            }
+        });
     });
 
 });
 
-// =========================
-// LOGOUT
-// =========================
-document.getElementById("btnLogout")
-.addEventListener("click", () =>
-    signOut(auth).then(() =>
-        window.location.href = "index.html"
-    )
-);
+/* =========================
+   EDITAR ASIGNATURA
+========================= */
+document.addEventListener("click", async (e) => {
 
-// =========================
-// CREAR ASIGNATURA
-// =========================
+    if (!e.target.classList.contains("btnEditarAsignatura")) return;
+
+    const id = e.target.dataset.id;
+    const actual = e.target.dataset.nombre;
+
+    const nuevoNombre = prompt("Editar asignatura:", actual);
+
+    if (!nuevoNombre || nuevoNombre === actual) return;
+
+    await updateDoc(doc(db, "asignaturas", id), {
+        asignatura: nuevoNombre
+    });
+});
+
+/* =========================
+   GUARDAR ASIGNATURA
+========================= */
 document.getElementById("btnGuardarAsignatura")
 .addEventListener("click", async () => {
 
-    const nombre = document
-        .getElementById("nombreAsignatura")
-        .value
-        .trim();
-
+    const nombre = document.getElementById("nombreAsignatura").value.trim();
     if (!nombre || !moduloSeleccionado) return;
 
     const user = auth.currentUser;
-
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
     const d = userSnap.data();
 
@@ -384,32 +377,34 @@ document.getElementById("btnGuardarAsignatura")
     );
 
     const snap = await getDocs(q);
-
-    if (snap.empty) {
-        alert("No se encontró el módulo en ofertas");
-        return;
-    }
+    if (snap.empty) return;
 
     const docOferta = snap.docs[0];
 
     await addDoc(collection(db, "asignaturas"), {
-
         asignatura: nombre,
         modulo: moduloSeleccionado,
         moduloId: docOferta.id,
         entidad: d.entidad,
         fechaCreacion: serverTimestamp()
-
     });
 
-    // limpiar input
     document.getElementById("nombreAsignatura").value = "";
 
-    // cerrar modal
     bootstrap.Modal.getInstance(
         document.getElementById("modalAsignatura")
     ).hide();
 });
+
+/* =========================
+   LOGOUT
+========================= */
+document.getElementById("btnLogout")
+.addEventListener("click", () =>
+    signOut(auth).then(() =>
+        window.location.href = "index.html"
+    )
+);
 
 </script>
 <div class="modal fade" id="modalAsignatura" tabindex="-1">
