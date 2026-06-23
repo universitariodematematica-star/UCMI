@@ -246,7 +246,7 @@ const auth = getAuth();
 let moduloSeleccionado = null;
 let entidadGlobal = null;
 
-// ================= AUTH =================
+// ===================== AUTH =====================
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -260,12 +260,12 @@ onAuthStateChanged(auth, async (user) => {
     const d = userSnap.data();
     entidadGlobal = d.entidad;
 
-    const contenedor = document.getElementById("contenedorModulos");
-    contenedor.innerHTML = "";
+    const contenedorModulos = document.getElementById("contenedorModulos");
+    contenedorModulos.innerHTML = "";
 
     (d.modulos || []).forEach(modulo => {
 
-        contenedor.innerHTML += `
+        contenedorModulos.innerHTML += `
             <div class="modulo-item">
 
                 <div class="d-flex justify-content-between align-items-center">
@@ -277,23 +277,34 @@ onAuthStateChanged(auth, async (user) => {
                     </button>
                 </div>
 
-                <div class="listaAsignaturas" id="asignaturas-${modulo}"></div>
+                <div class="listaAsignaturas"
+                     id="asignaturas-${modulo}">
+                </div>
 
             </div>
         `;
     });
 
-    document.querySelectorAll(".btnCrearAsignatura").forEach(btn => {
+    document.querySelectorAll(".btnCrearAsignatura")
+    .forEach(btn => {
+
         btn.addEventListener("click", () => {
+
             moduloSeleccionado = btn.dataset.modulo;
 
             new bootstrap.Modal(
                 document.getElementById("modalAsignatura")
             ).show();
         });
+
     });
 
-    // ================= REALTIME =================
+    const logo = document.getElementById("logoAcademia");
+    logo.src = d.logoCustom ||
+        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+    logo.style.opacity = "1";
+
+    // ===================== REALTIME =====================
     if (!entidadGlobal) return;
 
     const q = query(
@@ -303,16 +314,17 @@ onAuthStateChanged(auth, async (user) => {
 
     onSnapshot(q, (snapshot) => {
 
+        // limpiar
         document.querySelectorAll(".listaAsignaturas")
             .forEach(el => el.innerHTML = "");
 
+        // 🔥 ORDEN ALFABÉTICO REAL
         const lista = [];
 
         snapshot.forEach(docu => {
             lista.push({ id: docu.id, ...docu.data() });
         });
 
-        // ORDEN ALFABÉTICO
         lista.sort((a, b) =>
             a.asignatura.localeCompare(b.asignatura, "es")
         );
@@ -329,9 +341,9 @@ onAuthStateChanged(auth, async (user) => {
                 <div class="asignatura-row">
 
                     <div class="col-nombre">
-                        <button class="btn btn-link p-0 text-info btnAbrirTopicos"
+                        <button
+                            class="btn btn-link p-0 text-info asignatura-click"
                             data-id="${data.id}"
-                            data-nombre="${data.asignatura}"
                             style="text-decoration:none;font-weight:500;">
                             ${data.asignatura}
                         </button>
@@ -355,10 +367,12 @@ onAuthStateChanged(auth, async (user) => {
                 </div>
             `);
         });
+
     });
+
 });
 
-// ================= CREAR =================
+// ===================== CREAR =====================
 document.getElementById("btnGuardarAsignatura")
 .addEventListener("click", async () => {
 
@@ -377,12 +391,12 @@ document.getElementById("btnGuardarAsignatura")
     const snap = await getDocs(q);
     if (snap.empty) return;
 
-    const oferta = snap.docs[0];
+    const docOferta = snap.docs[0];
 
     await addDoc(collection(db, "asignaturas"), {
         asignatura: nombre,
         modulo: moduloSeleccionado,
-        moduloId: oferta.id,
+        moduloId: docOferta.id,
         entidad: d.entidad,
         fechaCreacion: serverTimestamp()
     });
@@ -394,7 +408,7 @@ document.getElementById("btnGuardarAsignatura")
     ).hide();
 });
 
-// ================= EDITAR =================
+// ===================== EDITAR =====================
 document.addEventListener("click", async (e) => {
 
     if (!e.target.classList.contains("btnEditarAsignatura")) return;
@@ -411,7 +425,7 @@ document.addEventListener("click", async (e) => {
     });
 });
 
-// ================= BORRAR =================
+// ===================== ELIMINAR =====================
 document.addEventListener("click", async (e) => {
 
     if (!e.target.classList.contains("btnEliminarAsignatura")) return;
@@ -423,35 +437,13 @@ document.addEventListener("click", async (e) => {
     await deleteDoc(doc(db, "asignaturas", id));
 });
 
-// ================= ABRIR TÓPICOS =================
-document.addEventListener("click", (e) => {
-
-    const btn = e.target.closest(".btnAbrirTopicos");
-    if (!btn) return;
-
-    const nombre = btn.dataset.nombre;
-
-    window.asignaturaActual = {
-        id: btn.dataset.id,
-        nombre
-    };
-
-    const titulo = document.getElementById("nombreAsignaturaTopicos");
-    if (titulo) titulo.textContent = nombre;
-
-    new bootstrap.Modal(
-        document.getElementById("modalTopicos")
-    ).show();
-});
-
-// ================= LOGOUT =================
+// ===================== LOGOUT =====================
 document.getElementById("btnLogout")
 .addEventListener("click", () =>
     signOut(auth).then(() =>
         window.location.href = "index.html"
     )
 );
-    
 </script>
 <div class="modal fade" id="modalAsignatura" tabindex="-1">
     <div class="modal-dialog">
@@ -502,52 +494,6 @@ document.getElementById("btnLogout")
             </div>
 
         </div>
-
-<div class="modal fade" id="modalTopicos" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content bg-dark text-white">
-
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    Agregar tópicos
-                </h5>
-
-                <button type="button"
-                    class="btn-close btn-close-white"
-                    data-bs-dismiss="modal">
-                </button>
-            </div>
-
-            <div class="modal-body">
-
-                <p class="mb-2 text-info">
-                    Asignatura: <span id="nombreAsignaturaTopicos"></span>
-                </p>
-
-                <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Escribe un tópico...">
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button class="btn btn-secondary"
-                    data-bs-dismiss="modal">
-                    Cerrar
-                </button>
-
-                <button class="btn btn-success">
-                    Agregar
-                </button>
-
-            </div>
-
-        </div>
-    </div>
-</div>
-        
     </div>
 </div>    
     
