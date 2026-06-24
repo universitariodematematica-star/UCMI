@@ -39,10 +39,6 @@
         .topico-row:last-child {
             border-bottom: none;
         }
-
-        .btn-asignar {
-            font-size: 0.8rem;
-        }
     </style>
 </head>
 
@@ -51,8 +47,8 @@
 <div class="container-box">
 
     <div class="card-glass mb-4">
-        <h3 id="tituloAsignatura">Cargando asignatura...</h3>
-        <p class="opacity-75 mb-0">Asignación de tópicos desde repositorio global</p>
+        <h3 id="tituloAsignatura">Cargando...</h3>
+        <p class="opacity-75 mb-0">Asignación de tópicos desde el repositorio</p>
     </div>
 
     <div class="card-glass">
@@ -86,21 +82,21 @@ import {
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
-    projectId: "ucmi-13796634",
+    projectId: "ucmi-13796634"
 });
 
 const db = getFirestore(app);
 const auth = getAuth();
 
-// ===================== ID ASIGNATURA =====================
+// ===================== URL =====================
 const params = new URLSearchParams(window.location.search);
 const asignaturaId = params.get("id");
 
-let asignaturaData = null;
 let entidadGlobal = null;
-let ramasPermitidas = [];
+let asignaturaData = null;
+let ramasPermitidas = new Set();
 
-// ===================== AUTH =====================
+// ===================== LOGIN =====================
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -108,11 +104,9 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    // usuario
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
     entidadGlobal = userSnap.data().entidad;
 
-    // asignatura
     const asigSnap = await getDoc(doc(db, "asignaturas", asignaturaId));
 
     if (!asigSnap.exists()) return;
@@ -122,48 +116,56 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("tituloAsignatura").innerText =
         asignaturaData.asignatura;
 
-    // 🔥 1. obtener ramas del módulo
-    await cargarRamasDelModulo(asignaturaData.modulo);
-
-    // 🔥 2. cargar tópicos filtrados
-    await cargarTopicosFiltrados();
+    await cargarRamas();
+    await cargarTopicos();
 });
 
-// ===================== RAMAS DEL MÓDULO =====================
-async function cargarRamasDelModulo(modulo) {
+// ===================== RAMAS =====================
+async function cargarRamas() {
 
-    const ramasSnap = await getDocs(
-        query(
-            collection(db, "ramas"),
-            where("modulo", "==", modulo)
-        )
+    ramasPermitidas.clear();
+
+    const q = query(
+        collection(db, "ramas"),
+        where("modulo", "==", asignaturaData.modulo)
     );
 
-    ramasPermitidas = [];
+    const snap = await getDocs(q);
 
-    ramasSnap.forEach(r => {
-        ramasPermitidas.push(r.id);
+    snap.forEach(r => {
+        ramasPermitidas.add(r.id);
     });
+
+    console.log("Ramas permitidas:", [...ramasPermitidas]);
 }
 
-// ===================== TÓPICOS FILTRADOS =====================
-async function cargarTopicosFiltrados() {
+// ===================== TÓPICOS =====================
+async function cargarTopicos() {
 
     const contenedor = document.getElementById("listaTopicos");
     contenedor.innerHTML = "";
 
     const snap = await getDocs(collection(db, "topicos"));
 
-    const filtrados = [];
+    let filtrados = [];
 
     snap.forEach(docu => {
 
         const t = docu.data();
 
-        if (ramasPermitidas.includes(t.ramaId)) {
+        if (ramasPermitidas.has(t.ramaId)) {
             filtrados.push({ id: docu.id, ...t });
         }
     });
+
+    if (filtrados.length === 0) {
+        contenedor.innerHTML = `
+            <div class="text-warning">
+                No hay tópicos disponibles para este módulo.
+            </div>
+        `;
+        return;
+    }
 
     filtrados.sort((a, b) => a.orden - b.orden);
 
@@ -191,13 +193,12 @@ async function cargarTopicosFiltrados() {
 
         btn.addEventListener("click", async () => {
 
-            const topicoId = btn.dataset.id;
-            const tema = btn.dataset.tema;
+            btn.disabled = true;
 
             await addDoc(collection(db, "asignaturas_topicos"), {
-                asignaturaId: asignaturaId,
-                topicoId: topicoId,
-                tema: tema,
+                asignaturaId,
+                topicoId: btn.dataset.id,
+                tema: btn.dataset.tema,
                 entidad: entidadGlobal,
                 fechaAsignacion: serverTimestamp()
             });
@@ -205,10 +206,10 @@ async function cargarTopicosFiltrados() {
             btn.innerText = "Asignado";
             btn.classList.remove("btn-success");
             btn.classList.add("btn-secondary");
-            btn.disabled = true;
         });
     });
 }
+
 </script>
 
 </body>
