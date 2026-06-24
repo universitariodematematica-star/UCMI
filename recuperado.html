@@ -50,11 +50,8 @@
 <body>
 
 <div class="container-main">
-
     <h2 id="tituloAsignatura">Asignatura</h2>
-
     <div id="contenedorRamas"></div>
-
 </div>
 
 <script type="module">
@@ -151,9 +148,12 @@ onAuthStateChanged(auth, async (user) => {
     );
 
     const asignados = new Set();
+    const asignacionesMap = new Map();
 
     asignacionesSnap.forEach(d => {
-        asignados.add(d.data().topicoId);
+        const data = d.data();
+        asignados.add(data.topicoId);
+        asignacionesMap.set(data.topicoId, d.id);
     });
 
     // ===================== TÓPICOS =====================
@@ -206,6 +206,7 @@ onAuthStateChanged(auth, async (user) => {
                         : rama.topicos.map(t => {
 
                             const isChecked = asignados.has(t.id);
+                            const asignacionId = asignacionesMap.get(t.id) || "";
 
                             return `
                                 <div class="topico-item">
@@ -214,7 +215,8 @@ onAuthStateChanged(auth, async (user) => {
 
                                     <button class="btn btn-sm ${isChecked ? 'btn-danger' : 'btn-outline-warning'} btn-toggle"
                                         data-id="${t.id}"
-                                        data-asignado="${isChecked}">
+                                        data-asignado="${isChecked}"
+                                        data-asignacion="${asignacionId}">
                                         ${isChecked ? 'Quitar' : 'Asignar'}
                                     </button>
 
@@ -238,7 +240,9 @@ document.addEventListener("click", async (e) => {
 
     const topicoId = e.target.dataset.id;
     const asignado = e.target.dataset.asignado === "true";
+    const asignacionId = e.target.dataset.asignacion;
 
+    // ===================== ASIGNAR =====================
     if (!asignado) {
 
         await addDoc(collection(db, "asignatura_topicos"), {
@@ -247,19 +251,16 @@ document.addEventListener("click", async (e) => {
             fechaAsignacion: serverTimestamp()
         });
 
-    } else {
+    }
 
-        const q = query(
-            collection(db, "asignatura_topicos"),
-            where("asignaturaId", "==", asignaturaIdGlobal),
-            where("topicoId", "==", topicoId)
-        );
+    // ===================== DESASIGNAR =====================
+    else {
 
-        const snap = await getDocs(q);
-
-        snap.forEach(async (d) => {
-            await deleteDoc(doc(db, "asignatura_topicos", d.id));
-        });
+        if (asignacionId) {
+            await deleteDoc(
+                doc(db, "asignatura_topicos", asignacionId)
+            );
+        }
 
     }
 
