@@ -66,37 +66,36 @@ import {
     doc,
     getDoc,
     collection,
-    getDocs,
-    addDoc,
     query,
     where,
-    serverTimestamp
+    getDocs,
+    onSnapshot,
+    orderBy
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
     getAuth,
-    onAuthStateChanged
+    onAuthStateChanged,
+    signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// INIT
+// INIT FIREBASE
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
-    projectId: "ucmi-13796634"
+    projectId: "ucmi-13796634",
+    storageBucket: "ucmi-13796634.firebasestorage.app",
+    messagingSenderId: "1090719609536",
+    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
 });
 
 const db = getFirestore(app);
 const auth = getAuth();
 
-// ===================== URL =====================
-const params = new URLSearchParams(window.location.search);
-const asignaturaId = params.get("id");
-
-let entidadGlobal = null;
 let asignaturaData = null;
-let ramasPermitidas = new Set();
+let ramasPermitidas = [];
 
-// ===================== LOGIN =====================
+// ===================== AUTH =====================
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -104,113 +103,91 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-    entidadGlobal = userSnap.data().entidad;
+    // 1. ID de asignatura desde URL
+    const params = new URLSearchParams(window.location.search);
+    const asignaturaId = params.get("id");
 
-    const asigSnap = await getDoc(doc(db, "asignaturas", asignaturaId));
-
-    if (!asigSnap.exists()) return;
-
-    asignaturaData = asigSnap.data();
-
-    document.getElementById("tituloAsignatura").innerText =
-        asignaturaData.asignatura;
-
-    await cargarRamas();
-    await cargarTopicos();
-});
-
-// ===================== RAMAS =====================
-async function cargarRamas() {
-
-    ramasPermitidas.clear();
-
-    const q = query(
-        collection(db, "ramas"),
-        where("modulo", "==", asignaturaData.modulo)
-    );
-
-    const snap = await getDocs(q);
-
-    snap.forEach(r => {
-        ramasPermitidas.add(r.id);
-    });
-
-    console.log("Ramas permitidas:", [...ramasPermitidas]);
-}
-
-// ===================== TÓPICOS =====================
-async function cargarTopicos() {
-
-    const contenedor = document.getElementById("listaTopicos");
-    contenedor.innerHTML = "";
-
-    const snap = await getDocs(collection(db, "topicos"));
-
-    let filtrados = [];
-
-    snap.forEach(docu => {
-
-        const t = docu.data();
-
-        if (ramasPermitidas.has(t.ramaId)) {
-            filtrados.push({ id: docu.id, ...t });
-        }
-    });
-
-    if (filtrados.length === 0) {
-        contenedor.innerHTML = `
-            <div class="text-warning">
-                No hay tópicos disponibles para este módulo.
-            </div>
-        `;
+    if (!asignaturaId) {
+        console.error("No hay ID de asignatura");
         return;
     }
 
-    filtrados.sort((a, b) => a.orden - b.orden);
+    // 2. Obtener asignatura
+    const asignaturaSnap = await getDoc(doc(db, "asignaturas", asignaturaId));
 
-    filtrados.forEach(t => {
+    if (!asignaturaSnap.exists()) {
+        console.error("Asignatura no existe");
+        return;
+    }
 
-        contenedor.innerHTML += `
-            <div class="topico-row">
+    asignaturaData = asignaturaSnap.data();
 
-                <div>
+    // 3. OBTENER RAMAS DEL MODULO
+    const ramasQuery = query(
+        collection(db, "ramas"),
+        where("moduloId", "==", asignaturaData.moduloId)
+    );
+
+    const ramasSnap = await getDocs(ramasQuery);
+
+    ramasPermitidas = ramasSnap.docs.map(d => d.id);
+
+    console.log("Ramas permitidas:", ramasPermitidas);
+
+    if (ramasPermitidas.length === 0) {
+        document.querySelector("main").innerHTML =
+            "<h3>No hay ramas para este módulo</h3>";
+        return;
+    }
+
+    // 4. ESCUCHAR TÓPICOS EN TIEMPO REAL
+    const topicosQuery = query(
+        collection(db, "topicos"),
+        where("ramaId", "in", ramasPermitidas),
+        orderBy("orden", "asc")
+    );
+
+    onSnapshot(topicosQuery, (snapshot) => {
+
+        const main = document.querySelector("main");
+        main.innerHTML = "";
+
+        if (snapshot.empty) {
+            main.innerHTML = "<h3>No hay tópicos disponibles</h3>";
+            return;
+        }
+
+        snapshot.forEach(docu => {
+
+            const t = docu.data();
+
+            main.insertAdjacentHTML("beforeend", `
+                <div class="p-3 mb-2 rounded"
+                     style="background: rgba(255,255,255,0.08); cursor:pointer;">
+
                     <strong>${t.tema}</strong>
+
+                    <div style="font-size:12px; opacity:0.7;">
+                        Orden: ${t.orden}
+                    </div>
+
                 </div>
+            `);
 
-                <button class="btn btn-success btn-sm btn-asignar"
-                    data-id="${t.id}"
-                    data-tema="${t.tema}">
-                    Asignar
-                </button>
-
-            </div>
-        `;
-    });
-
-    document.querySelectorAll(".btn-asignar")
-    .forEach(btn => {
-
-        btn.addEventListener("click", async () => {
-
-            btn.disabled = true;
-
-            await addDoc(collection(db, "asignaturas_topicos"), {
-                asignaturaId,
-                topicoId: btn.dataset.id,
-                tema: btn.dataset.tema,
-                entidad: entidadGlobal,
-                fechaAsignacion: serverTimestamp()
-            });
-
-            btn.innerText = "Asignado";
-            btn.classList.remove("btn-success");
-            btn.classList.add("btn-secondary");
         });
+
     });
-}
+
+});
+
+// LOGOUT
+document.getElementById("btnLogout")
+.addEventListener("click", () =>
+    signOut(auth).then(() =>
+        window.location.href = "index.html"
+    )
+);
 
 </script>
-
 </body>
 </html>
