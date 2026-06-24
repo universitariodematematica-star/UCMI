@@ -147,9 +147,9 @@ onAuthStateChanged(auth, async (user) => {
         const data = d.data();
         asignados.add(data.topicoId);
         asignacionMap.set(data.topicoId, {
-            id: d.id,
-            ordenAcademia: data.ordenAcademia ?? 9999
-        });
+    id: d.id,
+    ordenAcademia: Number(data.ordenAcademia || 999999)
+});
     });
 
     // ===================== TÓPICOS =====================
@@ -179,18 +179,23 @@ onAuthStateChanged(auth, async (user) => {
             asignacionId: asignacion?.id || null,
 
             // 🔥 ORDEN DE ACADEMIA (NO OCEMI)
-            ordenAcademia: asignacion?.ordenAcademia ?? 9999
+            ordenAcademia: Number(
+    asignacion?.ordenAcademia || 999999
+)
         });
     });
 
     // ===================== ORDEN FINAL (IMPORTANTE) =====================
     ramas.forEach(rama => {
 
-        rama.topicos.sort((a, b) => {
-            return (a.ordenAcademia ?? 9999) - (b.ordenAcademia ?? 9999);
-        });
+    rama.topicos = rama.topicos
+        .map(t => ({
+            ...t,
+            ordenAcademia: Number(t.ordenAcademia || 999999)
+        }))
+        .sort((a, b) => a.ordenAcademia - b.ordenAcademia);
 
-    });
+});
 
     // ===================== RENDER =====================
     const cont = document.getElementById("contenedorRamas");
@@ -243,16 +248,37 @@ document.addEventListener("click", async (e) => {
     const asignacionId = e.target.dataset.asignacion;
 
     // ===================== ASIGNAR =====================
-    if (!asignado) {
+if (!asignado) {
 
-        await addDoc(collection(db, "asignatura_topicos"), {
-            asignaturaId: asignaturaIdGlobal,
-            topicoId,
-            ordenAcademia: 9999, // 🔥 listo para drag & drop futuro
-            fechaAsignacion: serverTimestamp()
-        });
+    const asignacionesExistentes = await getDocs(
+        query(
+            collection(db, "asignatura_topicos"),
+            where("asignaturaId", "==", asignaturaIdGlobal)
+        )
+    );
 
-    }
+    let maxOrden = 0;
+
+    asignacionesExistentes.forEach(docu => {
+
+        const data = docu.data();
+
+        const orden = Number(data.ordenAcademia || 0);
+
+        if (orden > maxOrden) {
+            maxOrden = orden;
+        }
+
+    });
+
+    await addDoc(collection(db, "asignatura_topicos"), {
+        asignaturaId: asignaturaIdGlobal,
+        topicoId: topicoId,
+        ordenAcademia: maxOrden + 1,
+        fechaAsignacion: serverTimestamp()
+    });
+
+}
 
     // ===================== DESASIGNAR =====================
     else {
