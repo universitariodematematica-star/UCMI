@@ -100,7 +100,6 @@ onAuthStateChanged(auth, async (user) => {
 
     const params = new URLSearchParams(window.location.search);
     asignaturaIdGlobal = params.get("id");
-
     if (!asignaturaIdGlobal) return;
 
     // ===================== ASIGNATURA =====================
@@ -133,12 +132,6 @@ onAuthStateChanged(auth, async (user) => {
         });
     });
 
-    if (ramas.length === 0) {
-        document.getElementById("contenedorRamas").innerHTML =
-            "<p>No hay ramas disponibles</p>";
-        return;
-    }
-
     // ===================== ASIGNACIONES =====================
     const asignacionesSnap = await getDocs(
         query(
@@ -148,12 +141,15 @@ onAuthStateChanged(auth, async (user) => {
     );
 
     const asignados = new Set();
-    const asignacionesMap = new Map();
+    const asignacionMap = new Map();
 
     asignacionesSnap.forEach(d => {
         const data = d.data();
         asignados.add(data.topicoId);
-        asignacionesMap.set(data.topicoId, d.id);
+        asignacionMap.set(data.topicoId, {
+    id: d.id,
+    ordenAcademia: Number(data.ordenAcademia || 999999)
+});
     });
 
     // ===================== TÓPICOS =====================
@@ -166,25 +162,40 @@ onAuthStateChanged(auth, async (user) => {
         )
     );
 
+    // 🔥 NORMALIZACIÓN DE DATOS (CLAVE PARA FUTURO DRAG & DROP)
     topicosSnap.forEach(d => {
 
         const t = d.data();
-
         const rama = ramas.find(r => r.id === t.ramaId);
 
-        if (rama) {
-            rama.topicos.push({
-                id: d.id,
-                ...t,
-                orden: Number(t.orden)
-            });
-        }
+        if (!rama) return;
+
+        const asignacion = asignacionMap.get(d.id);
+
+        rama.topicos.push({
+            id: d.id,
+            tema: t.tema,
+            asignado: asignados.has(d.id),
+            asignacionId: asignacion?.id || null,
+
+            // 🔥 ORDEN DE ACADEMIA (NO OCEMI)
+            ordenAcademia: Number(
+    asignacion?.ordenAcademia || 999999
+)
+        });
     });
 
-    // ===================== ORDEN =====================
-    ramas.forEach(r => {
-        r.topicos.sort((a, b) => a.orden - b.orden);
-    });
+    // ===================== ORDEN FINAL (IMPORTANTE) =====================
+    ramas.forEach(rama => {
+
+    rama.topicos = rama.topicos
+        .map(t => ({
+            ...t,
+            ordenAcademia: Number(t.ordenAcademia || 999999)
+        }))
+        .sort((a, b) => a.ordenAcademia - b.ordenAcademia);
+
+});
 
     // ===================== RENDER =====================
     const cont = document.getElementById("contenedorRamas");
@@ -203,26 +214,20 @@ onAuthStateChanged(auth, async (user) => {
                     ${
                         rama.topicos.length === 0
                         ? "<small style='opacity:0.6;'>Sin tópicos</small>"
-                        : rama.topicos.map(t => {
+                        : rama.topicos.map(t => `
+                            <div class="topico-item">
 
-                            const isChecked = asignados.has(t.id);
-                            const asignacionId = asignacionesMap.get(t.id) || "";
+                                <span>${t.tema}</span>
 
-                            return `
-                                <div class="topico-item">
+                                <button class="btn btn-sm ${t.asignado ? 'btn-danger' : 'btn-outline-warning'} btn-toggle"
+                                    data-id="${t.id}"
+                                    data-asignado="${t.asignado}"
+                                    data-asignacion="${t.asignacionId || ''}">
+                                    ${t.asignado ? 'Quitar' : 'Asignar'}
+                                </button>
 
-                                    <span>${t.tema}</span>
-
-                                    <button class="btn btn-sm ${isChecked ? 'btn-danger' : 'btn-outline-warning'} btn-toggle"
-                                        data-id="${t.id}"
-                                        data-asignado="${isChecked}"
-                                        data-asignacion="${asignacionId}">
-                                        ${isChecked ? 'Quitar' : 'Asignar'}
-                                    </button>
-
-                                </div>
-                            `;
-                        }).join("")
+                            </div>
+                        `).join("")
                     }
                 </div>
 
@@ -243,29 +248,48 @@ document.addEventListener("click", async (e) => {
     const asignacionId = e.target.dataset.asignacion;
 
     // ===================== ASIGNAR =====================
-    if (!asignado) {
+if (!asignado) {
 
-        await addDoc(collection(db, "asignatura_topicos"), {
-            asignaturaId: asignaturaIdGlobal,
-            topicoId,
-            fechaAsignacion: serverTimestamp()
-        });
+    const asignacionesExistentes = await getDocs(
+        query(
+            collection(db, "asignatura_topicos"),
+            where("asignaturaId", "==", asignaturaIdGlobal)
+        )
+    );
 
-    }
+    let maxOrden = 0;
+
+    asignacionesExistentes.forEach(docu => {
+
+        const data = docu.data();
+
+        const orden = Number(data.ordenAcademia || 0);
+
+        if (orden > maxOrden) {
+            maxOrden = orden;
+        }
+
+    });
+
+    await addDoc(collection(db, "asignatura_topicos"), {
+        asignaturaId: asignaturaIdGlobal,
+        topicoId: topicoId,
+        ordenAcademia: maxOrden + 1,
+        fechaAsignacion: serverTimestamp()
+    });
+
+}
 
     // ===================== DESASIGNAR =====================
     else {
 
         if (asignacionId) {
-            await deleteDoc(
-                doc(db, "asignatura_topicos", asignacionId)
-            );
+            await deleteDoc(doc(db, "asignatura_topicos", asignacionId));
         }
 
     }
 
     location.reload();
-
 });
 
 </script>
