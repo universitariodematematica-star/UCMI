@@ -151,6 +151,16 @@
     gap: 8px;
     justify-content: flex-end;
 }    
+
+    .asignatura-fila{
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.asignatura-fila:hover{
+    background: rgba(255,255,255,0.06);
+    transform: translateX(4px);
+}    
         
     </style>
 </head>
@@ -230,7 +240,6 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// INIT
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -314,11 +323,9 @@ onAuthStateChanged(auth, async (user) => {
 
     onSnapshot(q, (snapshot) => {
 
-        // limpiar
         document.querySelectorAll(".listaAsignaturas")
             .forEach(el => el.innerHTML = "");
 
-        // 🔥 ORDEN ALFABÉTICO REAL
         const lista = [];
 
         snapshot.forEach(docu => {
@@ -338,15 +345,14 @@ onAuthStateChanged(auth, async (user) => {
             if (!contenedor) return;
 
             contenedor.insertAdjacentHTML("beforeend", `
-                <div class="asignatura-row">
+                <div class="asignatura-row"
+                     data-id="${data.id}">
 
                     <div class="col-nombre">
-                        <button
-                            class="btn btn-link p-0 text-info asignatura-click"
-                            data-id="${data.id}"
-                            style="text-decoration:none;font-weight:500;">
+                        <span class="text-info"
+                              style="cursor:pointer;font-weight:500;">
                             ${data.asignatura}
-                        </button>
+                        </span>
                     </div>
 
                     <div class="col-botones">
@@ -370,6 +376,20 @@ onAuthStateChanged(auth, async (user) => {
 
     });
 
+});
+
+// ===================== CLICK EN FILA =====================
+document.addEventListener("click", (e) => {
+
+    const fila = e.target.closest(".asignatura-row");
+    if (!fila) return;
+
+    if (e.target.closest("button")) return;
+
+    const id = fila.dataset.id;
+
+    window.location.href =
+        `asignatura-topicos.html?id=${id}`;
 });
 
 // ===================== CREAR =====================
@@ -444,6 +464,7 @@ document.getElementById("btnLogout")
         window.location.href = "index.html"
     )
 );
+
 </script>
 <div class="modal fade" id="modalAsignatura" tabindex="-1">
     <div class="modal-dialog">
