@@ -133,12 +133,6 @@ onAuthStateChanged(auth, async (user) => {
         });
     });
 
-    if (ramas.length === 0) {
-        document.getElementById("contenedorRamas").innerHTML =
-            "<p>No hay ramas disponibles</p>";
-        return;
-    }
-
     // ===================== ASIGNACIONES =====================
     const asignacionesSnap = await getDocs(
         query(
@@ -148,12 +142,15 @@ onAuthStateChanged(auth, async (user) => {
     );
 
     const asignados = new Set();
-    const asignacionesMap = new Map();
+    const asignacionMap = new Map();
 
     asignacionesSnap.forEach(d => {
         const data = d.data();
         asignados.add(data.topicoId);
-        asignacionesMap.set(data.topicoId, d.id);
+        asignacionMap.set(data.topicoId, {
+            id: d.id,
+            ordenAcademia: data.ordenAcademia ?? 9999
+        });
     });
 
     // ===================== TÓPICOS =====================
@@ -169,26 +166,28 @@ onAuthStateChanged(auth, async (user) => {
     topicosSnap.forEach(d => {
 
         const t = d.data();
-
         const rama = ramas.find(r => r.id === t.ramaId);
 
         if (rama) {
+            const asignacion = asignacionMap.get(d.id);
+
             rama.topicos.push({
                 id: d.id,
-                ...t,
-                orden: Number(t.orden)
+                tema: t.tema,
+                ordenAcademia: asignacion?.ordenAcademia ?? 9999,
+                asignado: asignados.has(d.id),
+                asignacionId: asignacion?.id || null
             });
         }
     });
 
-    // ===================== ORDEN =====================
+    // ===================== ORDEN OCEMI (NO TOCAR) =====================
+    // SOLO ORDEN DE ACADEMIA
     ramas.forEach(r => {
-        r.topicos.sort((a, b) => a.orden - b.orden);
+        r.topicos.sort((a, b) =>
+            a.ordenAcademia - b.ordenAcademia
+        );
     });
-
-    ramas.sort((a, b) =>
-    a.nombre.localeCompare(b.nombre, "es", { sensitivity: "base" })
-);
 
     // ===================== RENDER =====================
     const cont = document.getElementById("contenedorRamas");
@@ -207,26 +206,20 @@ onAuthStateChanged(auth, async (user) => {
                     ${
                         rama.topicos.length === 0
                         ? "<small style='opacity:0.6;'>Sin tópicos</small>"
-                        : rama.topicos.map(t => {
+                        : rama.topicos.map(t => `
+                            <div class="topico-item">
 
-                            const isChecked = asignados.has(t.id);
-                            const asignacionId = asignacionesMap.get(t.id) || "";
+                                <span>${t.tema}</span>
 
-                            return `
-                                <div class="topico-item">
+                                <button class="btn btn-sm ${t.asignado ? 'btn-danger' : 'btn-outline-warning'} btn-toggle"
+                                    data-id="${t.id}"
+                                    data-asignado="${t.asignado}"
+                                    data-asignacion="${t.asignacionId || ''}">
+                                    ${t.asignado ? 'Quitar' : 'Asignar'}
+                                </button>
 
-                                    <span>${t.tema}</span>
-
-                                    <button class="btn btn-sm ${isChecked ? 'btn-danger' : 'btn-outline-warning'} btn-toggle"
-                                        data-id="${t.id}"
-                                        data-asignado="${isChecked}"
-                                        data-asignacion="${asignacionId}">
-                                        ${isChecked ? 'Quitar' : 'Asignar'}
-                                    </button>
-
-                                </div>
-                            `;
-                        }).join("")
+                            </div>
+                        `).join("")
                     }
                 </div>
 
@@ -252,6 +245,7 @@ document.addEventListener("click", async (e) => {
         await addDoc(collection(db, "asignatura_topicos"), {
             asignaturaId: asignaturaIdGlobal,
             topicoId,
+            ordenAcademia: Date.now(), // posición inicial temporal
             fechaAsignacion: serverTimestamp()
         });
 
@@ -261,9 +255,7 @@ document.addEventListener("click", async (e) => {
     else {
 
         if (asignacionId) {
-            await deleteDoc(
-                doc(db, "asignatura_topicos", asignacionId)
-            );
+            await deleteDoc(doc(db, "asignatura_topicos", asignacionId));
         }
 
     }
