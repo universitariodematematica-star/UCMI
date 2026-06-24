@@ -173,27 +173,34 @@ onAuthStateChanged(auth, async (user) => {
         const asignacion = asignacionMap.get(d.id);
 
         rama.topicos.push({
-            id: d.id,
-            tema: t.tema,
-            asignado: asignados.has(d.id),
-            asignacionId: asignacion?.id || null,
+    id: d.id,
+    tema: t.tema,
 
-            // 🔥 ORDEN DE ACADEMIA (NO OCEMI)
-            ordenAcademia: Number(
-    asignacion?.ordenAcademia || 999999
-)
-        });
+    // 🔥 ORDEN ORIGINAL DE UCMI
+    ordenUcmi: Number(t.orden || 999999),
+
+    asignado: asignados.has(d.id),
+    asignacionId: asignacion?.id || null,
+
+    // 🔥 ORDEN PROPIO DE LA ACADEMIA
+    ordenAcademia: Number(
+        asignacion?.ordenAcademia || 999999
+    )
+});
     });
 
     // ===================== ORDEN FINAL (IMPORTANTE) =====================
-    ramas.forEach(rama => {
+ramas.forEach(rama => {
 
-    rama.topicos = rama.topicos
-        .map(t => ({
-            ...t,
-            ordenAcademia: Number(t.ordenAcademia || 999999)
-        }))
-        .sort((a, b) => a.ordenAcademia - b.ordenAcademia);
+    rama.topicos.sort((a, b) => {
+
+        return (
+            Number(a.ordenUcmi || 999999)
+            -
+            Number(b.ordenUcmi || 999999)
+        );
+
+    });
 
 });
 
