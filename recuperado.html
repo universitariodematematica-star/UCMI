@@ -3,218 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Panel de Control</title>
+    <title>Tópicos de Asignatura</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
+
     <style>
-        :root {
-            --azul-ucmi: #06090f;
-            --azul-sidebar: #1a2a3a;
-            --dorado-ucmi: #c5a059;
-            --rojo-logout: #e74c3c;
-        }
-
-        body { 
-            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-            background-size: cover; 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; 
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #0b0f14;
             color: white;
-            min-height: 100vh;
         }
 
-        .app-wrapper { display: flex; min-height: 100vh; }
-
-        /* Sidebar con efecto Glassmorphism */
-        .sidebar { 
-            background: rgba(26, 42, 58, 0.4); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px); 
-            border-right: 1px solid rgba(255, 255, 255, 0.15); 
-            width: 260px; 
-            flex-shrink: 0; 
-            padding: 25px 15px; 
-            display: flex; 
-            flex-direction: column; 
+        .sidebar {
+            width: 260px;
+            background: rgba(26,42,58,0.5);
+            backdrop-filter: blur(15px);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px;
         }
 
-        .logo-sidebar { 
-            height: 100px; 
-            width: auto; 
-            margin-bottom: 30px; 
-            display: block; 
-            margin-left: auto; 
-            margin-right: auto; 
-            object-fit: contain; 
-            border-radius: 15px; 
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            transition: opacity 0.5s ease;
-            opacity: 0;
-        }
-        
-        .sidebar-nav { flex-grow: 1; }
-
-        .nav-item-ucmi { 
-            display: flex; align-items: center; 
-            color: rgba(255,255,255,0.6); 
-            text-decoration: none; 
-            padding: 10px 15px; 
-            margin-bottom: 5px; 
-            border-radius: 10px; 
-            transition: 0.3s all ease; 
-            font-size: 0.85rem; 
-        }
-        
-        .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
-        .nav-item-ucmi:hover { color: white; background: rgba(255,255,255,0.1); transform: translateX(5px); }
-        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1); }
-
-        .btn-sidebar-action { 
-            background: transparent; 
-            border: 1px solid rgba(255, 255, 255, 0.4) !important; 
-            color: white !important; 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            font-size: 0.7rem; 
-            border-radius: 50px; 
-            padding: 10px; 
-            text-decoration: none; 
-            text-align: center; 
-            transition: all 0.3s ease-in-out; 
-            display: block; 
-            margin-bottom: 10px; 
+        .super-overlay {
+            margin-left: 260px;
+            padding: 30px;
         }
 
-        .btn-sidebar-action:hover { background: rgba(255, 255, 255, 0.1); border-color: #ffffff !important; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); transform: translateY(-2px); }
-        .btn-logout { border-color: rgba(231, 76, 60, 0.4) !important; color: rgba(231, 76, 60, 0.8) !important; }
-        .btn-logout:hover { background: rgba(231, 76, 60, 0.1) !important; border-color: var(--rojo-logout) !important; color: white !important; }
-
-        .super-overlay { 
-            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); 
-            flex-grow: 1; 
-            min-height: 100vh; 
-            overflow-y: auto; 
-            padding: 40px; 
+        .topico-card {
+            background: rgba(255,255,255,0.08);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        .glass-header{
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 20px;
-    padding: 25px;
+        .topico-card:hover {
+            transform: translateX(5px);
+            background: rgba(255,255,255,0.12);
         }
 
-        .glass-lista{
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 20px;
-    padding: 25px;
-}
-
-    .modulo-item{
-        padding: 12px 15px;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-        font-size: 1rem;
-    }
-
-    .modulo-item:last-child{
-        border-bottom: none;
-    }
-
-    .modulo-item:hover{
-        background: rgba(255,255,255,0.05);
-    }
-
-    .asignatura-row {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    padding: 6px 10px;
-    margin-top: 6px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.05);
-}
-
-.col-nombre {
-    color: #00c2ff;
-    font-weight: 500;
-    padding-left: 10px;
-}
-
-.col-botones {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-}    
-
-    .asignatura-fila{
-    cursor: pointer;
-    transition: 0.2s ease;
-}
-
-.asignatura-fila:hover{
-    background: rgba(255,255,255,0.06);
-    transform: translateX(4px);
-}    
-        
     </style>
 </head>
+
 <body>
 
-<div class="app-wrapper">
-    <aside class="sidebar d-none d-md-flex">
-        <div class="text-center mb-2">
-            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" 
-                 id="logoAcademia" 
-                 class="logo-sidebar" 
-                 alt="Logo Academia">
-        </div>
-        <nav class="sidebar-nav">
-            <a href="solicitudes-academia.html" class="nav-item-ucmi"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
-            <a href="#" class="nav-item-ucmi"><i class="bi bi-mortarboard"></i> ALUMNOS</a>
-            <a href="docentes-academia.html" class="nav-item-ucmi"><i class="bi bi-people"></i> DOCENTES</a>
-            <a href="modificaciones.html" class="nav-item-ucmi"><i class="bi bi-pencil-square"></i> MODIFICACIONES</a>
-            <a href="#" class="nav-item-ucmi"><i class="bi bi-person-vcard"></i> DIRECTORIO</a>
-            <a href="academia-modulos.html" class="nav-item-ucmi"><i class="bi bi-tags"></i> OFERTAS</a>
-            <a href="#" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
-            <a href="#" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
-        </nav>
-        <div class="mt-4 pt-4 border-top border-secondary">
-            <a href="admin-academia.html" class="btn-sidebar-action w-100"><i class="bi bi-shield-lock"></i> Panel Maestro</a>
-            <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a>
-        </div>
-    </aside>
-
-    <main class="super-overlay">
-    
-        <div class="container-fluid">
-    
-            <div class="glass-header mb-4">
-                <h1 class="mb-0">
-                    <i class="bi bi-journal-bookmark-fill me-2"></i>
-                    Asignaturas
-                </h1>
-    
-                <p class="mb-0 mt-2 text-light opacity-75">
-                    Gestión de asignaturas por módulo.
-                </p>
-            </div>
-    
-            <div class="glass-lista">
-                <div id="contenedorModulos"></div>
-            </div>
-    
-        </div>
-    
-    </main>
+<div class="sidebar">
+    <img id="logoAcademia" style="width:100%; opacity:0; margin-bottom:20px;">
+    <a href="#" id="btnLogout" class="btn btn-danger w-100">Cerrar sesión</a>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<div class="super-overlay">
+
+    <h2 id="tituloAsignatura">Tópicos</h2>
+
+    <div id="contenedorTopicos"></div>
+
+</div>
 
 <script type="module">
 
@@ -224,14 +72,11 @@ import {
     doc,
     getDoc,
     collection,
-    addDoc,
     query,
     where,
     getDocs,
-    serverTimestamp,
     onSnapshot,
-    updateDoc,
-    deleteDoc
+    orderBy
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -252,8 +97,8 @@ const app = initializeApp({
 const db = getFirestore(app);
 const auth = getAuth();
 
-let moduloSeleccionado = null;
-let entidadGlobal = null;
+let asignatura = null;
+let ramasIds = [];
 
 // ===================== AUTH =====================
 onAuthStateChanged(auth, async (user) => {
@@ -263,198 +108,74 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-    if (!userSnap.exists()) return;
+    const params = new URLSearchParams(window.location.search);
+    const asignaturaId = params.get("id");
 
-    const d = userSnap.data();
-    entidadGlobal = d.entidad;
+    if (!asignaturaId) return;
 
-    const contenedorModulos = document.getElementById("contenedorModulos");
-    contenedorModulos.innerHTML = "";
+    // 1. ASIGNATURA
+    const asignaturaSnap = await getDoc(doc(db, "asignaturas", asignaturaId));
 
-    (d.modulos || []).forEach(modulo => {
+    if (!asignaturaSnap.exists()) return;
 
-        contenedorModulos.innerHTML += `
-            <div class="modulo-item">
+    asignatura = asignaturaSnap.data();
 
-                <div class="d-flex justify-content-between align-items-center">
-                    <strong>${modulo}</strong>
+    document.getElementById("tituloAsignatura").innerText =
+        asignatura.asignatura;
 
-                    <button class="btn btn-sm btn-success btnCrearAsignatura"
-                        data-modulo="${modulo}">
-                        Crear asignatura
-                    </button>
-                </div>
-
-                <div class="listaAsignaturas"
-                     id="asignaturas-${modulo}">
-                </div>
-
-            </div>
-        `;
-    });
-
-    document.querySelectorAll(".btnCrearAsignatura")
-    .forEach(btn => {
-
-        btn.addEventListener("click", () => {
-
-            moduloSeleccionado = btn.dataset.modulo;
-
-            new bootstrap.Modal(
-                document.getElementById("modalAsignatura")
-            ).show();
-        });
-
-    });
-
-    const logo = document.getElementById("logoAcademia");
-    logo.src = d.logoCustom ||
-        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-    logo.style.opacity = "1";
-
-    // ===================== REALTIME =====================
-    if (!entidadGlobal) return;
-
-    const q = query(
-        collection(db, "asignaturas"),
-        where("entidad", "==", entidadGlobal)
+    // 2. RAMAS DEL MÓDULO
+    const ramasSnap = await getDocs(
+        query(
+            collection(db, "ramas"),
+            where("moduloId", "==", asignatura.moduloId)
+        )
     );
 
-    onSnapshot(q, (snapshot) => {
+    ramasIds = ramasSnap.docs.map(d => d.id);
 
-        document.querySelectorAll(".listaAsignaturas")
-            .forEach(el => el.innerHTML = "");
+    if (ramasIds.length === 0) {
+        document.getElementById("contenedorTopicos").innerHTML =
+            "<p>No hay ramas en este módulo</p>";
+        return;
+    }
 
-        const lista = [];
+    // 3. TÓPICOS
+    const topicosQuery = query(
+        collection(db, "topicos"),
+        where("ramaId", "in", ramasIds),
+        orderBy("orden", "asc")
+    );
 
-        snapshot.forEach(docu => {
-            lista.push({ id: docu.id, ...docu.data() });
-        });
+    onSnapshot(topicosQuery, (snap) => {
 
-        lista.sort((a, b) =>
-            a.asignatura.localeCompare(b.asignatura, "es")
-        );
+        const cont = document.getElementById("contenedorTopicos");
+        cont.innerHTML = "";
 
-        lista.forEach(data => {
+        if (snap.empty) {
+            cont.innerHTML = "<p>No hay tópicos disponibles</p>";
+            return;
+        }
 
-            const contenedor = document.getElementById(
-                `asignaturas-${data.modulo}`
-            );
+        snap.forEach(docu => {
 
-            if (!contenedor) return;
+            const t = docu.data();
 
-            contenedor.insertAdjacentHTML("beforeend", `
-                <div class="asignatura-row"
-                     data-id="${data.id}">
+            cont.insertAdjacentHTML("beforeend", `
+                <div class="topico-card">
 
-                    <div class="col-nombre">
-                        <span class="text-info"
-                              style="cursor:pointer;font-weight:500;">
-                            ${data.asignatura}
-                        </span>
-                    </div>
+                    <strong>${t.tema}</strong>
 
-                    <div class="col-botones">
-
-                        <button class="btn btn-sm btn-warning btnEditarAsignatura"
-                            data-id="${data.id}"
-                            data-nombre="${data.asignatura}">
-                            Editar
-                        </button>
-
-                        <button class="btn btn-sm btn-danger btnEliminarAsignatura"
-                            data-id="${data.id}">
-                            Borrar
-                        </button>
-
+                    <div style="font-size:12px; opacity:0.7;">
+                        Orden: ${t.orden}
                     </div>
 
                 </div>
             `);
+
         });
 
     });
 
-});
-
-// ===================== CLICK EN FILA =====================
-document.addEventListener("click", (e) => {
-
-    const fila = e.target.closest(".asignatura-row");
-    if (!fila) return;
-
-    if (e.target.closest("button")) return;
-
-    const id = fila.dataset.id;
-
-    window.location.href =
-        `asignatura-topicos.html?id=${id}`;
-});
-
-// ===================== CREAR =====================
-document.getElementById("btnGuardarAsignatura")
-.addEventListener("click", async () => {
-
-    const nombre = document.getElementById("nombreAsignatura").value.trim();
-    if (!nombre || !moduloSeleccionado) return;
-
-    const user = auth.currentUser;
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-    const d = userSnap.data();
-
-    const q = query(
-        collection(db, "ofertas"),
-        where("modulo", "==", moduloSeleccionado)
-    );
-
-    const snap = await getDocs(q);
-    if (snap.empty) return;
-
-    const docOferta = snap.docs[0];
-
-    await addDoc(collection(db, "asignaturas"), {
-        asignatura: nombre,
-        modulo: moduloSeleccionado,
-        moduloId: docOferta.id,
-        entidad: d.entidad,
-        fechaCreacion: serverTimestamp()
-    });
-
-    document.getElementById("nombreAsignatura").value = "";
-
-    bootstrap.Modal.getInstance(
-        document.getElementById("modalAsignatura")
-    ).hide();
-});
-
-// ===================== EDITAR =====================
-document.addEventListener("click", async (e) => {
-
-    if (!e.target.classList.contains("btnEditarAsignatura")) return;
-
-    const id = e.target.dataset.id;
-    const actual = e.target.dataset.nombre;
-
-    const nuevo = prompt("Editar asignatura:", actual);
-
-    if (!nuevo || nuevo === actual) return;
-
-    await updateDoc(doc(db, "asignaturas", id), {
-        asignatura: nuevo
-    });
-});
-
-// ===================== ELIMINAR =====================
-document.addEventListener("click", async (e) => {
-
-    if (!e.target.classList.contains("btnEliminarAsignatura")) return;
-
-    const id = e.target.dataset.id;
-
-    if (!confirm("¿Eliminar asignatura?")) return;
-
-    await deleteDoc(doc(db, "asignaturas", id));
 });
 
 // ===================== LOGOUT =====================
@@ -466,57 +187,6 @@ document.getElementById("btnLogout")
 );
 
 </script>
-<div class="modal fade" id="modalAsignatura" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content bg-dark text-white">
 
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    Crear asignatura
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close btn-close-white"
-                    data-bs-dismiss="modal">
-                </button>
-            </div>
-
-            <div class="modal-body">
-
-                <label class="form-label">
-                    Nombre de la asignatura
-                </label>
-
-                <input
-                    type="text"
-                    id="nombreAsignatura"
-                    class="form-control"
-                    placeholder="Ejemplo: Inglés A2 Kids">
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal">
-                    Cancelar
-                </button>
-
-                <button
-                    type="button"
-                    class="btn btn-success"
-                    id="btnGuardarAsignatura">
-                    Guardar
-                </button>
-
-            </div>
-
-        </div>
-    </div>
-</div>    
-    
 </body>
 </html>
