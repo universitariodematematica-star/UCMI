@@ -41,7 +41,6 @@
         .topico-item:last-child {
             border-bottom: none;
         }
-
     </style>
 </head>
 
@@ -73,7 +72,7 @@ import {
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// INIT
+// ===================== INIT =====================
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -99,8 +98,10 @@ onAuthStateChanged(auth, async (user) => {
 
     if (!asignaturaId) return;
 
-    // 1. ASIGNATURA
-    const asignaturaSnap = await getDoc(doc(db, "asignaturas", asignaturaId));
+    // ===================== 1. ASIGNATURA =====================
+    const asignaturaSnap = await getDoc(
+        doc(db, "asignaturas", asignaturaId)
+    );
 
     if (!asignaturaSnap.exists()) return;
 
@@ -109,7 +110,7 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("tituloAsignatura").innerText =
         asignatura.asignatura;
 
-    // 2. RAMAS DEL MÓDULO
+    // ===================== 2. RAMAS =====================
     const ramasSnap = await getDocs(
         query(
             collection(db, "ramas"),
@@ -119,10 +120,10 @@ onAuthStateChanged(auth, async (user) => {
 
     const ramas = [];
 
-    ramasSnap.forEach(doc => {
+    ramasSnap.forEach(docu => {
         ramas.push({
-            id: doc.id,
-            ...doc.data(),
+            id: docu.id,
+            ...docu.data(),
             topicos: []
         });
     });
@@ -133,7 +134,7 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    // 3. TÓPICOS
+    // ===================== 3. TÓPICOS =====================
     const ramasIds = ramas.map(r => r.id);
 
     const topicosSnap = await getDocs(
@@ -143,18 +144,26 @@ onAuthStateChanged(auth, async (user) => {
         )
     );
 
-    topicosSnap.forEach(doc => {
+    topicosSnap.forEach(docu => {
 
-        const t = doc.data();
+        const t = docu.data();
 
         const rama = ramas.find(r => r.id === t.ramaId);
 
         if (rama) {
-            rama.topicos.push(t);
+            rama.topicos.push({
+                ...t,
+                orden: Number(t.orden)
+            });
         }
     });
 
-    // 4. RENDER FINAL
+    // ===================== 4. ORDENAR (CRÍTICO) =====================
+    ramas.forEach(rama => {
+        rama.topicos.sort((a, b) => a.orden - b.orden);
+    });
+
+    // ===================== 5. RENDER =====================
     const cont = document.getElementById("contenedorRamas");
     cont.innerHTML = "";
 
