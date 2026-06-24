@@ -98,6 +98,7 @@ const asignaturaId = params.get("id");
 
 let asignaturaData = null;
 let entidadGlobal = null;
+let ramasPermitidas = [];
 
 // ===================== AUTH =====================
 onAuthStateChanged(auth, async (user) => {
@@ -107,12 +108,11 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    // cargar usuario
+    // usuario
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-    const userData = userSnap.data();
-    entidadGlobal = userData.entidad;
+    entidadGlobal = userSnap.data().entidad;
 
-    // cargar asignatura
+    // asignatura
     const asigSnap = await getDoc(doc(db, "asignaturas", asignaturaId));
 
     if (!asigSnap.exists()) return;
@@ -122,20 +122,52 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("tituloAsignatura").innerText =
         asignaturaData.asignatura;
 
-    cargarTopicos();
+    // 🔥 1. obtener ramas del módulo
+    await cargarRamasDelModulo(asignaturaData.modulo);
+
+    // 🔥 2. cargar tópicos filtrados
+    await cargarTopicosFiltrados();
 });
 
-// ===================== CARGAR TÓPICOS REPOSITORIO =====================
-async function cargarTopicos() {
+// ===================== RAMAS DEL MÓDULO =====================
+async function cargarRamasDelModulo(modulo) {
+
+    const ramasSnap = await getDocs(
+        query(
+            collection(db, "ramas"),
+            where("modulo", "==", modulo)
+        )
+    );
+
+    ramasPermitidas = [];
+
+    ramasSnap.forEach(r => {
+        ramasPermitidas.push(r.id);
+    });
+}
+
+// ===================== TÓPICOS FILTRADOS =====================
+async function cargarTopicosFiltrados() {
 
     const contenedor = document.getElementById("listaTopicos");
     contenedor.innerHTML = "";
 
     const snap = await getDocs(collection(db, "topicos"));
 
+    const filtrados = [];
+
     snap.forEach(docu => {
 
         const t = docu.data();
+
+        if (ramasPermitidas.includes(t.ramaId)) {
+            filtrados.push({ id: docu.id, ...t });
+        }
+    });
+
+    filtrados.sort((a, b) => a.orden - b.orden);
+
+    filtrados.forEach(t => {
 
         contenedor.innerHTML += `
             <div class="topico-row">
@@ -145,7 +177,7 @@ async function cargarTopicos() {
                 </div>
 
                 <button class="btn btn-success btn-sm btn-asignar"
-                    data-id="${docu.id}"
+                    data-id="${t.id}"
                     data-tema="${t.tema}">
                     Asignar
                 </button>
@@ -175,10 +207,8 @@ async function cargarTopicos() {
             btn.classList.add("btn-secondary");
             btn.disabled = true;
         });
-
     });
 }
-
 </script>
 
 </body>
