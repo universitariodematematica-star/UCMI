@@ -177,7 +177,12 @@ onAuthStateChanged(auth, async (user) => {
     tema: t.tema,
 
     // 🔥 ORDEN ORIGINAL DE UCMI
-    ordenUcmi: Number(t.orden || 999999),
+    ordenUcmi: Number(
+    t.orden ??
+    t.order ??
+    t.ordenUCMI ??
+    999999
+),
 
     asignado: asignados.has(d.id),
     asignacionId: asignacion?.id || null,
@@ -194,11 +199,13 @@ ramas.forEach(rama => {
 
     rama.topicos.sort((a, b) => {
 
-        return (
-            Number(a.ordenUcmi || 999999)
-            -
-            Number(b.ordenUcmi || 999999)
-        );
+        const oa = parseInt(a.ordenUcmi ?? 999999);
+        const ob = parseInt(b.ordenUcmi ?? 999999);
+
+        if (oa !== ob) return oa - ob;
+
+        // fallback: orden estable por nombre (evita caos visual)
+        return (a.tema || "").localeCompare(b.tema || "es");
 
     });
 
