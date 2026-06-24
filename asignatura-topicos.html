@@ -33,9 +33,12 @@
         }
 
         .topico-item {
-            padding: 6px 0;
+            padding: 8px 10px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .topico-item:last-child {
@@ -64,7 +67,10 @@ import {
     collection,
     query,
     where,
-    getDocs
+    getDocs,
+    addDoc,
+    deleteDoc,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -85,6 +91,8 @@ const app = initializeApp({
 const db = getFirestore(app);
 const auth = getAuth();
 
+let asignaturaIdGlobal = null;
+
 // ===================== MAIN =====================
 onAuthStateChanged(auth, async (user) => {
 
@@ -94,13 +102,13 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     const params = new URLSearchParams(window.location.search);
-    const asignaturaId = params.get("id");
+    asignaturaIdGlobal = params.get("id");
 
-    if (!asignaturaId) return;
+    if (!asignaturaIdGlobal) return;
 
-    // ===================== 1. ASIGNATURA =====================
+    // ===================== ASIGNATURA =====================
     const asignaturaSnap = await getDoc(
-        doc(db, "asignaturas", asignaturaId)
+        doc(db, "asignaturas", asignaturaIdGlobal)
     );
 
     if (!asignaturaSnap.exists()) return;
@@ -110,7 +118,7 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("tituloAsignatura").innerText =
         asignatura.asignatura;
 
-    // ===================== 2. RAMAS =====================
+    // ===================== RAMAS =====================
     const ramasSnap = await getDocs(
         query(
             collection(db, "ramas"),
@@ -120,10 +128,10 @@ onAuthStateChanged(auth, async (user) => {
 
     const ramas = [];
 
-    ramasSnap.forEach(docu => {
+    ramasSnap.forEach(d => {
         ramas.push({
-            id: docu.id,
-            ...docu.data(),
+            id: d.id,
+            ...d.data(),
             topicos: []
         });
     });
@@ -134,7 +142,21 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    // ===================== 3. TÓPICOS =====================
+    // ===================== ASIGNACIONES =====================
+    const asignacionesSnap = await getDocs(
+        query(
+            collection(db, "asignatura_topicos"),
+            where("asignaturaId", "==", asignaturaIdGlobal)
+        )
+    );
+
+    const asignados = new Set();
+
+    asignacionesSnap.forEach(d => {
+        asignados.add(d.data().topicoId);
+    });
+
+    // ===================== TÓPICOS =====================
     const ramasIds = ramas.map(r => r.id);
 
     const topicosSnap = await getDocs(
@@ -144,26 +166,27 @@ onAuthStateChanged(auth, async (user) => {
         )
     );
 
-    topicosSnap.forEach(docu => {
+    topicosSnap.forEach(d => {
 
-        const t = docu.data();
+        const t = d.data();
 
         const rama = ramas.find(r => r.id === t.ramaId);
 
         if (rama) {
             rama.topicos.push({
+                id: d.id,
                 ...t,
                 orden: Number(t.orden)
             });
         }
     });
 
-    // ===================== 4. ORDENAR (CRÍTICO) =====================
-    ramas.forEach(rama => {
-        rama.topicos.sort((a, b) => a.orden - b.orden);
+    // ===================== ORDEN =====================
+    ramas.forEach(r => {
+        r.topicos.sort((a, b) => a.orden - b.orden);
     });
 
-    // ===================== 5. RENDER =====================
+    // ===================== RENDER =====================
     const cont = document.getElementById("contenedorRamas");
     cont.innerHTML = "";
 
@@ -180,11 +203,24 @@ onAuthStateChanged(auth, async (user) => {
                     ${
                         rama.topicos.length === 0
                         ? "<small style='opacity:0.6;'>Sin tópicos</small>"
-                        : rama.topicos.map(t => `
-                            <div class="topico-item">
-                                ${t.tema}
-                            </div>
-                        `).join("")
+                        : rama.topicos.map(t => {
+
+                            const isChecked = asignados.has(t.id);
+
+                            return `
+                                <div class="topico-item">
+
+                                    <span>${t.tema}</span>
+
+                                    <button class="btn btn-sm ${isChecked ? 'btn-danger' : 'btn-outline-warning'} btn-toggle"
+                                        data-id="${t.id}"
+                                        data-asignado="${isChecked}">
+                                        ${isChecked ? 'Quitar' : 'Asignar'}
+                                    </button>
+
+                                </div>
+                            `;
+                        }).join("")
                     }
                 </div>
 
@@ -192,6 +228,42 @@ onAuthStateChanged(auth, async (user) => {
         `);
 
     });
+
+});
+
+// ===================== ASIGNAR / DESASIGNAR =====================
+document.addEventListener("click", async (e) => {
+
+    if (!e.target.classList.contains("btn-toggle")) return;
+
+    const topicoId = e.target.dataset.id;
+    const asignado = e.target.dataset.asignado === "true";
+
+    if (!asignado) {
+
+        await addDoc(collection(db, "asignatura_topicos"), {
+            asignaturaId: asignaturaIdGlobal,
+            topicoId,
+            fechaAsignacion: serverTimestamp()
+        });
+
+    } else {
+
+        const q = query(
+            collection(db, "asignatura_topicos"),
+            where("asignaturaId", "==", asignaturaIdGlobal),
+            where("topicoId", "==", topicoId)
+        );
+
+        const snap = await getDocs(q);
+
+        snap.forEach(async (d) => {
+            await deleteDoc(doc(db, "asignatura_topicos", d.id));
+        });
+
+    }
+
+    location.reload();
 
 });
 
