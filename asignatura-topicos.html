@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tópicos de Asignatura</title>
+    <title>Tópicos por Rama</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
     <style>
         body {
@@ -16,34 +15,31 @@
             color: white;
         }
 
-        .sidebar {
-            width: 260px;
-            background: rgba(26,42,58,0.5);
-            backdrop-filter: blur(15px);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            padding: 20px;
-        }
-
-        .super-overlay {
-            margin-left: 260px;
+        .container-main {
             padding: 30px;
         }
 
-        .topico-card {
-            background: rgba(255,255,255,0.08);
-            padding: 15px;
+        .rama-card {
+            background: rgba(255,255,255,0.06);
             border-radius: 12px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: 0.2s;
+            padding: 15px;
+            margin-bottom: 15px;
         }
 
-        .topico-card:hover {
-            transform: translateX(5px);
-            background: rgba(255,255,255,0.12);
+        .rama-title {
+            color: #c5a059;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .topico-item {
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+        }
+
+        .topico-item:last-child {
+            border-bottom: none;
         }
 
     </style>
@@ -51,16 +47,11 @@
 
 <body>
 
-<div class="sidebar">
-    <img id="logoAcademia" style="width:100%; opacity:0; margin-bottom:20px;">
-    <a href="#" id="btnLogout" class="btn btn-danger w-100">Cerrar sesión</a>
-</div>
+<div class="container-main">
 
-<div class="super-overlay">
+    <h2 id="tituloAsignatura">Asignatura</h2>
 
-    <h2 id="tituloAsignatura">Tópicos</h2>
-
-    <div id="contenedorTopicos"></div>
+    <div id="contenedorRamas"></div>
 
 </div>
 
@@ -74,17 +65,15 @@ import {
     collection,
     query,
     where,
-    getDocs,
-    onSnapshot,
-    orderBy
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
     getAuth,
-    onAuthStateChanged,
-    signOut
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+// INIT
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -97,10 +86,7 @@ const app = initializeApp({
 const db = getFirestore(app);
 const auth = getAuth();
 
-let asignatura = null;
-let ramasIds = [];
-
-// ===================== AUTH =====================
+// ===================== MAIN =====================
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -118,7 +104,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (!asignaturaSnap.exists()) return;
 
-    asignatura = asignaturaSnap.data();
+    const asignatura = asignaturaSnap.data();
 
     document.getElementById("tituloAsignatura").innerText =
         asignatura.asignatura;
@@ -131,60 +117,74 @@ onAuthStateChanged(auth, async (user) => {
         )
     );
 
-    ramasIds = ramasSnap.docs.map(d => d.id);
+    const ramas = [];
 
-    if (ramasIds.length === 0) {
-        document.getElementById("contenedorTopicos").innerHTML =
-            "<p>No hay ramas en este módulo</p>";
+    ramasSnap.forEach(doc => {
+        ramas.push({
+            id: doc.id,
+            ...doc.data(),
+            topicos: []
+        });
+    });
+
+    if (ramas.length === 0) {
+        document.getElementById("contenedorRamas").innerHTML =
+            "<p>No hay ramas disponibles</p>";
         return;
     }
 
     // 3. TÓPICOS
-    const topicosQuery = query(
-        collection(db, "topicos"),
-        where("ramaId", "in", ramasIds),
-        orderBy("orden", "asc")
+    const ramasIds = ramas.map(r => r.id);
+
+    const topicosSnap = await getDocs(
+        query(
+            collection(db, "topicos"),
+            where("ramaId", "in", ramasIds)
+        )
     );
 
-    onSnapshot(topicosQuery, (snap) => {
+    topicosSnap.forEach(doc => {
 
-        const cont = document.getElementById("contenedorTopicos");
-        cont.innerHTML = "";
+        const t = doc.data();
 
-        if (snap.empty) {
-            cont.innerHTML = "<p>No hay tópicos disponibles</p>";
-            return;
+        const rama = ramas.find(r => r.id === t.ramaId);
+
+        if (rama) {
+            rama.topicos.push(t);
         }
+    });
 
-        snap.forEach(docu => {
+    // 4. RENDER FINAL
+    const cont = document.getElementById("contenedorRamas");
+    cont.innerHTML = "";
 
-            const t = docu.data();
+    ramas.forEach(rama => {
 
-            cont.insertAdjacentHTML("beforeend", `
-                <div class="topico-card">
+        cont.insertAdjacentHTML("beforeend", `
+            <div class="rama-card">
 
-                    <strong>${t.tema}</strong>
-
-                    <div style="font-size:12px; opacity:0.7;">
-                        Orden: ${t.orden}
-                    </div>
-
+                <div class="rama-title">
+                    ${rama.nombre}
                 </div>
-            `);
 
-        });
+                <div>
+                    ${
+                        rama.topicos.length === 0
+                        ? "<small style='opacity:0.6;'>Sin tópicos</small>"
+                        : rama.topicos.map(t => `
+                            <div class="topico-item">
+                                ${t.tema}
+                            </div>
+                        `).join("")
+                    }
+                </div>
+
+            </div>
+        `);
 
     });
 
 });
-
-// ===================== LOGOUT =====================
-document.getElementById("btnLogout")
-.addEventListener("click", () =>
-    signOut(auth).then(() =>
-        window.location.href = "index.html"
-    )
-);
 
 </script>
 
