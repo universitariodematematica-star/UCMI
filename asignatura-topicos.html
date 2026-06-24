@@ -100,7 +100,6 @@ onAuthStateChanged(auth, async (user) => {
 
     const params = new URLSearchParams(window.location.search);
     asignaturaIdGlobal = params.get("id");
-
     if (!asignaturaIdGlobal) return;
 
     // ===================== ASIGNATURA =====================
@@ -163,30 +162,34 @@ onAuthStateChanged(auth, async (user) => {
         )
     );
 
+    // 🔥 NORMALIZACIÓN DE DATOS (CLAVE PARA FUTURO DRAG & DROP)
     topicosSnap.forEach(d => {
 
         const t = d.data();
         const rama = ramas.find(r => r.id === t.ramaId);
 
-        if (rama) {
-            const asignacion = asignacionMap.get(d.id);
+        if (!rama) return;
 
-            rama.topicos.push({
-                id: d.id,
-                tema: t.tema,
-                ordenAcademia: asignacion?.ordenAcademia ?? 9999,
-                asignado: asignados.has(d.id),
-                asignacionId: asignacion?.id || null
-            });
-        }
+        const asignacion = asignacionMap.get(d.id);
+
+        rama.topicos.push({
+            id: d.id,
+            tema: t.tema,
+            asignado: asignados.has(d.id),
+            asignacionId: asignacion?.id || null,
+
+            // 🔥 ORDEN DE ACADEMIA (NO OCEMI)
+            ordenAcademia: asignacion?.ordenAcademia ?? 9999
+        });
     });
 
-    // ===================== ORDEN OCEMI (NO TOCAR) =====================
-    // SOLO ORDEN DE ACADEMIA
-    ramas.forEach(r => {
-        r.topicos.sort((a, b) =>
-            a.ordenAcademia - b.ordenAcademia
-        );
+    // ===================== ORDEN FINAL (IMPORTANTE) =====================
+    ramas.forEach(rama => {
+
+        rama.topicos.sort((a, b) => {
+            return (a.ordenAcademia ?? 9999) - (b.ordenAcademia ?? 9999);
+        });
+
     });
 
     // ===================== RENDER =====================
@@ -245,7 +248,7 @@ document.addEventListener("click", async (e) => {
         await addDoc(collection(db, "asignatura_topicos"), {
             asignaturaId: asignaturaIdGlobal,
             topicoId,
-            ordenAcademia: Date.now(), // posición inicial temporal
+            ordenAcademia: 9999, // 🔥 listo para drag & drop futuro
             fechaAsignacion: serverTimestamp()
         });
 
@@ -261,7 +264,6 @@ document.addEventListener("click", async (e) => {
     }
 
     location.reload();
-
 });
 
 </script>
