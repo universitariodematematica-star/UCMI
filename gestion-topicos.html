@@ -528,32 +528,36 @@ function getDragAfterElement(container, y) {
 
 async function guardarNuevoOrden() {
 
-    // IMPORTANTE: tomamos el orden FINAL real del DOM
     const items = Array.from(
         document.querySelectorAll(".topico-draggable")
     );
 
-    const batchUpdates = [];
+    try {
 
-    items.forEach((el, index) => {
+        for (let i = 0; i < items.length; i++) {
 
-        const asignacionId = el.dataset.asignacion;
+            const asignacionId = items[i].dataset.asignacion;
 
-        if (!asignacionId) return;
+            if (!asignacionId) continue;
 
-        batchUpdates.push(
-            updateDoc(
+            await updateDoc(
                 doc(db, "asignatura_topicos", asignacionId),
                 {
-                    ordenAcademia: index + 1
+                    ordenAcademia: i + 1
                 }
-            )
-        );
+            );
 
-    });
+        }
 
-    // ejecuta todas las actualizaciones en paralelo
-    await Promise.all(batchUpdates);
+        console.log("✔ Orden guardado correctamente");
+
+    } catch (error) {
+
+        console.error("❌ Error guardando orden:", error);
+
+        alert("Error al guardar el orden. Revisa consola.");
+
+    }
 }
 
 // ===============================
@@ -573,7 +577,7 @@ btnGuardarOrden.addEventListener("click", async () => {
 
     await guardarNuevoOrden();
 
-    location.reload();
+    alert("Orden guardado correctamente");
 
 });
 
