@@ -244,7 +244,11 @@ async function cargarAsignatura() {
 function cargarTopicos() {
 
     if (!asignaturaId) {
-        container.innerHTML = `<div class="text-danger">No se recibió el ID de la asignatura.</div>`;
+        container.innerHTML = `
+            <div class="text-danger">
+                No se recibió el ID de la asignatura.
+            </div>
+        `;
         return;
     }
 
@@ -256,19 +260,26 @@ function cargarTopicos() {
     onSnapshot(q, async (snapshot) => {
 
         loading.style.display = "none";
-        container.innerHTML = "";
-
-        console.log("SNAPSHOT TÓPICOS:", snapshot.size);
 
         if (snapshot.empty) {
-            container.innerHTML = `<div class="text-white-50">Esta asignatura no tiene tópicos aún.</div>`;
+            container.innerHTML = `
+                <div class="text-white-50">
+                    Esta asignatura no tiene tópicos aún.
+                </div>
+            `;
             return;
         }
+
+        let html = "";
 
         for (const docSnap of snapshot.docs) {
 
             const data = docSnap.data();
-            const topicoId = data.topicoId || data.topicoID || data.topico;
+
+            const topicoId =
+                data.topicoId ||
+                data.topicoID ||
+                data.topico;
 
             if (!topicoId) continue;
 
@@ -277,7 +288,7 @@ function cargarTopicos() {
 
             const topico = topicoSnap.data();
 
-            container.innerHTML += `
+            html += `
                 <div class="topico-card"
                      onclick="window.location.href='contenido.html?topicoId=${topicoId}'">
 
@@ -289,10 +300,17 @@ function cargarTopicos() {
             `;
         }
 
+        container.innerHTML = html;
+
     }, (error) => {
 
         console.error(error);
-        container.innerHTML = `<div class="text-danger">Error al cargar los tópicos</div>`;
+
+        container.innerHTML = `
+            <div class="text-danger">
+                Error al cargar los tópicos
+            </div>
+        `;
     });
 }
 
