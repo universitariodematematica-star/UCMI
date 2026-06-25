@@ -204,15 +204,46 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    collection,
+    onSnapshot,
+    query,
+    orderBy
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+import {
+    getAuth,
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+
+// 🔥 1. INIT APP
+const app = initializeApp({
+    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+    authDomain: "ucmi-13796634.firebaseapp.com",
+    projectId: "ucmi-13796634",
+    storageBucket: "ucmi-13796634.firebasestorage.app",
+    messagingSenderId: "1090719609536",
+    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+});
+
+// 🔥 2. SERVICES
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+
+// 🔥 DOM
 const container = document.getElementById("asignaturasContainer");
 const loading = document.getElementById("loadingAsignaturas");
 
-function crearCard(doc) {
-    const d = doc.data();
+
+// 🔥 3. RENDER CARDS
+function crearCard(docSnap) {
+    const d = docSnap.data();
 
     return `
         <div class="col-12 col-md-6 col-lg-4">
@@ -241,10 +272,32 @@ function crearCard(doc) {
     `;
 }
 
-onAuthStateChanged(auth, (user) => {
 
-    if (!user) return;
+// 🔥 4. AUTH (UN SOLO FLUJO)
+onAuthStateChanged(auth, async (user) => {
 
+    if (!user) {
+        window.location.href = "index.html";
+        return;
+    }
+
+    // 🔥 LOGO
+    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
+
+    if (userSnap.exists()) {
+        const d = userSnap.data();
+
+        const logo = document.getElementById("logoAcademia");
+
+        logo.src =
+            d.logoCustom ||
+            "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+
+        logo.style.opacity = "1";
+    }
+
+
+    // 🔥 ASIGNATURAS (LIVE)
     const q = query(
         collection(db, "asignaturas"),
         orderBy("fechaCreacion", "desc")
@@ -252,9 +305,8 @@ onAuthStateChanged(auth, (user) => {
 
     onSnapshot(q, (snapshot) => {
 
-        container.innerHTML = "";
-
         loading.style.display = "none";
+        container.innerHTML = "";
 
         if (snapshot.empty) {
             container.innerHTML = `
@@ -265,44 +317,22 @@ onAuthStateChanged(auth, (user) => {
             return;
         }
 
-        snapshot.forEach((doc) => {
-            container.innerHTML += crearCard(doc);
+        snapshot.forEach((docSnap) => {
+            container.innerHTML += crearCard(docSnap);
         });
 
     });
 
 });
 
-    const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
-    const auth = getAuth();
 
-onAuthStateChanged(auth, async (user) => {
-
-    if (!user) {
-        window.location.href = "index.html";
-        return;
-    }
-
-    const userSnap = await getDoc(
-        doc(db, "usuarios", user.uid)
-    );
-
-    if (userSnap.exists()) {
-
-        const d = userSnap.data();
-
-        const logo = document.getElementById('logoAcademia');
-
-        logo.src =
-            d.logoCustom ||
-            "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-
-        logo.style.opacity = "1";
-    }
-
-});
-
-    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
+// 🔥 LOGOUT
+document.getElementById("btnLogout")
+    .addEventListener("click", () => {
+        signOut(auth).then(() => {
+            window.location.href = "index.html";
+        });
+    });
     
 </script>
 
