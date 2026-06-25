@@ -262,10 +262,32 @@ function cargarTopicos() {
             return;
         }
 
-        snapshot.forEach((docSnap) => {
-            console.log("DOC COMPLETO:", docSnap.data());
-            container.innerHTML += crearTopico(docSnap);
-        });
+        snapshot.forEach(async (docSnap) => {
+
+    const data = docSnap.data();
+
+    const topicoRef = doc(db, "topicos", data.topicoId);
+    const topicoSnap = await getDoc(topicoRef);
+
+    if (!topicoSnap.exists()) return;
+
+    const topico = topicoSnap.data();
+
+    container.innerHTML += `
+        <div class="asignatura-item"
+             onclick="window.location.href='topico-contenido-academia.html?asignatura=${asignaturaId}&topico=${data.topicoId}'">
+
+            <div class="asignatura-nombre">
+                ${topico.tema ?? "Sin nombre"}
+            </div>
+
+            <div class="asignatura-badge">
+                Tópico
+            </div>
+
+        </div>
+    `;
+});
 
     }, (error) => {
 
