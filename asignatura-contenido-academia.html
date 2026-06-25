@@ -171,7 +171,7 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// ================= FIREBASE INIT =================
+// ================= FIREBASE =================
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -196,7 +196,10 @@ const asignaturaId = params.get("id");
 // ================= ASIGNATURA =================
 async function cargarAsignatura() {
 
-    if (!asignaturaId) return;
+    if (!asignaturaId) {
+        titulo.textContent = "Asignatura no encontrada";
+        return;
+    }
 
     const ref = doc(db, "asignaturas", asignaturaId);
     const snap = await getDoc(ref);
@@ -206,27 +209,6 @@ async function cargarAsignatura() {
     } else {
         titulo.textContent = "Asignatura no encontrada";
     }
-}
-
-// ================= RENDER TÓPICO =================
-function crearTopico(docSnap) {
-
-    const d = docSnap.data();
-
-    return `
-        <div class="asignatura-item"
-             onclick="window.location.href='topico-contenido-academia.html?asignatura=${asignaturaId}&topico=${docSnap.id}'">
-
-            <div class="asignatura-nombre">
-                ${d.nombre || "Sin nombre"}
-            </div>
-
-            <div class="asignatura-badge">
-                Tópico
-            </div>
-
-        </div>
-    `;
 }
 
 // ================= TÓPICOS =================
@@ -246,10 +228,9 @@ function cargarTopicos() {
         where("asignaturaId", "==", asignaturaId)
     );
 
-    onSnapshot(q, (snapshot) => {
+    onSnapshot(q, async (snapshot) => {
 
         loading.style.display = "none";
-        container.innerHTML = "";
 
         console.log("SNAPSHOT TÓPICOS:", snapshot.size);
 
@@ -264,61 +245,37 @@ function cargarTopicos() {
 
         const promises = snapshot.docs.map(async (docSnap) => {
 
-    const data = docSnap.data();
+            const data = docSnap.data();
 
-    const topicoRef = doc(db, "topicos", data.topicoId);
-    const topicoSnap = await getDoc(topicoRef);
+            if (!data.topicoId) return "";
 
-    if (!topicoSnap.exists()) return "";
+            const topicoRef = doc(db, "topicos", data.topicoId);
+            const topicoSnap = await getDoc(topicoRef);
 
-    const topico = topicoSnap.data();
+            if (!topicoSnap.exists()) return "";
 
-    return `
-        <div class="asignatura-item"
-             onclick="window.location.href='topico-contenido-academia.html?asignatura=${asignaturaId}&topico=${data.topicoId}'">
+            const topico = topicoSnap.data();
 
-            <div class="asignatura-nombre">
-                ${topico.tema ?? "Sin nombre"}
-            </div>
+            return `
+                <div class="asignatura-item"
+                     onclick="window.location.href='topico-contenido-academia.html?asignatura=${asignaturaId}&topico=${data.topicoId}'">
 
-            <div class="asignatura-badge">
-                Tópico
-            </div>
+                    <div class="asignatura-nombre">
+                        ${topico.tema || "Sin nombre"}
+                    </div>
 
-        </div>
-    `;
-});
+                    <div class="asignatura-badge">
+                        Tópico
+                    </div>
 
-const html = (await Promise.all(promises)).join("");
-container.innerHTML = html;
+                </div>
+            `;
+        });
 
-    const data = docSnap.data();
-
-    const topicoRef = doc(db, "topicos", data.topicoId);
-    const topicoSnap = await getDoc(topicoRef);
-
-    if (!topicoSnap.exists()) return;
-
-    const topico = topicoSnap.data();
-
-    container.innerHTML += `
-        <div class="asignatura-item"
-             onclick="window.location.href='topico-contenido-academia.html?asignatura=${asignaturaId}&topico=${data.topicoId}'">
-
-            <div class="asignatura-nombre">
-                ${topico.tema ?? "Sin nombre"}
-            </div>
-
-            <div class="asignatura-badge">
-                Tópico
-            </div>
-
-        </div>
-    `;
-});
+        const html = (await Promise.all(promises)).join("");
+        container.innerHTML = html;
 
     }, (error) => {
-
         console.error("Error cargando tópicos:", error);
 
         container.innerHTML = `
