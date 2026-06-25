@@ -262,7 +262,35 @@ function cargarTopicos() {
             return;
         }
 
-        snapshot.forEach(async (docSnap) => {
+        const promises = snapshot.docs.map(async (docSnap) => {
+
+    const data = docSnap.data();
+
+    const topicoRef = doc(db, "topicos", data.topicoId);
+    const topicoSnap = await getDoc(topicoRef);
+
+    if (!topicoSnap.exists()) return "";
+
+    const topico = topicoSnap.data();
+
+    return `
+        <div class="asignatura-item"
+             onclick="window.location.href='topico-contenido-academia.html?asignatura=${asignaturaId}&topico=${data.topicoId}'">
+
+            <div class="asignatura-nombre">
+                ${topico.tema ?? "Sin nombre"}
+            </div>
+
+            <div class="asignatura-badge">
+                Tópico
+            </div>
+
+        </div>
+    `;
+});
+
+const html = (await Promise.all(promises)).join("");
+container.innerHTML = html;
 
     const data = docSnap.data();
 
