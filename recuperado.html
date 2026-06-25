@@ -215,11 +215,7 @@ async function cargarAsignatura() {
 function cargarTopicos() {
 
     if (!asignaturaId) {
-        container.innerHTML = `
-            <div class="text-danger">
-                No se recibió el ID de la asignatura.
-            </div>
-        `;
+        container.innerHTML = `<div class="text-danger">No se recibió el ID de la asignatura.</div>`;
         return;
     }
 
@@ -231,51 +227,33 @@ function cargarTopicos() {
     onSnapshot(q, async (snapshot) => {
 
         loading.style.display = "none";
+        container.innerHTML = "";
 
         console.log("SNAPSHOT TÓPICOS:", snapshot.size);
 
         if (snapshot.empty) {
-            container.innerHTML = `
-                <div class="text-white-50">
-                    Esta asignatura no tiene tópicos aún.
-                </div>
-            `;
+            container.innerHTML = `<div class="text-white-50">Esta asignatura no tiene tópicos aún.</div>`;
             return;
         }
-
-        container.innerHTML = "";
 
         for (const docSnap of snapshot.docs) {
 
             const data = docSnap.data();
-
-            // 🔥 IMPORTANTE: protección contra campos mal nombrados
             const topicoId = data.topicoId || data.topicoID || data.topico;
-
-            console.log("DOC COMPLETO:", data);
 
             if (!topicoId) continue;
 
-            const topicoRef = doc(db, "topicos", topicoId);
-            const topicoSnap = await getDoc(topicoRef);
-
-            if (!topicoSnap.exists()) {
-                console.warn("Tópico no existe en colección topicos:", topicoId);
-                continue;
-            }
+            const topicoSnap = await getDoc(doc(db, "topicos", topicoId));
+            if (!topicoSnap.exists()) continue;
 
             const topico = topicoSnap.data();
 
             container.innerHTML += `
-                <div class="asignatura-item"
+                <div class="topico-card"
                      onclick="window.location.href='contenido.html?topicoId=${topicoId}'">
 
-                    <div class="asignatura-nombre">
+                    <div class="topico-title">
                         ${topico.tema || "Sin nombre"}
-                    </div>
-
-                    <div class="asignatura-badge">
-                        Tópico
                     </div>
 
                 </div>
@@ -283,17 +261,13 @@ function cargarTopicos() {
         }
 
     }, (error) => {
-        console.error("Error cargando tópicos:", error);
 
-        container.innerHTML = `
-            <div class="text-danger">
-                Error al cargar los tópicos.
-            </div>
-        `;
+        console.error(error);
+        container.innerHTML = `<div class="text-danger">Error al cargar los tópicos</div>`;
     });
 }
 
-// ================= AUTH + LOGO =================
+// ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -304,15 +278,10 @@ onAuthStateChanged(auth, async (user) => {
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
 
     if (userSnap.exists()) {
-
         const d = userSnap.data();
-
         const logo = document.getElementById("logoAcademia");
 
-        logo.src =
-            d.logoCustom ||
-            "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-
+        logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
         logo.style.opacity = "1";
     }
 
@@ -327,9 +296,7 @@ document.getElementById("btnLogout")
             window.location.href = "index.html";
         });
     });
-
 </script>
-
     
 </body>
 </html>
