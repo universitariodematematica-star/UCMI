@@ -137,6 +137,88 @@
     background: rgba(197, 160, 89, 0.15);
     color: #c5a059;
 }
+
+        .asignaturas-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.asignatura-item {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 16px 20px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.asignatura-item:hover {
+    transform: translateX(6px);
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(197, 160, 89, 0.5);
+}
+
+.asignatura-nombre {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.asignatura-badge {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 50px;
+    background: rgba(197, 160, 89, 0.15);
+    color: #c5a059;
+}
+
+        .asignaturas-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.asignatura-item {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 16px 20px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.asignatura-item:hover {
+    transform: translateX(6px);
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(197, 160, 89, 0.5);
+}
+
+.asignatura-nombre {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.asignatura-badge {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 50px;
+    background: rgba(197, 160, 89, 0.15);
+    color: #c5a059;
+}
+
+        .asignatura-item:active {
+    transform: scale(0.98);
+}
         
     </style>
 </head>
@@ -170,25 +252,19 @@
 
     <div class="container-fluid">
 
-        <!-- Header sección -->
+        <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="fw-bold mb-0">Asignaturas de la Academia</h2>
-                <small class="text-white-50">Listado en tiempo real desde Firestore</small>
-            </div>
-
-            <div>
-                <span class="badge bg-light text-dark px-3 py-2">
-                    <i class="bi bi-lightning-charge"></i> Live Sync
-                </span>
+                <h2 class="fw-bold mb-0">Asignaturas</h2>
+                <small class="text-white-50">Selecciona una asignatura para acceder a su contenido</small>
             </div>
         </div>
 
-        <!-- Grid de asignaturas -->
-        <div id="asignaturasContainer" class="row g-3">
+        <!-- Lista de asignaturas -->
+        <div id="asignaturasContainer" class="asignaturas-lista">
 
-            <!-- Loader inicial -->
-            <div class="col-12 text-center text-white-50" id="loadingAsignaturas">
+            <!-- Loader -->
+            <div id="loadingAsignaturas" class="text-white-50">
                 <div class="spinner-border text-light"></div>
                 <div class="mt-2">Cargando asignaturas...</div>
             </div>
@@ -241,33 +317,21 @@ const container = document.getElementById("asignaturasContainer");
 const loading = document.getElementById("loadingAsignaturas");
 
 
-// 🔥 3. RENDER CARDS
-function crearCard(docSnap) {
+function crearItem(docSnap) {
     const d = docSnap.data();
 
     return `
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="asignatura-card">
+        <div class="asignatura-item"
+             onclick="location.href='asignatura-contenido-academia.html?id=${docSnap.id}'">
 
-                <div class="asignatura-titulo">
-                    <i class="bi bi-journal-bookmark me-2"></i>
-                    ${d.asignatura ?? "Sin nombre"}
-                </div>
-
-                <div class="asignatura-meta">
-                    <div><strong>Módulo:</strong> ${d.modulo ?? "N/A"}</div>
-                    <div><strong>Creada:</strong> ${
-                        d.fechaCreacion?.toDate
-                            ? d.fechaCreacion.toDate().toLocaleString()
-                            : "Sin fecha"
-                    }</div>
-                </div>
-
-                <div class="asignatura-modulo">
-                    ${d.moduloId ?? "sin-modulo"}
-                </div>
-
+            <div class="asignatura-nombre">
+                ${d.asignatura ?? "Sin nombre"}
             </div>
+
+            <div class="asignatura-badge">
+                ${d.modulo ?? "Sin módulo"}
+            </div>
+
         </div>
     `;
 }
@@ -300,7 +364,7 @@ onAuthStateChanged(auth, async (user) => {
     // 🔥 ASIGNATURAS (LIVE)
     const q = query(
         collection(db, "asignaturas"),
-        orderBy("fechaCreacion", "desc")
+        orderBy("asignatura", "asc")
     );
 
     onSnapshot(q, (snapshot) => {
@@ -318,8 +382,8 @@ onAuthStateChanged(auth, async (user) => {
         }
 
         snapshot.forEach((docSnap) => {
-            container.innerHTML += crearCard(docSnap);
-        });
+    container.innerHTML += crearItem(docSnap);
+});
 
     });
 
