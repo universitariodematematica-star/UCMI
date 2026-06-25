@@ -154,43 +154,63 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
-    const auth = getAuth();
-
-  import {
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+    getFirestore,
+    doc,
+    getDoc,
     collection,
     onSnapshot,
     query,
-    orderBy,
-    doc,
-    getDoc
+    where
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const params = new URLSearchParams(window.location.search);
-const asignaturaId = params.get("id");
+import {
+    getAuth,
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+// ================= FIREBASE INIT =================
+const app = initializeApp({
+    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+    authDomain: "ucmi-13796634.firebaseapp.com",
+    projectId: "ucmi-13796634",
+    storageBucket: "ucmi-13796634.firebasestorage.app",
+    messagingSenderId: "1090719609536",
+    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+});
+
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// ================= DOM =================
 const container = document.getElementById("topicosContainer");
 const loading = document.getElementById("loadingTopicos");
 const titulo = document.getElementById("tituloAsignatura");
 
-// 🔥 1. cargar nombre de asignatura
+// ================= PARAMS =================
+const params = new URLSearchParams(window.location.search);
+const asignaturaId = params.get("id");
+
+// ================= ASIGNATURA =================
 async function cargarAsignatura() {
+
+    if (!asignaturaId) return;
+
     const ref = doc(db, "asignaturas", asignaturaId);
     const snap = await getDoc(ref);
 
     if (snap.exists()) {
-        titulo.textContent = snap.data().asignatura;
+        titulo.textContent = snap.data().asignatura || "Sin nombre";
     } else {
         titulo.textContent = "Asignatura no encontrada";
     }
 }
 
-// 🔥 2. render de tópico
+// ================= RENDER TÓPICO =================
 function crearTopico(docSnap) {
+
     const d = docSnap.data();
 
     return `
@@ -198,7 +218,7 @@ function crearTopico(docSnap) {
              onclick="window.location.href='topico-contenido-academia.html?asignatura=${asignaturaId}&topico=${docSnap.id}'">
 
             <div class="asignatura-nombre">
-                ${d.nombre ?? "Sin nombre"}
+                ${d.nombre || "Sin nombre"}
             </div>
 
             <div class="asignatura-badge">
@@ -209,18 +229,29 @@ function crearTopico(docSnap) {
     `;
 }
 
-// 🔥 3. cargar tópicos
+// ================= TÓPICOS =================
 function cargarTopicos() {
 
+    if (!asignaturaId) {
+        container.innerHTML = `
+            <div class="text-danger">
+                No se recibió el ID de la asignatura.
+            </div>
+        `;
+        return;
+    }
+
     const q = query(
-    collection(db, "asignatura_topicos"),
-    where("asignaturaId", "==", asignaturaId)
-);
+        collection(db, "asignatura_topicos"),
+        where("asignaturaId", "==", asignaturaId)
+    );
 
     onSnapshot(q, (snapshot) => {
 
         loading.style.display = "none";
         container.innerHTML = "";
+
+        console.log("SNAPSHOT TÓPICOS:", snapshot.size);
 
         if (snapshot.empty) {
             container.innerHTML = `
@@ -235,15 +266,19 @@ function cargarTopicos() {
             container.innerHTML += crearTopico(docSnap);
         });
 
+    }, (error) => {
+
+        console.error("Error cargando tópicos:", error);
+
+        container.innerHTML = `
+            <div class="text-danger">
+                Error al cargar los tópicos.
+            </div>
+        `;
     });
 }
 
-// 🔥 INIT
-if (asignaturaId) {
-    cargarAsignatura();
-    cargarTopicos();
-}
-
+// ================= AUTH + LOGO =================
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -251,15 +286,13 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    const userSnap = await getDoc(
-        doc(db, "usuarios", user.uid)
-    );
+    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
 
     if (userSnap.exists()) {
 
         const d = userSnap.data();
 
-        const logo = document.getElementById('logoAcademia');
+        const logo = document.getElementById("logoAcademia");
 
         logo.src =
             d.logoCustom ||
@@ -268,13 +301,19 @@ onAuthStateChanged(auth, async (user) => {
         logo.style.opacity = "1";
     }
 
+    cargarAsignatura();
+    cargarTopicos();
 });
 
-    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
-    
+// ================= LOGOUT =================
+document.getElementById("btnLogout")
+    .addEventListener("click", () => {
+        signOut(auth).then(() => {
+            window.location.href = "index.html";
+        });
+    });
+
 </script>
-
-
 
     
 </body>
