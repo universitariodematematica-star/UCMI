@@ -516,28 +516,37 @@ function getDragAfterElement(container, y) {
 }
 
 // ===============================
-// GUARDAR NUEVO ORDEN EN FIRESTORE
+// GUARDAR NUEVO ORDEN EN FIRESTORE (CORREGIDO)
 // ===============================
 
 async function guardarNuevoOrden() {
 
-    const items = [
-        ...document.querySelectorAll(".topico-draggable")
-    ];
+    // IMPORTANTE: tomamos el orden FINAL real del DOM
+    const items = Array.from(
+        document.querySelectorAll(".topico-draggable")
+    );
 
-    for (let i = 0; i < items.length; i++) {
+    const batchUpdates = [];
 
-        const asignacionId =
-            items[i].dataset.asignacion;
+    items.forEach((el, index) => {
 
-        await updateDoc(
-            doc(db, "asignatura_topicos", asignacionId),
-            {
-                ordenAcademia: i + 1
-            }
+        const asignacionId = el.dataset.asignacion;
+
+        if (!asignacionId) return;
+
+        batchUpdates.push(
+            updateDoc(
+                doc(db, "asignatura_topicos", asignacionId),
+                {
+                    ordenAcademia: index + 1
+                }
+            )
         );
 
-    }
+    });
+
+    // ejecuta todas las actualizaciones en paralelo
+    await Promise.all(batchUpdates);
 }
 
 // ===============================
