@@ -97,6 +97,35 @@
             overflow-y: auto; 
             padding: 40px; 
         }
+
+        .topico-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+
+    padding: 18px 22px;
+    margin-bottom: 12px;
+
+    cursor: pointer;
+
+    transition: all 0.28s ease;
+
+    color: white;
+}
+
+.topico-card:hover {
+    transform: translateX(14px);
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.topico-title {
+    font-size: 1rem;
+    font-weight: 600;
+}
         
     </style>
 </head>
@@ -215,7 +244,11 @@ async function cargarAsignatura() {
 function cargarTopicos() {
 
     if (!asignaturaId) {
-        container.innerHTML = `<div class="text-danger">No se recibió el ID de la asignatura.</div>`;
+        container.innerHTML = `
+            <div class="text-danger">
+                No se recibió el ID de la asignatura.
+            </div>
+        `;
         return;
     }
 
@@ -227,30 +260,35 @@ function cargarTopicos() {
     onSnapshot(q, async (snapshot) => {
 
         loading.style.display = "none";
-        container.innerHTML = "";
-
-        console.log("SNAPSHOT TÓPICOS:", snapshot.size);
 
         if (snapshot.empty) {
-            container.innerHTML = `<div class="text-white-50">Esta asignatura no tiene tópicos aún.</div>`;
+            container.innerHTML = `
+                <div class="text-white-50">
+                    Esta asignatura no tiene tópicos aún.
+                </div>
+            `;
             return;
         }
+
+        let html = "";
 
         for (const docSnap of snapshot.docs) {
 
             const data = docSnap.data();
-            const topicoId = data.topicoId || data.topicoID || data.topico;
+
+            const topicoId =
+                data.topicoId ||
+                data.topicoID ||
+                data.topico;
 
             if (!topicoId) continue;
 
-            const topicoRef = doc(db, "topicos", topicoId);
-            const topicoSnap = await getDoc(topicoRef);
-
+            const topicoSnap = await getDoc(doc(db, "topicos", topicoId));
             if (!topicoSnap.exists()) continue;
 
             const topico = topicoSnap.data();
 
-            container.innerHTML += `
+            html += `
                 <div class="topico-card"
                      onclick="window.location.href='contenido.html?topicoId=${topicoId}'">
 
@@ -262,11 +300,17 @@ function cargarTopicos() {
             `;
         }
 
+        container.innerHTML = html;
+
     }, (error) => {
 
         console.error(error);
 
-        container.innerHTML = `<div class="text-danger">Error al cargar los tópicos</div>`;
+        container.innerHTML = `
+            <div class="text-danger">
+                Error al cargar los tópicos
+            </div>
+        `;
     });
 }
 
