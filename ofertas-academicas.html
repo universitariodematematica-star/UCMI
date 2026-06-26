@@ -377,9 +377,19 @@ const nombreNormalizado = nombreModulo
                         </div>
                     </td>
                     <td class="text-center">
-                        <button class="btn-cerrar" style="font-size: 0.6rem; padding: 5px 12px;" onclick="eliminarModulo('${id}')">
+
+                        <button class="btn-maestro"
+                            style="font-size:0.6rem;padding:5px 12px;display:inline-block;margin-right:6px;"
+                            onclick="editarModulo('${id}', '${mod.modulo.replace(/'/g,"\\'")}')">
+                            <i class="bi bi-pencil"></i> EDITAR
+                        </button>
+                    
+                        <button class="btn-cerrar"
+                            style="font-size:0.6rem;padding:5px 12px;display:inline-block;"
+                            onclick="eliminarModulo('${id}')">
                             <i class="bi bi-trash3"></i> BORRAR
                         </button>
+                    
                     </td>
                 </tr>
             `;
@@ -406,6 +416,76 @@ sw.onclick = async (e) => {
     window.eliminarModulo = async (id) => {
         if(confirm("¿Eliminar módulo?")) await deleteDoc(doc(db, "ofertas", id));
     };
+
+window.eliminarModulo = async (id) => {
+    if(confirm("¿Eliminar módulo?")) {
+        await deleteDoc(doc(db, "ofertas", id));
+    }
+};
+
+window.editarModulo = async (id, nombreActual) => {
+
+    let nuevoNombre = prompt(
+        "Nuevo nombre del módulo:",
+        nombreActual
+    );
+
+    if (nuevoNombre === null) return;
+
+    nuevoNombre = nuevoNombre.trim();
+
+    if (nuevoNombre === "") {
+        alert("El nombre no puede estar vacío.");
+        return;
+    }
+
+    const nombreNormalizado = nuevoNombre
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    try {
+
+        const consulta = query(
+            collection(db, "ofertas"),
+            where("moduloNormalizado", "==", nombreNormalizado)
+        );
+
+        const resultado = await getDocs(consulta);
+
+        let duplicado = false;
+
+        resultado.forEach(docSnap => {
+            if (docSnap.id !== id) {
+                duplicado = true;
+            }
+        });
+
+        if (duplicado) {
+            alert("Ya existe otro módulo con ese nombre.");
+            return;
+        }
+
+        await updateDoc(
+            doc(db, "ofertas", id),
+            {
+                modulo: nuevoNombre,
+                moduloNormalizado: nombreNormalizado
+            }
+        );
+
+        alert("Módulo actualizado correctamente.");
+
+    } catch (error) {
+
+        console.error(error);
+        alert("Ocurrió un error al actualizar el módulo.");
+
+    }
+};
+    
 </script>
 <script type="module" src="js/alertas-globales.js"></script>    
 </body>
