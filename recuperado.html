@@ -3,93 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Repositorio Académico Maestro</title>
+    <title>UCMI - Panel de Control</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="icon" href="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
     <style>
-        :root { 
-            --dorado-ucmi: #c5a059; 
-            --sidebar-width: 260px;
-            --purpura-neon: #bc13fe;
-            --cian-tech: #00f2ff;
+        :root {
+            --azul-ucmi: #06090f;
+            --azul-sidebar: #1a2a3a;
+            --dorado-ucmi: #c5a059;
+            --rojo-logout: #e74c3c;
         }
 
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            color: white;
+        body { 
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-            background-size: cover;
-            overflow: hidden;
+            background-size: cover; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            color: white;
+            min-height: 100vh;
         }
 
-        .overlay {
-            position: fixed;
-            top: 0; right: 0; bottom: 0; left: var(--sidebar-width);
-            background: radial-gradient(circle, rgba(6, 9, 15, 0.7) 0%, rgba(6, 9, 15, 0.95) 100%);
-            z-index: -1;
+        .app-wrapper { display: flex; min-height: 100vh; }
+
+        /* Sidebar con efecto Glassmorphism */
+        .sidebar { 
+            background: rgba(26, 42, 58, 0.4); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            border-right: 1px solid rgba(255, 255, 255, 0.15); 
+            width: 260px; 
+            flex-shrink: 0; 
+            padding: 25px 15px; 
+            display: flex; 
+            flex-direction: column; 
         }
 
-        .wrapper { display: flex; height: 100vh; width: 100vw; }
-
-        /* SIDEBAR INTEGRADO */
-        .sidebar {
-            width: var(--sidebar-width);
-            min-width: var(--sidebar-width);
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(25px);
-            border-right: 1px solid rgba(197, 160, 89, 0.2);
-            display: flex;
-            flex-direction: column;
-            padding: 25px 15px;
+        .logo-sidebar { 
+            height: 100px; 
+            width: auto; 
+            margin-bottom: 30px; 
+            display: block; 
+            margin-left: auto; 
+            margin-right: auto; 
+            object-fit: contain; 
+            border-radius: 15px; 
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: opacity 0.5s ease;
+            opacity: 0;
         }
-
-        .sidebar-logo { width: 100px; margin: 0 auto 30px; display: block; }
+        
         .sidebar-nav { flex-grow: 1; }
-        .nav-item-ucmi {
-            display: flex; align-items: center; color: rgba(255,255,255,0.6);
-            text-decoration: none; padding: 10px 15px; margin-bottom: 5px;
-            border-radius: 10px; transition: 0.3s; font-size: 0.85rem;
+
+        .nav-item-ucmi { 
+            display: flex; align-items: center; 
+            color: rgba(255,255,255,0.6); 
+            text-decoration: none; 
+            padding: 10px 15px; 
+            margin-bottom: 5px; 
+            border-radius: 10px; 
+            transition: 0.3s all ease; 
+            font-size: 0.85rem; 
         }
+        
         .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
         .nav-item-ucmi:hover { color: white; background: rgba(255,255,255,0.1); transform: translateX(5px); }
-        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; }
+        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1); }
 
-        .btn-maestro {
-            background: transparent; border: 1px solid rgba(255,255,255,0.3);
-            color: white; font-weight: 600; text-transform: uppercase;
-            font-size: 0.65rem; border-radius: 50px; padding: 10px;
-            text-align: center; display: block; margin-bottom: 10px; text-decoration: none;
-        }
-        .btn-cerrar {
-            background: transparent; border: 1px solid rgba(231, 76, 60, 0.4);
-            color: rgba(231, 76, 60, 0.9); font-weight: 600; text-transform: uppercase;
-            font-size: 0.65rem; border-radius: 50px; padding: 8px;
-            text-align: center; display: block; text-decoration: none;
+        .btn-sidebar-action { 
+            background: transparent; 
+            border: 1px solid rgba(255, 255, 255, 0.4) !important; 
+            color: white !important; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            font-size: 0.7rem; 
+            border-radius: 50px; 
+            padding: 10px; 
+            text-decoration: none; 
+            text-align: center; 
+            transition: all 0.3s ease-in-out; 
+            display: block; 
+            margin-bottom: 10px; 
         }
 
-        /* CONTENIDO PRINCIPAL */
-        .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; }
-        .program-card {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px); border-radius: 15px; padding: 25px;
-            color: white; display: flex; flex-direction: column; align-items: center;
-            text-align: center; transition: all 0.3s ease; text-decoration: none;
+        .btn-sidebar-action:hover { background: rgba(255, 255, 255, 0.1); border-color: #ffffff !important; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); transform: translateY(-2px); }
+        .btn-logout { border-color: rgba(231, 76, 60, 0.4) !important; color: rgba(231, 76, 60, 0.8) !important; }
+        .btn-logout:hover { background: rgba(231, 76, 60, 0.1) !important; border-color: var(--rojo-logout) !important; color: white !important; }
+
+        .super-overlay { 
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); 
+            flex-grow: 1; 
+            min-height: 100vh; 
+            overflow-y: auto; 
+            padding: 40px; 
         }
-        .program-card i { font-size: 1.6rem; margin-bottom: 12px; color: var(--dorado-ucmi); }
-        .program-card:hover { background: rgba(197, 160, 89, 0.15); border-color: var(--dorado-ucmi); transform: translateY(-5px); }
-        .text-glow-gold { color: var(--dorado-ucmi); text-shadow: 0 0 15px rgba(197, 160, 89, 0.6); }
+      .rama-card{
+    background:rgba(255,255,255,.07);
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:20px;
+    padding:25px;
+    transition:.4s;
+    overflow:hidden;
+}
+
+.rama-card:hover{
+    transform:translateY(-5px);
+    border-color:#c5a059;
+    box-shadow:0 0 20px rgba(197,160,89,.25);
+}
+
+.nombre-rama{
+    font-size:1.3rem;
+    font-weight:700;
+    color:white;
+    margin-bottom:15px;
+}
+
+.lista-topicos{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .5s ease;
+}
+
+.rama-card:hover .lista-topicos{
+    max-height:500px;
+}
+
+.topico-link{
+    display:block;
+    color:#c5a059;
+    text-decoration:none;
+    padding:8px 0;
+    transition:.3s;
+}
+
+.topico-link:hover{
+    color:white;
+    transform:translateX(10px);
+    text-shadow:0 0 10px rgba(255,255,255,.7);
+}
     </style>
 </head>
 <body>
 
-<div class="overlay"></div>
-
-<div class="wrapper">
-    <aside class="sidebar">
-        <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" class="sidebar-logo">
+<div class="app-wrapper">
+    <aside class="sidebar d-none d-md-flex">
+        <div class="text-center mb-2">
+            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" 
+                 id="logoAcademia" 
+                 class="logo-sidebar" 
+                 alt="Logo Academia">
+        </div>
         <nav class="sidebar-nav">
             <a href="master-postulaciones.html" class="nav-item-ucmi"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
             <a href="master-vigencia.html" class="nav-item-ucmi"><i class="bi bi-shield-check"></i> VIGENCIA</a>
@@ -97,109 +162,188 @@
             <a href="historial-postulaciones.html" class="nav-item-ucmi"><i class="bi bi-clock-history"></i> HISTORIAL</a>
             <a href="directorio.html" class="nav-item-ucmi"><i class="bi bi-person-vcard"></i> DIRECTORIO</a>
             <a href="ofertas-academicas.html" class="nav-item-ucmi"><i class="bi bi-tags"></i> OFERTAS</a>
-            <a href="master-repositorio.html" class="nav-item-ucmi active"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
+            <a href="master-repositorio.html" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
             <a href="papelera.html" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
         </nav>
-        <div class="mt-auto pt-3">
-            <a href="super-admin.html" class="btn-maestro"><i class="bi bi-cpu"></i> PANEL MAESTRO</a>
-            <a href="#" id="btnLogout" class="btn-cerrar"><i class="bi bi-power"></i> CERRAR SESIÓN</a>
+        <div class="mt-4 pt-4 border-top border-secondary">
+            <a href="admin-academia.html" class="btn-sidebar-action w-100"><i class="bi bi-shield-lock"></i> Panel Maestro</a>
+            <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a>
         </div>
     </aside>
 
-    <main class="main-content">
-        <div class="container-fluid">
-            <div class="text-center mb-5">
-                <h1 class="fw-bold text-uppercase display-6"><i class="bi bi-journal-bookmark-fill me-3 text-glow-gold"></i>Repositorio Maestro</h1>
-                <p class="text-white-50">Protocolos de Enseñanza Supralógica</p>
-            </div>
-<div class="row g-4 mb-5" id="contenedorModulos">
+    <main class="super-overlay">
+<div class="container-fluid">
+
+    <a href="master-repositorio.html"
+       class="btn btn-outline-light mb-4">
+        <i class="bi bi-arrow-left"></i>
+        Volver a módulos
+    </a>
+
+    <h1 id="tituloModulo"
+        class="display-6 fw-bold mb-5">
+        Cargando módulo...
+    </h1>
+
+    <div class="row g-4" id="contenedorRamas">
+    </div>
+
 </div>
-        </div>
     </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signOut }
-from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-import {
+    import {
     getFirestore,
+    doc,
+    getDoc,
     collection,
+    query,
+    where,
     getDocs
-}
-from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    const app = initializeApp({ apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634" });
-    const auth = getAuth(app);
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
+        measurementId: "G-3M3DH25722"
+    };
+
+    const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
+    const params = new URLSearchParams(window.location.search);
+    const moduloId = params.get("moduloId");
 
-function obtenerIcono(nombre) {
-    nombre = (nombre || "")
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    // Carga de Logo según el usuario
+    onAuthStateChanged(auth, async (user) => {
+        const logoElement = document.getElementById('logoAcademia');
+        if (user) {
+            try {
+                const docRef = doc(db, "usuarios", user.email);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists() && docSnap.data().logoCustom) {
+                    logoElement.src = docSnap.data().logoCustom;
+                }
+            } catch (error) { console.error("Error al cargar logo:", error); }
+        }
+        logoElement.style.opacity = "1";
+        logoElement.style.visibility = "visible";
+    });
 
-    if (nombre.includes("mat")) return "bi-calculator";
-    if (nombre.includes("fis")) return "bi-speedometer2";
-    if (nombre.includes("quim")) return "bi-droplet-fill";
-    if (nombre.includes("bio")) return "bi-tree";
-    if (nombre.includes("log")) return "bi-diagram-3";
-    if (nombre.includes("estad")) return "bi-bar-chart";
-    if (nombre.includes("num")) return "bi-hash";
-    if (nombre.includes("abstract")) return "bi-puzzle";
-    if (nombre.includes("leng") || nombre.includes("idioma")) return "bi-chat-left-text";
-    if (nombre.includes("inform") || nombre.includes("program")) return "bi-code-slash";
-    if (nombre.includes("ingen")) return "bi-gear";
-    if (nombre.includes("med")) return "bi-heart-pulse";
-    if (nombre.includes("dere")) return "bi-bank";
-    if (nombre.includes("filo")) return "bi-lightbulb";
-    if (nombre.includes("histo")) return "bi-book";
-    if (nombre.includes("psico")) return "bi-person-heart";
-    if (nombre.includes("astro")) return "bi-stars";
-    if (nombre.includes("geo")) return "bi-globe-americas";
-    if (nombre.includes("arte")) return "bi-palette";
-    if (nombre.includes("music")) return "bi-music-note-beamed";
-    if (nombre.includes("educ")) return "bi-mortarboard";
-    if (nombre.includes("eco")) return "bi-graph-up-arrow";
+  async function cargarModulo() {
 
-    return "bi-journal-bookmark-fill";
-}
-    document.getElementById("btnLogout").onclick = () => signOut(auth).then(() => window.location.href = "index.html");
-    async function cargarModulos() {
-    const contenedor = document.getElementById("contenedorModulos");
+    const moduloSnap =
+        await getDoc(
+            doc(db, "ofertas", moduloId)
+        );
 
-    try {
-        const snap = await getDocs(collection(db, "ofertas"));
-
-        contenedor.innerHTML = "";
-
-        snap.forEach(docu => {
-            const d = docu.data();
-
-            const icono = d.icono || obtenerIcono(d.modulo);
-            contenedor.innerHTML += `
-                <div class="col-md-3">
-                    <a href="ver-tema.html?moduloId=${docu.id}"
-                       class="program-card">
-
-                        <i class="bi ${icono}"></i>
-
-                        <h6 class="fw-bold">
-                            ${d.modulo}
-                        </h6>
-
-                    </a>
-                </div>
-            `;
-        });
-
-    } catch (error) {
-        console.error(error);
+    if (moduloSnap.exists()) {
+        document.getElementById(
+            "tituloModulo"
+        ).innerText =
+            moduloSnap.data().modulo;
     }
 }
 
-cargarModulos();
+async function cargarRamas() {
+
+    const contenedor =
+        document.getElementById(
+            "contenedorRamas"
+        );
+
+    contenedor.innerHTML = "";
+
+    const q = query(
+        collection(db, "ramas"),
+        where("moduloId", "==", moduloId)
+    );
+
+    const ramasSnap = await getDocs(q);
+
+    for (const ramaDoc of ramasSnap.docs) {
+
+        const rama = ramaDoc.data();
+
+const qTopicos = query(
+    collection(db, "topicos"),
+    where("ramaId", "==", ramaDoc.id)
+);
+
+const topicosSnap = await getDocs(qTopicos);
+
+// 🔥 ORDENAR EN MEMORIA POR "orden"
+const topicosOrdenados = topicosSnap.docs.sort(
+    (a, b) =>
+        (a.data().orden || 0) - (b.data().orden || 0)
+);
+
+        let htmlTopicos = "";
+
+        topicosOrdenados.forEach(t => {
+
+            const d = t.data();
+
+            if (d.visible === false)
+                return;
+
+                htmlTopicos += `
+                    <a
+                       class="topico-link"
+                       href="contenido.html?topicoId=${t.id}"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                
+                       <i class="bi bi-journal-text me-2"></i>
+                       ${d.tema}
+                    </a>
+                `;
+        });
+
+        contenedor.innerHTML += `
+            <div class="col-lg-4">
+
+                <div class="rama-card">
+
+                    <div class="nombre-rama">
+                        <i class="bi bi-diagram-3 me-2"></i>
+                        ${rama.nombre}
+                    </div>
+
+                    <div class="lista-topicos">
+                        ${htmlTopicos}
+                    </div>
+
+                </div>
+
+            </div>
+        `;
+    }
+}
+
+cargarModulo();
+cargarRamas();
+
+    // Acción Cierre de Sesión
+    document.getElementById('btnLogout').addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+            await signOut(auth);
+            window.location.href = "index.html"; // Redirige al login
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+            alert("Ocurrió un error al cerrar la sesión.");
+        }
+    });
 </script>
 <script type="module" src="js/alertas-globales.js"></script>    
 </body>
