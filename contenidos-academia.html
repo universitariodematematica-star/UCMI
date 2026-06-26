@@ -352,49 +352,63 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    // 🔥 LOGO
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
+// 🔥 LOGO + DATOS DE LA ACADEMIA
+const userSnap = await getDoc(doc(db, "usuarios", user.uid));
 
-    if (userSnap.exists()) {
-        const d = userSnap.data();
-        const entidad = d.entidad;
+if (!userSnap.exists()) {
+    alert("No se encontró el usuario.");
+    return;
+}
 
-        const logo = document.getElementById("logoAcademia");
+const d = userSnap.data();
 
-        logo.src =
-            d.logoCustom ||
-            "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+const logo = document.getElementById("logoAcademia");
 
-        logo.style.opacity = "1";
-    }
+logo.src =
+    d.logoCustom ||
+    "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+
+logo.style.opacity = "1";
+
+// 👇 Nombre de la academia del usuario autenticado
+const entidad = d.entidad;
 
 
-    // 🔥 ASIGNATURAS (LIVE)
-    const q = query(
+// 🔥 ASIGNATURAS (LIVE)
+const q = query(
     collection(db, "asignaturas"),
-    where("entidad", "==", entidad),
     orderBy("asignatura", "asc")
 );
 
-    onSnapshot(q, (snapshot) => {
+onSnapshot(q, (snapshot) => {
 
-        loading.style.display = "none";
-        container.innerHTML = "";
+    loading.style.display = "none";
+    container.innerHTML = "";
 
-        if (snapshot.empty) {
-            container.innerHTML = `
-                <div class="col-12 text-center text-white-50">
-                    No existen asignaturas aún.
-                </div>
-            `;
-            return;
-        }
+    let hayDatos = false;
 
-        snapshot.forEach((docSnap) => {
-    container.innerHTML += crearItem(docSnap);
-});
+    snapshot.forEach((docSnap) => {
+
+        const asignatura = docSnap.data();
+
+        // Mostrar únicamente las asignaturas de esta academia
+        if (asignatura.entidad !== entidad) return;
+
+        hayDatos = true;
+
+        container.innerHTML += crearItem(docSnap);
 
     });
+
+    if (!hayDatos) {
+        container.innerHTML = `
+            <div class="col-12 text-center text-white-50">
+                No existen asignaturas para esta academia.
+            </div>
+        `;
+    }
+
+});
 
 });
 
