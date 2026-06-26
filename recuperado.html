@@ -2,356 +2,361 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <style>html { display: none; }</style>
+    <script type="module" src="auth-guard.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Panel de Control</title>
+    <title>Gestión de Módulos - UCMI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     
     <style>
-        :root {
-            --azul-ucmi: #06090f;
-            --azul-sidebar: #1a2a3a;
-            --dorado-ucmi: #c5a059;
-            --rojo-logout: #e74c3c;
-        }
+    :root { 
+        --dorado-ucmi: #c5a059; 
+        --cristal-claro: rgba(255, 255, 255, 0.05);
+        --sidebar-width: 260px;
+        --rojo-peligro: #e74c3c;
+    }
 
-        body { 
-            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-            background-size: cover; 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; 
-            color: white;
-            min-height: 100vh;
-        }
+    body, html {
+        height: 100%; margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+        color: white;
+        background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+        background-size: cover;
+        overflow: hidden;
+    }
 
-        .app-wrapper { display: flex; min-height: 100vh; }
+.overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: var(--sidebar-width);
 
-        /* Sidebar con efecto Glassmorphism */
-        .sidebar { 
-            background: rgba(26, 42, 58, 0.4); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px); 
-            border-right: 1px solid rgba(255, 255, 255, 0.15); 
-            width: 260px; 
-            flex-shrink: 0; 
-            padding: 25px 15px; 
-            display: flex; 
-            flex-direction: column; 
-        }
+    background: radial-gradient(
+        circle,
+        rgba(6, 9, 15, 0.7) 0%,
+        rgba(6, 9, 15, 0.95) 100%
+    );
 
-        .logo-sidebar { 
-            height: 100px; 
-            width: auto; 
-            margin-bottom: 30px; 
-            display: block; 
-            margin-left: auto; 
-            margin-right: auto; 
-            object-fit: contain; 
-            border-radius: 15px; 
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            transition: opacity 0.5s ease;
-            opacity: 0;
-        }
-        
-        .sidebar-nav { flex-grow: 1; }
-
-        .nav-item-ucmi { 
-            display: flex; align-items: center; 
-            color: rgba(255,255,255,0.6); 
-            text-decoration: none; 
-            padding: 10px 15px; 
-            margin-bottom: 5px; 
-            border-radius: 10px; 
-            transition: 0.3s all ease; 
-            font-size: 0.85rem; 
-        }
-        
-        .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
-        .nav-item-ucmi:hover { color: white; background: rgba(255,255,255,0.1); transform: translateX(5px); }
-        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1); }
-
-        .btn-sidebar-action { 
-            background: transparent; 
-            border: 1px solid rgba(255, 255, 255, 0.4) !important; 
-            color: white !important; 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            font-size: 0.7rem; 
-            border-radius: 50px; 
-            padding: 10px; 
-            text-decoration: none; 
-            text-align: center; 
-            transition: all 0.3s ease-in-out; 
-            display: block; 
-            margin-bottom: 10px; 
-        }
-
-        .btn-sidebar-action:hover { background: rgba(255, 255, 255, 0.1); border-color: #ffffff !important; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); transform: translateY(-2px); }
-        .btn-logout { border-color: rgba(231, 76, 60, 0.4) !important; color: rgba(231, 76, 60, 0.8) !important; }
-        .btn-logout:hover { background: rgba(231, 76, 60, 0.1) !important; border-color: var(--rojo-logout) !important; color: white !important; }
-
-        .super-overlay { 
-            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); 
-            flex-grow: 1; 
-            min-height: 100vh; 
-            overflow-y: auto; 
-            padding: 40px; 
-        }
-
-        .topico-card {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 14px;
-
-    padding: 10px 18px; /* 👈 antes 18px 22px */
-    margin-bottom: 6px;  /* 👈 antes 12px */
-
-    cursor: pointer;
-
-    transition: all 0.28s ease;
-
-    color: white;
-
-    display: flex;
-    align-items: center;
-    min-height: 38px; /* 👈 fuerza altura baja consistente */
+    z-index: -1;
 }
 
-.topico-card:hover {
-    transform: translateX(6px); /* 👈 antes 14px */
-    background: rgba(255, 255, 255, 0.14);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    .wrapper { display: flex; height: 100vh; width: 100vw; }
+
+    /* --- SIDEBAR --- */
+    .sidebar {
+        width: var(--sidebar-width);
+        min-width: var(--sidebar-width);
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(25px);
+        border-right: 1px solid rgba(197, 160, 89, 0.2);
+        display: flex;
+        flex-direction: column;
+        padding: 25px 15px;
+    }
+
+    .sidebar-logo { width: 100px; margin: 0 auto 30px; display: block; }
+    .sidebar-nav { flex-grow: 1; }
+
+    .nav-item-ucmi {
+        display: flex; align-items: center;
+        color: rgba(255,255,255,0.6);
+        text-decoration: none;
+        padding: 10px 15px;
+        margin-bottom: 5px;
+        border-radius: 10px;
+        transition: 0.3s all ease;
+        font-size: 0.85rem;
+    }
+
+    .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
+    
+    .nav-item-ucmi:hover { 
+        color: white; 
+        background: rgba(255,255,255,0.1);
+        transform: translateX(5px);
+    }
+
+    .nav-item-ucmi.active {
+        background: rgba(197, 160, 89, 0.15);
+        color: var(--dorado-ucmi);
+        font-weight: 600;
+        box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1);
+    }
+
+    .btn-maestro {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        color: white !important;
+        font-weight: 600; text-transform: uppercase;
+        font-size: 0.65rem; letter-spacing: 1.5px;
+        border-radius: 50px; padding: 10px;
+        text-decoration: none; display: block; text-align: center; 
+        margin-bottom: 10px;
+        transition: 0.3s all ease;
+    }
+
+    .btn-maestro:hover {
+        background: rgba(197, 160, 89, 0.2) !important;
+        border-color: var(--dorado-ucmi) !important;
+        color: var(--dorado-ucmi) !important;
+    }
+
+    .btn-cerrar {
+        background: transparent;
+        border: 1px solid rgba(231, 76, 60, 0.4) !important;
+        color: rgba(231, 76, 60, 0.9) !important;
+        font-weight: 600; text-transform: uppercase;
+        font-size: 0.65rem; letter-spacing: 1.5px;
+        border-radius: 50px; padding: 8px;
+        text-decoration: none; display: block; text-align: center;
+        transition: 0.3s all ease;
+    }
+
+    .btn-cerrar:hover {
+        background: rgba(231, 76, 60, 0.2) !important;
+        border-color: var(--rojo-peligro) !important;
+        color: white !important;
+    }
+
+    /* --- CONTENIDO --- */
+    .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; }
+
+    .card-gestion { 
+        background: var(--cristal-claro); 
+        backdrop-filter: blur(15px); 
+        border: 1px solid rgba(197, 160, 89, 0.2); 
+        border-radius: 25px; padding: 30px; margin-bottom: 30px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .form-control { 
+        background: rgba(0, 0, 0, 0.4) !important; 
+        border: 1px solid rgba(197, 160, 89, 0.3); 
+        color: white !important; border-radius: 12px;
+    }
+
+    h2, h4 { font-family: 'Cinzel', serif; letter-spacing: 2px; }
+    .header-main { color: var(--dorado-ucmi); text-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
+
+    .table { color: white !important; --bs-table-bg: transparent !important; }
+    .table thead th { color: var(--dorado-ucmi) !important; border-bottom: 2px solid var(--dorado-ucmi); }
+    
+    .form-switch .form-check-input:checked { background-color: var(--dorado-ucmi); border-color: var(--dorado-ucmi); }
+
+/* Estilo base para el botón de Gestión */
+.btn-gestion-brillante {
+    background: transparent;
+    border: 1px solid var(--dorado-ucmi);
+    color: var(--dorado-ucmi);
+    padding: 10px 20px;
+    border-radius: 50px;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    transition: all 0.4s ease;
+    display: inline-block;
 }
 
-.topico-title {
-    font-size: 1rem;
-    font-weight: 600;
+/* Efecto Hover Brillante */
+.btn-gestion-brillante:hover {
+    background: var(--dorado-ucmi);
+    color: #000;
+    box-shadow: 0 0 10px var(--dorado-ucmi), 
+                0 0 20px var(--dorado-ucmi), 
+                0 0 40px var(--dorado-ucmi);
+    transform: translateY(-2px);
 }
         
-    </style>
+</style>
 </head>
 <body>
 
-<div class="app-wrapper">
-    <aside class="sidebar d-none d-md-flex">
-        <div class="text-center mb-2">
-            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" 
-                 id="logoAcademia" 
-                 class="logo-sidebar" 
-                 alt="Logo Academia">
-        </div>
+<div class="overlay"></div>
+
+<div class="wrapper">
+    <aside class="sidebar">
+        <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" class="sidebar-logo">
+        
         <nav class="sidebar-nav">
-            <a href="#" class="nav-item-ucmi"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
-            <a href="alumnos-academia.html" class="nav-item-ucmi"><i class="bi bi-mortarboard"></i> ALUMNOS</a>
-            <a href="docentes-academia.html" class="nav-item-ucmi"><i class="bi bi-people"></i> DOCENTES</a>
-            <a href="modificaciones.html" class="nav-item-ucmi"><i class="bi bi-pencil-square"></i></i> MODIFICACIONES</a>
-            <a href="#" class="nav-item-ucmi"><i class="bi bi-person-vcard"></i> DIRECTORIO</a>
-            <a href="academia-modulos.html" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
-            <a href="contenidos-academia.html" class="nav-item-ucmi"><i class="bi bi-collection"></i> CONTENIDO</a>
-            <a href="#" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
+            <a href="master-postulaciones.html" class="nav-item-ucmi">
+                <i class="bi bi-person-badge"></i> SOLICITUDES
+            </a>
+            <a href="master-vigencia.html" class="nav-item-ucmi">
+                <i class="bi bi-shield-check"></i> VIGENCIA
+            </a>
+            <a href="master-usuarios.html" class="nav-item-ucmi">
+                <i class="bi bi-people"></i> USUARIOS
+            </a>
+            <a href="historial-postulaciones.html" class="nav-item-ucmi">
+                <i class="bi bi-clock-history"></i> HISTORIAL
+            </a>
+            <a href="directorio.html" class="nav-item-ucmi">
+                <i class="bi bi-person-vcard"></i> DIRECTORIO
+            </a>
+            <a href="#" class="nav-item-ucmi active">
+                <i class="bi bi-tags"></i> OFERTAS
+            </a>
+
+            <a href="master-repositorio.html" class="nav-item-ucmi">
+                <i class="bi bi-grid-1x2"></i> MÓDULOS
+            </a>
+            <a href="papelera.html" class="nav-item-ucmi">
+                        <i class="bi bi-trash3"></i> PAPELERA
+                    </a>
         </nav>
-        <div class="mt-4 pt-4 border-top border-secondary">
-            <a href="admin-academia.html" class="btn-sidebar-action w-100"><i class="bi bi-shield-lock"></i> Panel Maestro</a>
-            <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a>
+
+        <div class="mt-auto pt-4 border-top border-secondary">
+            <a href="super-admin.html" class="btn-maestro">
+                <i class="bi bi-cpu me-2"></i> PANEL MAESTRO
+            </a>
+            
+            <a href="#" id="btnLogout" class="btn-cerrar">
+                <i class="bi bi-power me-2"></i> CERRAR SESIÓN
+            </a>
         </div>
     </aside>
 
-    <main class="super-overlay">
-
-    <div class="container-fluid">
-
-        <a href="contenidos-academia.html" class="btn-volver">
-        ← Volver
-    </a>
-
-        <!-- HEADER ASIGNATURA -->
-        <div class="mb-4">
-            <h2 class="fw-bold text-white" id="tituloAsignatura">Cargando asignatura...</h2>
-            <small class="text-white-50">Selecciona un tópico para ver su contenido</small>
-        </div>
-
-        <!-- LISTA DE TÓPICOS -->
-        <div id="topicosContainer" class="d-flex flex-column gap-1">
-
-            <div class="text-white-50" id="loadingTopicos">
-                <div class="spinner-border text-light"></div>
-                <div class="mt-2">Cargando tópicos...</div>
+    <main class="main-content">
+        <div class="container-fluid">
+            <div class="text-center mb-5">
+                <h2 class="header-main">CONTROL DE MÓDULOS ACADÉMICOS</h2>
             </div>
 
+<div class="card-gestion">
+    <h4 class="mb-4 text-warning"><i class="bi bi-plus-circle me-2"></i>Crear Nuevo Módulo</h4>
+    
+    <div class="row g-3 align-items-center">
+        <div class="col-md-7">
+            <form id="formCrearModulo" class="d-flex gap-2">
+                <input type="text" id="nombreModulo" class="form-control p-2" placeholder="Nombre del módulo..." required autocomplete="off">
+                <button type="submit" class="btn-maestro" style="white-space: nowrap;">REGISTRAR</button>
+            </form>
         </div>
-
+        
+        <div class="col-md-5 text-md-end">
+            <a href="gestion-modulos.html" class="btn-gestion-brillante">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i> IR A GESTIÓN DE MÓDULOS
+            </a>
+        </div>
     </div>
-
-</main>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <div class="card-gestion">
+                <h4 class="text-warning mb-4"><i class="bi bi-archive me-2"></i>Inventario</h4>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Nombre del Módulo</th>
+                                <th class="text-center">Ofertar al Público</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaInventario"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import {
-    getFirestore,
-    doc,
-    getDoc,
-    collection,
-    onSnapshot,
-    query,
-    where
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    
+    // IMPORTACIÓN DE AUTH
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-import {
-    getAuth,
-    onAuthStateChanged,
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain: "ucmi-13796634.firebaseapp.com",
+        projectId: "ucmi-13796634",
+        storageBucket: "ucmi-13796634.firebasestorage.app",
+        messagingSenderId: "1090719609536",
+        appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    };
 
-// ================= FIREBASE =================
-const app = initializeApp({
-    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-    authDomain: "ucmi-13796634.firebaseapp.com",
-    projectId: "ucmi-13796634",
-    storageBucket: "ucmi-13796634.firebasestorage.app",
-    messagingSenderId: "1090719609536",
-    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-});
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app); // INICIALIZAR AUTH
 
-const db = getFirestore(app);
-const auth = getAuth(app);
+    // --- LÓGICA DE CIERRE DE SESIÓN ---
+    document.getElementById('btnLogout').onclick = async (e) => {
+        e.preventDefault();
+        if(confirm("¿Estás seguro de que deseas cerrar sesión?")) {
+            try {
+                await signOut(auth);
+                window.location.href = "index.html";
+            } catch (error) {
+                console.error("Error al cerrar sesión:", error);
+            }
+        }
+    };
 
-// ================= DOM =================
-const container = document.getElementById("topicosContainer");
-const loading = document.getElementById("loadingTopicos");
-const titulo = document.getElementById("tituloAsignatura");
+    // --- LÓGICA DE MÓDULOS ---
+    document.getElementById('formCrearModulo').addEventListener('submit', async (e) => {
+        e.preventDefault(); 
+        const input = document.getElementById('nombreModulo');
+        try {
+            await addDoc(collection(db, "ofertas"), {
+                modulo: input.value,
+                ofertado: false,
+                fechaCreacion: new Date()
+            });
+            input.value = "";
+        } catch (err) { console.error(err); }
+    });
 
-// ================= PARAMS =================
-const params = new URLSearchParams(window.location.search);
-const asignaturaId = params.get("id");
+    onSnapshot(query(collection(db, "ofertas"), orderBy("modulo", "asc")), (snap) => {
+        const lista = document.getElementById('listaInventario');
+        lista.innerHTML = "";
+        snap.forEach(docSnap => {
+            const mod = docSnap.data();
+            const id = docSnap.id;
+            lista.innerHTML += `
+                <tr>
+                    <td class="fw-bold text-white">${mod.modulo}</td>
+                    <td class="text-center">
+                        <div class="form-check form-switch d-inline-block">
+                            <input class="form-check-input toggle-oferta" type="checkbox" 
+                                data-id="${id}" ${mod.ofertado ? 'checked' : ''}>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <button class="btn-cerrar" style="font-size: 0.6rem; padding: 5px 12px;" onclick="eliminarModulo('${id}')">
+                            <i class="bi bi-trash3"></i> BORRAR
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
 
-// ================= ASIGNATURA =================
-async function cargarAsignatura() {
+        document.querySelectorAll('.toggle-oferta').forEach(sw => {
+sw.onclick = async (e) => {
+    const docId = e.target.getAttribute('data-id');
 
-    if (!asignaturaId) {
-        titulo.textContent = "Asignatura no encontrada";
-        return;
-    }
+    console.log("SWITCH CAMBIADO");
+    console.log("ID:", docId);
+    console.log("NUEVO VALOR:", e.target.checked);
 
-    const ref = doc(db, "asignaturas", asignaturaId);
-    const snap = await getDoc(ref);
-
-    if (snap.exists()) {
-        titulo.textContent = snap.data().asignatura || "Sin nombre";
-    } else {
-        titulo.textContent = "Asignatura no encontrada";
-    }
-}
-
-// ================= TÓPICOS =================
-function cargarTopicos() {
-
-    if (!asignaturaId) {
-        container.innerHTML = `
-            <div class="text-danger">
-                No se recibió el ID de la asignatura.
-            </div>
-        `;
-        return;
-    }
-
-    const q = query(
-        collection(db, "asignatura_topicos"),
-        where("asignaturaId", "==", asignaturaId)
+    await updateDoc(
+        doc(db, "ofertas", docId),
+        { ofertado: e.target.checked }
     );
 
-    onSnapshot(q, async (snapshot) => {
-
-        loading.style.display = "none";
-
-        if (snapshot.empty) {
-            container.innerHTML = `
-                <div class="text-white-50">
-                    Esta asignatura no tiene tópicos aún.
-                </div>
-            `;
-            return;
-        }
-
-        let html = "";
-
-        for (const docSnap of snapshot.docs) {
-
-            const data = docSnap.data();
-
-            const topicoId =
-                data.topicoId ||
-                data.topicoID ||
-                data.topico;
-
-            if (!topicoId) continue;
-
-            const topicoSnap = await getDoc(doc(db, "topicos", topicoId));
-            if (!topicoSnap.exists()) continue;
-
-            const topico = topicoSnap.data();
-
-            html += `
-                <div class="topico-card"
-                     onclick="window.location.href='contenidos-academia.html?topicoId=${topicoId}'">
-
-                    <div class="topico-title">
-                        ${topico.tema || "Sin nombre"}
-                    </div>
-
-                </div>
-            `;
-        }
-
-        container.innerHTML = html;
-
-    }, (error) => {
-
-        console.error(error);
-
-        container.innerHTML = `
-            <div class="text-danger">
-                Error al cargar los tópicos
-            </div>
-        `;
-    });
-}
-
-// ================= AUTH =================
-onAuthStateChanged(auth, async (user) => {
-
-    if (!user) {
-        window.location.href = "index.html";
-        return;
-    }
-
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-
-    if (userSnap.exists()) {
-        const d = userSnap.data();
-        const logo = document.getElementById("logoAcademia");
-
-        logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-        logo.style.opacity = "1";
-    }
-
-    cargarAsignatura();
-    cargarTopicos();
-});
-
-// ================= LOGOUT =================
-document.getElementById("btnLogout")
-    .addEventListener("click", () => {
-        signOut(auth).then(() => {
-            window.location.href = "index.html";
+    console.log("GUARDADO EN FIRESTORE");
+};
         });
     });
+
+    window.eliminarModulo = async (id) => {
+        if(confirm("¿Eliminar módulo?")) await deleteDoc(doc(db, "ofertas", id));
+    };
 </script>
-    
+<script type="module" src="js/alertas-globales.js"></script>    
 </body>
 </html>
