@@ -266,7 +266,19 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import {
+    getFirestore,
+    collection,
+    addDoc,
+    onSnapshot,
+    doc,
+    updateDoc,
+    deleteDoc,
+    query,
+    orderBy,
+    where,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     
     // IMPORTACIÓN DE AUTH
     import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -299,17 +311,55 @@
 
     // --- LÓGICA DE MÓDULOS ---
     document.getElementById('formCrearModulo').addEventListener('submit', async (e) => {
-        e.preventDefault(); 
-        const input = document.getElementById('nombreModulo');
-        try {
-            await addDoc(collection(db, "ofertas"), {
-                modulo: input.value,
-                ofertado: false,
-                fechaCreacion: new Date()
-            });
-            input.value = "";
-        } catch (err) { console.error(err); }
-    });
+
+    e.preventDefault();
+
+    const input = document.getElementById('nombreModulo');
+
+    const nombreModulo = input.value.trim();
+
+// Nombre normalizado para comparar
+const nombreNormalizado = nombreModulo
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+    if (nombreModulo === "") {
+        alert("Debe escribir un nombre para el módulo.");
+        return;
+    }
+
+    try {
+
+        // Buscar si ya existe un módulo con ese nombre
+        const consulta = query(
+    collection(db, "ofertas"),
+    where("moduloNormalizado", "==", nombreNormalizado)
+        );
+
+        const resultado = await getDocs(consulta);
+
+        if (!resultado.empty) {
+            alert("No se puede registrar el módulo porque ya existe uno con ese nombre.");
+            return;
+        }
+
+        await addDoc(collection(db, "ofertas"), {
+    modulo: nombreModulo,
+    moduloNormalizado: nombreNormalizado,
+    ofertado: false,
+    fechaCreacion: new Date()
+});
+
+        input.value = "";
+
+    } catch (err) {
+        console.error(err);
+        alert("Ocurrió un error al registrar el módulo.");
+    }
+
+});
 
     onSnapshot(query(collection(db, "ofertas"), orderBy("modulo", "asc")), (snap) => {
         const lista = document.getElementById('listaInventario');
