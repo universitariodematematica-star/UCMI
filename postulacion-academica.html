@@ -154,8 +154,16 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
+    import {
+    getFirestore,
+    collection,
+    addDoc,
+    query,
+    where,
+    onSnapshot,
+    orderBy,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     const firebaseConfig = {
         apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
         authDomain: "ucmi-13796634.firebaseapp.com",
@@ -167,6 +175,47 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    function normalizarTexto(texto) {
+    return (texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "")
+        .trim()
+        .toLowerCase();
+}
+
+async function verificarDuplicados(entidad, email) {
+
+    const usuarios = await getDocs(collection(db, "usuarios"));
+
+    const entidadNormalizada = normalizarTexto(entidad);
+    const emailNormalizado = email.trim().toLowerCase();
+
+    let academiaExiste = false;
+    let correoExiste = false;
+
+    usuarios.forEach(doc => {
+
+        const d = doc.data();
+
+        const entidadUsuario = normalizarTexto(d.entidad || "");
+        const correoUsuario = (d.email || "").trim().toLowerCase();
+
+        if (entidadUsuario === entidadNormalizada) {
+            academiaExiste = true;
+        }
+
+        if (correoUsuario === emailNormalizado) {
+            correoExiste = true;
+        }
+
+    });
+
+    return {
+        academiaExiste,
+        correoExiste
+    };
+}
 
     // Carga de Módulos
     onSnapshot(query(collection(db, "ofertas"), where("ofertado", "==", true), orderBy("modulo", "asc")), (snap) => {
@@ -258,6 +307,39 @@ window.fn_CalcularInversion = () => {
             Swal.fire({ title: "Error", text: "Completa los datos y elige al menos un módulo.", icon: "error" });
             return;
         }
+
+        const entidadIngresada =
+    document.getElementById('nombreInstitucion').value;
+
+const correoIngresado =
+    document.getElementById('emailInput').value;
+
+const duplicados = await verificarDuplicados(
+    entidadIngresada,
+    correoIngresado
+);
+
+if (duplicados.academiaExiste) {
+
+    Swal.fire({
+        icon: "warning",
+        title: "Academia ya registrada",
+        text: "Ya existe una academia registrada con ese nombre."
+    });
+
+    return;
+}
+
+if (duplicados.correoExiste) {
+
+    Swal.fire({
+        icon: "warning",
+        title: "Correo ya registrado",
+        text: "Ese correo electrónico ya pertenece a un usuario registrado."
+    });
+
+    return;
+}
 
         datosPayload = {
             nombreResponsable: document.getElementById('nombreInput').value,
