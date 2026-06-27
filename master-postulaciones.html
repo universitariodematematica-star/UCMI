@@ -306,7 +306,10 @@
             const emailNormalizado = currentData.email.trim().toLowerCase();
             
 
-            const q = query(collection(db, "usuarios"), where("email", "==", emailNormalizado));
+            const q = query(
+    collection(db, "usuarios"),
+    where("emailNormalizado", "==", emailNormalizado)
+);
             const snap = await getDocs(q);
             
             if (!snap.empty) {
@@ -315,7 +318,30 @@
                 
             }
 
-            const dataFinal = { ...currentData, estado: "activo", fechaActivacion: new Date(), expiracionLicencia: exp.toLocaleString(), expiracionTimestamp: exp.getTime(), mesesAprobados: meses, duracionLicencia: `${meses} mes(es)` };
+            function normalizarTexto(texto) {
+    return (texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "")
+        .trim()
+        .toLowerCase();
+}
+
+            const dataFinal = {
+    ...currentData,
+
+    email: emailNormalizado,
+    emailNormalizado: emailNormalizado,
+
+    entidadNormalizada: normalizarTexto(currentData.entidad),
+
+    estado: "activo",
+    fechaActivacion: new Date(),
+    expiracionLicencia: exp.toLocaleString(),
+    expiracionTimestamp: exp.getTime(),
+    mesesAprobados: meses,
+    duracionLicencia: `${meses} mes(es)`
+};
             const cred = await createUserWithEmailAndPassword(
     secondaryAuth,
     emailNormalizado,
