@@ -186,34 +186,27 @@
 
 async function verificarDuplicados(entidad, email) {
 
-    const usuarios = await getDocs(collection(db, "usuarios"));
-
     const entidadNormalizada = normalizarTexto(entidad);
     const emailNormalizado = email.trim().toLowerCase();
 
-    let academiaExiste = false;
-    let correoExiste = false;
+    const consultaAcademia = query(
+        collection(db, "usuarios"),
+        where("entidadNormalizada", "==", entidadNormalizada)
+    );
 
-    usuarios.forEach(doc => {
+    const consultaCorreo = query(
+        collection(db, "usuarios"),
+        where("emailNormalizado", "==", emailNormalizado)
+    );
 
-        const d = doc.data();
-
-        const entidadUsuario = normalizarTexto(d.entidad || "");
-        const correoUsuario = (d.email || "").trim().toLowerCase();
-
-        if (entidadUsuario === entidadNormalizada) {
-            academiaExiste = true;
-        }
-
-        if (correoUsuario === emailNormalizado) {
-            correoExiste = true;
-        }
-
-    });
+    const [snapAcademia, snapCorreo] = await Promise.all([
+        getDocs(consultaAcademia),
+        getDocs(consultaCorreo)
+    ]);
 
     return {
-        academiaExiste,
-        correoExiste
+        academiaExiste: !snapAcademia.empty,
+        correoExiste: !snapCorreo.empty
     };
 }
 
@@ -300,7 +293,7 @@ window.fn_CalcularInversion = () => {
 
     // Envío y PDF
     let datosPayload = null;
-    document.getElementById('formUCMI').addEventListener('submit', (e) => {
+    document.getElementById('formUCMI').addEventListener('submit', async (e) => {
         e.preventDefault();
         const modulos = Array.from(document.querySelectorAll('.check-modulo:checked')).map(m => m.value);
         if(!e.target.checkValidity() || modulos.length === 0) {
@@ -309,10 +302,10 @@ window.fn_CalcularInversion = () => {
         }
 
         const entidadIngresada =
-    document.getElementById('nombreInstitucion').value;
+    document.getElementById('nombreInstitucion').value.trim();
 
 const correoIngresado =
-    document.getElementById('emailInput').value;
+    document.getElementById('emailInput').value.trim().toLowerCase();
 
 const duplicados = await verificarDuplicados(
     entidadIngresada,
