@@ -227,7 +227,8 @@ import {
     onSnapshot,
     addDoc,
     deleteDoc,
-    serverTimestamp
+    serverTimestamp,
+    getDocs   // 👈 AÑADIR ESTO
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -375,19 +376,34 @@ function cargarAsignadas() {
 // ================= AGREGAR ASIGNACIÓN =================
 window.agregar = async function (id) {
 
+    // 🔴 1. Evitar duplicados en el curso
+    const q = query(
+        collection(db, "curso_asignaturas"),
+        where("cursoId", "==", cursoId),
+        where("asignaturaId", "==", id)
+    );
+
+    const snap = await getDocs(q);
+
+    if (!snap.empty) {
+        alert("Esta asignatura ya está asociada a este curso");
+        return;
+    }
+
+    // 🔵 2. Obtener datos de la asignatura
     const ref = doc(db, "asignaturas", id);
-    const snap = await getDoc(ref);
+    const dataSnap = await getDoc(ref);
 
-    if (!snap.exists()) return;
+    if (!dataSnap.exists()) return;
 
-    const a = snap.data();
+    const a = dataSnap.data();
 
+    // 🟢 3. Crear asociación
     await addDoc(collection(db, "curso_asignaturas"), {
         cursoId,
         asignaturaId: id,
         asignatura: a.asignatura,
         modulo: a.modulo,
-        moduloId: a.moduloId,
         entidad: a.entidad,
         academiaId: usuarioActual.uid,
         fechaCreacion: serverTimestamp()
