@@ -345,58 +345,51 @@ onAuthStateChanged(auth, async (user) => {
 
     onSnapshot(q, (snapshot) => {
 
-        document.querySelectorAll(".listaAsignaturas")
-            .forEach(el => el.innerHTML = "");
+    const contenedor = document.getElementById("contenedorModulos");
+    contenedor.innerHTML = "";
 
-        const lista = [];
+    const lista = [];
 
-        snapshot.forEach(docu => {
-            lista.push({ id: docu.id, ...docu.data() });
-        });
+    snapshot.forEach(docu => {
+        lista.push({ id: docu.id, ...docu.data() });
+    });
 
-        lista.sort((a, b) =>
-            (a.asignatura || "").localeCompare(b.asignatura || "", "es")
-        );
+    // ORDEN ALFABÉTICO GLOBAL
+    lista.sort((a, b) =>
+        (a.asignatura || "").localeCompare(b.asignatura || "", "es")
+    );
 
-        lista.forEach(data => {
+    lista.forEach(data => {
 
-            const safeModulo = (data.modulo || "").replace(/\s+/g, "_");
+        contenedor.insertAdjacentHTML("beforeend", `
+            <div class="asignatura-row" data-id="${data.id}">
 
-            const contenedorAsignaturas = document.getElementById(
-                `asignaturas-${safeModulo}`
-            );
+                <div class="col-nombre">
+                    <span class="text-info" style="cursor:pointer;font-weight:500;">
+                        ${data.asignatura}
+                    </span>
+                </div>
 
-            if (!contenedorAsignaturas) return;
+                <div class="col-botones">
 
-            contenedorAsignaturas.insertAdjacentHTML("beforeend", `
-                <div class="asignatura-row" data-id="${data.id}">
+                    <button class="btn btn-sm btn-warning btnEditarAsignatura"
+                        data-id="${data.id}"
+                        data-nombre="${data.asignatura}">
+                        Editar
+                    </button>
 
-                    <div class="col-nombre">
-                        <span class="text-info" style="cursor:pointer;font-weight:500;">
-                            ${data.asignatura}
-                        </span>
-                    </div>
-
-                    <div class="col-botones">
-
-                        <button class="btn btn-sm btn-warning btnEditarAsignatura"
-                            data-id="${data.id}"
-                            data-nombre="${data.asignatura}">
-                            Editar
-                        </button>
-
-                        <button class="btn btn-sm btn-danger btnEliminarAsignatura"
-                            data-id="${data.id}">
-                            Borrar
-                        </button>
-
-                    </div>
+                    <button class="btn btn-sm btn-danger btnEliminarAsignatura"
+                        data-id="${data.id}">
+                        Borrar
+                    </button>
 
                 </div>
-            `);
-        });
 
+            </div>
+        `);
     });
+
+});
 
 });
 
