@@ -227,8 +227,7 @@ import {
     onSnapshot,
     addDoc,
     deleteDoc,
-    serverTimestamp,
-    getDocs
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -237,7 +236,6 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// ================= FIREBASE =================
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -250,10 +248,8 @@ const app = initializeApp({
 const db = getFirestore(app);
 const auth = getAuth();
 
-// ================= STATE =================
 let usuarioActual = null;
 let entidadGlobal = null;
-let asignadasSet = new Set();
 
 const params = new URLSearchParams(window.location.search);
 const cursoId = params.get("curso");
@@ -271,106 +267,100 @@ onAuthStateChanged(auth, async (user) => {
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
     if (!userSnap.exists()) return;
 
-    const d = userSnap.data();
-    entidadGlobal = d.entidad;
+    entidadGlobal = userSnap.data().entidad;
 
-    const logo = document.getElementById("logoAcademia");
-    logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-    logo.style.opacity = "1";
+    document.getElementById("logoAcademia").src =
+        userSnap.data().logoCustom ||
+        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
 
-    if (entidadGlobal && cursoId) {
-        initListeners();
-    }
+    cargarSistema();
 });
 
-// ================= LOGOUT =================
-document.getElementById("btnLogout")
-.addEventListener("click", () =>
-    signOut(auth).then(() =>
-        window.location.href = "index.html"
-    )
-);
+// ================= SISTEMA CENTRAL =================
+function cargarSistema() {
 
-// ================= LISTENERS SEGUROS =================
-function initListeners() {
+    const contDisponibles = document.getElementById("listaDisponibles");
+    const contAsignadas = document.getElementById("listaCurso");
 
-    listenAsignadas();
-    listenDisponibles();
-}
-
-// ================= ASIGNADAS =================
-function listenAsignadas() {
-
-    const cont = document.getElementById("listaCurso");
-
-    const q = query(
-        collection(db, "curso_asignaturas"),
-        where("cursoId", "==", cursoId)
-    );
-
-    onSnapshot(q,
-        (snap) => {
-
-            cont.innerHTML = "";
-            asignadasSet.clear();
-
-            snap.forEach(d => {
-
-                const data = d.data();
-                asignadasSet.add(data.asignaturaId);
-
-                cont.innerHTML += `
-                <div class="asignatura-card">
-
-                    <div class="asignatura-info">
-                        <h5>${data.asignatura}</h5>
-                        <small>${data.modulo || ""}</small>
-                    </div>
-
-                    <button class="btn-asig btn-remove"
-                        onclick="quitar('${d.id}')">
-                        <i class="bi bi-dash"></i>
-                    </button>
-
-                </div>`;
-            });
-        },
-        (err) => {
-            console.error("❌ curso_asignaturas error:", err.message);
-        }
-    );
-}
-
-// ================= DISPONIBLES =================
-function listenDisponibles() {
-
-    const cont = document.getElementById("listaDisponibles");
-
-    const q = query(
+    const asignaturasRef = query(
         collection(db, "asignaturas"),
         where("entidad", "==", entidadGlobal)
     );
 
-    onSnapshot(q,
-        (snap) => {
+    const cursoRef = query(
+        collection(db, "curso_asignaturas"),
+        where("cursoId", "==", cursoId)
+    );
 
-            cont.innerHTML = "";
+    let asignadasSet = new Set();
+    let asignadasDocs = new Map();
 
-            let lista = [];
+    // 🔵 1. Listener curso_asignaturas
+    onSnapshot(cursoRef, (cursoSnap) => {
 
-            snap.forEach(d => {
-                lista.push({ id: d.id, ...d.data() });
-            });
+        asignadasSet.clear();
+        asignadasDocs.clear();
 
-            lista.sort((a, b) =>
-                a.asignatura.localeCompare(b.asignatura, "es")
-            );
+        cursoSnap.forEach(d => {
+            const data = d.data();
+            asignadasSet.add(data.asignaturaId);
+            asignadasDocs.set(data.asignaturaId, d.id);
+        });
 
-            lista.forEach(a => {
+        render();
+    });
 
-                if (asignadasSet.has(a.id)) return;
+    // 🔵 2. Listener asignaturas
+    onSnapshot(asignaturasRef, (snap) => {
 
-                cont.innerHTML += `
+        const lista = [];
+
+        snap.forEach(d => {
+            lista.push({ id: d.id, ...d.data() });
+        });
+
+        lista.sort((a, b) =>
+            a.asignatura.localeCompare(b.asignatura, "es")
+        );
+
+        window._asignaturas = lista;
+        render();
+    });
+
+    // 🔵 3. Render combinado
+    function render() {
+
+        if (!window._asignaturas) return;
+
+        contDisponibles.innerHTML = "";
+        contAsignadas.innerHTML = "";
+
+        for (const a of window._asignaturas) {
+
+            // ===== ASIGNADAS =====
+            if (asignadasSet.has(a.id)) {
+
+                const docId = asignadasDocs.get(a.id);
+
+                contAsignadas.innerHTML += `
+                <div class="asignatura-card">
+
+                    <div class="asignatura-info">
+                        <h5>${a.asignatura}</h5>
+                    </div>
+
+                    <button class="btn-asig btn-remove"
+                        onclick="quitar('${docId}')">
+                        <i class="bi bi-dash"></i>
+                    </button>
+
+                </div>`;
+            }
+
+            // ===== DISPONIBLES =====
+            else {
+
+                contDisponibles.innerHTML += `
                 <div class="asignatura-card">
 
                     <div class="asignatura-info">
@@ -383,51 +373,57 @@ function listenDisponibles() {
                     </button>
 
                 </div>`;
-            });
-
-        },
-        (err) => {
-            console.error("❌ asignaturas error:", err.message);
+            }
         }
-    );
+    }
 }
 
 // ================= AGREGAR =================
-window.agregar = async function (id) {
+window.agregar = async function (asignaturaId) {
 
-    const q = query(
-        collection(db, "curso_asignaturas"),
-        where("cursoId", "==", cursoId),
-        where("asignaturaId", "==", id)
-    );
+    const ref = doc(db, "asignaturas", asignaturaId);
+    const snap = await getDoc(ref);
 
-    const snap = await getDocs(q);
+    if (!snap.exists()) return;
 
-    if (!snap.empty) return;
+    const a = snap.data();
 
-    const ref = doc(db, "asignaturas", id);
-    const dataSnap = await getDoc(ref);
-
-    if (!dataSnap.exists()) return;
-
-    const a = dataSnap.data();
+    // 🔥 evita duplicados incluso si hay lag
+    const existe = await fetchExistente(asignaturaId);
+    if (existe) return;
 
     await addDoc(collection(db, "curso_asignaturas"), {
         cursoId,
-        asignaturaId: id,
+        asignaturaId,
         asignatura: a.asignatura,
         modulo: a.modulo,
-        entidad: a.entidad,
+        moduloId: a.moduloId,
+        entidad: entidadGlobal,
         academiaId: usuarioActual.uid,
         fechaCreacion: serverTimestamp()
     });
 };
 
 // ================= QUITAR =================
-window.quitar = async function (id) {
-    await deleteDoc(doc(db, "curso_asignaturas", id));
+window.quitar = async function (docId) {
+    await deleteDoc(doc(db, "curso_asignaturas", docId));
 };
-</script>
 
+// ================= CHECK DUPLICADO =================
+async function fetchExistente(asignaturaId) {
+    const q = query(
+        collection(db, "curso_asignaturas"),
+        where("cursoId", "==", cursoId),
+        where("asignaturaId", "==", asignaturaId)
+    );
+
+    const snap = await new Promise(res => {
+        onSnapshot(q, s => res(s), { onlyOnce: true });
+    });
+
+    return !snap.empty;
+}
+
+</script>
 </body>
 </html>
