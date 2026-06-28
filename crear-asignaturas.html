@@ -247,8 +247,7 @@ import {
     serverTimestamp,
     onSnapshot,
     updateDoc,
-    deleteDoc,
-    orderBy
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -256,8 +255,6 @@ import {
     onAuthStateChanged,
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-const bootstrapRef = window.bootstrap;    
 
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -313,20 +310,19 @@ onAuthStateChanged(auth, async (user) => {
         `;
     });
 
-    document.querySelectorAll(".btnCrearAsignatura")
-    .forEach(btn => {
-
+    // abrir modal
+    document.querySelectorAll(".btnCrearAsignatura").forEach(btn => {
         btn.addEventListener("click", () => {
 
             moduloSeleccionado = btn.dataset.modulo;
 
-            new bootstrapRef.Modal(
+            new bootstrap.Modal(
                 document.getElementById("modalAsignatura")
             ).show();
         });
-
     });
 
+    // logo
     const logo = document.getElementById("logoAcademia");
     logo.src = d.logoCustom ||
         "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
@@ -336,14 +332,15 @@ onAuthStateChanged(auth, async (user) => {
     if (!entidadGlobal) return;
 
     const q = query(
-    collection(db, "asignaturas"),
-    where("entidad", "==", entidadGlobal),
-    orderBy("asignatura", "asc")
-);
+        collection(db, "asignaturas"),
+        where("entidad", "==", entidadGlobal)
+    );
 
     onSnapshot(q, (snapshot) => {
 
         document.querySelectorAll(".listaAsignaturas")
+            .forEach(el => el.innerHTML = "");
+
         const lista = [];
 
         snapshot.forEach(docu => {
@@ -396,7 +393,7 @@ onAuthStateChanged(auth, async (user) => {
 
 });
 
-// ===================== CLICK UNIFICADO =====================
+// ===================== CLICK UNIFICADO (FIX PRO) =====================
 document.addEventListener("click", async (e) => {
 
     const fila = e.target.closest(".asignatura-row");
@@ -405,7 +402,8 @@ document.addEventListener("click", async (e) => {
 
     // navegación
     if (fila && !e.target.closest("button")) {
-        window.location.href = `asignatura-topicos.html?id=${fila.dataset.id}`;
+        window.location.href =
+            `asignatura-topicos.html?id=${fila.dataset.id}`;
         return;
     }
 
@@ -426,6 +424,7 @@ document.addEventListener("click", async (e) => {
     // eliminar
     if (btnDelete) {
         const id = btnDelete.dataset.id;
+
         if (!confirm("¿Eliminar asignatura?")) return;
 
         await deleteDoc(doc(db, "asignaturas", id));
@@ -468,6 +467,7 @@ document.getElementById("btnGuardarAsignatura")
         document.getElementById("modalAsignatura")
     ).hide();
 });
+
 // ===================== LOGOUT =====================
 document.getElementById("btnLogout")
 .addEventListener("click", () =>
@@ -477,57 +477,6 @@ document.getElementById("btnLogout")
 );
 
 </script>
-<div class="modal fade" id="modalAsignatura" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content bg-dark text-white">
-
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    Crear asignatura
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close btn-close-white"
-                    data-bs-dismiss="modal">
-                </button>
-            </div>
-
-            <div class="modal-body">
-
-                <label class="form-label">
-                    Nombre de la asignatura
-                </label>
-
-                <input
-                    type="text"
-                    id="nombreAsignatura"
-                    class="form-control"
-                    placeholder="Ejemplo: Inglés A2 Kids">
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal">
-                    Cancelar
-                </button>
-
-                <button
-                    type="button"
-                    class="btn btn-success"
-                    id="btnGuardarAsignatura">
-                    Guardar
-                </button>
-
-            </div>
-
-        </div>
-    </div>
-</div>    
     
 </body>
 </html>
