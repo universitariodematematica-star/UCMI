@@ -153,6 +153,8 @@
     overflow-y: auto;
     padding-right: 5px;
 }
+
+        
         
     </style>
 </head>
@@ -324,21 +326,38 @@ function listenAsignadas() {
         cont.innerHTML = "";
         asignadasSet = new Set();
 
+        // 🔵 1. construir lista
+        let lista = [];
+
         snap.forEach(d => {
 
             const data = d.data();
+
             asignadasSet.add(data.asignaturaId);
+
+            lista.push({
+                id: d.id,
+                ...data
+            });
+        });
+
+        // 🔵 2. ordenar alfabéticamente
+        lista.sort((a, b) =>
+            a.asignatura.localeCompare(b.asignatura, "es")
+        );
+
+        // 🔵 3. render ordenado
+        lista.forEach(data => {
 
             cont.innerHTML += `
             <div class="asignatura-card">
 
                 <div class="asignatura-info">
                     <h5>${data.asignatura}</h5>
-                    <small>${data.modulo || ""}</small>
                 </div>
 
                 <button class="btn-asig btn-remove"
-                    onclick="quitar('${d.id}')">
+                    onclick="quitar('${data.id}')">
                     <i class="bi bi-dash"></i>
                 </button>
 
