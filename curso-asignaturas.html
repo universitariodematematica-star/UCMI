@@ -236,8 +236,7 @@ import {
     onSnapshot,
     addDoc,
     deleteDoc,
-    serverTimestamp,
-    getDocs
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -262,10 +261,10 @@ const auth = getAuth();
 // ================= STATE =================
 let usuarioActual = null;
 let entidadGlobal = null;
-let asignadasSet = new Set();
+let cursoId = new URLSearchParams(window.location.search).get("curso");
 
-const params = new URLSearchParams(window.location.search);
-const cursoId = params.get("curso");
+let asignadasSet = new Set();
+window._asignaturasGlobal = [];
 
 // ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
@@ -300,13 +299,11 @@ document.getElementById("btnLogout")
     )
 );
 
-// ================= LISTENERS SEGUROS =================
+// ================= INIT =================
 function initListeners() {
     listenAsignadas();
     listenDisponibles();
 }
-
-let asignadasSet = new Set();
 
 // ================= ASIGNADAS =================
 function listenAsignadas() {
@@ -344,7 +341,6 @@ function listenAsignadas() {
             </div>`;
         });
 
-        // 🔥 clave: refrescar disponibles cuando cambia asignación
         renderDisponibles();
 
     }, (err) => {
@@ -352,9 +348,10 @@ function listenAsignadas() {
     });
 }
 
-
 // ================= DISPONIBLES =================
 function listenDisponibles() {
+
+    const cont = document.getElementById("listaDisponibles");
 
     const q = query(
         collection(db, "asignaturas"),
@@ -381,7 +378,6 @@ function listenDisponibles() {
         console.error("❌ asignaturas error:", err.message);
     });
 }
-
 
 // ================= RENDER DISPONIBLES =================
 function renderDisponibles() {
@@ -415,22 +411,21 @@ function renderDisponibles() {
 // ================= AGREGAR =================
 window.agregar = async function (id) {
 
-    const q = query(
+    const refCheck = query(
         collection(db, "curso_asignaturas"),
         where("cursoId", "==", cursoId),
         where("asignaturaId", "==", id)
     );
 
-    const snap = await getDocs(q);
-
-    if (!snap.empty) return;
+    const snapCheck = await getDocs(refCheck);
+    if (!snapCheck.empty) return;
 
     const ref = doc(db, "asignaturas", id);
-    const dataSnap = await getDoc(ref);
+    const snap = await getDoc(ref);
 
-    if (!dataSnap.exists()) return;
+    if (!snap.exists()) return;
 
-    const a = dataSnap.data();
+    const a = snap.data();
 
     await addDoc(collection(db, "curso_asignaturas"), {
         cursoId,
