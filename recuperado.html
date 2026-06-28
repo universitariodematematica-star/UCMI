@@ -227,7 +227,8 @@ import {
     onSnapshot,
     addDoc,
     deleteDoc,
-    serverTimestamp
+    serverTimestamp,
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -236,6 +237,7 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+// ================= FIREBASE =================
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -248,8 +250,11 @@ const app = initializeApp({
 const db = getFirestore(app);
 const auth = getAuth();
 
+// ================= STATE =================
 let usuarioActual = null;
 let entidadGlobal = null;
+let asignadasSet = new Set();
+
 const params = new URLSearchParams(window.location.search);
 const cursoId = params.get("curso");
 
@@ -267,19 +272,18 @@ onAuthStateChanged(auth, async (user) => {
     if (!userSnap.exists()) return;
 
     const d = userSnap.data();
-
     entidadGlobal = d.entidad;
 
     const logo = document.getElementById("logoAcademia");
-    logo.src = d.logoCustom ||
-        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+    logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
     logo.style.opacity = "1";
 
-    if (entidadGlobal) {
-        cargarAsignaturas(entidadGlobal);
+    if (entidadGlobal && cursoId) {
+        initListeners();
     }
 });
 
+// ================= LOGOUT =================
 document.getElementById("btnLogout")
 .addEventListener("click", () =>
     signOut(auth).then(() =>
@@ -287,74 +291,142 @@ document.getElementById("btnLogout")
     )
 );
 
-// ================= CARGA ÚNICA =================
-function cargarAsignaturas(entidad){
+// ================= LISTENERS SEGUROS =================
+function initListeners() {
+
+    listenAsignadas();
+    listenDisponibles();
+}
+
+// ================= ASIGNADAS =================
+function listenAsignadas() {
+
+    const cont = document.getElementById("listaCurso");
+
+    const q = query(
+        collection(db, "curso_asignaturas"),
+        where("cursoId", "==", cursoId)
+    );
+
+    onSnapshot(q,
+        (snap) => {
+
+            cont.innerHTML = "";
+            asignadasSet.clear();
+
+            snap.forEach(d => {
+
+                const data = d.data();
+                asignadasSet.add(data.asignaturaId);
+
+                cont.innerHTML += `
+                <div class="asignatura-card">
+
+                    <div class="asignatura-info">
+                        <h5>${data.asignatura}</h5>
+                        <small>${data.modulo || ""}</small>
+                    </div>
+
+                    <button class="btn-asig btn-remove"
+                        onclick="quitar('${d.id}')">
+                        <i class="bi bi-dash"></i>
+                    </button>
+
+                </div>`;
+            });
+        },
+        (err) => {
+            console.error("❌ curso_asignaturas error:", err.message);
+        }
+    );
+}
+
+// ================= DISPONIBLES =================
+function listenDisponibles() {
 
     const cont = document.getElementById("listaDisponibles");
-    cont.innerHTML = "";
 
     const q = query(
         collection(db, "asignaturas"),
-        where("entidad", "==", entidad)
+        where("entidad", "==", entidadGlobal)
     );
 
-    onSnapshot(q, (snap) => {
+    onSnapshot(q,
+        (snap) => {
 
-        cont.innerHTML = "";
+            cont.innerHTML = "";
 
-        const lista = [];
+            let lista = [];
 
-        snap.forEach(docSnap => {
-            lista.push({ id: docSnap.id, ...docSnap.data() });
-        });
+            snap.forEach(d => {
+                lista.push({ id: d.id, ...d.data() });
+            });
 
-        // 🔵 ORDEN ALFABÉTICO GLOBAL
-        lista.sort((a, b) =>
-            a.asignatura.localeCompare(b.asignatura, "es")
-        );
+            lista.sort((a, b) =>
+                a.asignatura.localeCompare(b.asignatura, "es")
+            );
 
-        lista.forEach(a => {
+            lista.forEach(a => {
 
-                        cont.innerHTML += `
-            <div class="asignatura-card">
-            
-                <div class="asignatura-info">
-                    <h5>${a.asignatura}</h5>
-                </div>
-            
-                <button class="btn-asig btn-add"
-                    onclick="agregar('${a.id}')">
-                    <i class="bi bi-plus"></i>
-                </button>
-            
-            </div>`;
-        });
+                if (asignadasSet.has(a.id)) return;
 
-    });
+                cont.innerHTML += `
+                <div class="asignatura-card">
+
+                    <div class="asignatura-info">
+                        <h5>${a.asignatura}</h5>
+                    </div>
+
+                    <button class="btn-asig btn-add"
+                        onclick="agregar('${a.id}')">
+                        <i class="bi bi-plus"></i>
+                    </button>
+
+                </div>`;
+            });
+
+        },
+        (err) => {
+            console.error("❌ asignaturas error:", err.message);
+        }
+    );
 }
 
 // ================= AGREGAR =================
-window.agregar = async function(id){
+window.agregar = async function (id) {
 
-    const ref = doc(db,"asignaturas",id);
-    const snap = await getDoc(ref);
+    const q = query(
+        collection(db, "curso_asignaturas"),
+        where("cursoId", "==", cursoId),
+        where("asignaturaId", "==", id)
+    );
 
-    if(!snap.exists()) return;
+    const snap = await getDocs(q);
 
-    const a = snap.data();
+    if (!snap.empty) return;
 
-    await addDoc(collection(db,"curso_asignaturas"),{
+    const ref = doc(db, "asignaturas", id);
+    const dataSnap = await getDoc(ref);
+
+    if (!dataSnap.exists()) return;
+
+    const a = dataSnap.data();
+
+    await addDoc(collection(db, "curso_asignaturas"), {
         cursoId,
-        asignaturaId:id,
-        asignatura:a.asignatura,
-        modulo:a.modulo,
-        moduloId:a.moduloId,
-        entidad:a.entidad,
-        academiaId:usuarioActual.uid,
-        fechaCreacion:serverTimestamp()
+        asignaturaId: id,
+        asignatura: a.asignatura,
+        modulo: a.modulo,
+        entidad: a.entidad,
+        academiaId: usuarioActual.uid,
+        fechaCreacion: serverTimestamp()
     });
 };
 
+// ================= QUITAR =================
+window.quitar = async function (id) {
+    await deleteDoc(doc(db, "curso_asignaturas", id));
+};
 </script>
 
 </body>
