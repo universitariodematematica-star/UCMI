@@ -146,6 +146,13 @@
 .btn-asig:hover{
     transform:scale(1.08);
 }
+
+        #listaDisponibles,
+#listaCurso {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: 5px;
+}
         
     </style>
 </head>
@@ -188,8 +195,10 @@
         </p>
     </div>
 
-    <!-- ASIGNATURAS DISPONIBLES -->
-    <div class="mb-5">
+    <div class="row g-4">
+
+    <!-- DISPONIBLES -->
+    <div class="col-md-6">
 
         <h4 class="text-warning mb-3">Disponibles</h4>
 
@@ -197,8 +206,8 @@
 
     </div>
 
-    <!-- ASIGNATURAS DEL CURSO -->
-    <div>
+    <!-- ASIGNADAS -->
+    <div class="col-md-6">
 
         <h4 class="text-success mb-3">Asignadas al curso</h4>
 
@@ -227,7 +236,8 @@ import {
     onSnapshot,
     addDoc,
     deleteDoc,
-    serverTimestamp
+    serverTimestamp,
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -236,6 +246,7 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+// ================= FIREBASE =================
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -248,8 +259,10 @@ const app = initializeApp({
 const db = getFirestore(app);
 const auth = getAuth();
 
+// ================= STATE =================
 let usuarioActual = null;
 let entidadGlobal = null;
+let asignadasSet = new Set();
 
 const params = new URLSearchParams(window.location.search);
 const cursoId = params.get("curso");
@@ -267,100 +280,106 @@ onAuthStateChanged(auth, async (user) => {
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
     if (!userSnap.exists()) return;
 
-    entidadGlobal = userSnap.data().entidad;
+    const d = userSnap.data();
+    entidadGlobal = d.entidad;
 
-    document.getElementById("logoAcademia").src =
-        userSnap.data().logoCustom ||
-        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+    const logo = document.getElementById("logoAcademia");
+    logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+    logo.style.opacity = "1";
 
-    cargarSistema();
+    if (entidadGlobal && cursoId) {
+        initListeners();
+    }
 });
 
-// ================= SISTEMA CENTRAL =================
-function cargarSistema() {
+// ================= LOGOUT =================
+document.getElementById("btnLogout")
+.addEventListener("click", () =>
+    signOut(auth).then(() =>
+        window.location.href = "index.html"
+    )
+);
 
-    const contDisponibles = document.getElementById("listaDisponibles");
-    const contAsignadas = document.getElementById("listaCurso");
+// ================= LISTENERS SEGUROS =================
+function initListeners() {
 
-    const asignaturasRef = query(
-        collection(db, "asignaturas"),
-        where("entidad", "==", entidadGlobal)
-    );
+    listenAsignadas();
+    listenDisponibles();
+}
 
-    const cursoRef = query(
+// ================= ASIGNADAS =================
+function listenAsignadas() {
+
+    const cont = document.getElementById("listaCurso");
+
+    const q = query(
         collection(db, "curso_asignaturas"),
         where("cursoId", "==", cursoId)
     );
 
-    let asignadasSet = new Set();
-    let asignadasDocs = new Map();
+    onSnapshot(q,
+        (snap) => {
 
-    // 🔵 1. Listener curso_asignaturas
-    onSnapshot(cursoRef, (cursoSnap) => {
+            cont.innerHTML = "";
+            asignadasSet.clear();
 
-        asignadasSet.clear();
-        asignadasDocs.clear();
+            snap.forEach(d => {
 
-        cursoSnap.forEach(d => {
-            const data = d.data();
-            asignadasSet.add(data.asignaturaId);
-            asignadasDocs.set(data.asignaturaId, d.id);
-        });
+                const data = d.data();
+                asignadasSet.add(data.asignaturaId);
 
-        render();
-    });
-
-    // 🔵 2. Listener asignaturas
-    onSnapshot(asignaturasRef, (snap) => {
-
-        const lista = [];
-
-        snap.forEach(d => {
-            lista.push({ id: d.id, ...d.data() });
-        });
-
-        lista.sort((a, b) =>
-            a.asignatura.localeCompare(b.asignatura, "es")
-        );
-
-        window._asignaturas = lista;
-        render();
-    });
-
-    // 🔵 3. Render combinado
-    function render() {
-
-        if (!window._asignaturas) return;
-
-        contDisponibles.innerHTML = "";
-        contAsignadas.innerHTML = "";
-
-        for (const a of window._asignaturas) {
-
-            // ===== ASIGNADAS =====
-            if (asignadasSet.has(a.id)) {
-
-                const docId = asignadasDocs.get(a.id);
-
-                contAsignadas.innerHTML += `
+                cont.innerHTML += `
                 <div class="asignatura-card">
 
                     <div class="asignatura-info">
-                        <h5>${a.asignatura}</h5>
+                        <h5>${data.asignatura}</h5>
+                        <small>${data.modulo || ""}</small>
                     </div>
 
                     <button class="btn-asig btn-remove"
-                        onclick="quitar('${docId}')">
+                        onclick="quitar('${d.id}')">
                         <i class="bi bi-dash"></i>
                     </button>
 
                 </div>`;
-            }
+            });
+        },
+        (err) => {
+            console.error("❌ curso_asignaturas error:", err.message);
+        }
+    );
+}
 
-            // ===== DISPONIBLES =====
-            else {
+// ================= DISPONIBLES =================
+function listenDisponibles() {
 
-                contDisponibles.innerHTML += `
+    const cont = document.getElementById("listaDisponibles");
+
+    const q = query(
+        collection(db, "asignaturas"),
+        where("entidad", "==", entidadGlobal)
+    );
+
+    onSnapshot(q,
+        (snap) => {
+
+            cont.innerHTML = "";
+
+            let lista = [];
+
+            snap.forEach(d => {
+                lista.push({ id: d.id, ...d.data() });
+            });
+
+            lista.sort((a, b) =>
+                a.asignatura.localeCompare(b.asignatura, "es")
+            );
+
+            lista.forEach(a => {
+
+                if (asignadasSet.has(a.id)) return;
+
+                cont.innerHTML += `
                 <div class="asignatura-card">
 
                     <div class="asignatura-info">
@@ -373,57 +392,51 @@ function cargarSistema() {
                     </button>
 
                 </div>`;
-            }
+            });
+
+        },
+        (err) => {
+            console.error("❌ asignaturas error:", err.message);
         }
-    }
+    );
 }
 
 // ================= AGREGAR =================
-window.agregar = async function (asignaturaId) {
+window.agregar = async function (id) {
 
-    const ref = doc(db, "asignaturas", asignaturaId);
-    const snap = await getDoc(ref);
+    const q = query(
+        collection(db, "curso_asignaturas"),
+        where("cursoId", "==", cursoId),
+        where("asignaturaId", "==", id)
+    );
 
-    if (!snap.exists()) return;
+    const snap = await getDocs(q);
 
-    const a = snap.data();
+    if (!snap.empty) return;
 
-    // 🔥 evita duplicados incluso si hay lag
-    const existe = await fetchExistente(asignaturaId);
-    if (existe) return;
+    const ref = doc(db, "asignaturas", id);
+    const dataSnap = await getDoc(ref);
+
+    if (!dataSnap.exists()) return;
+
+    const a = dataSnap.data();
 
     await addDoc(collection(db, "curso_asignaturas"), {
         cursoId,
-        asignaturaId,
+        asignaturaId: id,
         asignatura: a.asignatura,
         modulo: a.modulo,
-        moduloId: a.moduloId,
-        entidad: entidadGlobal,
+        entidad: a.entidad,
         academiaId: usuarioActual.uid,
         fechaCreacion: serverTimestamp()
     });
 };
 
 // ================= QUITAR =================
-window.quitar = async function (docId) {
-    await deleteDoc(doc(db, "curso_asignaturas", docId));
+window.quitar = async function (id) {
+    await deleteDoc(doc(db, "curso_asignaturas", id));
 };
-
-// ================= CHECK DUPLICADO =================
-async function fetchExistente(asignaturaId) {
-    const q = query(
-        collection(db, "curso_asignaturas"),
-        where("cursoId", "==", cursoId),
-        where("asignaturaId", "==", asignaturaId)
-    );
-
-    const snap = await new Promise(res => {
-        onSnapshot(q, s => res(s), { onlyOnce: true });
-    });
-
-    return !snap.empty;
-}
-
 </script>
+
 </body>
 </html>
