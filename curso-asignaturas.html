@@ -302,10 +302,11 @@ document.getElementById("btnLogout")
 
 // ================= LISTENERS SEGUROS =================
 function initListeners() {
-
     listenAsignadas();
     listenDisponibles();
 }
+
+let asignadasSet = new Set();
 
 // ================= ASIGNADAS =================
 function listenAsignadas() {
@@ -317,88 +318,98 @@ function listenAsignadas() {
         where("cursoId", "==", cursoId)
     );
 
-    onSnapshot(q,
-        (snap) => {
+    onSnapshot(q, (snap) => {
 
-            cont.innerHTML = "";
-            asignadasSet.clear();
+        cont.innerHTML = "";
+        asignadasSet = new Set();
 
-            snap.forEach(d => {
+        snap.forEach(d => {
 
-                const data = d.data();
-                asignadasSet.add(data.asignaturaId);
+            const data = d.data();
+            asignadasSet.add(data.asignaturaId);
 
-                cont.innerHTML += `
-                <div class="asignatura-card">
+            cont.innerHTML += `
+            <div class="asignatura-card">
 
-                    <div class="asignatura-info">
-                        <h5>${data.asignatura}</h5>
-                        <small>${data.modulo || ""}</small>
-                    </div>
+                <div class="asignatura-info">
+                    <h5>${data.asignatura}</h5>
+                    <small>${data.modulo || ""}</small>
+                </div>
 
-                    <button class="btn-asig btn-remove"
-                        onclick="quitar('${d.id}')">
-                        <i class="bi bi-dash"></i>
-                    </button>
+                <button class="btn-asig btn-remove"
+                    onclick="quitar('${d.id}')">
+                    <i class="bi bi-dash"></i>
+                </button>
 
-                </div>`;
-            });
-        },
-        (err) => {
-            console.error("❌ curso_asignaturas error:", err.message);
-        }
-    );
+            </div>`;
+        });
+
+        // 🔥 clave: refrescar disponibles cuando cambia asignación
+        renderDisponibles();
+
+    }, (err) => {
+        console.error("❌ curso_asignaturas error:", err.message);
+    });
 }
+
 
 // ================= DISPONIBLES =================
 function listenDisponibles() {
-
-    const cont = document.getElementById("listaDisponibles");
 
     const q = query(
         collection(db, "asignaturas"),
         where("entidad", "==", entidadGlobal)
     );
 
-    onSnapshot(q,
-        (snap) => {
+    onSnapshot(q, (snap) => {
 
-            cont.innerHTML = "";
+        let lista = [];
 
-            let lista = [];
+        snap.forEach(d => {
+            lista.push({ id: d.id, ...d.data() });
+        });
 
-            snap.forEach(d => {
-                lista.push({ id: d.id, ...d.data() });
-            });
+        lista.sort((a, b) =>
+            a.asignatura.localeCompare(b.asignatura, "es")
+        );
 
-            lista.sort((a, b) =>
-                a.asignatura.localeCompare(b.asignatura, "es")
-            );
+        window._asignaturasGlobal = lista;
 
-            lista.forEach(a => {
+        renderDisponibles();
 
-                if (asignadasSet.has(a.id)) return;
+    }, (err) => {
+        console.error("❌ asignaturas error:", err.message);
+    });
+}
 
-                cont.innerHTML += `
-                <div class="asignatura-card">
 
-                    <div class="asignatura-info">
-                        <h5>${a.asignatura}</h5>
-                    </div>
+// ================= RENDER DISPONIBLES =================
+function renderDisponibles() {
 
-                    <button class="btn-asig btn-add"
-                        onclick="agregar('${a.id}')">
-                        <i class="bi bi-plus"></i>
-                    </button>
+    const cont = document.getElementById("listaDisponibles");
 
-                </div>`;
-            });
+    if (!cont || !window._asignaturasGlobal) return;
 
-        },
-        (err) => {
-            console.error("❌ asignaturas error:", err.message);
-        }
-    );
+    cont.innerHTML = "";
+
+    window._asignaturasGlobal.forEach(a => {
+
+        if (asignadasSet.has(a.id)) return;
+
+        cont.innerHTML += `
+        <div class="asignatura-card">
+
+            <div class="asignatura-info">
+                <h5>${a.asignatura}</h5>
+            </div>
+
+            <button class="btn-asig btn-add"
+                onclick="agregar('${a.id}')">
+                <i class="bi bi-plus"></i>
+            </button>
+
+        </div>`;
+    });
 }
 
 // ================= AGREGAR =================
