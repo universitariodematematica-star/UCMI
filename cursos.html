@@ -277,11 +277,19 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import {
+    getFirestore,
+    doc,
+    getDoc,
+    updateDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
     const auth = getAuth();
+    let usuarioActual = null;
+
+    let usuarioActualDatos = null;
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -289,6 +297,10 @@ onAuthStateChanged(auth, async (user) => {
         window.location.href = "index.html";
         return;
     }
+
+    usuarioActual = user;
+
+    usuarioActualDatos = d;
 
     const userSnap = await getDoc(
         doc(db, "usuarios", user.uid)
@@ -309,7 +321,46 @@ onAuthStateChanged(auth, async (user) => {
 
 });
 
-    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
+    async function seleccionarModelo(modelo) {
+
+    if (!usuarioActual) return;
+
+    try {
+
+        await updateDoc(
+            doc(db, "usuarios", usuarioActual.uid),
+            {
+                modelo_academico: modelo
+            }
+        );
+
+        window.location.href = "crear-cursos.html";
+
+    } catch (error) {
+
+        console.error(error);
+        alert("No fue posible guardar el modelo académico.");
+
+    }
+
+}
+
+document.getElementById('btnLogout').addEventListener(
+    'click',
+    () => signOut(auth).then(() => window.location.href = "index.html")
+);
+
+document.getElementById("btnPreuniversitaria").addEventListener("click", () => {
+    seleccionarModelo("Academia Preuniversitaria");
+});
+
+document.getElementById("btnAvance").addEventListener("click", () => {
+    seleccionarModelo("Academia de Avance");
+});
+
+document.getElementById("btnLibre").addEventListener("click", () => {
+    seleccionarModelo("Academia Libre");
+});
     
 </script>
 
