@@ -1,494 +1,382 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Panel de Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --azul-ucmi: #06090f;
+            --azul-sidebar: #1a2a3a;
+            --dorado-ucmi: #c5a059;
+            --rojo-logout: #e74c3c;
+        }
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        body { 
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            color: white;
+            min-height: 100vh;
+        }
 
-<title>Asignaturas del Curso</title>
+        .app-wrapper { display: flex; min-height: 100vh; }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+        /* Sidebar con efecto Glassmorphism */
+        .sidebar { 
+            background: rgba(26, 42, 58, 0.4); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            border-right: 1px solid rgba(255, 255, 255, 0.15); 
+            width: 260px; 
+            flex-shrink: 0; 
+            padding: 25px 15px; 
+            display: flex; 
+            flex-direction: column; 
+        }
 
-<style>
+        .logo-sidebar { 
+            height: 100px; 
+            width: auto; 
+            margin-bottom: 30px; 
+            display: block; 
+            margin-left: auto; 
+            margin-right: auto; 
+            object-fit: contain; 
+            border-radius: 15px; 
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: opacity 0.5s ease;
+            opacity: 0;
+        }
+        
+        .sidebar-nav { flex-grow: 1; }
 
-:root{
-    --azul-ucmi:#06090f;
-    --azul-sidebar:#1a2a3a;
-    --dorado:#c5a059;
-}
+        .nav-item-ucmi { 
+            display: flex; align-items: center; 
+            color: rgba(255,255,255,0.6); 
+            text-decoration: none; 
+            padding: 10px 15px; 
+            margin-bottom: 5px; 
+            border-radius: 10px; 
+            transition: 0.3s all ease; 
+            font-size: 0.85rem; 
+        }
+        
+        .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
+        .nav-item-ucmi:hover { color: white; background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1); }
 
-body{
-    margin:0;
-    font-family:'Segoe UI',sans-serif;
-    color:white;
-    background:url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png')
-    no-repeat center center fixed;
-    background-size:cover;
-}
+        .btn-sidebar-action { 
+            background: transparent; 
+            border: 1px solid rgba(255, 255, 255, 0.4) !important; 
+            color: white !important; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            font-size: 0.7rem; 
+            border-radius: 50px; 
+            padding: 10px; 
+            text-decoration: none; 
+            text-align: center; 
+            transition: all 0.3s ease-in-out; 
+            display: block; 
+            margin-bottom: 10px; 
+        }
 
-.app-wrapper{
-    display:flex;
-    min-height:100vh;
-}
+        .btn-sidebar-action:hover { background: rgba(255, 255, 255, 0.1); border-color: #ffffff !important; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); transform: translateY(-2px); }
+        .btn-logout { border-color: rgba(231, 76, 60, 0.4) !important; color: rgba(231, 76, 60, 0.8) !important; }
+        .btn-logout:hover { background: rgba(231, 76, 60, 0.1) !important; border-color: var(--rojo-logout) !important; color: white !important; }
 
-.sidebar{
-    width:260px;
-    background:rgba(26,42,58,.40);
-    backdrop-filter:blur(20px);
-    border-right:1px solid rgba(255,255,255,.15);
-    display:flex;
-    flex-direction:column;
-    padding:25px 15px;
-}
-
-.logo-sidebar{
-    width:auto;
-    height:95px;
-    margin:auto;
-    margin-bottom:30px;
-    opacity:0;
-    transition:.4s;
-}
-
-.sidebar-nav{
-    flex-grow:1;
-}
-
-.nav-item-ucmi{
-    display:flex;
-    align-items:center;
-    color:rgba(255,255,255,.65);
-    text-decoration:none;
-    padding:10px 15px;
-    border-radius:10px;
-    margin-bottom:6px;
-    transition:.25s;
-}
-
-.nav-item-ucmi i{
-    margin-right:12px;
-}
-
-.nav-item-ucmi:hover{
-    background:rgba(255,255,255,.10);
-    color:white;
-}
-
-.nav-item-ucmi.active{
-    color:var(--dorado);
-    background:rgba(197,160,89,.15);
-}
-
-.super-overlay{
-    flex-grow:1;
-    padding:40px;
-    background:radial-gradient(circle,
-    rgba(6,9,15,.45),
-    rgba(6,9,15,.82));
-}
-
-.titulo{
-    text-align:center;
-    margin-bottom:35px;
-}
-
-.titulo h1{
-    font-size:2.2rem;
-    font-weight:700;
-}
-
-.titulo p{
-    opacity:.75;
-    font-size:1.05rem;
-}
+        .super-overlay { 
+            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); 
+            flex-grow: 1; 
+            min-height: 100vh; 
+            overflow-y: auto; 
+            padding: 40px; 
+        }
 
 .asignatura-card{
     display:flex;
     justify-content:space-between;
     align-items:center;
+
+    padding:15px 18px;
+    margin-bottom:12px;
+
+    border-radius:14px;
+
     background:rgba(255,255,255,.08);
     border:1px solid rgba(255,255,255,.12);
-    backdrop-filter:blur(12px);
-    border-radius:16px;
-    padding:18px 22px;
-    margin-bottom:18px;
-    transition:.25s;
+
+    backdrop-filter:blur(10px);
 }
 
-.asignatura-card:hover{
-    background:rgba(255,255,255,.12);
-}
-
-.asignatura-info h4{
+.asignatura-info h5{
     margin:0;
-    font-size:1.15rem;
 }
 
-.asignatura-info small{
-    color:rgba(255,255,255,.65);
-}
+.btn-asig{
+    width:40px;
+    height:40px;
 
-.btn-agregar{
-    border:none;
-    width:42px;
-    height:42px;
     border-radius:50%;
+
+    border:none;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    transition:.2s;
+}
+
+.btn-add{
     background:#198754;
     color:white;
-    transition:.25s;
 }
 
-.btn-agregar:hover{
-    transform:scale(1.08);
-}
-
-.btn-quitar{
-    border:none;
-    width:42px;
-    height:42px;
-    border-radius:50%;
+.btn-remove{
     background:#dc3545;
     color:white;
-    transition:.25s;
 }
 
-.btn-quitar:hover{
+.btn-asig:hover{
     transform:scale(1.08);
 }
-
-.seccion{
-    margin-top:40px;
-}
-
-.seccion h3{
-    margin-bottom:20px;
-    color:var(--dorado);
-}
-
-</style>
+        
+    </style>
 </head>
 <body>
+
 <div class="app-wrapper">
-<aside class="sidebar">
-<div class="text-center">
-<img
-id="logoAcademia"
-class="logo-sidebar"
-src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png">
-</div>
+    <aside class="sidebar d-none d-md-flex">
+        <div class="text-center mb-2">
+            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" 
+                 id="logoAcademia" 
+                 class="logo-sidebar" 
+                 alt="Logo Academia">
+        </div>
+        <nav class="sidebar-nav">
+            <a href="solicitudes-academia.html" class="nav-item-ucmi"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
+            <a href="alumnos-academia.html" class="nav-item-ucmi"><i class="bi bi-mortarboard"></i> ALUMNOS</a>
+            <a href="docentes-academia.html" class="nav-item-ucmi"><i class="bi bi-people"></i> DOCENTES</a>
+            <a href="modificaciones.html" class="nav-item-ucmi"><i class="bi bi-pencil-square"></i></i> MODIFICACIONES</a>
+            <a href="cursos.html" class="nav-item-ucmi"><i class="bi bi-journal-bookmark"></i> CURSOS</a>
+            <a href="aulas.html" class="nav-item-ucmi"><i class="bi bi-easel"></i> AULAS</a>
+            <a href="academia-modulos.html" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
+            <a href="contenidos-academia.html" class="nav-item-ucmi"><i class="bi bi-collection"></i> CONTENIDO</a>
+            <a href="#" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
+        </nav>
+        <div class="mt-4 pt-4 border-top border-secondary">
+            <a href="admin-academia.html" class="btn-sidebar-action w-100"><i class="bi bi-shield-lock"></i> Panel Maestro</a>
+            <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a>
+        </div>
+    </aside>
 
-<nav class="sidebar-nav">
-<a href="cursos.html" class="nav-item-ucmi active">
-<i class="bi bi-journal-bookmark"></i>
-Cursos
-</a>
-
-<a href="contenidos-academia.html" class="nav-item-ucmi">
-<i class="bi bi-collection"></i>
-Contenido
-</a>
-
-</nav>
-
-</aside>
-
+    <main class="super-overlay">
 <main class="super-overlay">
 
-<div class="titulo">
+<div class="container-fluid">
 
-<h1>Asignaturas del Curso</h1>
+    <!-- TITULO -->
+    <div class="text-center mb-4">
+        <h1 class="fw-bold">ASIGNATURAS DEL CURSO</h1>
+        <p class="text-light opacity-75">
+            Gestiona las asignaturas asignadas a este curso
+        </p>
+    </div>
 
-<p>
-Seleccione las asignaturas que pertenecerán al curso.
-</p>
+    <!-- ASIGNATURAS DISPONIBLES -->
+    <div class="mb-5">
+
+        <h4 class="text-warning mb-3">Disponibles</h4>
+
+        <div id="listaDisponibles"></div>
+
+    </div>
+
+    <!-- ASIGNATURAS DEL CURSO -->
+    <div>
+
+        <h4 class="text-success mb-3">Asignadas al curso</h4>
+
+        <div id="listaCurso"></div>
+
+    </div>
 
 </div>
 
-<div class="seccion">
-
-<h3>Asignaturas disponibles</h3>
-
-<div id="listaDisponibles">
-
+</main>
+    </main>
 </div>
 
-</div>
-
-<div class="seccion">
-
-<h3>Asignaturas del curso</h3>
-
-<div id="listaCurso">
-
-</div>
-
-</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
+    const auth = getAuth();
 
-import {
+onAuthStateChanged(auth, async (user) => {
 
-getFirestore,
-collection,
-doc,
-getDoc,
-addDoc,
-deleteDoc,
-query,
-where,
-onSnapshot,
-serverTimestamp
-
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-import {
-
-getAuth,
-onAuthStateChanged
-
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-const app = initializeApp({
-
-apiKey:"AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-authDomain:"ucmi-13796634.firebaseapp.com",
-projectId:"ucmi-13796634",
-storageBucket:"ucmi-13796634.firebasestorage.app",
-messagingSenderId:"1090719609536",
-appId:"1:1090719609536:web:8d7f269d991d8dc3c6b325"
-
-});
-
-const db=getFirestore(app);
-
-const auth=getAuth();
-
-const params=new URLSearchParams(window.location.search);
-
-const cursoId=params.get("curso");
-
-let usuarioActual=null;
-
-onAuthStateChanged(auth,async(user)=>{
-
-if(!user){
-
-location.href="index.html";
-
-return;
-
-}
-
-usuarioActual=user;
-
-const usuarioSnap=await getDoc(
-
-doc(db,"usuarios",user.uid)
-
-);
-
-if(usuarioSnap.exists()){
-
-const datos=usuarioSnap.data();
-
-const logo=document.getElementById("logoAcademia");
-
-logo.src=
-
-datos.logoCustom ||
-
-"https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-
-logo.style.opacity="1";
-
-}
-
-cargarAsignaturasDisponibles();
-
-cargarAsignaturasDelCurso();
-
-});
-
-function cargarAsignaturasDisponibles(){
-
-const contenedor=document.getElementById("listaDisponibles");
-
-const q=query(
-
-collection(db,"asignaturas"),
-
-where("entidad","==",
-
-"GEMA")
-
-);
-
-onSnapshot(q,(snapshot)=>{
-
-contenedor.innerHTML="";
-
-snapshot.forEach(docSnap=>{
-
-const a=docSnap.data();
-
-const id=docSnap.id;
-
-contenedor.innerHTML+=`
-
-<div class="asignatura-card">
-
-<div class="asignatura-info">
-
-<h4>${a.asignatura}</h4>
-
-<small>${a.modulo}</small>
-
-</div>
-
-<button
-
-class="btn-agregar"
-
-onclick="agregarAsignatura('${id}')">
-
-<i class="bi bi-plus-lg"></i>
-
-</button>
-
-</div>
-
-`;
-
-});
-
-});
-
-}
-
-function cargarAsignaturasDelCurso(){
-
-const contenedor=document.getElementById("listaCurso");
-
-const q=query(
-
-collection(db,"curso_asignaturas"),
-
-where("cursoId","==",cursoId)
-
-);
-
-onSnapshot(q,(snapshot)=>{
-
-contenedor.innerHTML="";
-
-if(snapshot.empty){
-
-contenedor.innerHTML=`
-
-<div class="text-white-50">
-
-Este curso aún no tiene asignaturas.
-
-</div>
-
-`;
-
-return;
-
-}
-
-snapshot.forEach(docSnap=>{
-
-const datos=docSnap.data();
-
-contenedor.innerHTML+=`
-
-<div class="asignatura-card">
-
-<div class="asignatura-info">
-
-<h4>${datos.asignatura}</h4>
-
-<small>${datos.modulo}</small>
-
-</div>
-
-<button
-
-class="btn-quitar"
-
-onclick="quitarAsignatura('${docSnap.id}')">
-
-<i class="bi bi-dash-lg"></i>
-
-</button>
-
-</div>
-
-`;
-
-});
-
-});
-
-}
-
-window.agregarAsignatura=async function(idAsignatura){
-
-const asignaturaSnap=await getDoc(
-
-doc(db,"asignaturas",idAsignatura)
-
-);
-
-if(!asignaturaSnap.exists()) return;
-
-const a=asignaturaSnap.data();
-
-await addDoc(
-
-collection(db,"curso_asignaturas"),
-
-{
-
-cursoId:cursoId,
-
-asignaturaId:idAsignatura,
-
-asignatura:a.asignatura,
-
-modulo:a.modulo,
-
-moduloId:a.moduloId,
-
-entidad:a.entidad,
-
-academiaId:usuarioActual.uid,
-
-fechaCreacion:serverTimestamp()
-
-}
-
-);
-
-}
-
-window.quitarAsignatura = async function(idRelacion){
-
-    if(!confirm("¿Desea quitar esta asignatura del curso?")){
+    if (!user) {
+        window.location.href = "index.html";
         return;
     }
 
-    await deleteDoc(
-        doc(db,"curso_asignaturas",idRelacion)
+    usuarioActual = user;
+
+    const userSnap = await getDoc(
+        doc(db, "usuarios", user.uid)
     );
+
+    if (userSnap.exists()) {
+
+        const d = userSnap.data();
+
+        const logo = document.getElementById('logoAcademia');
+
+        logo.src =
+            d.logoCustom ||
+            "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+
+        logo.style.opacity = "1";
+    }
+
+    // 🔵 AQUÍ YA PUEDES MONTAR TODA LA LÓGICA DE CURSOS DESPUÉS
+});
+
+    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
+
+    const params = new URLSearchParams(window.location.search);
+const cursoId = params.get("curso");
+
+let usuarioActual = null;
+
+// =========================
+// CARGAR DISPONIBLES
+// =========================
+function cargarDisponibles(entidad){
+
+    const cont = document.getElementById("listaDisponibles");
+
+    const q = query(
+        collection(db,"asignaturas"),
+        where("entidad","==",entidad)
+    );
+
+    onSnapshot(q,(snap)=>{
+
+        cont.innerHTML = "";
+
+        snap.forEach(docSnap=>{
+
+            const a = docSnap.data();
+
+            cont.innerHTML += `
+            <div class="asignatura-card">
+
+                <div class="asignatura-info">
+                    <h5>${a.asignatura}</h5>
+                    <small>${a.modulo}</small>
+                </div>
+
+                <button class="btn-asig btn-add"
+                    onclick="agregar('${docSnap.id}')">
+                    <i class="bi bi-plus"></i>
+                </button>
+
+            </div>`;
+        });
+
+    });
+
+}
+
+// =========================
+// CARGAR DEL CURSO
+// =========================
+function cargarCurso(){
+
+    const cont = document.getElementById("listaCurso");
+
+    const q = query(
+        collection(db,"curso_asignaturas"),
+        where("cursoId","==",cursoId)
+    );
+
+    onSnapshot(q,(snap)=>{
+
+        cont.innerHTML = "";
+
+        snap.forEach(docSnap=>{
+
+            const a = docSnap.data();
+
+            cont.innerHTML += `
+            <div class="asignatura-card">
+
+                <div class="asignatura-info">
+                    <h5>${a.asignatura}</h5>
+                    <small>${a.modulo}</small>
+                </div>
+
+                <button class="btn-asig btn-remove"
+                    onclick="quitar('${docSnap.id}')">
+                    <i class="bi bi-dash"></i>
+                </button>
+
+            </div>`;
+        });
+
+    });
+
+}
+
+// =========================
+// AGREGAR
+// =========================
+window.agregar = async function(id){
+
+    const ref = doc(db,"asignaturas",id);
+    const snap = await getDoc(ref);
+
+    if(!snap.exists()) return;
+
+    const a = snap.data();
+
+    await addDoc(collection(db,"curso_asignaturas"),{
+        cursoId,
+        asignaturaId:id,
+        asignatura:a.asignatura,
+        modulo:a.modulo,
+        moduloId:a.moduloId,
+        entidad:a.entidad,
+        academiaId:usuarioActual.uid,
+        fechaCreacion:serverTimestamp()
+    });
 
 };
 
+// =========================
+// QUITAR
+// =========================
+window.quitar = async function(id){
+
+    await deleteDoc(doc(db,"curso_asignaturas",id));
+
+};
+    
 </script>
 
+
+
+    
 </body>
-</html>  
+</html>
