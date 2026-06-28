@@ -247,7 +247,8 @@ import {
     serverTimestamp,
     onSnapshot,
     updateDoc,
-    deleteDoc
+    deleteDoc,
+    orderBy
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -255,6 +256,8 @@ import {
     onAuthStateChanged,
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const bootstrapRef = window.bootstrap;    
 
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -317,7 +320,7 @@ onAuthStateChanged(auth, async (user) => {
 
             moduloSeleccionado = btn.dataset.modulo;
 
-            new bootstrap.Modal(
+            new bootstrapRef.Modal(
                 document.getElementById("modalAsignatura")
             ).show();
         });
@@ -333,15 +336,14 @@ onAuthStateChanged(auth, async (user) => {
     if (!entidadGlobal) return;
 
     const q = query(
-        collection(db, "asignaturas"),
-        where("entidad", "==", entidadGlobal)
-    );
+    collection(db, "asignaturas"),
+    where("entidad", "==", entidadGlobal),
+    orderBy("asignatura", "asc")
+);
 
     onSnapshot(q, (snapshot) => {
 
         document.querySelectorAll(".listaAsignaturas")
-            .forEach(el => el.innerHTML = "");
-
         const lista = [];
 
         snapshot.forEach(docu => {
@@ -394,18 +396,41 @@ onAuthStateChanged(auth, async (user) => {
 
 });
 
-// ===================== CLICK EN FILA =====================
-document.addEventListener("click", (e) => {
+// ===================== CLICK UNIFICADO =====================
+document.addEventListener("click", async (e) => {
 
     const fila = e.target.closest(".asignatura-row");
-    if (!fila) return;
+    const btnEdit = e.target.closest(".btnEditarAsignatura");
+    const btnDelete = e.target.closest(".btnEliminarAsignatura");
 
-    if (e.target.closest("button")) return;
+    // navegación
+    if (fila && !e.target.closest("button")) {
+        window.location.href = `asignatura-topicos.html?id=${fila.dataset.id}`;
+        return;
+    }
 
-    const id = fila.dataset.id;
+    // editar
+    if (btnEdit) {
+        const id = btnEdit.dataset.id;
+        const actual = btnEdit.dataset.nombre;
 
-    window.location.href =
-        `asignatura-topicos.html?id=${id}`;
+        const nuevo = prompt("Editar asignatura:", actual);
+        if (!nuevo || nuevo === actual) return;
+
+        await updateDoc(doc(db, "asignaturas", id), {
+            asignatura: nuevo
+        });
+        return;
+    }
+
+    // eliminar
+    if (btnDelete) {
+        const id = btnDelete.dataset.id;
+        if (!confirm("¿Eliminar asignatura?")) return;
+
+        await deleteDoc(doc(db, "asignaturas", id));
+        return;
+    }
 });
 
 // ===================== CREAR =====================
@@ -443,36 +468,6 @@ document.getElementById("btnGuardarAsignatura")
         document.getElementById("modalAsignatura")
     ).hide();
 });
-
-// ===================== EDITAR =====================
-document.addEventListener("click", async (e) => {
-
-    if (!e.target.classList.contains("btnEditarAsignatura")) return;
-
-    const id = e.target.dataset.id;
-    const actual = e.target.dataset.nombre;
-
-    const nuevo = prompt("Editar asignatura:", actual);
-
-    if (!nuevo || nuevo === actual) return;
-
-    await updateDoc(doc(db, "asignaturas", id), {
-        asignatura: nuevo
-    });
-});
-
-// ===================== ELIMINAR =====================
-document.addEventListener("click", async (e) => {
-
-    if (!e.target.classList.contains("btnEliminarAsignatura")) return;
-
-    const id = e.target.dataset.id;
-
-    if (!confirm("¿Eliminar asignatura?")) return;
-
-    await deleteDoc(doc(db, "asignaturas", id));
-});
-
 // ===================== LOGOUT =====================
 document.getElementById("btnLogout")
 .addEventListener("click", () =>
