@@ -236,7 +236,8 @@ import {
     onSnapshot,
     addDoc,
     deleteDoc,
-    serverTimestamp
+    serverTimestamp,
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -264,7 +265,7 @@ let entidadGlobal = null;
 let cursoId = new URLSearchParams(window.location.search).get("curso");
 
 let asignadasSet = new Set();
-window._asignaturasGlobal = [];
+let asignaturasGlobal = [];
 
 // ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
@@ -276,15 +277,18 @@ onAuthStateChanged(auth, async (user) => {
 
     usuarioActual = user;
 
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-    if (!userSnap.exists()) return;
+    const snapUser = await getDoc(doc(db, "usuarios", user.uid));
+    if (!snapUser.exists()) return;
 
-    const d = userSnap.data();
-    entidadGlobal = d.entidad;
+    const dataUser = snapUser.data();
+    entidadGlobal = dataUser.entidad;
 
     const logo = document.getElementById("logoAcademia");
-    logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-    logo.style.opacity = "1";
+    if (logo) {
+        logo.src = dataUser.logoCustom ||
+            "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+        logo.style.opacity = "1";
+    }
 
     if (entidadGlobal && cursoId) {
         initListeners();
@@ -351,8 +355,6 @@ function listenAsignadas() {
 // ================= DISPONIBLES =================
 function listenDisponibles() {
 
-    const cont = document.getElementById("listaDisponibles");
-
     const q = query(
         collection(db, "asignaturas"),
         where("entidad", "==", entidadGlobal)
@@ -360,17 +362,15 @@ function listenDisponibles() {
 
     onSnapshot(q, (snap) => {
 
-        let lista = [];
+        asignaturasGlobal = [];
 
         snap.forEach(d => {
-            lista.push({ id: d.id, ...d.data() });
+            asignaturasGlobal.push({ id: d.id, ...d.data() });
         });
 
-        lista.sort((a, b) =>
+        asignaturasGlobal.sort((a, b) =>
             a.asignatura.localeCompare(b.asignatura, "es")
         );
-
-        window._asignaturasGlobal = lista;
 
         renderDisponibles();
 
@@ -384,11 +384,11 @@ function renderDisponibles() {
 
     const cont = document.getElementById("listaDisponibles");
 
-    if (!cont || !window._asignaturasGlobal) return;
+    if (!cont) return;
 
     cont.innerHTML = "";
 
-    window._asignaturasGlobal.forEach(a => {
+    asignaturasGlobal.forEach(a => {
 
         if (asignadasSet.has(a.id)) return;
 
@@ -411,28 +411,27 @@ function renderDisponibles() {
 // ================= AGREGAR =================
 window.agregar = async function (id) {
 
-    const refCheck = query(
+    // evitar duplicado
+    const q = query(
         collection(db, "curso_asignaturas"),
         where("cursoId", "==", cursoId),
         where("asignaturaId", "==", id)
     );
 
-    const snapCheck = await getDocs(refCheck);
-    if (!snapCheck.empty) return;
+    const snap = await getDocs(q);
+    if (!snap.empty) return;
 
-    const ref = doc(db, "asignaturas", id);
-    const snap = await getDoc(ref);
+    const ref = await getDoc(doc(db, "asignaturas", id));
+    if (!ref.exists()) return;
 
-    if (!snap.exists()) return;
-
-    const a = snap.data();
+    const a = ref.data();
 
     await addDoc(collection(db, "curso_asignaturas"), {
         cursoId,
         asignaturaId: id,
         asignatura: a.asignatura,
-        modulo: a.modulo,
-        entidad: a.entidad,
+        modulo: a.modulo || "",
+        entidad: entidadGlobal,
         academiaId: usuarioActual.uid,
         fechaCreacion: serverTimestamp()
     });
@@ -442,6 +441,7 @@ window.agregar = async function (id) {
 window.quitar = async function (id) {
     await deleteDoc(doc(db, "curso_asignaturas", id));
 };
+
 </script>
 
 </body>
