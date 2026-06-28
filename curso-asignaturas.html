@@ -228,7 +228,7 @@ import {
     addDoc,
     deleteDoc,
     serverTimestamp,
-    getDocs   // 👈 AÑADIR ESTO
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -237,7 +237,7 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// ================= FIREBASE INIT =================
+// ================= FIREBASE =================
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -250,7 +250,7 @@ const app = initializeApp({
 const db = getFirestore(app);
 const auth = getAuth();
 
-// ================= ESTADO GLOBAL =================
+// ================= ESTADO =================
 let usuarioActual = null;
 let entidadGlobal = null;
 
@@ -273,14 +273,13 @@ onAuthStateChanged(auth, async (user) => {
     const d = userSnap.data();
     entidadGlobal = d.entidad;
 
-    // logo
     const logo = document.getElementById("logoAcademia");
     logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
     logo.style.opacity = "1";
 
-    if (entidadGlobal) {
-        cargarAsignaturas(entidadGlobal);
+    if (entidadGlobal && cursoId) {
         cargarAsignadas();
+        cargarDisponibles();
     }
 });
 
@@ -292,51 +291,67 @@ document.getElementById("btnLogout")
     )
 );
 
-// ================= ASIGNATURAS DISPONIBLES =================
-function cargarAsignaturas(entidad) {
+// ================= DISPONIBLES =================
+function cargarDisponibles() {
 
     const cont = document.getElementById("listaDisponibles");
 
-    const q = query(
+    const qAsignaturas = query(
         collection(db, "asignaturas"),
-        where("entidad", "==", entidad)
+        where("entidad", "==", entidadGlobal)
     );
 
-    onSnapshot(q, (snap) => {
+    const qCurso = query(
+        collection(db, "curso_asignaturas"),
+        where("cursoId", "==", cursoId)
+    );
 
-        cont.innerHTML = "";
+    let asignadas = new Set();
 
-        const lista = [];
+    onSnapshot(qCurso, (cursoSnap) => {
 
-        snap.forEach(docSnap => {
-            lista.push({ id: docSnap.id, ...docSnap.data() });
+        asignadas.clear();
+
+        cursoSnap.forEach(d => {
+            asignadas.add(d.data().asignaturaId);
         });
 
-        lista.sort((a, b) =>
-            a.asignatura.localeCompare(b.asignatura, "es")
-        );
+        onSnapshot(qAsignaturas, (snap) => {
 
-        lista.forEach(a => {
+            cont.innerHTML = "";
 
-            cont.innerHTML += `
-            <div class="asignatura-card">
+            let lista = [];
 
-                <div class="asignatura-info">
-                    <h5>${a.asignatura}</h5>
-                </div>
+            snap.forEach(d => {
+                lista.push({ id: d.id, ...d.data() });
+            });
 
-                <button class="btn-asig btn-add"
-                    onclick="agregar('${a.id}')">
-                    <i class="bi bi-plus"></i>
-                </button>
+            lista.sort((a, b) =>
+                a.asignatura.localeCompare(b.asignatura, "es")
+            );
 
-            </div>`;
+            lista.forEach(a => {
+
+                if (asignadas.has(a.id)) return;
+
+                cont.innerHTML += `
+                <div class="asignatura-card">
+                    <div class="asignatura-info">
+                        <h5>${a.asignatura}</h5>
+                    </div>
+
+                    <button class="btn-asig btn-add"
+                        onclick="agregar('${a.id}')">
+                        <i class="bi bi-plus"></i>
+                    </button>
+                </div>`;
+            });
+
         });
-
     });
 }
 
-// ================= ASIGNATURAS DEL CURSO =================
+// ================= ASIGNADAS =================
 function cargarAsignadas() {
 
     const cont = document.getElementById("listaCurso");
@@ -350,9 +365,9 @@ function cargarAsignadas() {
 
         cont.innerHTML = "";
 
-        snap.forEach(docSnap => {
+        snap.forEach(d => {
 
-            const a = docSnap.data();
+            const a = d.data();
 
             cont.innerHTML += `
             <div class="asignatura-card">
@@ -363,7 +378,7 @@ function cargarAsignadas() {
                 </div>
 
                 <button class="btn-asig btn-remove"
-                    onclick="quitar('${docSnap.id}')">
+                    onclick="quitar('${d.id}')">
                     <i class="bi bi-dash"></i>
                 </button>
 
@@ -373,10 +388,9 @@ function cargarAsignadas() {
     });
 }
 
-// ================= AGREGAR ASIGNACIÓN =================
+// ================= AGREGAR =================
 window.agregar = async function (id) {
 
-    // 🔴 1. Evitar duplicados en el curso
     const q = query(
         collection(db, "curso_asignaturas"),
         where("cursoId", "==", cursoId),
@@ -385,12 +399,8 @@ window.agregar = async function (id) {
 
     const snap = await getDocs(q);
 
-    if (!snap.empty) {
-        alert("Esta asignatura ya está asociada a este curso");
-        return;
-    }
+    if (!snap.empty) return;
 
-    // 🔵 2. Obtener datos de la asignatura
     const ref = doc(db, "asignaturas", id);
     const dataSnap = await getDoc(ref);
 
@@ -398,7 +408,6 @@ window.agregar = async function (id) {
 
     const a = dataSnap.data();
 
-    // 🟢 3. Crear asociación
     await addDoc(collection(db, "curso_asignaturas"), {
         cursoId,
         asignaturaId: id,
@@ -410,9 +419,8 @@ window.agregar = async function (id) {
     });
 };
 
-// ================= QUITAR ASIGNACIÓN =================
+// ================= QUITAR =================
 window.quitar = async function (id) {
-
     await deleteDoc(doc(db, "curso_asignaturas", id));
 };
 
