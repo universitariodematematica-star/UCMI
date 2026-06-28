@@ -262,10 +262,10 @@ const auth = getAuth();
 // ================= STATE =================
 let usuarioActual = null;
 let entidadGlobal = null;
-let asignadasSet = new Set();
+let cursoId = new URLSearchParams(window.location.search).get("curso");
 
-const params = new URLSearchParams(window.location.search);
-const cursoId = params.get("curso");
+let asignadasSet = new Set();
+let asignaturasGlobal = [];
 
 // ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
@@ -277,15 +277,18 @@ onAuthStateChanged(auth, async (user) => {
 
     usuarioActual = user;
 
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-    if (!userSnap.exists()) return;
+    const snapUser = await getDoc(doc(db, "usuarios", user.uid));
+    if (!snapUser.exists()) return;
 
-    const d = userSnap.data();
-    entidadGlobal = d.entidad;
+    const dataUser = snapUser.data();
+    entidadGlobal = dataUser.entidad;
 
     const logo = document.getElementById("logoAcademia");
-    logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-    logo.style.opacity = "1";
+    if (logo) {
+        logo.src = dataUser.logoCustom ||
+            "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+        logo.style.opacity = "1";
+    }
 
     if (entidadGlobal && cursoId) {
         initListeners();
@@ -300,9 +303,8 @@ document.getElementById("btnLogout")
     )
 );
 
-// ================= LISTENERS SEGUROS =================
+// ================= INIT =================
 function initListeners() {
-
     listenAsignadas();
     listenDisponibles();
 }
@@ -317,93 +319,99 @@ function listenAsignadas() {
         where("cursoId", "==", cursoId)
     );
 
-    onSnapshot(q,
-        (snap) => {
+    onSnapshot(q, (snap) => {
 
-            cont.innerHTML = "";
-            asignadasSet.clear();
+        cont.innerHTML = "";
+        asignadasSet = new Set();
 
-            snap.forEach(d => {
+        snap.forEach(d => {
 
-                const data = d.data();
-                asignadasSet.add(data.asignaturaId);
+            const data = d.data();
+            asignadasSet.add(data.asignaturaId);
 
-                cont.innerHTML += `
-                <div class="asignatura-card">
+            cont.innerHTML += `
+            <div class="asignatura-card">
 
-                    <div class="asignatura-info">
-                        <h5>${data.asignatura}</h5>
-                        <small>${data.modulo || ""}</small>
-                    </div>
+                <div class="asignatura-info">
+                    <h5>${data.asignatura}</h5>
+                    <small>${data.modulo || ""}</small>
+                </div>
 
-                    <button class="btn-asig btn-remove"
-                        onclick="quitar('${d.id}')">
-                        <i class="bi bi-dash"></i>
-                    </button>
+                <button class="btn-asig btn-remove"
+                    onclick="quitar('${d.id}')">
+                    <i class="bi bi-dash"></i>
+                </button>
 
-                </div>`;
-            });
-        },
-        (err) => {
-            console.error("❌ curso_asignaturas error:", err.message);
-        }
-    );
+            </div>`;
+        });
+
+        renderDisponibles();
+
+    }, (err) => {
+        console.error("❌ curso_asignaturas error:", err.message);
+    });
 }
 
 // ================= DISPONIBLES =================
 function listenDisponibles() {
-
-    const cont = document.getElementById("listaDisponibles");
 
     const q = query(
         collection(db, "asignaturas"),
         where("entidad", "==", entidadGlobal)
     );
 
-    onSnapshot(q,
-        (snap) => {
+    onSnapshot(q, (snap) => {
 
-            cont.innerHTML = "";
+        asignaturasGlobal = [];
 
-            let lista = [];
+        snap.forEach(d => {
+            asignaturasGlobal.push({ id: d.id, ...d.data() });
+        });
 
-            snap.forEach(d => {
-                lista.push({ id: d.id, ...d.data() });
-            });
+        asignaturasGlobal.sort((a, b) =>
+            a.asignatura.localeCompare(b.asignatura, "es")
+        );
 
-            lista.sort((a, b) =>
-                a.asignatura.localeCompare(b.asignatura, "es")
-            );
+        renderDisponibles();
 
-            lista.forEach(a => {
+    }, (err) => {
+        console.error("❌ asignaturas error:", err.message);
+    });
+}
 
-                if (asignadasSet.has(a.id)) return;
+// ================= RENDER DISPONIBLES =================
+function renderDisponibles() {
 
-                cont.innerHTML += `
-                <div class="asignatura-card">
+    const cont = document.getElementById("listaDisponibles");
 
-                    <div class="asignatura-info">
-                        <h5>${a.asignatura}</h5>
-                    </div>
+    if (!cont) return;
 
-                    <button class="btn-asig btn-add"
-                        onclick="agregar('${a.id}')">
-                        <i class="bi bi-plus"></i>
-                    </button>
+    cont.innerHTML = "";
 
-                </div>`;
-            });
+    asignaturasGlobal.forEach(a => {
 
-        },
-        (err) => {
-            console.error("❌ asignaturas error:", err.message);
-        }
-    );
+        if (asignadasSet.has(a.id)) return;
+
+        cont.innerHTML += `
+        <div class="asignatura-card">
+
+            <div class="asignatura-info">
+                <h5>${a.asignatura}</h5>
+            </div>
+
+            <button class="btn-asig btn-add"
+                onclick="agregar('${a.id}')">
+                <i class="bi bi-plus"></i>
+            </button>
+
+        </div>`;
+    });
 }
 
 // ================= AGREGAR =================
 window.agregar = async function (id) {
 
+    // evitar duplicado
     const q = query(
         collection(db, "curso_asignaturas"),
         where("cursoId", "==", cursoId),
@@ -411,22 +419,19 @@ window.agregar = async function (id) {
     );
 
     const snap = await getDocs(q);
-
     if (!snap.empty) return;
 
-    const ref = doc(db, "asignaturas", id);
-    const dataSnap = await getDoc(ref);
+    const ref = await getDoc(doc(db, "asignaturas", id));
+    if (!ref.exists()) return;
 
-    if (!dataSnap.exists()) return;
-
-    const a = dataSnap.data();
+    const a = ref.data();
 
     await addDoc(collection(db, "curso_asignaturas"), {
         cursoId,
         asignaturaId: id,
         asignatura: a.asignatura,
-        modulo: a.modulo,
-        entidad: a.entidad,
+        modulo: a.modulo || "",
+        entidad: entidadGlobal,
         academiaId: usuarioActual.uid,
         fechaCreacion: serverTimestamp()
     });
@@ -436,6 +441,7 @@ window.agregar = async function (id) {
 window.quitar = async function (id) {
     await deleteDoc(doc(db, "curso_asignaturas", id));
 };
+
 </script>
 
 </body>
