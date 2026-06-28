@@ -256,6 +256,7 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+// ===================== FIREBASE INIT =====================
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -268,6 +269,7 @@ const app = initializeApp({
 const db = getFirestore(app);
 const auth = getAuth();
 
+// ===================== STATE =====================
 let moduloSeleccionado = null;
 let entidadGlobal = null;
 
@@ -279,18 +281,23 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
+    const userRef = doc(db, "usuarios", user.uid);
+    const userSnap = await getDoc(userRef);
+
     if (!userSnap.exists()) return;
 
     const d = userSnap.data();
-    entidadGlobal = d.entidad;
+    entidadGlobal = d.entidad || null;
 
-    const contenedorModulos = document.getElementById("contenedorModulos");
-    contenedorModulos.innerHTML = "";
+    // ===================== RENDER MÓDULOS =====================
+    const contenedor = document.getElementById("contenedorModulos");
+    contenedor.innerHTML = "";
 
     (d.modulos || []).forEach(modulo => {
 
-        contenedorModulos.innerHTML += `
+        const safeId = modulo.replace(/\s+/g, "_");
+
+        contenedor.innerHTML += `
             <div class="modulo-item">
 
                 <div class="d-flex justify-content-between align-items-center">
@@ -303,32 +310,32 @@ onAuthStateChanged(auth, async (user) => {
                 </div>
 
                 <div class="listaAsignaturas"
-                     id="asignaturas-${modulo}">
+                     id="asignaturas-${safeId}">
                 </div>
 
             </div>
         `;
     });
 
-    // abrir modal
+    // ===================== BOTONES CREAR =====================
     document.querySelectorAll(".btnCrearAsignatura").forEach(btn => {
         btn.addEventListener("click", () => {
-
             moduloSeleccionado = btn.dataset.modulo;
 
-            new bootstrap.Modal(
+            const modal = new bootstrap.Modal(
                 document.getElementById("modalAsignatura")
-            ).show();
+            );
+            modal.show();
         });
     });
 
-    // logo
+    // ===================== LOGO =====================
     const logo = document.getElementById("logoAcademia");
     logo.src = d.logoCustom ||
         "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
     logo.style.opacity = "1";
 
-    // ===================== REALTIME =====================
+    // ===================== REALTIME FIRESTORE =====================
     if (!entidadGlobal) return;
 
     const q = query(
@@ -348,24 +355,24 @@ onAuthStateChanged(auth, async (user) => {
         });
 
         lista.sort((a, b) =>
-            a.asignatura.localeCompare(b.asignatura, "es")
+            (a.asignatura || "").localeCompare(b.asignatura || "", "es")
         );
 
         lista.forEach(data => {
 
-            const contenedor = document.getElementById(
-                `asignaturas-${data.modulo}`
+            const safeModulo = (data.modulo || "").replace(/\s+/g, "_");
+
+            const contenedorAsignaturas = document.getElementById(
+                `asignaturas-${safeModulo}`
             );
 
-            if (!contenedor) return;
+            if (!contenedorAsignaturas) return;
 
-            contenedor.insertAdjacentHTML("beforeend", `
-                <div class="asignatura-row"
-                     data-id="${data.id}">
+            contenedorAsignaturas.insertAdjacentHTML("beforeend", `
+                <div class="asignatura-row" data-id="${data.id}">
 
                     <div class="col-nombre">
-                        <span class="text-info"
-                              style="cursor:pointer;font-weight:500;">
+                        <span class="text-info" style="cursor:pointer;font-weight:500;">
                             ${data.asignatura}
                         </span>
                     </div>
@@ -393,35 +400,41 @@ onAuthStateChanged(auth, async (user) => {
 
 });
 
-// ===================== CLICK UNIFICADO (FIX PRO) =====================
+// ===================== CLICK GLOBAL (MEJORADO PRO) =====================
 document.addEventListener("click", async (e) => {
 
     const fila = e.target.closest(".asignatura-row");
     const btnEdit = e.target.closest(".btnEditarAsignatura");
     const btnDelete = e.target.closest(".btnEliminarAsignatura");
 
-    // navegación
+    // ===================== NAVEGACIÓN =====================
     if (fila && !e.target.closest("button")) {
+        const id = fila.dataset.id;
+
+        if (!id) return;
+
         window.location.href =
-            `asignatura-topicos.html?id=${fila.dataset.id}`;
+            `asignatura-topicos.html?id=${id}`;
         return;
     }
 
-    // editar
+    // ===================== EDITAR =====================
     if (btnEdit) {
         const id = btnEdit.dataset.id;
         const actual = btnEdit.dataset.nombre;
 
         const nuevo = prompt("Editar asignatura:", actual);
-        if (!nuevo || nuevo === actual) return;
+
+        if (!nuevo || nuevo.trim() === actual) return;
 
         await updateDoc(doc(db, "asignaturas", id), {
-            asignatura: nuevo
+            asignatura: nuevo.trim()
         });
+
         return;
     }
 
-    // eliminar
+    // ===================== ELIMINAR =====================
     if (btnDelete) {
         const id = btnDelete.dataset.id;
 
@@ -432,15 +445,21 @@ document.addEventListener("click", async (e) => {
     }
 });
 
-// ===================== CREAR =====================
+// ===================== CREAR ASIGNATURA =====================
 document.getElementById("btnGuardarAsignatura")
 .addEventListener("click", async () => {
 
-    const nombre = document.getElementById("nombreAsignatura").value.trim();
-    if (!nombre || !moduloSeleccionado) return;
+    const input = document.getElementById("nombreAsignatura");
+    const nombre = input.value.trim();
+
+    if (!nombre || !moduloSeleccionado || !entidadGlobal) return;
 
     const user = auth.currentUser;
+    if (!user) return;
+
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
+    if (!userSnap.exists()) return;
+
     const d = userSnap.data();
 
     const q = query(
@@ -461,11 +480,11 @@ document.getElementById("btnGuardarAsignatura")
         fechaCreacion: serverTimestamp()
     });
 
-    document.getElementById("nombreAsignatura").value = "";
+    input.value = "";
 
-    bootstrap.Modal.getInstance(
-        document.getElementById("modalAsignatura")
-    ).hide();
+    const modalEl = document.getElementById("modalAsignatura");
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal?.hide();
 });
 
 // ===================== LOGOUT =====================
