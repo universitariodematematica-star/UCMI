@@ -256,7 +256,6 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// ===================== FIREBASE INIT =====================
 const app = initializeApp({
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -269,7 +268,6 @@ const app = initializeApp({
 const db = getFirestore(app);
 const auth = getAuth();
 
-// ===================== STATE =====================
 let moduloSeleccionado = null;
 let entidadGlobal = null;
 
@@ -281,23 +279,18 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    const userRef = doc(db, "usuarios", user.uid);
-    const userSnap = await getDoc(userRef);
-
+    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
     if (!userSnap.exists()) return;
 
     const d = userSnap.data();
-    entidadGlobal = d.entidad || null;
+    entidadGlobal = d.entidad;
 
-    // ===================== RENDER MÓDULOS =====================
-    const contenedor = document.getElementById("contenedorModulos");
-    contenedor.innerHTML = "";
+    const contenedorModulos = document.getElementById("contenedorModulos");
+    contenedorModulos.innerHTML = "";
 
     (d.modulos || []).forEach(modulo => {
 
-        const safeId = modulo.replace(/\s+/g, "_");
-
-        contenedor.innerHTML += `
+        contenedorModulos.innerHTML += `
             <div class="modulo-item">
 
                 <div class="d-flex justify-content-between align-items-center">
@@ -310,32 +303,33 @@ onAuthStateChanged(auth, async (user) => {
                 </div>
 
                 <div class="listaAsignaturas"
-                     id="asignaturas-${safeId}">
+                     id="asignaturas-${modulo}">
                 </div>
 
             </div>
         `;
     });
 
-    // ===================== BOTONES CREAR =====================
-    document.querySelectorAll(".btnCrearAsignatura").forEach(btn => {
+    document.querySelectorAll(".btnCrearAsignatura")
+    .forEach(btn => {
+
         btn.addEventListener("click", () => {
+
             moduloSeleccionado = btn.dataset.modulo;
 
-            const modal = new bootstrap.Modal(
+            new bootstrap.Modal(
                 document.getElementById("modalAsignatura")
-            );
-            modal.show();
+            ).show();
         });
+
     });
 
-    // ===================== LOGO =====================
     const logo = document.getElementById("logoAcademia");
     logo.src = d.logoCustom ||
         "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
     logo.style.opacity = "1";
 
-    // ===================== REALTIME FIRESTORE =====================
+    // ===================== REALTIME =====================
     if (!entidadGlobal) return;
 
     const q = query(
@@ -345,114 +339,84 @@ onAuthStateChanged(auth, async (user) => {
 
     onSnapshot(q, (snapshot) => {
 
-    const contenedor = document.getElementById("contenedorModulos");
-    contenedor.innerHTML = "";
+        document.querySelectorAll(".listaAsignaturas")
+            .forEach(el => el.innerHTML = "");
 
-    const lista = [];
+        const lista = [];
 
-    snapshot.forEach(docu => {
-        lista.push({ id: docu.id, ...docu.data() });
-    });
-
-    // ORDEN ALFABÉTICO GLOBAL
-    lista.sort((a, b) =>
-        (a.asignatura || "").localeCompare(b.asignatura || "", "es")
-    );
-
-    lista.forEach(data => {
-
-        contenedor.insertAdjacentHTML("beforeend", `
-            <div class="asignatura-row" data-id="${data.id}">
-
-                <div class="col-nombre">
-                    <span class="text-info" style="cursor:pointer;font-weight:500;">
-                        ${data.asignatura}
-                    </span>
-                </div>
-
-                <div class="col-botones">
-
-                    <button class="btn btn-sm btn-warning btnEditarAsignatura"
-                        data-id="${data.id}"
-                        data-nombre="${data.asignatura}">
-                        Editar
-                    </button>
-
-                    <button class="btn btn-sm btn-danger btnEliminarAsignatura"
-                        data-id="${data.id}">
-                        Borrar
-                    </button>
-
-                </div>
-
-            </div>
-        `);
-    });
-
-});
-
-});
-
-// ===================== CLICK GLOBAL (MEJORADO PRO) =====================
-document.addEventListener("click", async (e) => {
-
-    const fila = e.target.closest(".asignatura-row");
-    const btnEdit = e.target.closest(".btnEditarAsignatura");
-    const btnDelete = e.target.closest(".btnEliminarAsignatura");
-
-    // ===================== NAVEGACIÓN =====================
-    if (fila && !e.target.closest("button")) {
-        const id = fila.dataset.id;
-
-        if (!id) return;
-
-        window.location.href =
-            `asignatura-topicos.html?id=${id}`;
-        return;
-    }
-
-    // ===================== EDITAR =====================
-    if (btnEdit) {
-        const id = btnEdit.dataset.id;
-        const actual = btnEdit.dataset.nombre;
-
-        const nuevo = prompt("Editar asignatura:", actual);
-
-        if (!nuevo || nuevo.trim() === actual) return;
-
-        await updateDoc(doc(db, "asignaturas", id), {
-            asignatura: nuevo.trim()
+        snapshot.forEach(docu => {
+            lista.push({ id: docu.id, ...docu.data() });
         });
 
-        return;
-    }
+        lista.sort((a, b) =>
+            a.asignatura.localeCompare(b.asignatura, "es")
+        );
 
-    // ===================== ELIMINAR =====================
-    if (btnDelete) {
-        const id = btnDelete.dataset.id;
+        lista.forEach(data => {
 
-        if (!confirm("¿Eliminar asignatura?")) return;
+            const contenedor = document.getElementById(
+                `asignaturas-${data.modulo}`
+            );
 
-        await deleteDoc(doc(db, "asignaturas", id));
-        return;
-    }
+            if (!contenedor) return;
+
+            contenedor.insertAdjacentHTML("beforeend", `
+                <div class="asignatura-row"
+                     data-id="${data.id}">
+
+                    <div class="col-nombre">
+                        <span class="text-info"
+                              style="cursor:pointer;font-weight:500;">
+                            ${data.asignatura}
+                        </span>
+                    </div>
+
+                    <div class="col-botones">
+
+                        <button class="btn btn-sm btn-warning btnEditarAsignatura"
+                            data-id="${data.id}"
+                            data-nombre="${data.asignatura}">
+                            Editar
+                        </button>
+
+                        <button class="btn btn-sm btn-danger btnEliminarAsignatura"
+                            data-id="${data.id}">
+                            Borrar
+                        </button>
+
+                    </div>
+
+                </div>
+            `);
+        });
+
+    });
+
 });
 
-// ===================== CREAR ASIGNATURA =====================
+// ===================== CLICK EN FILA =====================
+document.addEventListener("click", (e) => {
+
+    const fila = e.target.closest(".asignatura-row");
+    if (!fila) return;
+
+    if (e.target.closest("button")) return;
+
+    const id = fila.dataset.id;
+
+    window.location.href =
+        `asignatura-topicos.html?id=${id}`;
+});
+
+// ===================== CREAR =====================
 document.getElementById("btnGuardarAsignatura")
 .addEventListener("click", async () => {
 
-    const input = document.getElementById("nombreAsignatura");
-    const nombre = input.value.trim();
-
-    if (!nombre || !moduloSeleccionado || !entidadGlobal) return;
+    const nombre = document.getElementById("nombreAsignatura").value.trim();
+    if (!nombre || !moduloSeleccionado) return;
 
     const user = auth.currentUser;
-    if (!user) return;
-
     const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-    if (!userSnap.exists()) return;
-
     const d = userSnap.data();
 
     const q = query(
@@ -473,11 +437,40 @@ document.getElementById("btnGuardarAsignatura")
         fechaCreacion: serverTimestamp()
     });
 
-    input.value = "";
+    document.getElementById("nombreAsignatura").value = "";
 
-    const modalEl = document.getElementById("modalAsignatura");
-    const modal = bootstrap.Modal.getInstance(modalEl);
-    modal?.hide();
+    bootstrap.Modal.getInstance(
+        document.getElementById("modalAsignatura")
+    ).hide();
+});
+
+// ===================== EDITAR =====================
+document.addEventListener("click", async (e) => {
+
+    if (!e.target.classList.contains("btnEditarAsignatura")) return;
+
+    const id = e.target.dataset.id;
+    const actual = e.target.dataset.nombre;
+
+    const nuevo = prompt("Editar asignatura:", actual);
+
+    if (!nuevo || nuevo === actual) return;
+
+    await updateDoc(doc(db, "asignaturas", id), {
+        asignatura: nuevo
+    });
+});
+
+// ===================== ELIMINAR =====================
+document.addEventListener("click", async (e) => {
+
+    if (!e.target.classList.contains("btnEliminarAsignatura")) return;
+
+    const id = e.target.dataset.id;
+
+    if (!confirm("¿Eliminar asignatura?")) return;
+
+    await deleteDoc(doc(db, "asignaturas", id));
 });
 
 // ===================== LOGOUT =====================
@@ -489,6 +482,57 @@ document.getElementById("btnLogout")
 );
 
 </script>
+<div class="modal fade" id="modalAsignatura" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Crear asignatura
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <label class="form-label">
+                    Nombre de la asignatura
+                </label>
+
+                <input
+                    type="text"
+                    id="nombreAsignatura"
+                    class="form-control"
+                    placeholder="Ejemplo: Inglés A2 Kids">
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-success"
+                    id="btnGuardarAsignatura">
+                    Guardar
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>    
     
 </body>
 </html>
