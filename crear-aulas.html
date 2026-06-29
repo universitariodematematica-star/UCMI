@@ -67,11 +67,12 @@
 
     import { db, auth } from "./componentes/firebase-config.js";
     import {
-        collection,
-        addDoc,
-        serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
+    collection,
+    addDoc,
+    serverTimestamp,
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     // Cargar la plantilla HTML
     const html = await fetch("componentes/plantilla-academia.html");
     document.getElementById("plantilla").innerHTML = await html.text();
@@ -135,15 +136,28 @@ btnRegistrar.addEventListener("click", async () => {
 
         console.log("Intentando escribir en Firestore...");
 
-        await addDoc(collection(db, "aulas"), {
+// Leer el documento del usuario autenticado
+const usuarioSnap = await getDoc(
+    doc(db, "usuarios", auth.currentUser.uid)
+);
 
-            nombre: nombre,
-            uid: auth.currentUser.uid,
-            fechaCreacion: serverTimestamp()
+if (!usuarioSnap.exists()) {
+    console.error("No existe el documento del usuario.");
+    return;
+}
 
-        });
+const datosUsuario = usuarioSnap.data();
 
-        console.log("Documento creado correctamente.");
+await addDoc(collection(db, "aulas"), {
+
+    nombre_aula: nombre,
+    entidad: datosUsuario.entidad,
+    academiaId: auth.currentUser.uid,
+    fechaCreacion: serverTimestamp()
+
+});
+
+console.log("Documento creado correctamente.");
 
         listaAulas.innerHTML += `
 
