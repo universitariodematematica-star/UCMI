@@ -81,34 +81,30 @@ async function cargarPlantilla() {
 
     const html = await fetch("./plantilla-academia.html").then(r => r.text());
 
-    // 🧠 Parseo robusto real de HTML
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
+    // 🧠 crear contenedor aislado (NO DOMParser)
+    const temp = document.createElement("div");
+    temp.innerHTML = html;
 
-    const nodo = doc.body.firstElementChild;
+    const wrapper = temp.querySelector(".app-wrapper");
 
-    if (!nodo) {
-        console.error("❌ No se pudo parsear la plantilla correctamente");
+    if (!wrapper) {
+        console.error("❌ No se encontró .app-wrapper");
         return;
     }
 
-    // limpiar DOM actual
-    document.body.innerHTML = "";
+    // limpiar DOM
+    document.body.replaceChildren(wrapper);
 
-    // insertar nodo real
-    document.body.appendChild(nodo);
-
-    // 🔥 esperar a que el navegador lo registre en layout engine
+    // 🔥 forzar layout real
     await new Promise(requestAnimationFrame);
     await new Promise(requestAnimationFrame);
 
-    const contenedor = document.getElementById("contenido");
+    const contenedor = wrapper.querySelector("#contenido");
 
-    console.log("DEBUG #contenido:", contenedor);
-    console.log("DEBUG DOM:", document.body.innerHTML);
+    console.log("CONTENIDO:", contenedor);
 
     if (!contenedor) {
-        console.error("❌ #contenido sigue sin existir en el DOM final");
+        console.error("❌ #contenido no existe dentro del wrapper");
         return;
     }
 
