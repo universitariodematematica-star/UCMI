@@ -79,12 +79,21 @@ let currentData = null;
 // =====================
 async function cargarPlantilla() {
 
-    const html = await fetch("plantilla-academia.html").then(r => r.text());
+    const html = await fetch("./plantilla-academia.html").then(r => r.text());
 
     document.body.innerHTML = html;
 
-    // IMPORTANTE: inyectar contenido dentro del layout
-    document.getElementById("contenido").innerHTML = generarVista();
+    // 🔥 CLAVE: esperar a que el DOM se reconstruya
+    await new Promise(requestAnimationFrame);
+
+    const contenedor = document.getElementById("contenido");
+
+    if (!contenedor) {
+        console.error("❌ No existe #contenido en la plantilla");
+        return;
+    }
+
+    contenedor.innerHTML = generarVista();
 
     inicializarEventos();
 }
