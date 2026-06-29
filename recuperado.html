@@ -65,6 +65,14 @@
 
 <script type="module">
 
+    import { db, auth } from "./componentes/firebase-config.js";
+    import {
+    collection,
+    addDoc,
+    serverTimestamp,
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     // Cargar la plantilla HTML
     const html = await fetch("componentes/plantilla-academia.html");
     document.getElementById("plantilla").innerHTML = await html.text();
@@ -109,25 +117,67 @@
 const btnRegistrar = document.getElementById("btnRegistrar");
 const listaAulas = document.getElementById("listaAulas");
 
-btnRegistrar.addEventListener("click", () => {
+btnRegistrar.addEventListener("click", async () => {
+
+    console.log("===== BOTÓN REGISTRAR =====");
 
     const nombre = txtNombre.value.trim();
 
-    if (nombre === "") return;
+    console.log("Nombre:", nombre);
 
-    listaAulas.innerHTML += `
+    if (nombre === "") {
+        console.log("El nombre está vacío.");
+        return;
+    }
 
-        <div class="panel-cristal mb-3">
-            <h5 class="mb-0">${nombre}</h5>
-        </div>
+    console.log("Usuario autenticado:", auth.currentUser);
 
-    `;
+    try {
 
-    txtNombre.value = "";
-    txtNombre.focus();
+        console.log("Intentando escribir en Firestore...");
+
+// Leer el documento del usuario autenticado
+const usuarioSnap = await getDoc(
+    doc(db, "usuarios", auth.currentUser.uid)
+);
+
+if (!usuarioSnap.exists()) {
+    console.error("No existe el documento del usuario.");
+    return;
+}
+
+const datosUsuario = usuarioSnap.data();
+
+await addDoc(collection(db, "aulas"), {
+
+    nombre_aula: nombre,
+    entidad: datosUsuario.entidad,
+    academiaId: auth.currentUser.uid,
+    fechaCreacion: serverTimestamp()
 
 });
 
+console.log("Documento creado correctamente.");
+
+        listaAulas.innerHTML += `
+
+            <div class="panel-cristal mb-3">
+                <h5 class="mb-0">${nombre}</h5>
+            </div>
+
+        `;
+
+        txtNombre.value = "";
+        txtNombre.focus();
+
+    } catch (error) {
+
+        console.error("ERROR FIRESTORE:");
+        console.error(error);
+
+    }
+
+});
 </script>
 
 </body>
