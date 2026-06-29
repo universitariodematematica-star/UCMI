@@ -353,9 +353,66 @@ document.getElementById("btnLogout")?.addEventListener("click", () => {
     });
 });
 
-window.verCursos = (id) => {
-    alert("Aquí se abrirá el selector de cursos para el aula: " + id);
+window.verCursos = async (aulaId) => {
+
+    const cursosQuery = query(collection(db, "cursos"));
+
+    const snap = await getDocs(cursosQuery);
+
+    let html = `
+        <div style="max-height:400px;overflow:auto;">
+    `;
+
+    snap.forEach(docSnap => {
+        const c = docSnap.data();
+
+        html += `
+            <div class="card bg-dark text-white p-2 mb-2">
+
+                <h6 class="mb-1">${c.nombre}</h6>
+
+                <button class="btn btn-sm btn-warning"
+                    onclick="seleccionarCursoAula('${aulaId}', '${docSnap.id}', '${c.nombre}')">
+                    Seleccionar curso
+                </button>
+
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+
+    mostrarModalCursos(html);
 };
+
+window.seleccionarCursoAula = async (aulaId, cursoId, cursoNombre) => {
+
+    // 1. buscar asignaturas del curso
+    const relQuery = query(
+        collection(db, "curso_asignaturas"),
+        where("cursoId", "==", cursoId)
+    );
+
+    const relSnap = await getDocs(relQuery);
+
+    let asignaturas = [];
+
+    relSnap.forEach(d => {
+        const data = d.data();
+        if (data.asignaturaId) {
+            asignaturas.push(data.asignaturaId);
+        }
+    });
+
+    // 2. actualizar aula
+    await updateDoc(doc(db, "aulas", aulaId), {
+        cursoId,
+        cursoNombre,
+        asignaturas
+    });
+
+    cerrarModalCursos();
+};    
 
 window.verEstudiantes = (id) => {
     alert("Aquí se gestionarán los estudiantes del aula: " + id);
