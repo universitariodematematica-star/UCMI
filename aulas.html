@@ -273,13 +273,28 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
-    const auth = getAuth();
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+const app = initializeApp({
+    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+    authDomain: "ucmi-13796634.firebaseapp.com",
+    projectId: "ucmi-13796634",
+    storageBucket: "ucmi-13796634.firebasestorage.app",
+    messagingSenderId: "1090719609536",
+    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+});
+
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let uidActual = null;
+
+// =====================
+// AUTH + LOGO
+// =====================
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -287,12 +302,11 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    const userSnap = await getDoc(
-        doc(db, "usuarios", user.uid)
-    );
+    uidActual = user.uid;
+
+    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
 
     if (userSnap.exists()) {
-
         const d = userSnap.data();
 
         const logo = document.getElementById('logoAcademia');
@@ -303,13 +317,49 @@ onAuthStateChanged(auth, async (user) => {
 
         logo.style.opacity = "1";
     }
-
 });
 
-    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
-    
-</script>
 
+// =====================
+// MODELO ACADÉMICO
+// =====================
+async function setModelo(modelo) {
+
+    if (!uidActual) return;
+
+    await updateDoc(doc(db, "usuarios", uidActual), {
+        modelo_academico: modelo
+    });
+
+    alert("Modelo actualizado a: " + modelo);
+}
+
+
+// =====================
+// BOTONES
+// =====================
+document.getElementById("btnPreuniversitaria").addEventListener("click", () => {
+    setModelo("ACADEMIA PREUNIVERSITARIA");
+});
+
+document.getElementById("btnAvance").addEventListener("click", () => {
+    setModelo("ACADEMIA DE AVANCE");
+});
+
+document.getElementById("btnLibre").addEventListener("click", () => {
+    setModelo("ACADEMIA LIBRE");
+});
+
+
+// =====================
+// LOGOUT
+// =====================
+document.getElementById('btnLogout')
+    .addEventListener('click', () =>
+        signOut(auth).then(() => window.location.href = "index.html")
+    );
+
+</script>
 
 
     
