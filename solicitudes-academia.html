@@ -81,19 +81,25 @@ async function cargarPlantilla() {
 
     const html = await fetch("./plantilla-academia.html").then(r => r.text());
 
-    // 🧠 NO destruyas el body entero
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = html;
+    // 🧠 Crear contenedor temporal seguro
+    const temp = document.createElement("div");
+    temp.innerHTML = html;
 
-    document.body.appendChild(wrapper);
+    // limpiar body
+    document.body.innerHTML = "";
 
-    // espera real a DOM
+    // insertar correctamente
+    document.body.appendChild(temp.firstElementChild);
+
+    // 🔥 esperar render real del navegador (no hacks de timeout)
     await new Promise(requestAnimationFrame);
 
     const contenedor = document.getElementById("contenido");
 
+    console.log("CONTENIDO:", contenedor);
+
     if (!contenedor) {
-        console.error("❌ No existe #contenido en la plantilla");
+        console.error("❌ #contenido no se montó correctamente");
         return;
     }
 
@@ -101,7 +107,6 @@ async function cargarPlantilla() {
 
     inicializarEventos();
 }
-
 
 // =====================
 // 4. VISTA PRINCIPAL
