@@ -144,8 +144,7 @@ import {
     query,
     where,
     onSnapshot,
-    deleteDoc,
-    updateDoc
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
@@ -154,74 +153,78 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// ======================
-// FIREBASE CONFIG
-// ======================
+// =====================
+// FIREBASE
+// =====================
 const firebaseConfig = {
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
-    projectId: "ucmi-13796634",
-    storageBucket: "ucmi-13796634.firebasestorage.app",
-    messagingSenderId: "1090719609536",
-    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+    projectId: "ucmi-13796634"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// ======================
+// =====================
 // STATE
-// ======================
+// =====================
 let uid = null;
-let usuario = null;
 let entidad = null;
 
-// ======================
-// AUTH
-// ======================
+// =====================
+// AUTH (PROTEGIDO)
+// =====================
 onAuthStateChanged(auth, async (user) => {
 
-    if (!user) {
-        window.location.href = "index.html";
-        return;
+    try {
+
+        if (!user) {
+            window.location.href = "index.html";
+            return;
+        }
+
+        uid = user.uid;
+
+        const snap = await getDoc(doc(db, "usuarios", uid));
+
+        if (snap.exists()) {
+            const data = snap.data();
+            entidad = data.entidad || null;
+
+            // 🔥 LOGO SIEMPRE SE MUESTRA
+            const logo = document.getElementById("logoAcademia");
+            if (logo) {
+                logo.src = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+                logo.style.opacity = "1";
+            }
+        }
+
+        renderUI();
+        listenAulas();
+
+    } catch (e) {
+        console.error("Error en auth:", e);
+
+        // 🔥 fallback UI aunque Firebase falle
+        renderUI();
+        listenAulas();
     }
-
-    uid = user.uid;
-
-    const snap = await getDoc(doc(db, "usuarios", uid));
-
-    if (!snap.exists()) {
-        console.error("Usuario sin perfil");
-        return;
-    }
-
-    usuario = snap.data();
-
-    entidad = usuario.entidad || null;
-
-    // LOGO
-    const logo = document.getElementById("logoAcademia");
-    if (logo && usuario.logoCustom) {
-        logo.src = usuario.logoCustom;
-    }
-    if (logo) logo.style.opacity = "1";
-
-    renderUI();
-    listenAulas();
 });
 
-// ======================
-// UI
-// ======================
+// =====================
+// UI (SIEMPRE SE EJECUTA)
+// =====================
 function renderUI() {
 
     const main = document.querySelector("main");
 
+    if (!main) return;
+
     main.innerHTML = `
         <div class="container py-5">
 
-            <h2 class="mb-4">Gestión de Aulas</h2>
+            <h2 class="mb-4">Aulas</h2>
 
             <div class="card bg-dark text-white p-3 mb-4">
 
@@ -232,8 +235,8 @@ function renderUI() {
                     </button>
                 </div>
 
-                <small class="mt-2 text-muted">
-                    Entidad: <b>${entidad || "NO DEFINIDA"}</b>
+                <small class="text-muted mt-2">
+                    Entidad: <b>${entidad || "no definida"}</b>
                 </small>
 
             </div>
@@ -243,36 +246,44 @@ function renderUI() {
         </div>
     `;
 
-    document.getElementById("btnCrearAula")
-        .addEventListener("click", crearAula);
+    const btn = document.getElementById("btnCrearAula");
+    if (btn) {
+        btn.addEventListener("click", crearAula);
+    }
 }
 
-// ======================
+// =====================
 // CREAR AULA
-// ======================
+// =====================
 async function crearAula() {
 
     const input = document.getElementById("nombreAula");
+    if (!input) return;
+
     const nombre = input.value.trim();
 
-    if (!nombre) return alert("Ingresa un nombre");
-    if (!entidad) return alert("Entidad no definida en usuario");
+    if (!nombre) return alert("Ingresa un nombre de aula");
+    if (!uid) return alert("No autenticado");
 
-    await addDoc(collection(db, "aulas"), {
-        nombre,
-        uidAcademia: uid,
-        entidad: entidad,
-        cursoId: null,
-        cursoNombre: null,
-        createdAt: Date.now()
-    });
+    try {
+        await addDoc(collection(db, "aulas"), {
+            nombre,
+            uidAcademia: uid,
+            entidad: entidad || "",
+            createdAt: Date.now()
+        });
 
-    input.value = "";
+        input.value = "";
+
+    } catch (e) {
+        console.error("Error creando aula:", e);
+        alert("Error creando aula (revisa reglas Firestore)");
+    }
 }
 
-// ======================
-// LISTENER AULAS
-// ======================
+// =====================
+// LISTAR AULAS (REAL TIME)
+// =====================
 function listenAulas() {
 
     if (!uid) return;
@@ -291,16 +302,16 @@ function listenAulas() {
 
         snapshot.forEach(docSnap => {
 
-            const aula = docSnap.data();
+            const a = docSnap.data();
 
             cont.innerHTML += `
                 <div class="col-md-4">
                     <div class="card bg-dark text-white p-3">
 
-                        <h5>${aula.nombre}</h5>
+                        <h5>${a.nombre || "Sin nombre"}</h5>
 
                         <small class="text-muted">
-                            Curso: ${aula.cursoNombre || "Sin asignar"}
+                            Curso: ${a.cursoNombre || "sin asignar"}
                         </small>
 
                         <div class="mt-3 d-flex gap-2 flex-wrap">
@@ -329,35 +340,42 @@ function listenAulas() {
                 </div>
             `;
         });
+
+    }, (error) => {
+        console.error("Error listener aulas:", error);
     });
 }
 
-// ======================
-// DELETE AULA
-// ======================
+// =====================
+// DELETE
+// =====================
 window.eliminarAula = async (id) => {
-    await deleteDoc(doc(db, "aulas", id));
+    try {
+        await deleteDoc(doc(db, "aulas", id));
+    } catch (e) {
+        console.error(e);
+    }
 };
 
-// ======================
-// PLACEHOLDER CURSO (NO ROMPE)
-// ======================
+// =====================
+// CURSO (placeholder seguro)
+// =====================
 window.asignarCurso = (id) => {
-    alert("Función Curso lista para siguiente paso (no rompe UI). Aula ID: " + id);
+    alert("Curso pendiente. Aula: " + id);
 };
 
-// ======================
+// =====================
 // LOGOUT
-// ======================
-const logoutBtn = document.getElementById("btnLogout");
-
-if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
+// =====================
+const btnLogout = document.getElementById("btnLogout");
+if (btnLogout) {
+    btnLogout.addEventListener("click", () => {
         signOut(auth).then(() => {
             window.location.href = "index.html";
         });
     });
 }
+    
 </script>
     
 </body>
