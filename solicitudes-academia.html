@@ -35,17 +35,24 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
-    getFirestore, collection, onSnapshot, doc, getDoc,
-    query, where, getDocs, addDoc, deleteDoc, setDoc
+    getFirestore,
+    collection,
+    onSnapshot,
+    doc,
+    getDoc,
+    query,
+    where,
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
-    getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signOut
+    getAuth,
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 
 // =====================
-// 1. FIREBASE
+// FIREBASE
 // =====================
 const firebaseConfig = {
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
@@ -60,52 +67,35 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-const secondaryApp = initializeApp(firebaseConfig, "Secondary");
-const secondaryAuth = getAuth(secondaryApp);
-
 
 // =====================
-// 2. ESTADO GLOBAL
+// ESTADO GLOBAL
 // =====================
 let academiaNombre = "";
 let cuposMax = 0;
 let registros = [];
-let currentId = null;
-let currentData = null;
 
 
 // =====================
-// 3. CARGAR PLANTILLA
+// CARGAR PLANTILLA (VERSIÓN ESTABLE)
 // =====================
 async function cargarPlantilla() {
 
     const html = await fetch("./plantilla-academia.html").then(r => r.text());
 
-    // 🧠 1. Parseo seguro del HTML
-    const temp = document.createElement("div");
-    temp.innerHTML = html;
+    // insertar directamente HTML (sin DOMParser, sin wrappers)
+    document.body.innerHTML = html;
 
-    // 🧠 2. Selección explícita del wrapper (NO firstElementChild)
-    const wrapper = temp.querySelector(".app-wrapper");
-
-    if (!wrapper) {
-        console.error("❌ No se encontró .app-wrapper en la plantilla");
-        return;
-    }
-
-    // 🧠 3. Limpieza total del DOM antes de insertar
-    document.body.replaceChildren(wrapper);
-
-    // 🧠 4. esperar a que el navegador pinte el DOM
+    // esperar render real del navegador
     await new Promise(requestAnimationFrame);
     await new Promise(requestAnimationFrame);
 
-    // 🧠 5. buscar contenido DENTRO del wrapper (NO global)
-    const contenedor = wrapper.querySelector("#contenido");
+    // ⚠️ IMPORTANTE: ahora sí existe porque tu HTML ya lo incluye
+    const contenedor = document.querySelector("#contenido");
 
     if (!contenedor) {
-        console.error("❌ #contenido no existe dentro del wrapper");
-        console.log(wrapper.innerHTML);
+        console.error("❌ #contenido no existe en el DOM final");
+        console.log(document.body.innerHTML);
         return;
     }
 
@@ -113,8 +103,10 @@ async function cargarPlantilla() {
 
     inicializarEventos();
 }
+
+
 // =====================
-// 4. VISTA PRINCIPAL
+// VISTA PRINCIPAL
 // =====================
 function generarVista() {
     return `
@@ -155,7 +147,7 @@ function generarVista() {
 
 
 // =====================
-// 5. AUTH
+// AUTH
 // =====================
 onAuthStateChanged(auth, async (user) => {
 
@@ -176,8 +168,9 @@ onAuthStateChanged(auth, async (user) => {
     actualizarCupos();
 });
 
+
 // =====================
-// 6. FIRESTORE LISTENER
+// FIRESTORE LISTENER
 // =====================
 function escucharPostulaciones() {
 
@@ -194,7 +187,7 @@ function escucharPostulaciones() {
 
 
 // =====================
-// 7. RENDER TABLA
+// RENDER
 // =====================
 function render() {
 
@@ -226,8 +219,7 @@ function render() {
             <td><span class="badge ${clase}">${data.perfil}</span></td>
             <td>${data.ubicacion || ""}</td>
             <td>
-                <button class="btn btn-sm btn-light"
-                    onclick="ver('${d.id}')">
+                <button class="btn btn-sm btn-light" onclick="ver('${d.id}')">
                     Ver
                 </button>
             </td>
@@ -239,25 +231,24 @@ function render() {
 
 
 // =====================
-// 8. DETALLES
+// DETALLE
 // =====================
 window.ver = async (id) => {
 
     const snap = await getDoc(doc(db, "postulaciones", id));
 
-    currentId = id;
-    currentData = snap.data();
+    const data = snap.data();
 
     Swal.fire({
         title: "Detalle",
-        text: JSON.stringify(currentData, null, 2),
+        text: JSON.stringify(data, null, 2),
         width: "60%"
     });
 };
 
 
 // =====================
-// 9. CUPOS
+// CUPOS
 // =====================
 async function actualizarCupos() {
 
@@ -270,13 +261,14 @@ async function actualizarCupos() {
 
     const el = document.getElementById("marcadorCupos");
 
-    if (el)
+    if (el) {
         el.innerText = `Cupos: ${snap.size} / ${cuposMax}`;
+    }
 }
 
 
 // =====================
-// 10. EVENTOS
+// EVENTOS
 // =====================
 function inicializarEventos() {
 
@@ -285,9 +277,7 @@ function inicializarEventos() {
             render();
         }
     });
-
 }
-
 </script>
 
 </body>
