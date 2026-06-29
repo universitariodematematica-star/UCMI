@@ -81,25 +81,34 @@ async function cargarPlantilla() {
 
     const html = await fetch("./plantilla-academia.html").then(r => r.text());
 
-    // 🧠 Crear contenedor temporal seguro
-    const temp = document.createElement("div");
-    temp.innerHTML = html;
+    // 🧠 Parseo robusto real de HTML
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
 
-    // limpiar body
+    const nodo = doc.body.firstElementChild;
+
+    if (!nodo) {
+        console.error("❌ No se pudo parsear la plantilla correctamente");
+        return;
+    }
+
+    // limpiar DOM actual
     document.body.innerHTML = "";
 
-    // insertar correctamente
-    document.body.appendChild(temp.firstElementChild);
+    // insertar nodo real
+    document.body.appendChild(nodo);
 
-    // 🔥 esperar render real del navegador (no hacks de timeout)
+    // 🔥 esperar a que el navegador lo registre en layout engine
+    await new Promise(requestAnimationFrame);
     await new Promise(requestAnimationFrame);
 
     const contenedor = document.getElementById("contenido");
 
-    console.log("CONTENIDO:", contenedor);
+    console.log("DEBUG #contenido:", contenedor);
+    console.log("DEBUG DOM:", document.body.innerHTML);
 
     if (!contenedor) {
-        console.error("❌ #contenido no se montó correctamente");
+        console.error("❌ #contenido sigue sin existir en el DOM final");
         return;
     }
 
