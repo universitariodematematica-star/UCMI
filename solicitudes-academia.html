@@ -81,11 +81,14 @@ async function cargarPlantilla() {
 
     const html = await fetch("./plantilla-academia.html").then(r => r.text());
 
+    // 🧠 NO destruyas el body entero
     const wrapper = document.createElement("div");
-wrapper.innerHTML = html;
-document.body.appendChild(wrapper);
+    wrapper.innerHTML = html;
 
-    // 🔥 CLAVE: esperar a que el DOM se reconstruya
+    document.body.appendChild(wrapper);
+
+    // espera real a DOM
+    await new Promise(requestAnimationFrame);
 
     const contenedor = document.getElementById("contenido");
 
@@ -159,11 +162,11 @@ onAuthStateChanged(auth, async (user) => {
 
     await cargarPlantilla();
 
-// 🔥 IMPORTANTE: esperar DOM REAL completamente listo
+    console.log("✔ Plantilla cargada y DOM activo");
 
-// ahora SÍ puedes usar el DOM
-escucharPostulaciones();
-actualizarCupos();
+    // 🧠 aquí ya el DOM existe de verdad
+    escucharPostulaciones();
+    actualizarCupos();
 });
 
 
