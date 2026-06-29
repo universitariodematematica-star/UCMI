@@ -154,6 +154,9 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+// ==========================
+// FIREBASE INIT
+// ==========================
 const firebaseConfig = {
     apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
     authDomain: "ucmi-13796634.firebaseapp.com",
@@ -167,15 +170,15 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// ==========================
+// ESTADO GLOBAL
+// ==========================
 let usuario = null;
 let entidad = null;
 
 // ==========================
 // AUTH
 // ==========================
-let usuario = null;
-let entidad = null;
-
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -193,9 +196,12 @@ onAuthStateChanged(auth, async (user) => {
     usuario = snap.data();
     entidad = usuario.entidad;
 
-    const logo = document.getElementById('logoAcademia');
-    logo.src = usuario.logoCustom || logo.src;
-    logo.style.opacity = "1";
+    // Logo
+    const logo = document.getElementById("logoAcademia");
+    if (logo) {
+        logo.src = usuario.logoCustom || logo.src;
+        logo.style.opacity = "1";
+    }
 
     renderUI();
     escucharAulas();
@@ -242,21 +248,44 @@ function renderUI() {
 // ==========================
 async function crearAula() {
 
+    const input = document.getElementById("nombreAula");
+    const nombre = input.value.trim();
+
+    if (!nombre) return alert("Ingresa un nombre de aula");
+    if (!entidad) return alert("Sin entidad asignada");
+
+    try {
+        await addDoc(collection(db, "aulas"), {
+            nombre,
+            entidad: entidad,
+            createdAt: new Date()
+        });
+
+        input.value = "";
+
+    } catch (err) {
+        console.error(err);
+        alert("Error creando aula");
+    }
+}
+
 // ==========================
-// LISTAR AULAS
+// LISTAR AULAS EN TIEMPO REAL
 // ==========================
 function escucharAulas() {
 
-    if (!academiaUID) return;
+    if (!entidad) return;
 
     const q = query(
         collection(db, "aulas"),
-        where("uidAcademia", "==", academiaUID)
+        where("entidad", "==", entidad)
     );
 
     onSnapshot(q, (snap) => {
 
         const cont = document.getElementById("listaAulas");
+        if (!cont) return;
+
         cont.innerHTML = "";
 
         snap.forEach(docSnap => {
@@ -270,12 +299,13 @@ function escucharAulas() {
                         <h5>${d.nombre}</h5>
 
                         <small class="text-muted">
-                            ${d.entidad || "Sin entidad"}
+                            ${d.entidad}
                         </small>
 
                         <div class="mt-3 d-flex gap-2">
 
-                            <button class="btn btn-sm btn-primary">
+                            <button class="btn btn-sm btn-primary"
+                                onclick="editarAula('${docSnap.id}', '${d.nombre}')">
                                 Editar
                             </button>
 
@@ -298,7 +328,24 @@ function escucharAulas() {
 }
 
 // ==========================
-// ELIMINAR
+// EDITAR AULA (simple prompt)
+// ==========================
+window.editarAula = async (id, nombreActual) => {
+
+    const nuevo = prompt("Nuevo nombre del aula:", nombreActual);
+
+    if (!nuevo) return;
+
+    await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js")
+        .then(async ({ doc, updateDoc }) => {
+            await updateDoc(doc(db, "aulas", id), {
+                nombre: nuevo
+            });
+        });
+};
+
+// ==========================
+// ELIMINAR AULA
 // ==========================
 window.eliminarAula = async (id) => {
     await deleteDoc(doc(db, "aulas", id));
@@ -307,8 +354,8 @@ window.eliminarAula = async (id) => {
 // ==========================
 // LOGOUT
 // ==========================
-document.getElementById('btnLogout')
-    .addEventListener('click', () => {
+document.getElementById("btnLogout")
+    .addEventListener("click", () => {
         signOut(auth).then(() => {
             window.location.href = "index.html";
         });
