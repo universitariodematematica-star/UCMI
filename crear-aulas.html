@@ -168,20 +168,20 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 let usuario = null;
-let academiaUID = null;
 let entidad = null;
 
 // ==========================
 // AUTH
 // ==========================
+let usuario = null;
+let entidad = null;
+
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
         window.location.href = "index.html";
         return;
     }
-
-    academiaUID = user.uid;
 
     const snap = await getDoc(doc(db, "usuarios", user.uid));
 
@@ -191,14 +191,10 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     usuario = snap.data();
+    entidad = usuario.entidad;
 
-    entidad = usuario.entidad || null;
-
-    // logo
     const logo = document.getElementById('logoAcademia');
-    if (usuario.logoCustom) {
-        logo.src = usuario.logoCustom;
-    }
+    logo.src = usuario.logoCustom || logo.src;
     logo.style.opacity = "1";
 
     renderUI();
@@ -245,22 +241,6 @@ function renderUI() {
 // CREAR AULA
 // ==========================
 async function crearAula() {
-
-    const input = document.getElementById("nombreAula");
-    const nombre = input.value.trim();
-
-    if (!nombre) return alert("Ingresa un nombre de aula");
-    if (!entidad) return alert("Usuario sin entidad asignada");
-
-    await addDoc(collection(db, "aulas"), {
-        nombre,
-        uidAcademia: academiaUID,
-        entidad: entidad,   // ✅ AQUÍ ESTÁ EL FIX
-        createdAt: new Date()
-    });
-
-    input.value = "";
-}
 
 // ==========================
 // LISTAR AULAS
