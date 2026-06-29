@@ -65,6 +65,13 @@
 
 <script type="module">
 
+    import { db, auth } from "./componentes/firebase-config.js";
+    import {
+        collection,
+        addDoc,
+        serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
     // Cargar la plantilla HTML
     const html = await fetch("componentes/plantilla-academia.html");
     document.getElementById("plantilla").innerHTML = await html.text();
@@ -109,22 +116,38 @@
 const btnRegistrar = document.getElementById("btnRegistrar");
 const listaAulas = document.getElementById("listaAulas");
 
-btnRegistrar.addEventListener("click", () => {
+btnRegistrar.addEventListener("click", async () => {
 
     const nombre = txtNombre.value.trim();
 
     if (nombre === "") return;
 
-    listaAulas.innerHTML += `
+    try {
 
-        <div class="panel-cristal mb-3">
-            <h5 class="mb-0">${nombre}</h5>
-        </div>
+        await addDoc(collection(db, "aulas"), {
 
-    `;
+            nombre: nombre,
+            uid: auth.currentUser.uid,
+            fechaCreacion: serverTimestamp()
 
-    txtNombre.value = "";
-    txtNombre.focus();
+        });
+
+        listaAulas.innerHTML += `
+
+            <div class="panel-cristal mb-3">
+                <h5 class="mb-0">${nombre}</h5>
+            </div>
+
+        `;
+
+        txtNombre.value = "";
+        txtNombre.focus();
+
+    } catch (error) {
+
+        console.error("Error registrando aula:", error);
+
+    }
 
 });
 
