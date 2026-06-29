@@ -79,31 +79,16 @@ let registros = [];
 // =====================
 // CARGAR PLANTILLA (VERSIÓN ESTABLE)
 // =====================
-async function cargarPlantilla() {
-
-    const html = await fetch("./plantilla-academia.html").then(r => r.text());
-
-    // insertar directamente HTML (sin DOMParser, sin wrappers)
-    document.body.innerHTML = html;
-
-    // esperar render real del navegador
-    await new Promise(requestAnimationFrame);
-    await new Promise(requestAnimationFrame);
-
-    // ⚠️ IMPORTANTE: ahora sí existe porque tu HTML ya lo incluye
-    const contenedor = document.querySelector("#contenido");
+function renderVista() {
+    const contenedor = document.getElementById("contenido");
 
     if (!contenedor) {
-        console.error("❌ #contenido no existe en el DOM final");
-        console.log(document.body.innerHTML);
+        console.error("❌ #contenido no existe en el DOM");
         return;
     }
 
     contenedor.innerHTML = generarVista();
-
-    inicializarEventos();
 }
-
 
 // =====================
 // VISTA PRINCIPAL
@@ -162,12 +147,12 @@ onAuthStateChanged(auth, async (user) => {
     academiaNombre = data.entidad;
     cuposMax = data.cupos || 0;
 
-    await cargarPlantilla();
+    // 👉 aquí ya NO cargamos plantilla
+    renderVista();
 
     escucharPostulaciones();
     actualizarCupos();
 });
-
 
 // =====================
 // FIRESTORE LISTENER
