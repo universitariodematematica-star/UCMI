@@ -1,38 +1,24 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { auth, db, CONFIG } from "../firebase-config.js";
+
 import {
-    getFirestore,
     doc,
     getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
-    getAuth,
     onAuthStateChanged,
     signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// ================= FIREBASE =================
 
-const firebaseConfig = {
-    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-    authDomain: "ucmi-13796634.firebaseapp.com",
-    projectId: "ucmi-13796634",
-    storageBucket: "ucmi-13796634.firebasestorage.app",
-    messagingSenderId: "1090719609536",
-    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-};
-
-const app = initializeApp(firebaseConfig);
-
-export const db = getFirestore(app);
-export const auth = getAuth(app);
-
-// ================= LOGO =================
+// ==========================================
+// CARGAR LOGO DE LA ACADEMIA
+// ==========================================
 
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
-        window.location.href = "index.html";
+        window.location.href = CONFIG.URL_INDEX;
         return;
     }
 
@@ -42,41 +28,47 @@ onAuthStateChanged(auth, async (user) => {
             doc(db, "usuarios", user.uid)
         );
 
-        if (snap.exists()) {
+        if (!snap.exists()) return;
 
-            const datos = snap.data();
+        const datos = snap.data();
 
-            const logo = document.getElementById("logoAcademia");
+        const logo = document.getElementById("logoAcademia");
 
-            if (logo) {
+        if (logo) {
 
-                logo.src =
-                    datos.logoCustom ||
-                    "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+            logo.src =
+                datos.logoCustom ||
+                "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
 
-                logo.style.opacity = "1";
-            }
+            logo.style.opacity = "1";
+
         }
 
     } catch (e) {
-        console.error(e);
+
+        console.error("Error cargando logo:", e);
+
     }
 
 });
 
-// ================= LOGOUT =================
 
-document.addEventListener("click", (e) => {
+// ==========================================
+// CERRAR SESIÓN
+// ==========================================
 
-    if (e.target.closest("#btnLogout")) {
+const btnLogout = document.getElementById("btnLogout");
+
+if (btnLogout) {
+
+    btnLogout.addEventListener("click", async (e) => {
 
         e.preventDefault();
 
-        signOut(auth)
-            .then(() => {
-                window.location.href = "index.html";
-            });
+        await signOut(auth);
 
-    }
+        window.location.href = CONFIG.URL_INDEX;
 
-});
+    });
+
+}
