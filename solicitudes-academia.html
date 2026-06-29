@@ -81,30 +81,31 @@ async function cargarPlantilla() {
 
     const html = await fetch("./plantilla-academia.html").then(r => r.text());
 
-    // 🧠 crear contenedor aislado (NO DOMParser)
+    // 🧠 1. Parseo seguro del HTML
     const temp = document.createElement("div");
     temp.innerHTML = html;
 
+    // 🧠 2. Selección explícita del wrapper (NO firstElementChild)
     const wrapper = temp.querySelector(".app-wrapper");
 
     if (!wrapper) {
-        console.error("❌ No se encontró .app-wrapper");
+        console.error("❌ No se encontró .app-wrapper en la plantilla");
         return;
     }
 
-    // limpiar DOM
+    // 🧠 3. Limpieza total del DOM antes de insertar
     document.body.replaceChildren(wrapper);
 
-    // 🔥 forzar layout real
+    // 🧠 4. esperar a que el navegador pinte el DOM
     await new Promise(requestAnimationFrame);
     await new Promise(requestAnimationFrame);
 
+    // 🧠 5. buscar contenido DENTRO del wrapper (NO global)
     const contenedor = wrapper.querySelector("#contenido");
-
-    console.log("CONTENIDO:", contenedor);
 
     if (!contenedor) {
         console.error("❌ #contenido no existe dentro del wrapper");
+        console.log(wrapper.innerHTML);
         return;
     }
 
@@ -112,7 +113,6 @@ async function cargarPlantilla() {
 
     inicializarEventos();
 }
-
 // =====================
 // 4. VISTA PRINCIPAL
 // =====================
@@ -172,13 +172,9 @@ onAuthStateChanged(auth, async (user) => {
 
     await cargarPlantilla();
 
-    console.log("✔ Plantilla cargada y DOM activo");
-
-    // 🧠 aquí ya el DOM existe de verdad
     escucharPostulaciones();
     actualizarCupos();
 });
-
 
 // =====================
 // 6. FIRESTORE LISTENER
