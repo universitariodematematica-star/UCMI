@@ -65,210 +65,119 @@
 
 <script type="module">
 
-import { db, auth } from "./componentes/firebase-config.js";
-
-import {
+    import { db, auth } from "./componentes/firebase-config.js";
+    import {
     collection,
     addDoc,
     serverTimestamp,
     doc,
-    getDoc,
-    deleteDoc,
-    updateDoc
+    getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    // Cargar la plantilla HTML
+    const html = await fetch("componentes/plantilla-academia.html");
+    document.getElementById("plantilla").innerHTML = await html.text();
 
-// ===============================
-// CARGAR PLANTILLA
-// ===============================
-const html = await fetch("componentes/plantilla-academia.html");
-document.getElementById("plantilla").innerHTML = await html.text();
+    // Marcar opción activa si se desea posteriormente
+    // document.querySelectorAll(".nav-item-ucmi")[0].classList.add("active");
 
-// ===============================
-// CONTENIDO UI
-// ===============================
-document.getElementById("contenido").innerHTML = `
+    // Contenido de la página
+    document.getElementById("contenido").innerHTML = `
 
-<div class="panel-cristal mb-4">
+    <div class="panel-cristal mb-4">
 
-    <h5 class="mb-4">
-        Escriba el nombre del aula y pulse <strong>Registrar</strong>.
-    </h5>
+        <h5 class="mb-4">
+            Escriba el nombre del aula y pulse <strong>Registrar</strong>.
+        </h5>
 
-    <div class="d-flex gap-3">
+        <div class="d-flex gap-3">
 
-        <input
-            id="txtNombre"
-            type="text"
-            class="form-control"
-            placeholder="Escriba aquí...">
+            <input
+                id="txtNombre"
+                type="text"
+                class="form-control"
+                placeholder="Escriba aquí...">
 
-        <button
-            id="btnRegistrar"
-            class="btn btn-registrar">
-            Registrar
-        </button>
+            <button
+                id="btnRegistrar"
+                class="btn btn-registrar">
+                Registrar
+            </button>
+
+        </div>
 
     </div>
 
-</div>
-
-<div id="listaAulas"></div>
+    <div id="listaAulas"></div>
 
 `;
+    // Cargar comportamiento general de la plantilla
+    await import("./componentes/plantilla-academia.js");
 
-// ===============================
-// IMPORT PLANTILLA JS
-// ===============================
-await import("./componentes/plantilla-academia.js");
-
-// ===============================
-// ELEMENTOS
-// ===============================
-const txtNombre = document.getElementById("txtNombre");
+    const txtNombre = document.getElementById("txtNombre");
 const btnRegistrar = document.getElementById("btnRegistrar");
 const listaAulas = document.getElementById("listaAulas");
 
-// ===============================
-// REGISTRAR AULA (TU LÓGICA ORIGINAL)
-// ===============================
 btnRegistrar.addEventListener("click", async () => {
+
+    console.log("===== BOTÓN REGISTRAR =====");
 
     const nombre = txtNombre.value.trim();
 
-    if (!nombre) return;
+    console.log("Nombre:", nombre);
+
+    if (nombre === "") {
+        console.log("El nombre está vacío.");
+        return;
+    }
+
+    console.log("Usuario autenticado:", auth.currentUser);
 
     try {
 
-        const usuarioSnap = await getDoc(
-            doc(db, "usuarios", auth.currentUser.uid)
-        );
+        console.log("Intentando escribir en Firestore...");
 
-        if (!usuarioSnap.exists()) return;
+// Leer el documento del usuario autenticado
+const usuarioSnap = await getDoc(
+    doc(db, "usuarios", auth.currentUser.uid)
+);
 
-        const datosUsuario = usuarioSnap.data();
+if (!usuarioSnap.exists()) {
+    console.error("No existe el documento del usuario.");
+    return;
+}
 
-        await addDoc(collection(db, "aulas"), {
+const datosUsuario = usuarioSnap.data();
 
-            nombre_aula: nombre,
-            entidad: datosUsuario.entidad,
-            academiaId: auth.currentUser.uid,
-            fechaCreacion: serverTimestamp()
+await addDoc(collection(db, "aulas"), {
 
-        });
+    nombre_aula: nombre,
+    entidad: datosUsuario.entidad,
+    academiaId: auth.currentUser.uid,
+    fechaCreacion: serverTimestamp()
+
+});
+
+console.log("Documento creado correctamente.");
+
+        listaAulas.innerHTML += `
+
+            <div class="panel-cristal mb-3">
+                <h5 class="mb-0">${nombre}</h5>
+            </div>
+
+        `;
 
         txtNombre.value = "";
         txtNombre.focus();
 
     } catch (error) {
-        console.error("ERROR FIRESTORE:", error);
+
+        console.error("ERROR FIRESTORE:");
+        console.error(error);
+
     }
 
 });
-
-// ===============================
-// CLICK GLOBAL (EDITAR / ELIMINAR)
-// ===============================
-document.addEventListener("click", async (e) => {
-
-    // =========================
-    // EDITAR AULA
-    // =========================
-    if (e.target.classList.contains("btn-editar")) {
-
-        const contenedor = e.target.closest(".panel-cristal");
-        const h5 = contenedor.querySelector("h5");
-
-        const actual = h5.innerText;
-        const nuevo = prompt("Editar aula:", actual);
-
-        if (!nuevo || !nuevo.trim()) return;
-
-        try {
-
-            const id = contenedor.dataset.id;
-
-            await updateDoc(doc(db, "aulas", id), {
-                nombre_aula: nuevo.trim()
-            });
-
-            h5.innerText = nuevo.trim();
-
-        } catch (err) {
-            console.error("Error editando aula:", err);
-        }
-    }
-
-    // =========================
-    // ELIMINAR AULA
-    // =========================
-    if (e.target.classList.contains("btn-eliminar")) {
-
-        const contenedor = e.target.closest(".panel-cristal");
-        const id = contenedor.dataset.id;
-
-        if (!confirm("¿Seguro que deseas eliminar este aula?")) return;
-
-        try {
-
-            await deleteDoc(doc(db, "aulas", id));
-
-            contenedor.remove();
-
-        } catch (err) {
-            console.error("Error eliminando aula:", err);
-        }
-    }
-
-});
-
-// ===============================
-// CARGA INICIAL (LISTADO)
-// ===============================
-async function cargarAulas() {
-
-    const snap = await getDocs(collection(db, "aulas"));
-
-    listaAulas.innerHTML = "";
-
-    snap.forEach(docSnap => {
-
-        const aula = docSnap.data();
-
-        listaAulas.innerHTML += `
-
-        <div class="panel-cristal mb-3 d-flex justify-content-between align-items-center"
-             data-id="${docSnap.id}">
-
-            <h5 class="mb-0">${aula.nombre_aula}</h5>
-
-            <div class="d-flex gap-2">
-
-                <button class="btn btn-sm btn-primary btn-editar">
-                    ✏️
-                </button>
-
-                <button class="btn btn-sm btn-warning btn-curso">
-                    🎓
-                </button>
-
-                <button class="btn btn-sm btn-info btn-estudiantes">
-                    👥
-                </button>
-
-                <button class="btn btn-sm btn-danger btn-eliminar">
-                    🗑️
-                </button>
-
-            </div>
-
-        </div>
-
-        `;
-    });
-}
-
-cargarAulas();
-
 </script>
 
 </body>
