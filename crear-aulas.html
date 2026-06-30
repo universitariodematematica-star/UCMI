@@ -129,14 +129,12 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    // Cargar comportamiento general de la plantilla
     await import("./componentes/plantilla-academia.js");
 
     const txtNombre = document.getElementById("txtNombre");
     const btnRegistrar = document.getElementById("btnRegistrar");
     const listaAulas = document.getElementById("listaAulas");
 
-    // Leer usuario desde Firestore
     const usuarioActual = await getDoc(
         doc(db, "usuarios", user.uid)
     );
@@ -148,98 +146,90 @@ onAuthStateChanged(auth, async (user) => {
 
     const datosUsuarioActual = usuarioActual.data();
 
-    // Buscar aulas de la academia
     const q = query(
         collection(db, "aulas"),
         where("entidad", "==", datosUsuarioActual.entidad)
     );
 
-    // 👉 aquí seguiría tu onSnapshot (siguiente bloque)
-});
-    
-onSnapshot(q, async (snapshot) => {
+    onSnapshot(q, async (snapshot) => {
 
-    listaAulas.innerHTML = "";
+        listaAulas.innerHTML = "";
 
-    for (const docSnap of snapshot.docs) {
+        for (const docSnap of snapshot.docs) {
 
-        const aula = docSnap.data();
+            const aula = docSnap.data();
 
-        let nombreCurso = "Sin curso asignado";
-        let asignaturasHTML = "";
+            let nombreCurso = "Sin curso asignado";
+            let asignaturasHTML = "";
 
-        if (aula.cursoId && aula.cursoId !== "") {
+            if (aula.cursoId) {
 
-            const cursoRef = doc(db, "cursos", aula.cursoId);
-            const cursoSnap = await getDoc(cursoRef);
+                const cursoSnap = await getDoc(
+                    doc(db, "cursos", aula.cursoId)
+                );
 
-            if (cursoSnap.exists()) {
-                nombreCurso = cursoSnap.data().nombre_curso;
+                if (cursoSnap.exists()) {
+                    nombreCurso = cursoSnap.data().nombre_curso;
+                }
+
+                const asignaturasSnap = await getDocs(
+                    query(
+                        collection(db, "asignaturas"),
+                        where("cursoId", "==", aula.cursoId)
+                    )
+                );
+
+                asignaturasSnap.forEach(a => {
+                    asignaturasHTML += `
+                        <li style="color:white; font-size:0.9rem;">
+                            📘 ${a.data().nombre_asignatura}
+                        </li>
+                    `;
+                });
             }
 
-            const asignaturasSnap = await getDocs(
-                query(
-                    collection(db, "asignaturas"),
-                    where("cursoId", "==", aula.cursoId)
-                )
-            );
+            listaAulas.innerHTML += `
+                <div class="panel-cristal mb-3 d-flex justify-content-between align-items-start">
 
-            asignaturasSnap.forEach(a => {
-                const asig = a.data();
+                    <div>
+                        <h5 class="mb-0">${aula.nombre_aula}</h5>
 
-                asignaturasHTML += `
-                    <li style="color:white; font-size:0.9rem;">
-                        📘 ${asig.nombre_asignatura}
-                    </li>
-                `;
-            });
+                        <small style="opacity:0.7">
+                            🎓 Curso: ${nombreCurso}
+                        </small>
+
+                        <ul style="margin-top:8px; padding-left:18px;">
+                            ${asignaturasHTML}
+                        </ul>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-primary btnEditar"
+                            data-id="${docSnap.id}"
+                            data-nombre="${aula.nombre_aula}">
+                            ✏️ Editar
+                        </button>
+
+                        <button class="btn btn-sm btn-warning btnCursos"
+                            data-id="${docSnap.id}">
+                            🎓 Cursos
+                        </button>
+
+                        <button class="btn btn-sm btn-info">
+                            👥 Alumnos
+                        </button>
+
+                        <button class="btn btn-sm btn-danger btnBorrar"
+                            data-id="${docSnap.id}">
+                            🗑️ Borrar
+                        </button>
+                    </div>
+
+                </div>
+            `;
         }
+    });
 
-        listaAulas.innerHTML += `
-            <div class="panel-cristal mb-3 d-flex justify-content-between align-items-start">
-
-                <div>
-                    <h5 class="mb-0">${aula.nombre_aula}</h5>
-
-                    <small style="opacity:0.7">
-                        🎓 Curso: ${nombreCurso}
-                    </small>
-
-                    <ul style="margin-top:8px; padding-left:18px;">
-                        ${asignaturasHTML}
-                    </ul>
-                </div>
-
-                <div class="d-flex gap-2">
-
-                    <button
-                        class="btn btn-sm btn-primary btnEditar"
-                        data-id="${docSnap.id}"
-                        data-nombre="${aula.nombre_aula}">
-                        ✏️ Editar
-                    </button>
-
-                    <button
-                        class="btn btn-sm btn-warning btnCursos"
-                        data-id="${docSnap.id}">
-                        🎓 Cursos
-                    </button>
-
-                    <button class="btn btn-sm btn-info">
-                        👥 Alumnos
-                    </button>
-
-                    <button
-                        class="btn btn-sm btn-danger btnBorrar"
-                        data-id="${docSnap.id}">
-                        🗑️ Borrar
-                    </button>
-
-                </div>
-
-            </div>
-        `;
-    }
 });
     
 btnRegistrar.addEventListener("click", async () => {
