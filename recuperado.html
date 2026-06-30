@@ -66,7 +66,8 @@
 <script type="module">
 
     import { db, auth } from "./componentes/firebase-config.js";
-    import {
+
+import {
     collection,
     addDoc,
     serverTimestamp,
@@ -74,7 +75,8 @@
     getDoc,
     getDocs,
     query,
-    where
+    where,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     // Cargar la plantilla HTML
     const html = await fetch("componentes/plantilla-academia.html");
@@ -151,7 +153,10 @@ aulasSnap.forEach(docSnap => {
 
             <div class="d-flex gap-2">
 
-                <button class="btn btn-sm btn-primary">
+                <button
+                    class="btn btn-sm btn-primary btnEditar"
+                    data-id="${docSnap.id}"
+                    data-nombre="${aula.nombre_aula}">
                     ✏️ Editar
                 </button>
 
@@ -220,29 +225,21 @@ console.log("Documento creado correctamente.");
         listaAulas.innerHTML += `
 
     <div class="panel-cristal mb-3 d-flex justify-content-between align-items-center">
-
         <h5 class="mb-0">${nombre}</h5>
-
         <div class="d-flex gap-2">
-
             <button class="btn btn-sm btn-primary">
                 ✏️ Editar
             </button>
-
             <button class="btn btn-sm btn-warning">
                 🎓 Cursos
             </button>
-
             <button class="btn btn-sm btn-info">
                 👥 Alumnos
             </button>
-
             <button class="btn btn-sm btn-danger">
                 🗑️ Borrar
             </button>
-
         </div>
-
     </div>
 
 `;
@@ -258,6 +255,51 @@ console.log("Documento creado correctamente.");
     }
 
 });
+
+document.addEventListener("click", async (e) => {
+
+    if (!e.target.classList.contains("btnEditar")) return;
+
+    const id = e.target.dataset.id;
+    const nombreActual = e.target.dataset.nombre;
+
+    const nuevoNombre = prompt(
+        "Nuevo nombre del aula:",
+        nombreActual
+    );
+
+    if (nuevoNombre === null) return;
+
+    if (nuevoNombre.trim() === "") return;
+
+    try {
+
+        await updateDoc(
+            doc(db, "aulas", id),
+            {
+                nombre_aula: nuevoNombre.trim()
+            }
+        );
+
+        e.target.dataset.nombre = nuevoNombre.trim();
+
+        e.target
+            .closest(".panel-cristal")
+            .querySelector("h5")
+            .textContent = nuevoNombre.trim();
+
+        console.log("Aula actualizada.");
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("No fue posible actualizar el aula.");
+
+    }
+
+});
+    
 </script>
 
 </body>
