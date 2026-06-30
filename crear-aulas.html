@@ -77,7 +77,8 @@ import {
     query,
     where,
     updateDoc,
-    deleteDoc
+    deleteDoc,
+    onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     // Cargar la plantilla HTML
     const html = await fetch("componentes/plantilla-academia.html");
@@ -140,46 +141,50 @@ const q = query(
     where("entidad", "==", datosUsuarioActual.entidad)
 );
 
-const aulasSnap = await getDocs(q);
+onSnapshot(q, (snapshot) => {
 
-aulasSnap.forEach(docSnap => {
+    listaAulas.innerHTML = "";
 
-    const aula = docSnap.data();
+    snapshot.forEach((docSnap) => {
 
-    listaAulas.innerHTML += `
+        const aula = docSnap.data();
 
-        <div class="panel-cristal mb-3 d-flex justify-content-between align-items-center">
+        listaAulas.innerHTML += `
 
-            <h5 class="mb-0">${aula.nombre_aula}</h5>
+            <div class="panel-cristal mb-3 d-flex justify-content-between align-items-center">
 
-            <div class="d-flex gap-2">
+                <h5 class="mb-0">${aula.nombre_aula}</h5>
 
-                <button
-                    class="btn btn-sm btn-primary btnEditar"
-                    data-id="${docSnap.id}"
-                    data-nombre="${aula.nombre_aula}">
-                    ✏️ Editar
-                </button>
+                <div class="d-flex gap-2">
 
-                <button class="btn btn-sm btn-warning">
-                    🎓 Cursos
-                </button>
+                    <button
+                        class="btn btn-sm btn-primary btnEditar"
+                        data-id="${docSnap.id}"
+                        data-nombre="${aula.nombre_aula}">
+                        ✏️ Editar
+                    </button>
 
-                <button class="btn btn-sm btn-info">
-                    👥 Alumnos
-                </button>
+                    <button class="btn btn-sm btn-warning">
+                        🎓 Cursos
+                    </button>
 
-                <button
-                    class="btn btn-sm btn-danger btnBorrar"
-                    data-id="${docSnap.id}">
-                    🗑️ Borrar
-                </button>
+                    <button class="btn btn-sm btn-info">
+                        👥 Alumnos
+                    </button>
+
+                    <button
+                        class="btn btn-sm btn-danger btnBorrar"
+                        data-id="${docSnap.id}">
+                        🗑️ Borrar
+                    </button>
+
+                </div>
 
             </div>
 
-        </div>
+        `;
 
-    `;
+    });
 
 });
     
