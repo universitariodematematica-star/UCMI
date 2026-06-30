@@ -108,10 +108,12 @@
 
 <script type="module">
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import {
+    db,
+    auth
+} from "./componentes/firebase-config.js";
 
 import {
-    getFirestore,
     collection,
     query,
     where,
@@ -121,26 +123,20 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import {
-    getAuth,
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    
-
-    // Cargar la plantilla HTML
-    const html = await fetch("componentes/plantilla-academia.html");
-    document.getElementById("plantilla").innerHTML = await html.text();
-
-    // Marcar opción activa si se desea posteriormente
-    // document.querySelectorAll(".nav-item-ucmi")[0].classList.add("active");
-
-
-
-    // Cargar comportamiento general de la plantilla
 await import("./componentes/plantilla-academia.js");
 
-    let registrosLocales = [];
+// =========================
+// ESTADO GLOBAL
+// =========================
+let registrosLocales = [];
+let renderPendiente = false;
 
+// =========================
+// ESCUCHA FIRESTORE
+// =========================
 function iniciarEscucha(academiaNombreGlobal) {
 
     const q = query(
@@ -158,11 +154,15 @@ function iniciarEscucha(academiaNombreGlobal) {
 
 }
 
-    function renderizar() {
+// =========================
+// RENDER TABLA
+// =========================
+function renderizar() {
 
     const lista = document.getElementById("listaMaestra");
-
     const filtro = document.getElementById("filtroPerfil").value;
+
+    if (!lista) return;
 
     lista.innerHTML = "";
 
@@ -171,7 +171,6 @@ function iniciarEscucha(academiaNombreGlobal) {
     registrosLocales.forEach(docSnap => {
 
         const d = docSnap.data();
-
         const perfil = (d.perfil || "").toLowerCase();
 
         if (filtro !== "todos" && !perfil.includes(filtro)) {
@@ -193,11 +192,8 @@ function iniciarEscucha(academiaNombreGlobal) {
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-
             <td>
-                <div class="fw-bold">
-                    ${d.nombreResponsable || "N/A"}
-                </div>
+                <div class="fw-bold">${d.nombreResponsable || "N/A"}</div>
                 <small style="color:rgba(255,255,255,0.5)">
                     ${d.email || ""}
                 </small>
@@ -219,31 +215,27 @@ function iniciarEscucha(academiaNombreGlobal) {
                     Detalles
                 </button>
             </td>
-
         `;
 
         lista.appendChild(tr);
-
     });
 
     if (!hayDatos) {
-
         lista.innerHTML = `
-
             <tr>
                 <td colspan="4" class="text-center py-4"
                     style="color:rgba(255,255,255,0.5)">
                     No hay postulaciones
                 </td>
             </tr>
-
         `;
-
     }
-
 }
 
-    onAuthStateChanged(auth, async (user) => {
+// =========================
+// AUTH INIT
+// =========================
+onAuthStateChanged(auth, async (user) => {
 
     if (!user) return;
 
@@ -256,85 +248,20 @@ function iniciarEscucha(academiaNombreGlobal) {
     iniciarEscucha(data.entidad);
 
     renderizar();
-
 });
 
-// esperar a que exista el contenedor de la plantilla
-let contenido = null;
-
-while (!contenido) {
-    contenido = document.getElementById("contenido");
-    await new Promise(r => setTimeout(r, 50));
-}
-contenido.innerHTML = `
-<div class="container py-4">
-
-    <!-- ENCABEZADO -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <h1 class="display-6 fw-bold">
-            Control de Postulaciones
-        </h1>
-
-        <span
-            id="marcadorCupos"
-            class="badge border border-secondary rounded-pill"
-            style="
-                color: var(--dorado-ucmi);
-                background: rgba(0,0,0,0.35);
-                font-size: 0.95rem;
-                font-weight: 600;
-                padding: 12px 25px;
-                letter-spacing: 0.5px;">
-            Cupos: 0 / 0
-        </span>
-
-    </div>
-
-    <!-- FILTRO -->
-    <div class="col-md-4 mb-4">
-
-        <label class="small fw-bold mb-2 text-uppercase" style="color:white;">
-            Filtrar por Perfil
-        </label>
-
-        <select id="filtroPerfil" class="form-select">
-            <option value="todos">Mostrar todos</option>
-            <option value="estudiante">Estudiantes</option>
-            <option value="docente">Docentes</option>
-        </select>
-
-    </div>
-
-    <!-- TABLA -->
-    <div class="table-container">
-
-    <div class="table-responsive"
-         style="border-radius: 18px; overflow: hidden;">
-
-        <table class="table table-hover align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th style="text-align:left;">NOMBRE</th>
-                        <th style="text-align:left;">PERFIL</th>
-                        <th style="text-align:left;">UBICACIÓN</th>
-                        <th class="text-center">ACCIÓN</th>
-                    </tr>
-                </thead>
-
-                <tbody id="listaMaestra"></tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-</div>
-`;
-
-    document.getElementById("filtroPerfil")
+// =========================
+// FILTRO (IMPORTANTE)
+// =========================
+document.getElementById("filtroPerfil")
 .addEventListener("change", renderizar);
+
+// =========================
+// SEGURIDAD: EXPEDIENTE GLOBAL
+// =========================
+window.verExpediente = function (id) {
+    console.log("Ver expediente:", id);
+};
 
 </script>
 
