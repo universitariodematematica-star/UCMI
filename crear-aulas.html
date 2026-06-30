@@ -155,7 +155,8 @@ aulasSnap.forEach(docSnap => {
 
                 <button
                     class="btn btn-sm btn-primary btnEditar"
-                    data-id="${docSnap.id}">
+                    data-id="${docSnap.id}"
+                    data-nombre="${aula.nombre_aula}">
                     ✏️ Editar
                 </button>
 
@@ -260,24 +261,43 @@ document.addEventListener("click", async (e) => {
     if (!e.target.classList.contains("btnEditar")) return;
 
     const id = e.target.dataset.id;
+    const nombreActual = e.target.dataset.nombre;
 
-    const nuevoNombre = prompt("Nuevo nombre del aula:");
+    const nuevoNombre = prompt(
+        "Nuevo nombre del aula:",
+        nombreActual
+    );
 
-    if (!nuevoNombre) return;
+    if (nuevoNombre === null) return;
+
+    if (nuevoNombre.trim() === "") return;
 
     try {
-        await updateDoc(doc(db, "aulas", id), {
-            nombre_aula: nuevoNombre.trim()
-        });
 
-        alert("Aula actualizada correctamente.");
+        await updateDoc(
+            doc(db, "aulas", id),
+            {
+                nombre_aula: nuevoNombre.trim()
+            }
+        );
 
-        location.reload();
+        e.target.dataset.nombre = nuevoNombre.trim();
+
+        e.target
+            .closest(".panel-cristal")
+            .querySelector("h5")
+            .textContent = nuevoNombre.trim();
+
+        console.log("Aula actualizada.");
 
     } catch (error) {
+
         console.error(error);
+
         alert("No fue posible actualizar el aula.");
+
     }
+
 });
     
 </script>
