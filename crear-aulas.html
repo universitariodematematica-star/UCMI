@@ -76,7 +76,8 @@ import {
     getDocs,
     query,
     where,
-    updateDoc
+    updateDoc,
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     // Cargar la plantilla HTML
     const html = await fetch("componentes/plantilla-academia.html");
@@ -168,7 +169,9 @@ aulasSnap.forEach(docSnap => {
                     👥 Alumnos
                 </button>
 
-                <button class="btn btn-sm btn-danger">
+                <button
+                    class="btn btn-sm btn-danger btnBorrar"
+                    data-id="${docSnap.id}">
                     🗑️ Borrar
                 </button>
 
@@ -299,6 +302,34 @@ document.addEventListener("click", async (e) => {
     }
 
 });
+
+ document.addEventListener("click", async (e) => {
+
+    if (!e.target.classList.contains("btnBorrar")) return;
+
+    const id = e.target.dataset.id;
+
+    const confirmar = confirm(
+        "¿Está seguro de eliminar esta aula?"
+    );
+
+    if (!confirmar) return;
+
+    try {
+
+        await deleteDoc(doc(db, "aulas", id));
+
+        alert("Aula eliminada correctamente.");
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("No fue posible eliminar el aula.");
+
+    }
+
+});   
     
 </script>
 
