@@ -83,6 +83,9 @@ import {
 
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+// =========================
+// CARGA PLANTILLA
+// =========================
 const html = await fetch("componentes/plantilla-academia.html");
 document.getElementById("plantilla").innerHTML = await html.text();
 
@@ -107,26 +110,27 @@ const txtNombre = document.getElementById("txtNombre");
 const btnRegistrar = document.getElementById("btnRegistrar");
 const listaAulas = document.getElementById("listaAulas");
 
+// =========================
+// AUTENTICACIÓN SEGURA
+// =========================
 onAuthStateChanged(auth, async (user) => {
+
     if (!user) {
-        console.log("No hay usuario autenticado");
+        console.log("No autenticado");
         return;
     }
 
-    // =========================
-    // USUARIO ACTUAL
-    // =========================
     const usuarioSnap = await getDoc(doc(db, "usuarios", user.uid));
 
     if (!usuarioSnap.exists()) {
-        console.error("Usuario no existe en Firestore");
+        console.error("Usuario no existe");
         return;
     }
 
     const datosUsuario = usuarioSnap.data();
 
     // =========================
-    // LISTAR AULAS EN TIEMPO REAL
+    // LISTA AULAS (SNAPSHOT ÚNICO)
     // =========================
     const q = query(
         collection(db, "aulas"),
@@ -135,7 +139,7 @@ onAuthStateChanged(auth, async (user) => {
 
     onSnapshot(q, async (snapshot) => {
 
-        listaAulas.innerHTML = "";
+        let htmlAulas = "";
 
         for (const docSnap of snapshot.docs) {
 
@@ -146,16 +150,12 @@ onAuthStateChanged(auth, async (user) => {
 
             if (aula.cursoId) {
 
-                // curso
-                const cursoSnap = await getDoc(
-                    doc(db, "cursos", aula.cursoId)
-                );
+                const cursoSnap = await getDoc(doc(db, "cursos", aula.cursoId));
 
                 if (cursoSnap.exists()) {
                     nombreCurso = cursoSnap.data().nombre_curso;
                 }
 
-                // asignaturas heredadas (del curso)
                 const asignaturasSnap = await getDocs(
                     query(
                         collection(db, "curso_asignaturas"),
@@ -175,7 +175,7 @@ onAuthStateChanged(auth, async (user) => {
                 });
             }
 
-            listaAulas.innerHTML += `
+            htmlAulas += `
                 <div class="panel-cristal mb-3 d-flex justify-content-between align-items-start">
 
                     <div>
@@ -217,6 +217,8 @@ onAuthStateChanged(auth, async (user) => {
                 </div>
             `;
         }
+
+        listaAulas.innerHTML = htmlAulas;
     });
 
     // =========================
@@ -238,11 +240,10 @@ onAuthStateChanged(auth, async (user) => {
     };
 
     // =========================
-    // EVENTOS
+    // EVENTOS GLOBALES
     // =========================
     document.addEventListener("click", async (e) => {
 
-        // EDITAR
         if (e.target.classList.contains("btnEditar")) {
 
             const id = e.target.dataset.id;
@@ -256,7 +257,6 @@ onAuthStateChanged(auth, async (user) => {
             });
         }
 
-        // BORRAR
         if (e.target.classList.contains("btnBorrar")) {
 
             const id = e.target.dataset.id;
@@ -266,7 +266,6 @@ onAuthStateChanged(auth, async (user) => {
             await deleteDoc(doc(db, "aulas", id));
         }
 
-        // CURSOS
         if (e.target.classList.contains("btnCursos")) {
             abrirSelectorCursos(e.target.dataset.id, user.uid);
         }
@@ -280,6 +279,7 @@ onAuthStateChanged(auth, async (user) => {
 async function abrirSelectorCursos(aulaId, userId) {
 
     const overlay = document.createElement("div");
+
     overlay.style.position = "fixed";
     overlay.style.top = 0;
     overlay.style.left = 0;
@@ -292,13 +292,16 @@ async function abrirSelectorCursos(aulaId, userId) {
     overlay.style.zIndex = 9999;
 
     const cursosSnap = await getDocs(
-        query(collection(db, "cursos"),
-        where("academiaId", "==", userId))
+        query(
+            collection(db, "cursos"),
+            where("academiaId", "==", userId)
+        )
     );
 
     let html = `
         <div style="background:#111; padding:20px; border-radius:10px; color:white;">
             <h4>Asignar curso</h4>
+
             <select id="selectCurso" class="form-control mb-3">
     `;
 
@@ -308,6 +311,7 @@ async function abrirSelectorCursos(aulaId, userId) {
 
     html += `
             </select>
+
             <button id="asignar" class="btn btn-success w-100">Asignar</button>
             <button id="cerrar" class="btn btn-danger w-100 mt-2">Cerrar</button>
         </div>
