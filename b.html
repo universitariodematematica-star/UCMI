@@ -56,6 +56,95 @@
             background:#d8b26a;
         }
 
+        #filtroPerfil {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border-radius: 50px !important;
+    padding: 10px 20px !important;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+#filtroPerfil option {
+    background-color: #1a2a3a;
+    color: white;
+}
+
+        .table-container {
+  position: relative;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border-radius: 28px;
+  padding: 30px;
+  color: white;
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 25px 60px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+  
+  overflow: hidden;
+}
+
+        .table-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.08),
+    rgba(255,255,255,0.02),
+    transparent
+  );
+  pointer-events: none;
+}
+
+.table thead th {
+    background-color: transparent !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    border: none;
+}
+
+   .table thead th {
+    border-bottom: none !important;
+}     
+
+        #listaMaestra tr {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  border-radius: 14px;
+  overflow: hidden;
+
+  transition: all 0.25s ease;
+}
+
+        .table {
+  border-collapse: separate !important;
+  border-spacing: 0 10px;
+}
+
+        #listaMaestra td {
+  background: transparent !important;
+  border: none !important;
+}
+
+        #listaMaestra tr:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+        
     </style>
 
 </head>
@@ -64,6 +153,120 @@
 <div id="plantilla"></div>
 
 <script type="module">
+
+    import { db, auth } from "./componentes/firebase-config.js";
+
+import {
+    collection,
+    query,
+    where,
+    onSnapshot,
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    let registrosLocales = [];
+let academiaGlobal = "";
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) return;
+
+    const snap = await getDoc(doc(db, "usuarios", user.uid));
+
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+
+    academiaGlobal = data.entidad;
+
+    iniciarEscucha(academiaGlobal);
+
+    renderizar();
+});
+
+    function iniciarEscucha(entidad) {
+
+    const q = query(
+        collection(db, "postulaciones"),
+        where("entidad", "==", entidad)
+    );
+
+    onSnapshot(q, (snapshot) => {
+
+        registrosLocales = snapshot.docs;
+
+        renderizar();
+
+    });
+}
+    function renderizar() {
+
+    const lista = document.getElementById("listaMaestra");
+    const filtro = document.getElementById("filtroPerfil").value;
+
+    lista.innerHTML = "";
+
+    let hayDatos = false;
+
+    registrosLocales.forEach(docSnap => {
+
+        const d = docSnap.data();
+
+        const perfil = (d.perfil || "").toLowerCase();
+
+        if (filtro !== "todos" && !perfil.includes(filtro)) {
+            return;
+        }
+
+        hayDatos = true;
+
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>
+                <div class="fw-bold text-white">${d.nombreResponsable || "N/A"}</div>
+                <small style="color:rgba(255,255,255,0.5)">
+                    ${d.email || ""}
+                </small>
+            </td>
+
+            <td>
+                <span class="badge bg-secondary">
+                    ${d.perfil || "N/A"}
+                </span>
+            </td>
+
+            <td style="color:rgba(255,255,255,0.7)">
+                ${d.ubicacion || "N/A"}
+            </td>
+
+            <td class="text-center">
+                <button class="btn btn-outline-light btn-sm"
+                    onclick="verExpediente('${docSnap.id}')">
+                    Detalles
+                </button>
+            </td>
+        `;
+
+        lista.appendChild(tr);
+    });
+
+    if (!hayDatos) {
+        lista.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center py-4"
+                    style="color:rgba(255,255,255,0.5)">
+                    No hay postulaciones
+                </td>
+            </tr>
+        `;
+    }
+}
 
     // Cargar la plantilla HTML
     const html = await fetch("componentes/plantilla-academia.html");
@@ -75,7 +278,84 @@
 
 
     // Cargar comportamiento general de la plantilla
-    await import("./componentes/plantilla-academia.js");
+await import("./componentes/plantilla-academia.js");
+
+// esperar a que exista el contenedor de la plantilla
+let contenido = null;
+
+while (!contenido) {
+    contenido = document.getElementById("contenido");
+    await new Promise(r => setTimeout(r, 50));
+}
+contenido.innerHTML = `
+<div class="container py-4">
+
+    <!-- ENCABEZADO -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h1 class="display-6 fw-bold">
+            Control de Postulaciones
+        </h1>
+
+        <span
+            id="marcadorCupos"
+            class="badge border border-secondary rounded-pill"
+            style="
+                color: var(--dorado-ucmi);
+                background: rgba(0,0,0,0.35);
+                font-size: 0.95rem;
+                font-weight: 600;
+                padding: 12px 25px;
+                letter-spacing: 0.5px;">
+            Cupos: 0 / 0
+        </span>
+
+    </div>
+
+    <!-- FILTRO -->
+    <div class="col-md-4 mb-4">
+
+        <label class="small fw-bold mb-2 text-uppercase" style="color:white;">
+            Filtrar por Perfil
+        </label>
+
+        <select id="filtroPerfil" class="form-select">
+            <option value="todos">Mostrar todos</option>
+            <option value="estudiante">Estudiantes</option>
+            <option value="docente">Docentes</option>
+        </select>
+
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-container">
+
+    <div class="table-responsive"
+         style="border-radius: 18px; overflow: hidden;">
+
+        <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;">NOMBRE</th>
+                        <th style="text-align:left;">PERFIL</th>
+                        <th style="text-align:left;">UBICACIÓN</th>
+                        <th class="text-center">ACCIÓN</th>
+                    </tr>
+                </thead>
+
+                <tbody id="listaMaestra"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+`;
+
+    document.getElementById("filtroPerfil")
+.addEventListener("change", renderizar);
 
 </script>
 
