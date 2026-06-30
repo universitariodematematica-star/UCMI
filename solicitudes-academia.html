@@ -108,6 +108,25 @@
 
 <script type="module">
 
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+import {
+    getFirestore,
+    collection,
+    query,
+    where,
+    onSnapshot,
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+import {
+    getAuth,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    
+
     // Cargar la plantilla HTML
     const html = await fetch("componentes/plantilla-academia.html");
     document.getElementById("plantilla").innerHTML = await html.text();
@@ -119,6 +138,126 @@
 
     // Cargar comportamiento general de la plantilla
 await import("./componentes/plantilla-academia.js");
+
+    let registrosLocales = [];
+
+function iniciarEscucha(academiaNombreGlobal) {
+
+    const q = query(
+        collection(db, "postulaciones"),
+        where("entidad", "==", academiaNombreGlobal)
+    );
+
+    onSnapshot(q, (snap) => {
+
+        registrosLocales = snap.docs;
+
+        renderizar();
+
+    });
+
+}
+
+    function renderizar() {
+
+    const lista = document.getElementById("listaMaestra");
+
+    const filtro = document.getElementById("filtroPerfil").value;
+
+    lista.innerHTML = "";
+
+    let hayDatos = false;
+
+    registrosLocales.forEach(docSnap => {
+
+        const d = docSnap.data();
+
+        const perfil = (d.perfil || "").toLowerCase();
+
+        if (filtro !== "todos" && !perfil.includes(filtro)) {
+            return;
+        }
+
+        hayDatos = true;
+
+        let clasePerfil = "bg-secondary";
+
+        if (d.perfil === "Docente Academia") {
+            clasePerfil = "bg-categoria-docente";
+        }
+
+        if (d.perfil === "Estudiante Academia") {
+            clasePerfil = "bg-categoria-estudiante";
+        }
+
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+
+            <td>
+                <div class="fw-bold">
+                    ${d.nombreResponsable || "N/A"}
+                </div>
+                <small style="color:rgba(255,255,255,0.5)">
+                    ${d.email || ""}
+                </small>
+            </td>
+
+            <td>
+                <span class="badge ${clasePerfil}">
+                    ${d.perfil || "N/A"}
+                </span>
+            </td>
+
+            <td style="color:rgba(255,255,255,0.7)">
+                ${d.ubicacion || "N/A"}
+            </td>
+
+            <td class="text-center">
+                <button class="btn btn-outline-light btn-sm"
+                        onclick="verExpediente('${docSnap.id}')">
+                    Detalles
+                </button>
+            </td>
+
+        `;
+
+        lista.appendChild(tr);
+
+    });
+
+    if (!hayDatos) {
+
+        lista.innerHTML = `
+
+            <tr>
+                <td colspan="4" class="text-center py-4"
+                    style="color:rgba(255,255,255,0.5)">
+                    No hay postulaciones
+                </td>
+            </tr>
+
+        `;
+
+    }
+
+}
+
+    onAuthStateChanged(auth, async (user) => {
+
+    if (!user) return;
+
+    const snap = await getDoc(doc(db, "usuarios", user.uid));
+
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+
+    iniciarEscucha(data.entidad);
+
+    renderizar();
+
+});
 
 // esperar a que exista el contenedor de la plantilla
 let contenido = null;
@@ -193,6 +332,9 @@ contenido.innerHTML = `
 
 </div>
 `;
+
+    document.getElementById("filtroPerfil")
+.addEventListener("change", renderizar);
 
 </script>
 
