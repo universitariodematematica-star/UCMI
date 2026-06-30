@@ -71,7 +71,10 @@
     addDoc,
     serverTimestamp,
     doc,
-    getDoc
+    getDoc,
+    getDocs,
+    query,
+    where
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     // Cargar la plantilla HTML
     const html = await fetch("componentes/plantilla-academia.html");
@@ -117,6 +120,61 @@
 const btnRegistrar = document.getElementById("btnRegistrar");
 const listaAulas = document.getElementById("listaAulas");
 
+// ==========================================
+// CARGAR AULAS YA REGISTRADAS
+// ==========================================
+
+// Leer el documento del usuario autenticado
+const usuarioActual = await getDoc(
+    doc(db, "usuarios", auth.currentUser.uid)
+);
+
+const datosUsuarioActual = usuarioActual.data();
+
+// Buscar únicamente las aulas de esta academia
+const q = query(
+    collection(db, "aulas"),
+    where("entidad", "==", datosUsuarioActual.entidad)
+);
+
+const aulasSnap = await getDocs(q);
+
+aulasSnap.forEach(docSnap => {
+
+    const aula = docSnap.data();
+
+    listaAulas.innerHTML += `
+
+        <div class="panel-cristal mb-3 d-flex justify-content-between align-items-center">
+
+            <h5 class="mb-0">${aula.nombre_aula}</h5>
+
+            <div class="d-flex gap-2">
+
+                <button class="btn btn-sm btn-primary">
+                    ✏️ Editar
+                </button>
+
+                <button class="btn btn-sm btn-warning">
+                    🎓 Cursos
+                </button>
+
+                <button class="btn btn-sm btn-info">
+                    👥 Alumnos
+                </button>
+
+                <button class="btn btn-sm btn-danger">
+                    🗑️ Borrar
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+});
+    
 btnRegistrar.addEventListener("click", async () => {
 
     console.log("===== BOTÓN REGISTRAR =====");
@@ -161,11 +219,33 @@ console.log("Documento creado correctamente.");
 
         listaAulas.innerHTML += `
 
-            <div class="panel-cristal mb-3">
-                <h5 class="mb-0">${nombre}</h5>
-            </div>
+    <div class="panel-cristal mb-3 d-flex justify-content-between align-items-center">
 
-        `;
+        <h5 class="mb-0">${nombre}</h5>
+
+        <div class="d-flex gap-2">
+
+            <button class="btn btn-sm btn-primary">
+                ✏️ Editar
+            </button>
+
+            <button class="btn btn-sm btn-warning">
+                🎓 Cursos
+            </button>
+
+            <button class="btn btn-sm btn-info">
+                👥 Alumnos
+            </button>
+
+            <button class="btn btn-sm btn-danger">
+                🗑️ Borrar
+            </button>
+
+        </div>
+
+    </div>
+
+`;
 
         txtNombre.value = "";
         txtNombre.focus();
