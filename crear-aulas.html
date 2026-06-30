@@ -145,60 +145,64 @@ onSnapshot(q, (snapshot) => {
 
     listaAulas.innerHTML = "";
 
-    snapshot.forEach((docSnap) => {
+    onSnapshot(q, async (snapshot) => {
+
+    listaAulas.innerHTML = "";
+
+    for (const docSnap of snapshot.docs) {
 
         const aula = docSnap.data();
 
+        // =========================
+        // CURSO
+        // =========================
         let nombreCurso = "Sin curso asignado";
+        let asignaturasHTML = "";
 
         if (aula.cursoId) {
-            const cursoSnap = await getDoc(doc(db, "cursos", aula.cursoId));
-        
+
+            const cursoSnap = await getDoc(
+                doc(db, "cursos", aula.cursoId)
+            );
+
             if (cursoSnap.exists()) {
                 nombreCurso = cursoSnap.data().nombre_curso;
             }
+
+            const asignaturasSnap = await getDocs(
+                query(
+                    collection(db, "asignaturas"),
+                    where("cursoId", "==", aula.cursoId)
+                )
+            );
+
+            asignaturasSnap.forEach(a => {
+                const asig = a.data();
+
+                asignaturasHTML += `
+                    <li style="color:white; font-size:0.9rem;">
+                        📘 ${asig.nombre_asignatura}
+                    </li>
+                `;
+            });
         }
 
+        // =========================
+        // RENDER
+        // =========================
         listaAulas.innerHTML += `
-
-            <div class="panel-cristal mb-3 d-flex justify-content-between align-items-center">
+            <div class="panel-cristal mb-3 d-flex justify-content-between align-items-start">
 
                 <div>
                     <h5 class="mb-0">${aula.nombre_aula}</h5>
 
-                    let asignaturasHTML = "";
-
-                    if (aula.cursoId) {
-                    
-                        const cursoDoc = await getDoc(doc(db, "cursos", aula.cursoId));
-                    
-                        if (cursoDoc.exists()) {
-                    
-                            const cursoData = cursoDoc.data();
-                    
-                            // ⚠️ AJUSTA ESTO según tu estructura real
-                            const asignaturasSnap = await getDocs(
-                                query(
-                                    collection(db, "asignaturas"),
-                                    where("cursoId", "==", aula.cursoId)
-                                )
-                            );
-                    
-                            asignaturasSnap.forEach(a => {
-                                const asig = a.data();
-                    
-                                asignaturasHTML += `
-                                    <li style="color:white; font-size:0.9rem;">
-                                        📘 ${asig.nombre_asignatura}
-                                    </li>
-                                `;
-                            });
-                        }
-                    }
-                
                     <small style="opacity:0.7">
                         🎓 Curso: ${nombreCurso}
                     </small>
+
+                    <ul style="margin-top:8px; padding-left:18px;">
+                        ${asignaturasHTML}
+                    </ul>
                 </div>
 
                 <div class="d-flex gap-2">
@@ -229,10 +233,9 @@ onSnapshot(q, (snapshot) => {
                 </div>
 
             </div>
-
         `;
-
-    });
+    }
+});
 
 });
     
