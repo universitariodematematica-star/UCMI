@@ -164,7 +164,9 @@ onSnapshot(q, (snapshot) => {
                         ✏️ Editar
                     </button>
 
-                    <button class="btn btn-sm btn-warning">
+                    <button
+                        class="btn btn-sm btn-warning btnCursos"
+                        data-id="${docSnap.id}">
                         🎓 Cursos
                     </button>
 
@@ -334,7 +336,97 @@ document.addEventListener("click", async (e) => {
 
     }
 
-});   
+});
+
+document.addEventListener("click", async (e) => {
+
+    if (!e.target.classList.contains("btnCursos")) return;
+
+    const aulaId = e.target.dataset.id;
+
+    abrirSelectorCursos(aulaId);
+
+});
+
+// ==========================================
+// 🎓 ABRIR SELECTOR DE CURSOS PARA AULA
+// ==========================================
+
+async function abrirSelectorCursos(aulaId) {
+
+    const overlay = document.createElement("div");
+
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,0.7)";
+    overlay.style.display = "flex";
+    overlay.style.justifyContent = "center";
+    overlay.style.alignItems = "center";
+    overlay.style.zIndex = "9999";
+
+    const cursosSnap = await getDocs(
+        query(
+            collection(db, "cursos"),
+            where("academiaId", "==", auth.currentUser.uid)
+        )
+    );
+
+    let html = `
+        <div style="
+            background:#111;
+            padding:25px;
+            border-radius:12px;
+            min-width:320px;
+            color:white;
+        ">
+            <h4>Asignar curso al aula</h4>
+
+            <select id="selectCurso" class="form-control mb-3">
+    `;
+
+    cursosSnap.forEach(docSnap => {
+        const c = docSnap.data();
+        html += `<option value="${docSnap.id}">
+                    ${c.nombre_curso}
+                 </option>`;
+    });
+
+    html += `
+            </select>
+
+            <button id="btnAsignarCurso" class="btn btn-success w-100">
+                Asignar curso
+            </button>
+
+            <button id="btnCerrarCursos" class="btn btn-danger w-100 mt-2">
+                Cerrar
+            </button>
+        </div>
+    `;
+
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+
+    // cerrar modal
+    document.getElementById("btnCerrarCursos").onclick = () => {
+        overlay.remove();
+    };
+
+    // asignar curso
+    document.getElementById("btnAsignarCurso").onclick = async () => {
+
+        const cursoId = document.getElementById("selectCurso").value;
+
+        await updateDoc(doc(db, "aulas", aulaId), {
+            cursoId: cursoId
+        });
+
+        overlay.remove();
+    };
+}    
     
 </script>
 
