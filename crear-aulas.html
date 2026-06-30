@@ -80,12 +80,15 @@ import {
     deleteDoc,
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    // Cargar la plantilla HTML
-    const html = await fetch("componentes/plantilla-academia.html");
-    document.getElementById("plantilla").innerHTML = await html.text();
 
-    // Marcar opción activa si se desea posteriormente
-    // document.querySelectorAll(".nav-item-ucmi")[0].classList.add("active");
+// Cargar plantilla HTML
+const plantillaResp = await fetch("componentes/plantilla-academia.html");
+const plantillaHTML = await plantillaResp.text();
+
+document.getElementById("plantilla").innerHTML = plantillaHTML;
+
+// (opcional) marcar opción activa
+// document.querySelectorAll(".nav-item-ucmi")[0]?.classList.add("active");
 
     // Contenido de la página
     document.getElementById("contenido").innerHTML = `
@@ -117,30 +120,43 @@ import {
     <div id="listaAulas"></div>
 
 `;
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        console.error("Usuario no autenticado");
+        return;
+    }
+
     // Cargar comportamiento general de la plantilla
     await import("./componentes/plantilla-academia.js");
 
     const txtNombre = document.getElementById("txtNombre");
-const btnRegistrar = document.getElementById("btnRegistrar");
-const listaAulas = document.getElementById("listaAulas");
+    const btnRegistrar = document.getElementById("btnRegistrar");
+    const listaAulas = document.getElementById("listaAulas");
 
-// ==========================================
-// CARGAR AULAS YA REGISTRADAS
-// ==========================================
+    // Leer usuario desde Firestore
+    const usuarioActual = await getDoc(
+        doc(db, "usuarios", user.uid)
+    );
 
-// Leer el documento del usuario autenticado
-const usuarioActual = await getDoc(
-    doc(db, "usuarios", auth.currentUser.uid)
-);
+    if (!usuarioActual.exists()) {
+        console.error("Usuario no existe en Firestore");
+        return;
+    }
 
-const datosUsuarioActual = usuarioActual.data();
+    const datosUsuarioActual = usuarioActual.data();
 
-// Buscar únicamente las aulas de esta academia
-const q = query(
-    collection(db, "aulas"),
-    where("entidad", "==", datosUsuarioActual.entidad)
-);
+    // Buscar aulas de la academia
+    const q = query(
+        collection(db, "aulas"),
+        where("entidad", "==", datosUsuarioActual.entidad)
+    );
 
+    // 👉 aquí seguiría tu onSnapshot (siguiente bloque)
+});
+    
 onSnapshot(q, async (snapshot) => {
 
     listaAulas.innerHTML = "";
@@ -152,11 +168,10 @@ onSnapshot(q, async (snapshot) => {
         let nombreCurso = "Sin curso asignado";
         let asignaturasHTML = "";
 
-        if (aula.cursoId) {
+        if (aula.cursoId && aula.cursoId !== "") {
 
-            const cursoSnap = await getDoc(
-                doc(db, "cursos", aula.cursoId)
-            );
+            const cursoRef = doc(db, "cursos", aula.cursoId);
+            const cursoSnap = await getDoc(cursoRef);
 
             if (cursoSnap.exists()) {
                 nombreCurso = cursoSnap.data().nombre_curso;
