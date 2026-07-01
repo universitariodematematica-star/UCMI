@@ -112,7 +112,21 @@ await import("./componentes/plantilla-academia.js");
 const txtNombre = document.getElementById("txtNombre");
 const btnRegistrar = document.getElementById("btnRegistrar");
 const listaAulas = document.getElementById("listaAulas");
+const hoverBox = document.createElement("div");
 
+hoverBox.style.position = "fixed";
+hoverBox.style.display = "none";
+hoverBox.style.background = "rgba(20,20,20,0.95)";
+hoverBox.style.border = "1px solid rgba(255,255,255,0.15)";
+hoverBox.style.padding = "12px";
+hoverBox.style.borderRadius = "12px";
+hoverBox.style.color = "white";
+hoverBox.style.zIndex = "99999";
+hoverBox.style.minWidth = "250px";
+hoverBox.style.backdropFilter = "blur(10px)";
+
+document.body.appendChild(hoverBox);
+    
 // =========================
 // AUTENTICACIÓN SEGURA
 // =========================
@@ -181,7 +195,8 @@ onAuthStateChanged(auth, async (user) => {
             }
 
             htmlAulas += `
-                <div class="panel-cristal mb-3 d-flex justify-content-between align-items-start">
+    <div class="panel-cristal mb-3 d-flex justify-content-between align-items-start aula-item"
+         data-aula="${docSnap.id}">
 
                     <div>
                         <h5 class="mb-0">${aula.nombre_aula}</h5>
@@ -596,6 +611,102 @@ document
     overlay.remove();
 
 }
+
+//////////////////////////////
+// HOVER DE AULAS (GLOBAL)
+//////////////////////////////
+
+const hoverBox = document.createElement("div");
+
+hoverBox.style.position = "fixed";
+hoverBox.style.display = "none";
+hoverBox.style.background = "rgba(20,20,20,0.95)";
+hoverBox.style.border = "1px solid rgba(255,255,255,0.15)";
+hoverBox.style.padding = "12px";
+hoverBox.style.borderRadius = "12px";
+hoverBox.style.color = "white";
+hoverBox.style.zIndex = "99999";
+hoverBox.style.minWidth = "250px";
+hoverBox.style.backdropFilter = "blur(10px)";
+
+document.body.appendChild(hoverBox);
+
+document.body.appendChild(hoverBox);
+
+//////////////////////////////
+// HOVER FUNCIONAL DE AULAS
+//////////////////////////////
+
+document.addEventListener("mouseover", async (e) => {
+
+    const aulaEl = e.target.closest(".aula-item");
+
+    if (!aulaEl) return;
+
+    const aulaId = aulaEl.dataset.aula;
+
+    hoverBox.style.display = "block";
+
+    hoverBox.innerHTML = `
+        <div style="font-weight:bold; margin-bottom:8px;">
+            👥 Alumnos asignados
+        </div>
+        <div id="hoverContenido">Cargando...</div>
+    `;
+
+    const q = query(
+        collection(db, "aula_integrantes"),
+        where("aulaId", "==", aulaId)
+    );
+
+    const snap = await getDocs(q);
+
+    let html = "";
+
+    if (snap.empty) {
+
+        html = `<small style="opacity:0.7">No hay alumnos asignados</small>`;
+
+    } else {
+
+        snap.forEach(d => {
+
+            const a = d.data();
+
+            html += `
+                <div style="margin-bottom:6px;">
+                    <strong>${a.nombreResponsable}</strong><br>
+                    <small style="opacity:0.7">${a.email}</small>
+                </div>
+            `;
+        });
+    }
+
+    hoverBox.querySelector("#hoverContenido").innerHTML = html;
+});
+
+
+document.addEventListener("mousemove", (e) => {
+
+    hoverBox.style.left = (e.pageX + 15) + "px";
+    hoverBox.style.top = (e.pageY + 15) + "px";
+
+});
+
+
+document.addEventListener("mousemove", (e) => {
+
+    const aulaEl = e.target.closest(".aula-item");
+
+    if (!aulaEl) {
+        hoverBox.style.display = "none";
+        return;
+    }
+
+    hoverBox.style.left = (e.pageX + 15) + "px";
+    hoverBox.style.top = (e.pageY + 15) + "px";
+
+});    
     
 }
     
