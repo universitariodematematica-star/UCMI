@@ -157,26 +157,46 @@ onAuthStateChanged(auth, async (user) => {
     const datosUsuario = usuarioSnap.data();
 
     // =========================
-// CARGAR INTEGRANTES DE TODAS LAS AULAS
+// CARGAR INTEGRANTES DE TODAS LAS AULAS (TIEMPO REAL)
 // =========================
 const integrantesPorAula = {};
 
-const integrantesSnap = await getDocs(
-    query(
-        collection(db, "aula_integrantes"),
-        where("entidad", "==", datosUsuario.entidad)
-    )
+const qIntegrantes = query(
+    collection(db, "aula_integrantes"),
+    where("entidad", "==", datosUsuario.entidad)
 );
 
-integrantesSnap.forEach(docSnap => {
+onSnapshot(qIntegrantes, (snapshot) => {
 
-    const integrante = docSnap.data();
+    // Vaciar el objeto
+    Object.keys(integrantesPorAula).forEach(key => {
+        delete integrantesPorAula[key];
+    });
 
-    if (!integrantesPorAula[integrante.aulaId]) {
-        integrantesPorAula[integrante.aulaId] = [];
-    }
+    snapshot.forEach(docSnap => {
 
-    integrantesPorAula[integrante.aulaId].push(integrante);
+        const integrante = docSnap.data();
+
+        if (!integrantesPorAula[integrante.aulaId]) {
+            integrantesPorAula[integrante.aulaId] = [];
+        }
+
+        integrantesPorAula[integrante.aulaId].push(integrante);
+
+    });
+
+    // Ordenar alfabéticamente
+    Object.values(integrantesPorAula).forEach(lista => {
+
+        lista.sort((a, b) =>
+            a.nombreResponsable.localeCompare(
+                b.nombreResponsable,
+                "es",
+                { sensitivity: "base" }
+            )
+        );
+
+    });
 
 });
 
@@ -309,16 +329,31 @@ document.querySelectorAll(".aula-card").forEach(card => {
 
             integrantes.forEach(alumno => {
 
-                html += `
-                    <div style="
-                        padding:4px 0;
-                        border-bottom:1px solid rgba(255,255,255,.08);
-                    ">
-                        👤 ${alumno.nombreResponsable}
-                    </div>
-                `;
+    html += `
+        <div style="
+            padding:8px 0;
+            border-bottom:1px solid rgba(255,255,255,.08);
+        ">
 
-            });
+            <div style="
+                font-weight:600;
+                color:white;
+            ">
+                👤 ${alumno.nombreResponsable}
+            </div>
+
+            <div style="
+                font-size:.82rem;
+                opacity:.65;
+                margin-left:22px;
+            ">
+                ${alumno.email}
+            </div>
+
+        </div>
+    `;
+
+});
 
         }
 
