@@ -80,14 +80,13 @@ import {
     deleteDoc,
     onSnapshot,
     orderBy,
-    writeBatch,
-    Timestamp
+    writeBatch
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 //////////////////////////////
-// CARGA PLANTILLA
+// PLANTILLA
 //////////////////////////////
 
 const html = await fetch("componentes/plantilla-academia.html");
@@ -95,12 +94,9 @@ document.getElementById("plantilla").innerHTML = await html.text();
 
 document.getElementById("contenido").innerHTML = `
 <div class="panel-cristal mb-4">
-    <h5 class="mb-4">
-        Escriba el nombre del aula y pulse <strong>Registrar</strong>.
-    </h5>
-
+    <h5>Registrar aula</h5>
     <div class="d-flex gap-3">
-        <input id="txtNombre" type="text" class="form-control" placeholder="Escriba aquí...">
+        <input id="txtNombre" class="form-control" placeholder="Nombre aula">
         <button id="btnRegistrar" class="btn btn-registrar">Registrar</button>
     </div>
 </div>
@@ -120,21 +116,23 @@ const listaAulas = document.getElementById("listaAulas");
 
 const hoverBox = document.createElement("div");
 
-hoverBox.style.position = "fixed";
-hoverBox.style.display = "none";
-hoverBox.style.background = "rgba(20,20,20,0.95)";
-hoverBox.style.border = "1px solid rgba(255,255,255,0.15)";
-hoverBox.style.padding = "12px";
-hoverBox.style.borderRadius = "12px";
-hoverBox.style.color = "white";
-hoverBox.style.zIndex = "99999";
-hoverBox.style.minWidth = "250px";
-hoverBox.style.backdropFilter = "blur(10px)";
+Object.assign(hoverBox.style, {
+    position: "fixed",
+    display: "none",
+    background: "rgba(20,20,20,0.95)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    padding: "12px",
+    borderRadius: "12px",
+    color: "white",
+    zIndex: "99999",
+    minWidth: "250px",
+    backdropFilter: "blur(10px)"
+});
 
 document.body.appendChild(hoverBox);
 
 //////////////////////////////
-// AUTENTICACIÓN
+// AUTH
 //////////////////////////////
 
 onAuthStateChanged(auth, async (user) => {
@@ -147,7 +145,7 @@ onAuthStateChanged(auth, async (user) => {
     const datosUsuario = usuarioSnap.data();
 
     //////////////////////////////
-    // LISTA DE AULAS
+    // AULAS
     //////////////////////////////
 
     const q = query(
@@ -156,86 +154,31 @@ onAuthStateChanged(auth, async (user) => {
         orderBy("nombre_aula")
     );
 
-    onSnapshot(q, async (snapshot) => {
+    onSnapshot(q, (snapshot) => {
 
         let htmlAulas = "";
 
-        for (const docSnap of snapshot.docs) {
+        snapshot.forEach(docSnap => {
 
             const aula = docSnap.data();
 
-            let nombreCurso = "Sin curso asignado";
-            let asignaturasHTML = "";
-
-            if (aula.cursoId) {
-
-                const cursoSnap = await getDoc(doc(db, "cursos", aula.cursoId));
-
-                if (cursoSnap.exists()) {
-                    nombreCurso = cursoSnap.data().nombre_curso;
-                }
-
-                const asignaturasSnap = await getDocs(
-                    query(
-                        collection(db, "curso_asignaturas"),
-                        where("cursoId", "==", aula.cursoId),
-                        where("entidad", "==", datosUsuario.entidad),
-                        orderBy("asignatura")
-                    )
-                );
-
-                asignaturasSnap.forEach(a => {
-                    asignaturasHTML += `
-                        <li style="color:white; font-size:0.9rem;">
-                            📘 ${a.data().asignatura}
-                        </li>
-                    `;
-                });
-            }
-
             htmlAulas += `
-            <div class="panel-cristal mb-3 d-flex justify-content-between align-items-start aula-item"
-                 data-aula="${docSnap.id}">
+                <div class="panel-cristal mb-3 d-flex justify-content-between aula-item"
+                     data-aula="${docSnap.id}">
 
-                <div>
-                    <h5 class="mb-0">${aula.nombre_aula}</h5>
+                    <div>
+                        <h5>${aula.nombre_aula}</h5>
+                    </div>
 
-                    <small style="opacity:0.7">
-                        🎓 Curso: ${nombreCurso}
-                    </small>
-
-                    <ul style="margin-top:8px; padding-left:18px;">
-                        ${asignaturasHTML}
-                    </ul>
-                </div>
-
-                <div class="d-flex gap-2">
-
-                    <button class="btn btn-sm btn-primary btnEditar"
-                        data-id="${docSnap.id}"
-                        data-nombre="${aula.nombre_aula}">
-                        ✏️ Editar
-                    </button>
-
-                    <button class="btn btn-sm btn-warning btnCursos"
-                        data-id="${docSnap.id}">
-                        🎓 Cursos
-                    </button>
-
-                    <button class="btn btn-sm btn-info btnAlumnos"
-                        data-id="${docSnap.id}">
-                        👥 Alumnos
-                    </button>
-
-                    <button class="btn btn-sm btn-danger btnBorrar"
-                        data-id="${docSnap.id}">
-                        🗑️ Borrar
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary btnAlumnos" data-id="${docSnap.id}">
+                            👥 Alumnos
+                        </button>
+                    </div>
 
                 </div>
-            </div>
             `;
-        }
+        });
 
         listaAulas.innerHTML = htmlAulas;
     });
@@ -260,36 +203,10 @@ onAuthStateChanged(auth, async (user) => {
     };
 
     //////////////////////////////
-    // EVENTOS
+    // EVENTOS GLOBALES
     //////////////////////////////
 
     document.addEventListener("click", async (e) => {
-
-        if (e.target.classList.contains("btnEditar")) {
-
-            const id = e.target.dataset.id;
-            const actual = e.target.dataset.nombre;
-
-            const nuevo = prompt("Nuevo nombre:", actual);
-            if (!nuevo) return;
-
-            await updateDoc(doc(db, "aulas", id), {
-                nombre_aula: nuevo.trim()
-            });
-        }
-
-        if (e.target.classList.contains("btnBorrar")) {
-
-            const id = e.target.dataset.id;
-
-            if (!confirm("¿Eliminar aula?")) return;
-
-            await deleteDoc(doc(db, "aulas", id));
-        }
-
-        if (e.target.classList.contains("btnCursos")) {
-            abrirSelectorCursos(e.target.dataset.id, user.uid);
-        }
 
         if (e.target.classList.contains("btnAlumnos")) {
             abrirSelectorAlumnos(e.target.dataset.id, datosUsuario.entidad);
@@ -299,61 +216,6 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 //////////////////////////////
-// MODAL CURSOS
-//////////////////////////////
-
-async function abrirSelectorCursos(aulaId, userId) {
-
-    const overlay = document.createElement("div");
-
-    overlay.style.position = "fixed";
-    overlay.style.top = 0;
-    overlay.style.left = 0;
-    overlay.style.width = "100%";
-    overlay.style.height = "100%";
-    overlay.style.background = "rgba(0,0,0,0.7)";
-    overlay.style.display = "flex";
-    overlay.style.alignItems = "center";
-    overlay.style.justifyContent = "center";
-    overlay.style.zIndex = 9999;
-
-    const cursosSnap = await getDocs(
-        query(collection(db, "cursos"), where("academiaId", "==", userId))
-    );
-
-    let html = `
-        <div style="background:#111;padding:20px;border-radius:10px;color:white;">
-            <h4>Asignar curso</h4>
-            <select id="selectCurso" class="form-control mb-3">
-    `;
-
-    cursosSnap.forEach(c => {
-        html += `<option value="${c.id}">${c.data().nombre_curso}</option>`;
-    });
-
-    html += `
-            </select>
-            <button id="asignar" class="btn btn-success w-100">Asignar</button>
-            <button id="cerrar" class="btn btn-danger w-100 mt-2">Cerrar</button>
-        </div>
-    `;
-
-    overlay.innerHTML = html;
-    document.body.appendChild(overlay);
-
-    document.getElementById("cerrar").onclick = () => overlay.remove();
-
-    document.getElementById("asignar").onclick = async () => {
-
-        const cursoId = document.getElementById("selectCurso").value;
-
-        await updateDoc(doc(db, "aulas", aulaId), { cursoId });
-
-        overlay.remove();
-    };
-}
-
-//////////////////////////////
 // MODAL ALUMNOS
 //////////////////////////////
 
@@ -361,85 +223,107 @@ async function abrirSelectorAlumnos(aulaId, entidad) {
 
     const overlay = document.createElement("div");
 
-    overlay.style.position = "fixed";
-    overlay.style.left = "0";
-    overlay.style.top = "0";
-    overlay.style.width = "100%";
-    overlay.style.height = "100%";
-    overlay.style.background = "rgba(0,0,0,.75)";
-    overlay.style.display = "flex";
-    overlay.style.justifyContent = "center";
-    overlay.style.alignItems = "center";
-    overlay.style.zIndex = "99999";
+    overlay.style = `
+        position:fixed;
+        left:0;top:0;
+        width:100%;height:100%;
+        background:rgba(0,0,0,.75);
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        z-index:99999;
+    `;
 
     overlay.innerHTML = `
-        <div style="width:900px;max-width:95%;max-height:90%;overflow:auto;background:#111;padding:25px;border-radius:16px;color:white;">
+        <div style="width:800px;background:#111;padding:20px;border-radius:12px;color:white;">
+            <h4>Alumnos del aula</h4>
 
-            <h4>Asignar alumnos</h4>
+            <div id="listaAlumnos">Cargando...</div>
 
-            <input type="date" id="fechaFiltro" class="form-control mb-3">
-
-            <div id="listaAlumnos"></div>
-
-            <div class="mt-3 d-flex justify-content-between">
-                <button id="guardarAlumnos" class="btn btn-success">Guardar</button>
-                <button id="cerrarAlumnos" class="btn btn-danger">Cerrar</button>
-            </div>
-
+            <button id="cerrar" class="btn btn-danger mt-3">Cerrar</button>
         </div>
     `;
 
     document.body.appendChild(overlay);
 
-    document.getElementById("cerrarAlumnos").onclick = () => overlay.remove();
+    document.getElementById("cerrar").onclick = () => overlay.remove();
 
-    //////////////////////////////
-    // HOVER LÓGICA LIMPIA
-    //////////////////////////////
+    const snap = await getDocs(
+        query(
+            collection(db, "aula_integrantes"),
+            where("aulaId", "==", aulaId)
+        )
+    );
 
-    document.addEventListener("mousemove", (e) => {
+    const lista = document.getElementById("listaAlumnos");
 
-        const aulaEl = e.target.closest(".aula-item");
+    if (snap.empty) {
+        lista.innerHTML = "No hay alumnos";
+        return;
+    }
 
-        if (!aulaEl) {
-            hoverBox.style.display = "none";
-            return;
-        }
+    let html = "";
 
-        hoverBox.style.display = "block";
-        hoverBox.style.left = (e.pageX + 15) + "px";
-        hoverBox.style.top = (e.pageY + 15) + "px";
-    });
+    snap.forEach(d => {
+        const a = d.data();
 
-    document.addEventListener("mouseover", async (e) => {
-
-        const aulaEl = e.target.closest(".aula-item");
-        if (!aulaEl) return;
-
-        const aulaId = aulaEl.dataset.aula;
-
-        hoverBox.style.display = "block";
-        hoverBox.innerHTML = `
-            <div><b>👥 Alumnos asignados</b></div>
-            <div>Cargando...</div>
+        html += `
+            <div>
+                <b>${a.nombreResponsable}</b><br>
+                <small>${a.email}</small>
+            </div>
+            <hr>
         `;
-
-        const snap = await getDocs(
-            query(collection(db, "aula_integrantes"), where("aulaId", "==", aulaId))
-        );
-
-        let html = "";
-
-        snap.forEach(d => {
-            const a = d.data();
-            html += `<div><b>${a.nombreResponsable}</b><br>${a.email}</div>`;
-        });
-
-        hoverBox.innerHTML = html || "Sin alumnos";
     });
 
+    lista.innerHTML = html;
 }
 
+//////////////////////////////
+// HOVER GLOBAL (FUNCIONA DE VERDAD)
+//////////////////////////////
+
+document.addEventListener("mouseover", async (e) => {
+
+    const aulaEl = e.target.closest(".aula-item");
+    if (!aulaEl) return;
+
+    const aulaId = aulaEl.dataset.aula;
+
+    hoverBox.style.display = "block";
+    hoverBox.innerHTML = "Cargando...";
+
+    const snap = await getDocs(
+        query(collection(db, "aula_integrantes"),
+        where("aulaId", "==", aulaId))
+    );
+
+    let html = "<b>👥 Alumnos</b><br><br>";
+
+    if (snap.empty) {
+        html += "Sin alumnos";
+    } else {
+        snap.forEach(d => {
+            const a = d.data();
+            html += `<div>${a.nombreResponsable}<br><small>${a.email}</small></div><hr>`;
+        });
+    }
+
+    hoverBox.innerHTML = html;
+});
+
+document.addEventListener("mousemove", (e) => {
+
+    const aulaEl = e.target.closest(".aula-item");
+
+    if (!aulaEl) {
+        hoverBox.style.display = "none";
+        return;
+    }
+
+    hoverBox.style.left = (e.pageX + 15) + "px";
+    hoverBox.style.top = (e.pageY + 15) + "px";
+});
 </script>
 
 </body>
