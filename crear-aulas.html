@@ -362,7 +362,134 @@ async function abrirSelectorCursos(aulaId, userId) {
 
         overlay.remove();
     };
-}    
+} 
+
+    // =========================
+// MODAL ALUMNOS
+// =========================
+async function abrirSelectorAlumnos(aulaId, entidad) {
+
+    const overlay = document.createElement("div");
+
+    overlay.style.position = "fixed";
+    overlay.style.left = "0";
+    overlay.style.top = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,.75)";
+    overlay.style.display = "flex";
+    overlay.style.justifyContent = "center";
+    overlay.style.alignItems = "center";
+    overlay.style.zIndex = "99999";
+
+    overlay.innerHTML = `
+        <div style="
+            width:900px;
+            max-width:95%;
+            max-height:90%;
+            overflow:auto;
+            background:#111;
+            border-radius:16px;
+            padding:25px;
+            color:white;
+        ">
+
+            <h4 class="mb-4">
+                Asignar alumnos al aula
+            </h4>
+
+            <div class="mb-3">
+
+                <label class="mb-2">
+                    Mostrar alumnos registrados desde:
+                </label>
+
+                <input
+                    type="date"
+                    id="fechaFiltro"
+                    class="form-control">
+
+            </div>
+
+            <div id="listaAlumnos"></div>
+
+            <div class="mt-4 text-end">
+
+                <button
+                    id="cerrarAlumnos"
+                    class="btn btn-danger">
+
+                    Cerrar
+
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    document.getElementById("cerrarAlumnos").onclick = () => {
+        overlay.remove();
+    };
+
+    async function cargarAlumnos() {
+
+        const lista = document.getElementById("listaAlumnos");
+
+        lista.innerHTML = "Cargando...";
+
+        const q = query(
+            collection(db,"usuarios"),
+            where("entidad","==",entidad),
+            where("perfil","==","Estudiante Academia")
+        );
+
+        const snap = await getDocs(q);
+
+        lista.innerHTML = "";
+
+        snap.forEach(docSnap=>{
+
+            const d = docSnap.data();
+
+            lista.innerHTML += `
+                <div
+                    class="d-flex justify-content-between align-items-center border-bottom py-2">
+
+                    <div>
+
+                        <strong>
+
+                            ${d.nombreResponsable}
+
+                        </strong>
+
+                        <br>
+
+                        <small>
+
+                            ${d.email}
+
+                        </small>
+
+                    </div>
+
+                    <input
+                        type="checkbox"
+                        value="${docSnap.id}">
+
+                </div>
+            `;
+
+        });
+
+    }
+
+    cargarAlumnos();
+
+}
     
 </script>
 
