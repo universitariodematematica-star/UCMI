@@ -413,17 +413,25 @@ async function abrirSelectorAlumnos(aulaId, entidad) {
 
             <div id="listaAlumnos"></div>
 
-            <div class="mt-4 text-end">
+            <div class="mt-4 d-flex justify-content-between">
 
-                <button
-                    id="cerrarAlumnos"
-                    class="btn btn-danger">
+    <button
+        id="guardarAlumnos"
+        class="btn btn-success">
 
-                    Cerrar
+        Guardar alumnos
 
-                </button>
+    </button>
 
-            </div>
+    <button
+        id="cerrarAlumnos"
+        class="btn btn-danger">
+
+        Cerrar
+
+    </button>
+
+</div>
 
         </div>
     `;
@@ -436,6 +444,10 @@ document.getElementById("cerrarAlumnos").onclick = () => {
     overlay.remove();
 };
 
+document
+    .getElementById("guardarAlumnos")
+    .onclick = guardarAlumnos;
+    
     async function cargarAlumnos() {
 
     const lista = document.getElementById("listaAlumnos");
@@ -522,6 +534,68 @@ document.getElementById("cerrarAlumnos").onclick = () => {
 document
     .getElementById("fechaFiltro")
     .addEventListener("change", cargarAlumnos);
+
+    async function guardarAlumnos() {
+
+    const checks = document.querySelectorAll(
+        '#listaAlumnos input[type="checkbox"]:checked'
+    );
+
+    if (checks.length === 0) {
+
+        alert("Seleccione al menos un alumno.");
+
+        return;
+
+    }
+
+    const batch = writeBatch(db);
+
+    for (const check of checks) {
+
+        const usuarioId = check.value;
+
+        const usuarioSnap = await getDoc(
+            doc(db, "usuarios", usuarioId)
+        );
+
+        if (!usuarioSnap.exists()) continue;
+
+        const alumno = usuarioSnap.data();
+
+        const ref = doc(
+            db,
+            "aula_integrantes",
+            aulaId + "_" + usuarioId
+        );
+
+        batch.set(ref, {
+
+            aulaId,
+
+            usuarioId,
+
+            perfil: alumno.perfil,
+
+            entidad: alumno.entidad,
+
+            nombreResponsable: alumno.nombreResponsable,
+
+            email: alumno.email,
+
+            fechaAsignacion: serverTimestamp()
+
+        });
+
+    }
+
+    await batch.commit();
+
+    alert("Alumnos asignados correctamente.");
+
+    overlay.remove();
+
+}
     
 }
     
