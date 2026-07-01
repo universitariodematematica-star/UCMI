@@ -436,59 +436,78 @@ async function abrirSelectorAlumnos(aulaId, entidad) {
 
     async function cargarAlumnos() {
 
-        const lista = document.getElementById("listaAlumnos");
+    const lista = document.getElementById("listaAlumnos");
 
-        lista.innerHTML = "Cargando...";
+    lista.innerHTML = "Cargando...";
 
-        const q = query(
-            collection(db,"usuarios"),
-            where("entidad","==",entidad),
-            where("perfil","==","Estudiante Academia")
+    const fechaSeleccionada = document.getElementById("fechaFiltro").value;
+
+    let fechaMinima = null;
+
+    if (fechaSeleccionada) {
+
+        fechaMinima = Timestamp.fromDate(
+            new Date(fechaSeleccionada + "T00:00:00")
         );
-
-        const snap = await getDocs(q);
-
-        lista.innerHTML = "";
-
-        snap.forEach(docSnap=>{
-
-            const d = docSnap.data();
-
-            lista.innerHTML += `
-                <div
-                    class="d-flex justify-content-between align-items-center border-bottom py-2">
-
-                    <div>
-
-                        <strong>
-
-                            ${d.nombreResponsable}
-
-                        </strong>
-
-                        <br>
-
-                        <small>
-
-                            ${d.email}
-
-                        </small>
-
-                    </div>
-
-                    <input
-                        type="checkbox"
-                        value="${docSnap.id}">
-
-                </div>
-            `;
-
-        });
 
     }
 
-    cargarAlumnos();
+    const q = query(
+        collection(db, "usuarios"),
+        where("entidad", "==", entidad),
+        where("perfil", "==", "Estudiante Academia")
+    );
 
+    const snap = await getDocs(q);
+
+    lista.innerHTML = "";
+
+    snap.forEach(docSnap => {
+
+        const d = docSnap.data();
+
+        if (fechaMinima && d.fechaRegistro) {
+
+            if (d.fechaRegistro.seconds < fechaMinima.seconds) {
+                return;
+            }
+
+        }
+
+        lista.innerHTML += `
+            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+
+                <div>
+
+                    <strong style="color:white;">
+                        ${d.nombreResponsable}
+                    </strong>
+
+                    <br>
+
+                    <small style="opacity:.7;">
+                        ${d.email}
+                    </small>
+
+                </div>
+
+                <input
+                    type="checkbox"
+                    value="${docSnap.id}">
+
+            </div>
+        `;
+
+    });
+
+}
+
+    cargarAlumnos();
+    
+document
+    .getElementById("fechaFiltro")
+    .addEventListener("change", cargarAlumnos);
+    
 }
     
 </script>
