@@ -430,27 +430,39 @@ async function abrirSelectorAlumnos(aulaId, entidad) {
 
     document.body.appendChild(overlay);
 
-    document.getElementById("cerrarAlumnos").onclick = () => {
-        overlay.remove();
-    };
+document.getElementById("fechaFiltro").value = "";
+
+document.getElementById("cerrarAlumnos").onclick = () => {
+    overlay.remove();
+};
 
     async function cargarAlumnos() {
 
     const lista = document.getElementById("listaAlumnos");
 
+    const fechaSeleccionada =
+        document.getElementById("fechaFiltro").value;
+
+    if (!fechaSeleccionada) {
+
+        lista.innerHTML = `
+            <div
+                class="text-center py-4"
+                style="color:rgba(255,255,255,.6);">
+
+                Seleccione una fecha para mostrar los alumnos.
+
+            </div>
+        `;
+
+        return;
+    }
+
     lista.innerHTML = "Cargando...";
 
-    const fechaSeleccionada = document.getElementById("fechaFiltro").value;
-
-    let fechaMinima = null;
-
-    if (fechaSeleccionada) {
-
-        fechaMinima = Timestamp.fromDate(
-            new Date(fechaSeleccionada + "T00:00:00")
-        );
-
-    }
+    const fechaMinima = Timestamp.fromDate(
+        new Date(fechaSeleccionada + "T00:00:00")
+    );
 
     const q = query(
         collection(db, "usuarios"),
