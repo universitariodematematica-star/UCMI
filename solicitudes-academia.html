@@ -425,59 +425,109 @@ window.verExpediente = async (id) => {
     const d = currentData;
     const esDocente = d.perfil === "Docente Academia";
 
-    /* ---------------- ASIGNATURAS CORREGIDO ---------------- */
+    /* ---------------- ASIGNATURAS (MAP COMPLETO) ---------------- */
     let htmlAsignaturas = "";
 
     if (Array.isArray(d.asignaturas) && d.asignaturas.length > 0) {
         htmlAsignaturas = `
-            <div class="col-12 mb-3">
+            <div class="col-12 mt-3">
                 <label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">
                     ASIGNATURAS
                 </label><br>
-                ${d.asignaturas.map(a => {
-                    const nombre = a?.nombre || "Sin nombre";
-                    return `<span class="badge bg-primary me-1">${nombre}</span>`;
-                }).join("")}
+        `;
+
+        d.asignaturas.forEach(a => {
+            htmlAsignaturas += `
+                <span class="badge bg-primary me-1 mb-1">
+                    ${a.nombre || "Sin nombre"}
+                </span>
+            `;
+        });
+
+        htmlAsignaturas += `</div>`;
+    }
+
+    /* ---------------- HORARIOS ---------------- */
+    let htmlHorarios = "";
+
+    if (esDocente && Array.isArray(d.horarios)) {
+        const dias = ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'];
+        const agrupado = {};
+
+        d.horarios.forEach(idx => {
+            const dia = dias[idx % 7];
+            const hora = Math.floor(idx / 7);
+
+            if (!agrupado[dia]) agrupado[dia] = [];
+            agrupado[dia].push(`${hora}:00`);
+        });
+
+        htmlHorarios = `
+            <div class="col-12 mt-3">
+                <label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">
+                    HORARIOS
+                </label>
             </div>
         `;
+
+        dias.forEach(dia => {
+            if (agrupado[dia]) {
+                htmlHorarios += `
+                    <div class="col-12 mb-1">
+                        <b>${dia}:</b> ${agrupado[dia].sort((a,b)=>a-b).join(', ')}
+                    </div>
+                `;
+            }
+        });
     }
 
-    let html = `<div class="col-12 mb-4">
-        <h5 style="color:var(--dorado-ucmi)">Expediente del Aspirante</h5>
-    </div>`;
+    /* ---------------- BLOQUE GENERAL ---------------- */
+    let html = `
+        <div class="col-12 mb-4">
+            <h5 style="color:var(--dorado-ucmi)">Expediente del Aspirante</h5>
+        </div>
+    `;
 
+    /* ---------------- DOCENTE ---------------- */
     if (esDocente) {
         html += `
-        <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">
-            Datos del Docente
-        </div>
+            <div class="col-12 mb-3"><b>PERFIL:</b><br>${d.perfil}</div>
 
-        <div class="col-6 mb-3"><b>NOMBRE:</b><br>${d.nombreResponsable}</div>
-        <div class="col-6 mb-3"><b>DNI:</b><br>${d.dniDocente}</div>
-        <div class="col-6 mb-3"><b>EMAIL:</b><br>${d.email}</div>
-        <div class="col-6 mb-3"><b>WHATSAPP:</b><br>${d.whatsapp}</div>
-        <div class="col-6 mb-3"><b>TÍTULO:</b><br>${d.titulo}</div>
-        <div class="col-6 mb-3"><b>EXPERIENCIA:</b><br>${d.experienciaDocente}</div>
+            <div class="col-6 mb-3"><b>NOMBRE:</b><br>${d.nombreResponsable}</div>
+            <div class="col-6 mb-3"><b>DNI:</b><br>${d.dniDocente}</div>
+            <div class="col-6 mb-3"><b>EMAIL:</b><br>${d.email}</div>
+            <div class="col-6 mb-3"><b>WHATSAPP:</b><br>${d.whatsapp}</div>
+            <div class="col-6 mb-3"><b>TÍTULO:</b><br>${d.titulo}</div>
+            <div class="col-6 mb-3"><b>INSTITUCIÓN:</b><br>${d.institucion_titulo}</div>
+            <div class="col-6 mb-3"><b>EXPERIENCIA:</b><br>${d.experienciaDocente}</div>
+            <div class="col-6 mb-3"><b>UBICACIÓN:</b><br>${d.ubicacion}</div>
+            <div class="col-6 mb-3"><b>NIVELES:</b><br>${d.niveles_atencion}</div>
+            <div class="col-12 mb-3"><b>ENLACE SÍNTESIS:</b><br>${d.enlaceSintesis}</div>
+            <div class="col-12 mb-3"><b>RAZÓN:</b><br>${d.razon_deseo_pertenencia}</div>
+            <div class="col-6 mb-3"><b>FECHA:</b><br>${d.fecha || d.fechaRegistro}</div>
 
-        ${htmlAsignaturas}
-        `;
-    } else {
-        html += `
-        <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">
-            Datos del Estudiante
-        </div>
-
-        <div class="col-6 mb-3"><b>NOMBRE:</b><br>${d.nombreResponsable}</div>
-        <div class="col-6 mb-3"><b>DNI:</b><br>${d.dniEstudiante}</div>
-        <div class="col-6 mb-3"><b>EMAIL:</b><br>${d.email}</div>
-        <div class="col-6 mb-3"><b>WHATSAPP:</b><br>${d.whatsapp}</div>
-        <div class="col-6 mb-3"><b>UBICACIÓN:</b><br>${d.ubicacion}</div>
-
-        ${htmlAsignaturas}
+            ${htmlAsignaturas}
+            ${htmlHorarios}
         `;
     }
 
-    document.getElementById('contenidoModal').innerHTML = `<div class="row">${html}</div>`;
+    /* ---------------- ESTUDIANTE ---------------- */
+    else {
+        html += `
+            <div class="col-6 mb-3"><b>NOMBRE:</b><br>${d.nombreResponsable}</div>
+            <div class="col-6 mb-3"><b>DNI:</b><br>${d.dniEstudiante}</div>
+            <div class="col-6 mb-3"><b>EMAIL:</b><br>${d.email}</div>
+            <div class="col-6 mb-3"><b>WHATSAPP:</b><br>${d.whatsapp}</div>
+            <div class="col-6 mb-3"><b>UBICACIÓN:</b><br>${d.ubicacion}</div>
+            <div class="col-6 mb-3"><b>FECHA:</b><br>${d.fecha || d.fechaRegistro}</div>
+
+            ${htmlAsignaturas}
+        `;
+    }
+
+    document.getElementById('contenidoModal').innerHTML =
+        `<div class="row">${html}</div>`;
+
     new bootstrap.Modal(document.getElementById('modalDetalles')).show();
 };
 
