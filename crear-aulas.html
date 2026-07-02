@@ -833,14 +833,12 @@ async function abrirSelectorProfesores(aulaId, entidad) {
 
     // 3. Docentes
     const docentesSnap = await getDocs(
-    query(
-        collection(db, "usuarios"),
-        where("entidad", "==", entidad),
-        where("perfil", "==", "Docente Academia")
-    )
-);
-
-console.log("DOCENTES TOTAL:", docentesSnap.size);
+        query(
+            collection(db, "usuarios"),
+            where("entidad", "==", entidad),
+            where("perfil", "==", "Docente Academia")
+        )
+    );
 
     lista.innerHTML = "";
 
@@ -850,12 +848,10 @@ console.log("DOCENTES TOTAL:", docentesSnap.size);
 
         const d = docSnap.data();
 
-        const asignaturasDocente = Array.isArray(d.asignaturas)
-    ? d.asignaturas
-    : [];
+        const asignaturasDocente = d.asignaturas || [];
 
-        const coincide = (asignaturasDocente || []).some(a =>
-            a?.asignatura && asignaturasCurso.includes(a.asignatura)
+        const coincide = asignaturasDocente.some(a =>
+            asignaturasCurso.includes(a.asignatura)
         );
 
         if (!coincide) return;
@@ -865,18 +861,8 @@ console.log("DOCENTES TOTAL:", docentesSnap.size);
         lista.innerHTML += `
             <div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.1)">
                 <input type="checkbox" value="${docSnap.id}">
-                👨‍🏫 👨‍🏫 ${
-    d.nombreResponsable ??
-    d.nombre ??
-    d.email ??
-    "Sin nombre"
-}
-                <small style="opacity:.7">
-                (${(asignaturasDocente || [])
-                    .map(a => a?.asignatura)
-                    .filter(Boolean)
-                    .join(", ")})
-                </small>
+                👨‍🏫 ${d.nombreResponsable}
+                <small style="opacity:.7">(${asignaturasDocente.map(a => a.asignatura).join(", ")})</small>
             </div>
         `;
     });
