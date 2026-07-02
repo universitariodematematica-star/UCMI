@@ -52,11 +52,51 @@
                 <div class="col-md-6"><label class="form-label">Años de experiencia</label><input type="number" id="anos_experiencia_docente" class="form-control" required></div>
                 <div class="col-md-6"><label class="form-label">Niveles que puede atender</label><input type="text" id="niveles_atencion" class="form-control" required></div>
             </div>
-            <label class="form-label">Disponibilidad Horaria:</label>
-            <div class="grid-container"><div class="grid-horaria" id="gridHoraria"></div></div>
-            <label class="form-label">¿Por qué quiere formar parte de nuestra institución?</label>
-            <textarea id="razon_deseo_pertenencia" class="form-control" rows="3" required></textarea>
-            <button type="submit" class="btn btn-enviar">REVISAR POSTULACIÓN</button>
+            <label class="form-label">
+    Asignaturas que puede impartir
+</label>
+
+<div
+    id="listaAsignaturas"
+    class="mb-4"
+    style="
+        background:rgba(255,255,255,.05);
+        border:1px solid rgba(255,255,255,.15);
+        border-radius:12px;
+        padding:15px;
+        max-height:220px;
+        overflow-y:auto;
+    ">
+
+    <div style="opacity:.7;">
+        Cargando asignaturas...
+    </div>
+
+</div>
+
+<label class="form-label">Disponibilidad Horaria:</label>
+
+<div class="grid-container">
+    <div class="grid-horaria" id="gridHoraria"></div>
+</div>
+
+<label class="form-label">
+    ¿Por qué quiere formar parte de nuestra institución?
+</label>
+
+<textarea
+    id="razon_deseo_pertenencia"
+    class="form-control"
+    rows="3"
+    required></textarea>
+
+<button
+    type="submit"
+    class="btn btn-enviar">
+
+    REVISAR POSTULACIÓN
+
+</button>
         </form>
     </div>
 </div>
@@ -83,13 +123,86 @@
     const refEntidad = urlParams.get('ref');
 
     if (refEntidad) {
-        db.collection("usuarios")
-  .where("entidad", "==", refEntidad)
-  .where("perfil", "==", "Academia") // <--- ESTO ES LO QUE ARREGLA TODO
-  .get().then(snapshot => {
-            snapshot.forEach(doc => { const data = doc.data(); if(data.logoCustom) document.getElementById('logoAcademia').src = data.logoCustom; });
+
+    // ==========================
+    // CARGAR LOGO DE LA ACADEMIA
+    // ==========================
+    db.collection("usuarios")
+        .where("entidad", "==", refEntidad)
+        .where("perfil", "==", "Academia")
+        .get()
+        .then(snapshot => {
+
+            snapshot.forEach(doc => {
+
+                const data = doc.data();
+
+                if (data.logoCustom) {
+                    document.getElementById("logoAcademia").src =
+                        data.logoCustom;
+                }
+
+            });
+
         });
-    }
+
+    // ==========================
+    // CARGAR ASIGNATURAS
+    // ==========================
+    db.collection("asignaturas")
+        .where("entidad", "==", refEntidad)
+        .orderBy("asignatura")
+        .get()
+        .then(snapshot => {
+
+            const contenedor =
+                document.getElementById("listaAsignaturas");
+
+            contenedor.innerHTML = "";
+
+            if (snapshot.empty) {
+
+                contenedor.innerHTML = `
+                    <div style="opacity:.7;">
+                        Esta academia todavía no ha creado asignaturas.
+                    </div>
+                `;
+
+                return;
+            }
+
+            snapshot.forEach(doc => {
+
+                const asignatura = doc.data();
+
+                contenedor.innerHTML += `
+
+                    <div
+                        class="form-check mb-2">
+
+                        <input
+                            class="form-check-input asignaturaCheck"
+                            type="checkbox"
+                            value="${doc.id}"
+                            id="asig_${doc.id}">
+
+                        <label
+                            class="form-check-label"
+                            for="asig_${doc.id}">
+
+                            ${asignatura.asignatura}
+
+                        </label>
+
+                    </div>
+
+                `;
+
+            });
+
+        });
+
+}
 
     const grid = document.getElementById('gridHoraria');
     grid.innerHTML = '<div></div>';
