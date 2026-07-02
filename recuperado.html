@@ -157,46 +157,26 @@ onAuthStateChanged(auth, async (user) => {
     const datosUsuario = usuarioSnap.data();
 
     // =========================
-// CARGAR INTEGRANTES DE TODAS LAS AULAS (TIEMPO REAL)
+// CARGAR INTEGRANTES DE TODAS LAS AULAS
 // =========================
 const integrantesPorAula = {};
 
-const qIntegrantes = query(
-    collection(db, "aula_integrantes"),
-    where("entidad", "==", datosUsuario.entidad)
+const integrantesSnap = await getDocs(
+    query(
+        collection(db, "aula_integrantes"),
+        where("entidad", "==", datosUsuario.entidad)
+    )
 );
 
-onSnapshot(qIntegrantes, (snapshot) => {
+integrantesSnap.forEach(docSnap => {
 
-    // Vaciar el objeto
-    Object.keys(integrantesPorAula).forEach(key => {
-        delete integrantesPorAula[key];
-    });
+    const integrante = docSnap.data();
 
-    snapshot.forEach(docSnap => {
+    if (!integrantesPorAula[integrante.aulaId]) {
+        integrantesPorAula[integrante.aulaId] = [];
+    }
 
-        const integrante = docSnap.data();
-
-        if (!integrantesPorAula[integrante.aulaId]) {
-            integrantesPorAula[integrante.aulaId] = [];
-        }
-
-        integrantesPorAula[integrante.aulaId].push(integrante);
-
-    });
-
-    // Ordenar alfabéticamente
-    Object.values(integrantesPorAula).forEach(lista => {
-
-        lista.sort((a, b) =>
-            a.nombreResponsable.localeCompare(
-                b.nombreResponsable,
-                "es",
-                { sensitivity: "base" }
-            )
-        );
-
-    });
+    integrantesPorAula[integrante.aulaId].push(integrante);
 
 });
 
@@ -285,13 +265,18 @@ onSnapshot(qIntegrantes, (snapshot) => {
                 data-id="${docSnap.id}">
                 👥 Alumnos
             </button>
-
+            
+            <button
+                class="btn btn-sm btn-secondary btnProfesores"
+                data-id="${docSnap.id}">
+                👨‍🏫 Profesores
+            </button>
+            
             <button
                 class="btn btn-sm btn-danger btnBorrar"
                 data-id="${docSnap.id}">
                 🗑️ Borrar
             </button>
-
         </div>
 
     </div>
@@ -329,31 +314,16 @@ document.querySelectorAll(".aula-card").forEach(card => {
 
             integrantes.forEach(alumno => {
 
-    html += `
-        <div style="
-            padding:8px 0;
-            border-bottom:1px solid rgba(255,255,255,.08);
-        ">
+                html += `
+                    <div style="
+                        padding:4px 0;
+                        border-bottom:1px solid rgba(255,255,255,.08);
+                    ">
+                        👤 ${alumno.nombreResponsable}
+                    </div>
+                `;
 
-            <div style="
-                font-weight:600;
-                color:white;
-            ">
-                👤 ${alumno.nombreResponsable}
-            </div>
-
-            <div style="
-                font-size:.82rem;
-                opacity:.65;
-                margin-left:22px;
-            ">
-                ${alumno.email}
-            </div>
-
-        </div>
-    `;
-
-});
+            });
 
         }
 
@@ -364,10 +334,41 @@ document.querySelectorAll(".aula-card").forEach(card => {
 
     card.addEventListener("mousemove", (e) => {
 
-        popupIntegrantes.style.left = (e.clientX + 15) + "px";
-        popupIntegrantes.style.top = (e.clientY + 15) + "px";
+    const margen = 15;
 
-    });
+    let left = e.clientX + margen;
+    let top = e.clientY + margen;
+
+    const popupWidth = popupIntegrantes.offsetWidth;
+    const popupHeight = popupIntegrantes.offsetHeight;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Si se sale por la derecha, mostrar a la izquierda del cursor
+    if (left + popupWidth > viewportWidth - margen) {
+        left = e.clientX - popupWidth - margen;
+    }
+
+    // Si se sale por abajo, mostrar encima del cursor
+    if (top + popupHeight > viewportHeight - margen) {
+        top = e.clientY - popupHeight - margen;
+    }
+
+    // Evitar que quede fuera por la izquierda
+    if (left < margen) {
+        left = margen;
+    }
+
+    // Evitar que quede fuera por arriba
+    if (top < margen) {
+        top = margen;
+    }
+
+    popupIntegrantes.style.left = left + "px";
+    popupIntegrantes.style.top = top + "px";
+
+});
 
     card.addEventListener("mouseleave", () => {
 
