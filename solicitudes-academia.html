@@ -391,30 +391,39 @@ document.getElementById('filtroPerfil').addEventListener('change', renderizar);
 
         let htmlAsignaturas = "";
 
-const qAsig = query(
-    collection(db, "asignaturas"),
-    where("entidad", "==", d.entidad)
-);
+if (Array.isArray(d.asignaturas) && d.asignaturas.length > 0) {
 
-const snapAsig = await getDocs(qAsig);
+    htmlAsignaturas += `
+        <div class="col-12 mb-3 text-uppercase" 
+            style="color:var(--dorado-ucmi); font-weight:bold;">
+            Asignaturas postuladas
+        </div>
+    `;
 
-if (!snapAsig.empty) {
-    htmlAsignaturas += `<div class="col-12 mb-3 text-uppercase" 
-        style="color:var(--dorado-ucmi); font-weight:bold;">
-        Asignaturas postuladas
-    </div>`;
-
-    snapAsig.forEach(docA => {
-        const a = docA.data();
-
+    d.asignaturas.forEach(a => {
         htmlAsignaturas += `
             <div class="col-6 mb-2">
                 <span class="badge bg-secondary">
-                    ${a.asignatura}
+                    ${a.nombre}
                 </span>
             </div>
         `;
     });
+
+} else {
+
+    htmlAsignaturas += `
+        <div class="col-12 mb-3 text-uppercase" 
+            style="color:var(--dorado-ucmi); font-weight:bold;">
+            Asignaturas postuladas
+        </div>
+
+        <div class="col-12">
+            <span style="color:#e74c3c;">
+                No se registraron asignaturas seleccionadas
+            </span>
+        </div>
+    `;
 }
         
         const esDocente = d.perfil === "Docente Academia";
