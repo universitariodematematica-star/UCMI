@@ -778,16 +778,18 @@ async function abrirSelectorProfesores(aulaId, entidad) {
                 Asignar profesores al aula
             </h4>
 
-            <div id="listaProfesores">Cargando...</div>
+            <div id="listaProfesores">
+                Cargando...
+            </div>
 
             <div class="mt-4 d-flex justify-content-between">
 
-                <button id="cerrarProfesores" class="btn btn-danger">
-                    Cerrar
+                <button id="guardarProfesores" class="btn btn-success">
+                    Guardar profesores
                 </button>
 
-                <button id="guardarProfesores" class="btn btn-success">
-                    Guardar
+                <button id="cerrarProfesores" class="btn btn-danger">
+                    Cerrar
                 </button>
 
             </div>
@@ -797,13 +799,40 @@ async function abrirSelectorProfesores(aulaId, entidad) {
 
     document.body.appendChild(overlay);
 
-    document.getElementById("cerrarProfesores").onclick = () => {
-        overlay.remove();
-    };
+    document.getElementById("cerrarProfesores").onclick = () => overlay.remove();
 
     const lista = document.getElementById("listaProfesores");
 
-    const snap = await getDocs(
+    // 1. Aula
+    const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
+    if (!aulaSnap.exists()) {
+        lista.innerHTML = "El aula no existe.";
+        return;
+    }
+
+    const aula = aulaSnap.data();
+
+    if (!aula.cursoId) {
+        lista.innerHTML = "El aula no tiene curso asignado.";
+        return;
+    }
+
+    // 2. Asignaturas del curso
+    const asignaturasSnap = await getDocs(
+        query(
+            collection(db, "curso_asignaturas"),
+            where("cursoId", "==", aula.cursoId),
+            where("entidad", "==", entidad)
+        )
+    );
+
+    const asignaturasCurso = [];
+    asignaturasSnap.forEach(d => {
+        asignaturasCurso.push(d.data().asignatura);
+    });
+
+    // 3. Docentes
+    const docentesSnap = await getDocs(
         query(
             collection(db, "usuarios"),
             where("entidad", "==", entidad),
@@ -813,26 +842,39 @@ async function abrirSelectorProfesores(aulaId, entidad) {
 
     lista.innerHTML = "";
 
-    snap.forEach(docSnap => {
+    let encontrados = 0;
+
+    docentesSnap.forEach(docSnap => {
 
         const d = docSnap.data();
 
+        const asignaturasDocente = d.asignaturas || [];
+
+        const coincide = asignaturasDocente.some(a =>
+            asignaturasCurso.includes(a.asignatura)
+        );
+
+        if (!coincide) return;
+
+        encontrados++;
+
         lista.innerHTML += `
-            <div class="d-flex gap-2 align-items-center py-1">
+            <div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.1)">
                 <input type="checkbox" value="${docSnap.id}">
-                <span>${d.nombreResponsable}</span>
+                👨‍🏫 ${d.nombreResponsable}
+                <small style="opacity:.7">(${asignaturasDocente.map(a => a.asignatura).join(", ")})</small>
             </div>
         `;
     });
 
+    if (encontrados === 0) {
+        lista.innerHTML = "No hay docentes con asignaturas compatibles.";
+    }
+
+    // Guardar
     document.getElementById("guardarProfesores").onclick = async () => {
 
         const checks = overlay.querySelectorAll("input[type=checkbox]:checked");
-
-        if (checks.length === 0) {
-            alert("Selecciona al menos un profesor");
-            return;
-        }
 
         const batch = writeBatch(db);
 
@@ -844,8 +886,7 @@ async function abrirSelectorProfesores(aulaId, entidad) {
                 aulaId,
                 usuarioId: c.value,
                 perfil: "Docente Academia",
-                entidad,
-                fechaAsignacion: serverTimestamp()
+                entidad
             });
 
         });
@@ -853,7 +894,7 @@ async function abrirSelectorProfesores(aulaId, entidad) {
         await batch.commit();
 
         overlay.remove();
-        alert("Profesores asignados correctamente");
+        alert("Profesores asignados correctamente.");
     };
 }    
     
