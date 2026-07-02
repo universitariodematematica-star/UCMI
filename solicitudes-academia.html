@@ -388,6 +388,35 @@ document.getElementById('filtroPerfil').addEventListener('change', renderizar);
         currentId = id; 
         currentData = snap.data();
         const d = currentData;
+
+        let htmlAsignaturas = "";
+
+const qAsig = query(
+    collection(db, "asignaturas"),
+    where("entidad", "==", d.entidad)
+);
+
+const snapAsig = await getDocs(qAsig);
+
+if (!snapAsig.empty) {
+    htmlAsignaturas += `<div class="col-12 mb-3 text-uppercase" 
+        style="color:var(--dorado-ucmi); font-weight:bold;">
+        Asignaturas postuladas
+    </div>`;
+
+    snapAsig.forEach(docA => {
+        const a = docA.data();
+
+        htmlAsignaturas += `
+            <div class="col-6 mb-2">
+                <span class="badge bg-secondary">
+                    ${a.asignatura}
+                </span>
+            </div>
+        `;
+    });
+}
+        
         const esDocente = d.perfil === "Docente Academia";
         
         // Preparar horarios si es docente
@@ -415,7 +444,14 @@ document.getElementById('filtroPerfil').addEventListener('change', renderizar);
             <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div>
             <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NIVELES</label><br>${d.niveles_atencion}</div>
             <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">RAZÓN DE PERTENECIA</label><br>${d.razon_deseo_pertenencia}</div>
-            <div class="col-12 mt-2"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DISPONIBILIDAD HORARIA</label></div>${htmlHorarios}`;
+
+            <div class="col-12 mt-2"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DISPONIBILIDAD HORARIA</label></div>
+            ${htmlHorarios}
+            
+            <div class="col-12 mt-3">
+                ${htmlAsignaturas}
+            </div>
+            `;
         } else {
             html += `
             <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Estudiante</div>
