@@ -429,7 +429,14 @@ document.querySelectorAll(".aula-card").forEach(card => {
         }
 
         if (e.target.classList.contains("btnAlumnos")) {
-        abrirSelectorAlumnos(
+    abrirSelectorAlumnos(
+        e.target.dataset.id,
+        datosUsuario.entidad
+    );
+}
+
+if (e.target.classList.contains("btnProfesores")) {
+    abrirSelectorProfesores(
         e.target.dataset.id,
         datosUsuario.entidad
     );
@@ -749,6 +756,130 @@ document
 }
     
 }
+
+// =========================
+// MODAL PROFESORES
+// =========================
+async function abrirSelectorProfesores(aulaId, entidad) {
+
+    const overlay = document.createElement("div");
+
+    overlay.style.position = "fixed";
+    overlay.style.left = "0";
+    overlay.style.top = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,.75)";
+    overlay.style.display = "flex";
+    overlay.style.justifyContent = "center";
+    overlay.style.alignItems = "center";
+    overlay.style.zIndex = "99999";
+
+    overlay.innerHTML = `
+        <div style="
+            width:900px;
+            max-width:95%;
+            max-height:90%;
+            overflow:auto;
+            background:#111;
+            border-radius:16px;
+            padding:25px;
+            color:white;
+        ">
+
+            <h4 class="mb-4">
+                Asignar profesores al aula
+            </h4>
+
+            <div id="listaProfesores">
+                Cargando...
+            </div>
+
+            <div class="mt-4 d-flex justify-content-between">
+
+                <button
+                    id="guardarProfesores"
+                    class="btn btn-success">
+
+                    Guardar profesores
+
+                </button>
+
+                <button
+                    id="cerrarProfesores"
+                    class="btn btn-danger">
+
+                    Cerrar
+
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    document.getElementById("cerrarProfesores").onclick = () => {
+        overlay.remove();
+    };
+
+    const listaProfesores = document.getElementById("listaProfesores");
+
+// Obtener el aula
+const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
+
+if (!aulaSnap.exists()) {
+
+    listaProfesores.innerHTML = `
+        <div class="text-center">
+            El aula no existe.
+        </div>
+    `;
+
+    return;
+}
+
+const aula = aulaSnap.data();
+
+if (!aula.cursoId) {
+
+    listaProfesores.innerHTML = `
+        <div class="text-center">
+            Esta aula todavía no tiene un curso asignado.
+        </div>
+    `;
+
+    return;
+}
+
+// Obtener asignaturas del curso
+const asignaturasCursoSnap = await getDocs(
+    query(
+        collection(db, "curso_asignaturas"),
+        where("cursoId", "==", aula.cursoId),
+        where("entidad", "==", entidad)
+    )
+);
+
+const asignaturasCurso = [];
+
+asignaturasCursoSnap.forEach(docSnap => {
+    asignaturasCurso.push(docSnap.data().asignatura);
+});
+
+// Obtener docentes
+const docentesSnap = await getDocs(
+    query(
+        collection(db, "usuarios"),
+        where("entidad", "==", entidad),
+        where("perfil", "==", "Docente Academia")
+    )
+);
+
+listaProfesores.innerHTML = "";
+
+}    
     
 </script>
 
