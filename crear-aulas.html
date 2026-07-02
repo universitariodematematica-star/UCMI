@@ -835,7 +835,8 @@ async function abrirSelectorProfesores(aulaId, entidad) {
     const docentesSnap = await getDocs(
     query(
         collection(db, "usuarios"),
-        where("entidad", "==", entidad)
+        where("entidad", "==", entidad),
+        where("perfil", "==", "Docente Academia")
     )
 );
 
@@ -849,7 +850,9 @@ console.log("DOCENTES TOTAL:", docentesSnap.size);
 
         const d = docSnap.data();
 
-        const asignaturasDocente = d.asignaturas || [];
+        const asignaturasDocente = Array.isArray(d.asignaturas)
+    ? d.asignaturas
+    : [];
 
         const coincide = (asignaturasDocente || []).some(a =>
             a?.asignatura && asignaturasCurso.includes(a.asignatura)
@@ -862,7 +865,12 @@ console.log("DOCENTES TOTAL:", docentesSnap.size);
         lista.innerHTML += `
             <div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.1)">
                 <input type="checkbox" value="${docSnap.id}">
-                👨‍🏫 ${d.nombreResponsable}
+                👨‍🏫 👨‍🏫 ${
+    d.nombreResponsable ??
+    d.nombre ??
+    d.email ??
+    "Sin nombre"
+}
                 <small style="opacity:.7">
                 (${(asignaturasDocente || [])
                     .map(a => a?.asignatura)
