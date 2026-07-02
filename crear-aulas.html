@@ -872,6 +872,7 @@ asignaturasCursoSnap.forEach(docSnap => {
 });
 
 // Obtener docentes
+// Obtener docentes
 const docentesSnap = await getDocs(
     query(
         collection(db, "usuarios"),
@@ -879,6 +880,138 @@ const docentesSnap = await getDocs(
         where("perfil", "==", "Docente Academia")
     )
 );
+
+listaProfesores.innerHTML = "";
+
+let encontrados = 0;
+
+docentesSnap.forEach(docSnap => {
+
+    const docente = docSnap.data();
+
+    let coincide = false;
+
+    if (Array.isArray(docente.asignaturas)) {
+
+        coincide = docente.asignaturas.some(a =>
+            asignaturasCurso.includes(a.asignatura)
+        );
+
+    }
+
+    if (!coincide) return;
+
+    encontrados++;
+
+    const materias = docente.asignaturas
+        .map(a => a.asignatura)
+        .join(", ");
+
+    listaProfesores.innerHTML += `
+        <div
+            class="d-flex justify-content-between align-items-center border-bottom py-2">
+
+            <div>
+
+                <strong style="color:white;">
+                    ${docente.nombreResponsable}
+                </strong>
+
+                <br>
+
+                <small style="opacity:.7;">
+                    ${materias}
+                </small>
+
+            </div>
+
+            <input
+                type="checkbox"
+                value="${docSnap.id}">
+
+        </div>
+    `;
+
+});
+
+if (encontrados === 0) {
+
+    listaProfesores.innerHTML = `
+        <div
+            class="text-center py-4"
+            style="color:rgba(255,255,255,.6);">
+
+            No existen profesores para las asignaturas de este curso.
+
+        </div>
+    `;
+
+}
+
+document.getElementById("guardarProfesores").onclick =
+async () => {
+
+    const checks = document.querySelectorAll(
+        '#listaProfesores input[type="checkbox"]:checked'
+    );
+
+    if (checks.length === 0) {
+
+        alert("Seleccione al menos un profesor.");
+
+        return;
+
+    }
+
+    const batch = writeBatch(db);
+
+    for (const check of checks) {
+
+        const usuarioId = check.value;
+
+        const usuarioSnap = await getDoc(
+            doc(db, "usuarios", usuarioId)
+        );
+
+        if (!usuarioSnap.exists()) continue;
+
+        const profesor = usuarioSnap.data();
+
+        const ref = doc(
+            db,
+            "aula_integrantes",
+            aulaId + "_" + usuarioId
+        );
+
+        batch.set(ref, {
+
+            aulaId,
+
+            usuarioId,
+
+            perfil: profesor.perfil,
+
+            entidad: profesor.entidad,
+
+            nombreResponsable: profesor.nombreResponsable,
+
+            email: profesor.email,
+
+            fechaAsignacion: serverTimestamp()
+
+        });
+
+    }
+
+    await batch.commit();
+
+    alert("Profesores asignados correctamente.");
+
+    overlay.remove();
+
+};
+
+};
 
 listaProfesores.innerHTML = "";
 
