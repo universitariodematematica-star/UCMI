@@ -388,44 +388,6 @@ document.getElementById('filtroPerfil').addEventListener('change', renderizar);
         currentId = id; 
         currentData = snap.data();
         const d = currentData;
-
-        let htmlAsignaturas = "";
-
-if (Array.isArray(d.asignaturas) && d.asignaturas.length > 0) {
-
-    htmlAsignaturas += `
-        <div class="col-12 mb-3 text-uppercase" 
-            style="color:var(--dorado-ucmi); font-weight:bold;">
-            Asignaturas postuladas
-        </div>
-    `;
-
-    d.asignaturas.forEach(a => {
-        htmlAsignaturas += `
-            <div class="col-6 mb-2">
-                <span class="badge bg-secondary">
-                    ${a.nombre}
-                </span>
-            </div>
-        `;
-    });
-
-} else {
-
-    htmlAsignaturas += `
-        <div class="col-12 mb-3 text-uppercase" 
-            style="color:var(--dorado-ucmi); font-weight:bold;">
-            Asignaturas postuladas
-        </div>
-
-        <div class="col-12">
-            <span style="color:#e74c3c;">
-                No se registraron asignaturas seleccionadas
-            </span>
-        </div>
-    `;
-}
-        
         const esDocente = d.perfil === "Docente Academia";
         
         // Preparar horarios si es docente
@@ -453,14 +415,7 @@ if (Array.isArray(d.asignaturas) && d.asignaturas.length > 0) {
             <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO ELECTRÓNICO</label><br>${d.email}</div>
             <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NIVELES</label><br>${d.niveles_atencion}</div>
             <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">RAZÓN DE PERTENECIA</label><br>${d.razon_deseo_pertenencia}</div>
-
-            <div class="col-12 mt-2"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DISPONIBILIDAD HORARIA</label></div>
-            ${htmlHorarios}
-            
-            <div class="col-12 mt-3">
-                ${htmlAsignaturas}
-            </div>
-            `;
+            <div class="col-12 mt-2"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">DISPONIBILIDAD HORARIA</label></div>${htmlHorarios}`;
         } else {
             html += `
             <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Estudiante</div>
@@ -570,33 +525,21 @@ try {
 
         // 4. GUARDAR EN FIRESTORE
         const docRefUsuario = doc(db, "usuarios", cred.user.uid);
-        setDoc
+        await setDoc(docRefUsuario, {
+            ...currentData,
+            estado: "activo",
+            rol: esDocente ? "docente" : "estudiante",
+            claveInicial: passwordTemp,
+            fechaRegistro: new Date().toISOString()
+        });
 
         // 5. HISTORIAL Y LIMPIEZA
-        await addDoc(collection(db, "historial_postulaciones"), {
-    postulante: {
-        nombreResponsable: currentData.nombreResponsable,
-        email: currentData.email,
-        perfil: currentData.perfil,
-        asignaturas: currentData.asignaturas || [],
-        dniDocente: currentData.dniDocente || null,
-        dniEstudiante: currentData.dniEstudiante || null,
-        whatsapp: currentData.whatsapp || currentData.whatsappRepresentante || null,
-        entidad: currentData.entidad
-    },
-
-    decision: "ACEPTADO",
-    fechaProceso: new Date().toISOString(),
-
-    auditoria: {
-        adminUid: auth.currentUser?.uid || null,
-        adminEmail: auth.currentUser?.email || null,
-        accion: "confirmarAcceso",
-        userAgent: navigator.userAgent
-    },
-
-    postulacionId: currentId
-});
+        await addDoc(collection(db, "historial_postulaciones"), { 
+            ...currentData, 
+            fechaProceso: new Date().toISOString(), 
+            resultado: "Admitido", 
+            decisionFinal: "ACEPTADO" 
+        });
         await deleteDoc(doc(db, "postulaciones", currentId));
         
         // 6. DISPARO DE WHATSAPP
@@ -648,30 +591,12 @@ document.getElementById('btnEliminar').onclick = async () => {
     if (res.isConfirmed) {
         try {
             // 1. Guardar en historial
-            await addDoc(collection(db, "historial_postulaciones"), {
-    postulante: {
-        nombreResponsable: currentData.nombreResponsable,
-        email: currentData.email,
-        perfil: currentData.perfil,
-        asignaturas: currentData.asignaturas || [],
-        dniDocente: currentData.dniDocente || null,
-        dniEstudiante: currentData.dniEstudiante || null,
-        whatsapp: currentData.whatsapp || currentData.whatsappRepresentante || null,
-        entidad: currentData.entidad
-    },
-
-    decision: "RECHAZADO",
-    fechaProceso: new Date().toISOString(),
-
-    auditoria: {
-        adminUid: auth.currentUser?.uid || null,
-        adminEmail: auth.currentUser?.email || null,
-        accion: "rechazarPostulacion",
-        userAgent: navigator.userAgent
-    },
-
-    postulacionId: currentId
-});
+            await addDoc(collection(db, "historial_postulaciones"), { 
+                ...currentData, 
+                fechaProceso: new Date().toISOString(), 
+                resultado: "Rechazado", 
+                decisionFinal: "RECHAZADO" 
+            });
             
             // 2. Borrar de postulaciones
             await deleteDoc(doc(db, "postulaciones", currentId));
