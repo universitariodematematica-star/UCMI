@@ -3,536 +3,902 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Panel de Control</title>
+    <title>UCMI</title>
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Plantilla -->
+    <link rel="stylesheet" href="componentes/plantilla-academia.css">
+
     <style>
-        :root {
-            --azul-ucmi: #06090f;
-            --azul-sidebar: #1a2a3a;
-            --dorado-ucmi: #c5a059;
-            --rojo-logout: #e74c3c;
+
+        .panel-cristal{
+            background:rgba(255,255,255,.08);
+            backdrop-filter:blur(18px);
+            -webkit-backdrop-filter:blur(18px);
+            border:1px solid rgba(255,255,255,.15);
+            border-radius:18px;
+            padding:30px;
+            max-width:900px;
         }
 
-        body { 
-            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
-            background-size: cover; 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; 
-            color: white;
-            min-height: 100vh;
+        .form-control{
+            background:rgba(255,255,255,.08);
+            border:1px solid rgba(255,255,255,.2);
+            color:white;
         }
 
-        .app-wrapper { display: flex; min-height: 100vh; }
-
-        /* Sidebar con efecto Glassmorphism */
-        .sidebar { 
-            background: rgba(26, 42, 58, 0.4); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px); 
-            border-right: 1px solid rgba(255, 255, 255, 0.15); 
-            width: 260px; 
-            flex-shrink: 0; 
-            padding: 25px 15px; 
-            display: flex; 
-            flex-direction: column; 
+        .form-control:focus{
+            background:rgba(255,255,255,.12);
+            color:white;
+            border-color:#c5a059;
+            box-shadow:none;
         }
 
-        .logo-sidebar { 
-            height: 100px; 
-            width: auto; 
-            margin-bottom: 30px; 
-            display: block; 
-            margin-left: auto; 
-            margin-right: auto; 
-            object-fit: contain; 
-            border-radius: 15px; 
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            transition: opacity 0.5s ease;
-            opacity: 0;
-        }
-        
-        .sidebar-nav { flex-grow: 1; }
-
-        .nav-item-ucmi { 
-            display: flex; align-items: center; 
-            color: rgba(255,255,255,0.6); 
-            text-decoration: none; 
-            padding: 10px 15px; 
-            margin-bottom: 5px; 
-            border-radius: 10px; 
-            transition: 0.3s all ease; 
-            font-size: 0.85rem; 
-        }
-        
-        .nav-item-ucmi i { margin-right: 12px; font-size: 1.1rem; }
-        .nav-item-ucmi:hover { color: white; background: rgba(255,255,255,0.1); transform: translateX(5px); }
-        .nav-item-ucmi.active { background: rgba(197, 160, 89, 0.15); color: var(--dorado-ucmi); font-weight: 600; box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1); }
-
-        .btn-sidebar-action { 
-            background: transparent; 
-            border: 1px solid rgba(255, 255, 255, 0.4) !important; 
-            color: white !important; 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            font-size: 0.7rem; 
-            border-radius: 50px; 
-            padding: 10px; 
-            text-decoration: none; 
-            text-align: center; 
-            transition: all 0.3s ease-in-out; 
-            display: block; 
-            margin-bottom: 10px; 
+        .form-control::placeholder{
+            color:rgba(255,255,255,.5);
         }
 
-        .btn-sidebar-action:hover { background: rgba(255, 255, 255, 0.1); border-color: #ffffff !important; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); transform: translateY(-2px); }
-        .btn-logout { border-color: rgba(231, 76, 60, 0.4) !important; color: rgba(231, 76, 60, 0.8) !important; }
-        .btn-logout:hover { background: rgba(231, 76, 60, 0.1) !important; border-color: var(--rojo-logout) !important; color: white !important; }
-
-        .super-overlay { 
-            background: radial-gradient(circle, rgba(6, 9, 15, 0.4) 0%, rgba(6, 9, 15, 0.8) 100%); 
-            flex-grow: 1; 
-            min-height: 100vh; 
-            overflow-y: auto; 
-            padding: 40px; 
+        .btn-registrar{
+            background:#c5a059;
+            border:none;
+            color:#111;
+            font-weight:600;
+            padding:0 25px;
         }
 
-        .glass-header{
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 20px;
-    padding: 25px;
+        .btn-registrar:hover{
+            background:#d8b26a;
         }
 
-        .glass-lista{
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 20px;
-    padding: 25px;
-}
-
-    .modulo-item{
-        padding: 12px 15px;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-        font-size: 1rem;
-    }
-
-    .modulo-item:last-child{
-        border-bottom: none;
-    }
-
-    .modulo-item:hover{
-        background: rgba(255,255,255,0.05);
-    }
-
-    .asignatura-row {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    padding: 6px 10px;
-    margin-top: 6px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.05);
-}
-
-.col-nombre {
-    color: #00c2ff;
-    font-weight: 500;
-    padding-left: 10px;
-}
-
-.col-botones {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-}    
-
-    .asignatura-fila{
-    cursor: pointer;
-    transition: 0.2s ease;
-}
-
-.asignatura-fila:hover{
-    background: rgba(255,255,255,0.06);
-    transform: translateX(4px);
-}    
-        
     </style>
+
 </head>
 <body>
 
-<div class="app-wrapper">
-    <aside class="sidebar d-none d-md-flex">
-        <div class="text-center mb-2">
-            <img src="https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png" 
-                 id="logoAcademia" 
-                 class="logo-sidebar" 
-                 alt="Logo Academia">
-        </div>
-        <nav class="sidebar-nav">
-            <a href="solicitudes-academia.html" class="nav-item-ucmi"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
-            <a href="alumnos-academia.html" class="nav-item-ucmi"><i class="bi bi-mortarboard"></i> ALUMNOS</a>
-            <a href="docentes-academia.html" class="nav-item-ucmi"><i class="bi bi-people"></i> DOCENTES</a>
-            <a href="modificaciones.html" class="nav-item-ucmi"><i class="bi bi-pencil-square"></i></i> MODIFICACIONES</a>
-            <a href="cursos.html" class="nav-item-ucmi"><i class="bi bi-journal-bookmark"></i> CURSOS</a>
-            <a href="crear-aulas.html" class="nav-item-ucmi"><i class="bi bi-easel"></i> AULAS</a>
-            <a href="academia-modulos.html" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
-            <a href="contenidos-academia.html" class="nav-item-ucmi"><i class="bi bi-collection"></i> CONTENIDO</a>
-            <a href="#" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
-        </nav>
-        <div class="mt-4 pt-4 border-top border-secondary">
-            <a href="admin-academia.html" class="btn-sidebar-action w-100"><i class="bi bi-shield-lock"></i> Panel Maestro</a>
-            <a href="#" id="btnLogout" class="btn-sidebar-action btn-logout w-100"><i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión</a>
-        </div>
-    </aside>
-
-    <main class="super-overlay">
-    
-        <div class="container-fluid">
-    
-            <div class="glass-header mb-4 d-flex justify-content-between align-items-center">
-
-    <div>
-        <h1 class="mb-0">
-            <i class="bi bi-journal-bookmark-fill me-2"></i>
-            Asignaturas
-        </h1>
-
-        <p class="mb-0 mt-2 text-light opacity-75">
-            Gestión de asignaturas por módulo.
-        </p>
-    </div>
-
-    <a href="academia-modulos.html"
-       class="btn btn-outline-light btn-sm px-3">
-        <i class="bi bi-arrow-left me-1"></i>
-        Volver
-    </a>
-
-</div>
-
-            <div class="mb-3 text-light opacity-75">
-                <i class="bi bi-info-circle me-1"></i>
-                Haz clic sobre una asignatura para asignarle tópicos
-            </div>
-            
-            <div class="glass-lista">
-                <div id="contenedorModulos"></div>
-            </div>
-    
-        </div>
-    
-    </main>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<div id="plantilla"></div>
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { db, auth } from "./componentes/firebase-config.js";
+
 import {
-    getFirestore,
-    doc,
-    getDoc,
     collection,
     addDoc,
+    serverTimestamp,
+    doc,
+    getDoc,
+    getDocs,
     query,
     where,
-    getDocs,
-    serverTimestamp,
-    onSnapshot,
     updateDoc,
-    deleteDoc
+    deleteDoc,
+    onSnapshot,
+    orderBy,
+    writeBatch,
+    Timestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-import {
-    getAuth,
-    onAuthStateChanged,
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-const app = initializeApp({
-    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-    authDomain: "ucmi-13796634.firebaseapp.com",
-    projectId: "ucmi-13796634",
-    storageBucket: "ucmi-13796634.firebasestorage.app",
-    messagingSenderId: "1090719609536",
-    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-});
+// =========================
+// CARGA PLANTILLA
+// =========================
+const html = await fetch("componentes/plantilla-academia.html");
+document.getElementById("plantilla").innerHTML = await html.text();
 
-const db = getFirestore(app);
-const auth = getAuth();
+document.getElementById("contenido").innerHTML = `
+<div class="panel-cristal mb-4">
+    <h5 class="mb-4">
+        Escriba el nombre del aula y pulse <strong>Registrar</strong>.
+    </h5>
 
-let moduloSeleccionado = null;
-let entidadGlobal = null;
+    <div class="d-flex gap-3">
+        <input id="txtNombre" type="text" class="form-control" placeholder="Escriba aquí...">
+        <button id="btnRegistrar" class="btn btn-registrar">Registrar</button>
+    </div>
+</div>
 
-// ===================== AUTH =====================
+<div id="listaAulas"></div>
+`;
+
+await import("./componentes/plantilla-academia.js");
+
+const txtNombre = document.getElementById("txtNombre");
+const btnRegistrar = document.getElementById("btnRegistrar");
+const listaAulas = document.getElementById("listaAulas");
+
+// =========================
+// POPUP DE INTEGRANTES
+// =========================
+const popupIntegrantes = document.createElement("div");
+
+popupIntegrantes.id = "popupIntegrantes";
+
+popupIntegrantes.style.position = "fixed";
+popupIntegrantes.style.display = "none";
+popupIntegrantes.style.background = "#111";
+popupIntegrantes.style.color = "white";
+popupIntegrantes.style.padding = "12px";
+popupIntegrantes.style.borderRadius = "10px";
+popupIntegrantes.style.border = "1px solid rgba(255,255,255,.2)";
+popupIntegrantes.style.minWidth = "260px";
+popupIntegrantes.style.maxWidth = "320px";
+popupIntegrantes.style.maxHeight = "320px";
+popupIntegrantes.style.overflowY = "auto";
+popupIntegrantes.style.boxShadow = "0 10px 30px rgba(0,0,0,.5)";
+popupIntegrantes.style.zIndex = "999999";
+popupIntegrantes.style.pointerEvents = "none";
+
+document.body.appendChild(popupIntegrantes);
+    
+// =========================
+// AUTENTICACIÓN SEGURA
+// =========================
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
-        window.location.href = "index.html";
+        console.log("No autenticado");
         return;
     }
 
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-    if (!userSnap.exists()) return;
+    const usuarioSnap = await getDoc(doc(db, "usuarios", user.uid));
 
-    const d = userSnap.data();
-    entidadGlobal = d.entidad;
+    if (!usuarioSnap.exists()) {
+        console.error("Usuario no existe");
+        return;
+    }
 
-    const contenedorModulos = document.getElementById("contenedorModulos");
-    contenedorModulos.innerHTML = "";
+    const datosUsuario = usuarioSnap.data();
 
-    (d.modulos || []).forEach(modulo => {
+    console.log("USUARIO OK:", datosUsuario);
 
-        contenedorModulos.innerHTML += `
-            <div class="modulo-item">
+    // =========================
+// CARGAR INTEGRANTES DE TODAS LAS AULAS
+// =========================
+const integrantesPorAula = {};
 
-                <div class="d-flex justify-content-between align-items-center">
-                    <strong>${modulo}</strong>
+const integrantesSnap = await getDocs(
+    query(
+        collection(db, "aula_integrantes"),
+        where("entidad", "==", datosUsuario.entidad)
+    )
+);
 
-                    <button class="btn btn-sm btn-success btnCrearAsignatura"
-                        data-modulo="${modulo}">
-                        Crear asignatura
-                    </button>
+integrantesSnap.forEach(docSnap => {
+
+    const integrante = docSnap.data();
+
+    if (!integrantesPorAula[integrante.aulaId]) {
+        integrantesPorAula[integrante.aulaId] = [];
+    }
+
+    integrantesPorAula[integrante.aulaId].push(integrante);
+
+});
+
+    // =========================
+    // LISTA AULAS (SNAPSHOT ÚNICO)
+    // =========================
+    const q = query(
+    collection(db, "aulas"),
+    where("entidad", "==", datosUsuario.entidad),
+    orderBy("nombre_aula")
+);
+
+    onSnapshot(q, async (snapshot) => {
+
+        let htmlAulas = "";
+
+        for (const docSnap of snapshot.docs) {
+
+            const aula = docSnap.data();
+
+            let nombreCurso = "Sin curso asignado";
+            let asignaturasHTML = "";
+
+            if (aula.cursoId) {
+
+                const cursoSnap = await getDoc(doc(db, "cursos", aula.cursoId));
+
+                if (cursoSnap.exists()) {
+                    nombreCurso = cursoSnap.data().nombre_curso;
+                }
+
+                const asignaturasSnap = await getDocs(
+                    query(
+                        collection(db, "curso_asignaturas"),
+                        where("cursoId", "==", aula.cursoId),
+                        where("entidad", "==", datosUsuario.entidad),
+                        orderBy("asignatura")
+                    )
+                );
+
+                asignaturasSnap.forEach(a => {
+                    const data = a.data();
+
+                    asignaturasHTML += `
+                        <li style="color:white; font-size:0.9rem;">
+                            📘 ${data.asignatura}
+                        </li>
+                    `;
+                });
+            }
+
+            htmlAulas += `
+    <div
+        class="panel-cristal aula-card mb-3 d-flex justify-content-between align-items-start"
+        data-id="${docSnap.id}">
+
+        <div>
+            <h5 class="mb-0">${aula.nombre_aula}</h5>
+
+            <small style="opacity:0.7">
+                🎓 Curso: ${nombreCurso}
+            </small>
+
+            <ul style="margin-top:8px; padding-left:18px;">
+                ${asignaturasHTML}
+            </ul>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <button
+                class="btn btn-sm btn-primary btnEditar"
+                data-id="${docSnap.id}"
+                data-nombre="${aula.nombre_aula}">
+                ✏️ Editar
+            </button>
+
+            <button
+                class="btn btn-sm btn-warning btnCursos"
+                data-id="${docSnap.id}">
+                🎓 Cursos
+            </button>
+
+            <button
+                class="btn btn-sm btn-info btnAlumnos"
+                data-id="${docSnap.id}">
+                👥 Alumnos
+            </button>
+            
+            <button
+                class="btn btn-sm btn-secondary btnProfesores"
+                data-id="${docSnap.id}">
+                👨‍🏫 Profesores
+            </button>
+            
+            <button
+                class="btn btn-sm btn-danger btnBorrar"
+                data-id="${docSnap.id}">
+                🗑️ Borrar
+            </button>
+        </div>
+
+    </div>
+`;
+        }
+
+        listaAulas.innerHTML = htmlAulas;
+
+        // =========================
+// POPUP DE INTEGRANTES
+// =========================
+document.querySelectorAll(".aula-card").forEach(card => {
+
+    card.addEventListener("mouseenter", () => {
+
+        const aulaId = card.dataset.id;
+
+        const integrantes = integrantesPorAula[aulaId] || [];
+
+        let html = `
+            <div style="font-weight:bold; margin-bottom:8px;">
+                👥 Integrantes (${integrantes.length})
+            </div>
+        `;
+
+        if (integrantes.length === 0) {
+
+            html += `
+                <div style="opacity:.7;">
+                    No hay alumnos asignados.
+                </div>
+            `;
+
+        } else {
+
+            integrantes.forEach(alumno => {
+
+                html += `
+                    <div style="
+                        padding:4px 0;
+                        border-bottom:1px solid rgba(255,255,255,.08);
+                    ">
+                        👤 ${alumno.nombreResponsable}
+                    </div>
+                `;
+
+            });
+
+        }
+
+        popupIntegrantes.innerHTML = html;
+        popupIntegrantes.style.display = "block";
+
+    });
+
+    card.addEventListener("mousemove", (e) => {
+
+    const margen = 15;
+
+    let left = e.clientX + margen;
+    let top = e.clientY + margen;
+
+    const popupWidth = popupIntegrantes.offsetWidth;
+    const popupHeight = popupIntegrantes.offsetHeight;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Si se sale por la derecha, mostrar a la izquierda del cursor
+    if (left + popupWidth > viewportWidth - margen) {
+        left = e.clientX - popupWidth - margen;
+    }
+
+    // Si se sale por abajo, mostrar encima del cursor
+    if (top + popupHeight > viewportHeight - margen) {
+        top = e.clientY - popupHeight - margen;
+    }
+
+    // Evitar que quede fuera por la izquierda
+    if (left < margen) {
+        left = margen;
+    }
+
+    // Evitar que quede fuera por arriba
+    if (top < margen) {
+        top = margen;
+    }
+
+    popupIntegrantes.style.left = left + "px";
+    popupIntegrantes.style.top = top + "px";
+
+});
+
+    card.addEventListener("mouseleave", () => {
+
+        popupIntegrantes.style.display = "none";
+
+    });
+
+});
+    });
+
+    // =========================
+    // CREAR AULA
+    // =========================
+    btnRegistrar.onclick = async () => {
+
+        const nombre = txtNombre.value.trim();
+        if (!nombre) return;
+
+        await addDoc(collection(db, "aulas"), {
+            nombre_aula: nombre,
+            entidad: datosUsuario.entidad,
+            academiaId: user.uid,
+            fechaCreacion: serverTimestamp()
+        });
+
+        txtNombre.value = "";
+    };
+
+    // =========================
+    // EVENTOS GLOBALES
+    // =========================
+    document.addEventListener("click", async (e) => {
+
+    const btn = e.target.closest("button");
+    if (!btn) return;
+
+    console.log("CLICK DETECTADO:", btn.className);
+
+    if (!datosUsuario) {
+        console.warn("datosUsuario aún no está listo");
+        return;
+    }
+
+    if (btn.classList.contains("btnProfesores")) {
+
+        console.log("ABRIENDO PROFESORES");
+
+        await abrirSelectorProfesores(
+            btn.dataset.id,
+            datosUsuario.entidad
+        );
+    }
+
+    if (btn.classList.contains("btnAlumnos")) {
+
+        await abrirSelectorAlumnos(
+            btn.dataset.id,
+            datosUsuario.entidad
+        );
+    }
+});
+
+});
+
+// =========================
+// MODAL CURSOS
+// =========================
+async function abrirSelectorCursos(aulaId, userId) {
+
+    const overlay = document.createElement("div");
+
+    overlay.style.position = "fixed";
+    overlay.style.top = 0;
+    overlay.style.left = 0;
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,0.7)";
+    overlay.style.display = "flex";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+    overlay.style.zIndex = 9999;
+
+    const cursosSnap = await getDocs(
+        query(
+            collection(db, "cursos"),
+            where("academiaId", "==", userId)
+        )
+    );
+
+    let html = `
+        <div style="background:#111; padding:20px; border-radius:10px; color:white;">
+            <h4>Asignar curso</h4>
+
+            <select
+                    id="selectCurso"
+                    class="form-control mb-3"
+                    style="
+                        background:#0b2a52;
+                        color:white;
+                        border:1px solid #3d6fb6;
+                    ">
+    `;
+
+                    cursosSnap.forEach(c => {
+                    html += `
+                        <option
+                            value="${c.id}"
+                            style="
+                                background:#0b2a52;
+                                color:white;
+                            ">
+                            ${c.data().nombre_curso}
+                        </option>
+                    `;
+                });
+
+    html += `
+            </select>
+
+            <button id="asignar" class="btn btn-success w-100">Asignar</button>
+            <button id="cerrar" class="btn btn-danger w-100 mt-2">Cerrar</button>
+        </div>
+    `;
+
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+
+    document.getElementById("cerrar").onclick = () => overlay.remove();
+
+    document.getElementById("asignar").onclick = async () => {
+
+        const cursoId = document.getElementById("selectCurso").value;
+
+        await updateDoc(doc(db, "aulas", aulaId), {
+            cursoId
+        });
+
+        overlay.remove();
+    };
+} 
+
+    // =========================
+// MODAL ALUMNOS
+// =========================
+async function abrirSelectorAlumnos(aulaId, entidad) {
+
+    const overlay = document.createElement("div");
+
+    overlay.style.position = "fixed";
+    overlay.style.left = "0";
+    overlay.style.top = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,.75)";
+    overlay.style.display = "flex";
+    overlay.style.justifyContent = "center";
+    overlay.style.alignItems = "center";
+    overlay.style.zIndex = "99999";
+
+    overlay.innerHTML = `
+        <div style="
+            width:900px;
+            max-width:95%;
+            max-height:90%;
+            overflow:auto;
+            background:#111;
+            border-radius:16px;
+            padding:25px;
+            color:white;
+        ">
+
+            <h4 class="mb-4">
+                Asignar alumnos al aula
+            </h4>
+
+            <div class="mb-3">
+
+                <label class="mb-2">
+                    Mostrar alumnos registrados desde:
+                </label>
+
+                <input
+                    type="date"
+                    id="fechaFiltro"
+                    class="form-control">
+
+            </div>
+
+            <div id="listaAlumnos"></div>
+
+            <div class="mt-4 d-flex justify-content-between">
+
+    <button
+        id="guardarAlumnos"
+        class="btn btn-success">
+
+        Guardar alumnos
+
+    </button>
+
+    <button
+        id="cerrarAlumnos"
+        class="btn btn-danger">
+
+        Cerrar
+
+    </button>
+
+</div>
+
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+document.getElementById("fechaFiltro").value = "";
+
+document.getElementById("cerrarAlumnos").onclick = () => {
+    overlay.remove();
+};
+
+document
+    .getElementById("guardarAlumnos")
+    .onclick = guardarAlumnos;
+    
+    async function cargarAlumnos() {
+
+    const lista = document.getElementById("listaAlumnos");
+
+    const fechaSeleccionada =
+        document.getElementById("fechaFiltro").value;
+
+    if (!fechaSeleccionada) {
+
+        lista.innerHTML = `
+            <div
+                class="text-center py-4"
+                style="color:rgba(255,255,255,.6);">
+
+                Seleccione una fecha para mostrar los alumnos.
+
+            </div>
+        `;
+
+        return;
+    }
+
+    lista.innerHTML = "Cargando...";
+
+    const fechaMinima = Timestamp.fromDate(
+        new Date(fechaSeleccionada + "T00:00:00")
+    );
+
+    const q = query(
+        collection(db, "usuarios"),
+        where("entidad", "==", entidad),
+        where("perfil", "==", "Estudiante Academia")
+    );
+
+    const snap = await getDocs(q);
+
+    lista.innerHTML = "";
+
+    snap.forEach(docSnap => {
+
+        const d = docSnap.data();
+
+        if (fechaSeleccionada && d.fechaRegistro) {
+
+    const fechaAlumno = new Date(d.fechaRegistro);
+    const fechaFiltro = new Date(fechaSeleccionada + "T00:00:00");
+
+    if (fechaAlumno < fechaFiltro) {
+        return;
+    }
+
+}
+
+        lista.innerHTML += `
+            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+
+                <div>
+
+                    <strong style="color:white;">
+                        ${d.nombreResponsable}
+                    </strong>
+
+                    <br>
+
+                    <small style="opacity:.7;">
+                        ${d.email}
+                    </small>
+
                 </div>
 
-                <div class="listaAsignaturas"
-                     id="asignaturas-${modulo}">
-                </div>
+                <input
+                    type="checkbox"
+                    value="${docSnap.id}">
 
+            </div>
+        `;
+
+    });
+
+}
+
+    cargarAlumnos();
+    
+document
+    .getElementById("fechaFiltro")
+    .addEventListener("change", cargarAlumnos);
+
+    async function guardarAlumnos() {
+
+    const checks = document.querySelectorAll(
+        '#listaAlumnos input[type="checkbox"]:checked'
+    );
+
+    if (checks.length === 0) {
+
+        alert("Seleccione al menos un alumno.");
+
+        return;
+
+    }
+
+    const batch = writeBatch(db);
+
+    for (const check of checks) {
+
+        const usuarioId = check.value;
+
+        const usuarioSnap = await getDoc(
+            doc(db, "usuarios", usuarioId)
+        );
+
+        if (!usuarioSnap.exists()) continue;
+
+        const alumno = usuarioSnap.data();
+
+        const ref = doc(
+            db,
+            "aula_integrantes",
+            aulaId + "_" + usuarioId
+        );
+
+        batch.set(ref, {
+
+            aulaId,
+
+            usuarioId,
+
+            perfil: alumno.perfil,
+
+            entidad: alumno.entidad,
+
+            nombreResponsable: alumno.nombreResponsable,
+
+            email: alumno.email,
+
+            fechaAsignacion: serverTimestamp()
+
+        });
+
+    }
+
+    await batch.commit();
+
+    alert("Alumnos asignados correctamente.");
+
+    overlay.remove();
+
+}
+    
+}
+
+async function abrirSelectorProfesores(aulaId, entidad) {
+
+    const overlay = document.createElement("div");
+
+    overlay.style.position = "fixed";
+    overlay.style.left = "0";
+    overlay.style.top = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,.75)";
+    overlay.style.display = "flex";
+    overlay.style.justifyContent = "center";
+    overlay.style.alignItems = "center";
+    overlay.style.zIndex = "99999";
+
+    overlay.innerHTML = `
+        <div style="
+            width:900px;
+            max-width:95%;
+            max-height:90%;
+            overflow:auto;
+            background:#111;
+            border-radius:16px;
+            padding:25px;
+            color:white;
+        ">
+
+            <h4 class="mb-4">
+                Asignar profesores al aula
+            </h4>
+
+            <div id="listaProfesores">
+                Cargando...
+            </div>
+
+            <div class="mt-4 d-flex justify-content-between">
+
+                <button id="guardarProfesores" class="btn btn-success">
+                    Guardar profesores
+                </button>
+
+                <button id="cerrarProfesores" class="btn btn-danger">
+                    Cerrar
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    document.getElementById("cerrarProfesores").onclick = () => overlay.remove();
+
+    const lista = document.getElementById("listaProfesores");
+
+    // 1. Aula
+    const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
+    if (!aulaSnap.exists()) {
+        lista.innerHTML = "El aula no existe.";
+        return;
+    }
+
+    const aula = aulaSnap.data();
+
+    if (!aula.cursoId) {
+        lista.innerHTML = "El aula no tiene curso asignado.";
+        return;
+    }
+
+    // 2. Asignaturas del curso
+    const asignaturasSnap = await getDocs(
+        query(
+            collection(db, "curso_asignaturas"),
+            where("cursoId", "==", aula.cursoId),
+            where("entidad", "==", entidad)
+        )
+    );
+
+    const asignaturasCurso = [];
+    asignaturasSnap.forEach(d => {
+        asignaturasCurso.push(d.data().asignatura);
+    });
+
+    // 3. Docentes
+    const docentesSnap = await getDocs(
+        query(
+            collection(db, "usuarios"),
+            where("entidad", "==", entidad),
+            where("perfil", "==", "Docente Academia")
+        )
+    );
+
+    lista.innerHTML = "";
+
+    let encontrados = 0;
+
+    docentesSnap.forEach(docSnap => {
+
+        const d = docSnap.data();
+
+        const asignaturasDocente = d.asignaturas || [];
+
+        const coincide = asignaturasDocente.some(a =>
+            asignaturasCurso.includes(a.asignatura)
+        );
+
+        if (!coincide) return;
+
+        encontrados++;
+
+        lista.innerHTML += `
+            <div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.1)">
+                <input type="checkbox" value="${docSnap.id}">
+                👨‍🏫 ${d.nombreResponsable}
+                <small style="opacity:.7">(${asignaturasDocente.map(a => a.asignatura).join(", ")})</small>
             </div>
         `;
     });
 
-    document.querySelectorAll(".btnCrearAsignatura")
-    .forEach(btn => {
+    if (encontrados === 0) {
+        lista.innerHTML = "No hay docentes con asignaturas compatibles.";
+    }
 
-        btn.addEventListener("click", () => {
+    // Guardar
+    document.getElementById("guardarProfesores").onclick = async () => {
 
-            moduloSeleccionado = btn.dataset.modulo;
+        const checks = overlay.querySelectorAll("input[type=checkbox]:checked");
 
-            new bootstrap.Modal(
-                document.getElementById("modalAsignatura")
-            ).show();
+        const batch = writeBatch(db);
+
+        checks.forEach(c => {
+
+            const ref = doc(db, "aula_integrantes", aulaId + "_" + c.value);
+
+            batch.set(ref, {
+                aulaId,
+                usuarioId: c.value,
+                perfil: "Docente Academia",
+                entidad
+            });
+
         });
 
-    });
+        await batch.commit();
 
-    const logo = document.getElementById("logoAcademia");
-    logo.src = d.logoCustom ||
-        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-    logo.style.opacity = "1";
-
-    // ===================== REALTIME =====================
-    if (!entidadGlobal) return;
-
-    const q = query(
-        collection(db, "asignaturas"),
-        where("entidad", "==", entidadGlobal)
-    );
-
-    onSnapshot(q, (snapshot) => {
-
-        document.querySelectorAll(".listaAsignaturas")
-            .forEach(el => el.innerHTML = "");
-
-        const lista = [];
-
-        snapshot.forEach(docu => {
-            lista.push({ id: docu.id, ...docu.data() });
-        });
-
-        lista.sort((a, b) =>
-            a.asignatura.localeCompare(b.asignatura, "es")
-        );
-
-        lista.forEach(data => {
-
-            const contenedor = document.getElementById(
-                `asignaturas-${data.modulo}`
-            );
-
-            if (!contenedor) return;
-
-            contenedor.insertAdjacentHTML("beforeend", `
-                <div class="asignatura-row"
-                     data-id="${data.id}">
-
-                    <div class="col-nombre">
-                        <span class="text-info"
-                              style="cursor:pointer;font-weight:500;">
-                            ${data.asignatura}
-                        </span>
-                    </div>
-
-                    <div class="col-botones">
-
-                        <button class="btn btn-sm btn-warning btnEditarAsignatura"
-                            data-id="${data.id}"
-                            data-nombre="${data.asignatura}">
-                            Editar
-                        </button>
-
-                        <button class="btn btn-sm btn-danger btnEliminarAsignatura"
-                            data-id="${data.id}">
-                            Borrar
-                        </button>
-
-                    </div>
-
-                </div>
-            `);
-        });
-
-    });
-
-});
-
-// ===================== CLICK EN FILA =====================
-document.addEventListener("click", (e) => {
-
-    const fila = e.target.closest(".asignatura-row");
-    if (!fila) return;
-
-    if (e.target.closest("button")) return;
-
-    const id = fila.dataset.id;
-
-    window.location.href =
-        `asignatura-topicos.html?id=${id}`;
-});
-
-// ===================== CREAR =====================
-document.getElementById("btnGuardarAsignatura")
-.addEventListener("click", async () => {
-
-    const nombre = document.getElementById("nombreAsignatura").value.trim();
-    if (!nombre || !moduloSeleccionado) return;
-
-    const user = auth.currentUser;
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-    const d = userSnap.data();
-
-    const q = query(
-        collection(db, "ofertas"),
-        where("modulo", "==", moduloSeleccionado)
-    );
-
-    const snap = await getDocs(q);
-    if (snap.empty) return;
-
-    const docOferta = snap.docs[0];
-
-    await addDoc(collection(db, "asignaturas"), {
-        asignatura: nombre,
-        modulo: moduloSeleccionado,
-        moduloId: docOferta.id,
-        entidad: d.entidad,
-        fechaCreacion: serverTimestamp()
-    });
-
-    document.getElementById("nombreAsignatura").value = "";
-
-    bootstrap.Modal.getInstance(
-        document.getElementById("modalAsignatura")
-    ).hide();
-});
-
-// ===================== EDITAR =====================
-document.addEventListener("click", async (e) => {
-
-    if (!e.target.classList.contains("btnEditarAsignatura")) return;
-
-    const id = e.target.dataset.id;
-    const actual = e.target.dataset.nombre;
-
-    const nuevo = prompt("Editar asignatura:", actual);
-
-    if (!nuevo || nuevo === actual) return;
-
-    await updateDoc(doc(db, "asignaturas", id), {
-        asignatura: nuevo
-    });
-});
-
-// ===================== ELIMINAR =====================
-document.addEventListener("click", async (e) => {
-
-    if (!e.target.classList.contains("btnEliminarAsignatura")) return;
-
-    const id = e.target.dataset.id;
-
-    if (!confirm("¿Eliminar asignatura?")) return;
-
-    await deleteDoc(doc(db, "asignaturas", id));
-});
-
-// ===================== LOGOUT =====================
-document.getElementById("btnLogout")
-.addEventListener("click", () =>
-    signOut(auth).then(() =>
-        window.location.href = "index.html"
-    )
-);
-
-</script>
-<div class="modal fade" id="modalAsignatura" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content bg-dark text-white">
-
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    Crear asignatura
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close btn-close-white"
-                    data-bs-dismiss="modal">
-                </button>
-            </div>
-
-            <div class="modal-body">
-
-                <label class="form-label">
-                    Nombre de la asignatura
-                </label>
-
-                <input
-                    type="text"
-                    id="nombreAsignatura"
-                    class="form-control"
-                    placeholder="Ejemplo: Inglés A2 Kids">
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal">
-                    Cancelar
-                </button>
-
-                <button
-                    type="button"
-                    class="btn btn-success"
-                    id="btnGuardarAsignatura">
-                    Guardar
-                </button>
-
-            </div>
-
-        </div>
-    </div>
-</div>    
+        overlay.remove();
+        alert("Profesores asignados correctamente.");
+    };
+}    
     
+</script>
+
 </body>
 </html>
