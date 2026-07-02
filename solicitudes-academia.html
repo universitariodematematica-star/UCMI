@@ -164,42 +164,50 @@
 }   
         
         .modal-content {
-    background: rgba(10, 15, 25, 0.35) !important;
-    backdrop-filter: blur(25px) saturate(180%);
-    -webkit-backdrop-filter: blur(25px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 22px;
-    padding: 20px;
+    position: relative;
+    overflow: hidden;
+
+    background: rgba(15, 20, 30, 0.35) !important;
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 28px;
 
     box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.6),
-        inset 0 0 20px rgba(255, 255, 255, 0.05);
+        0 30px 80px rgba(0, 0, 0, 0.65),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
     color: white;
+
+    animation: modalIOSIn 0.35s ease-out;
 }
 
         .modal-backdrop.show {
-    background-color: rgba(0, 0, 0, 0.65) !important;
-    backdrop-filter: blur(8px);
+    background-color: rgba(0, 0, 0, 0.45) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    animation: fadeBackdrop 0.25s ease-out;
 }
 
- .modal-content::before {
+@keyframes fadeBackdrop {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content::before {
     content: "";
     position: absolute;
     inset: 0;
-    border-radius: 22px;
-    padding: 1px;
-    background: linear-gradient(
-        135deg,
-        rgba(255,255,255,0.25),
-        rgba(255,255,255,0.05),
-        rgba(197,160,89,0.15)
-    );
-    -webkit-mask: linear-gradient(#000 0 0) content-box,
-                  linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+    border-radius: 28px;
     pointer-events: none;
+
+    background: radial-gradient(
+        circle at top left,
+        rgba(255,255,255,0.12),
+        transparent 60%
+    );
 }       
         
 /* Estilo base para el selector */
@@ -224,6 +232,19 @@
 #marcadorCupos {
     font-size: 1.2rem !important; /* Ajusta el tamaño de letra aquí */
     padding: 12px 25px !important; /* Ajusta el relleno interno (ancho y alto) */
+}
+
+        @keyframes modalIOSIn {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.96);
+        filter: blur(8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
 }
         
     </style>
@@ -639,6 +660,14 @@ document.getElementById('btnLogout').onclick = async (e) => {
     await signOut(auth);
     window.location.href = "index.html";
 };
+
+document.addEventListener('shown.bs.modal', () => {
+    document.body.style.overflow = "hidden";
+});
+
+document.addEventListener('hidden.bs.modal', () => {
+    document.body.style.overflow = "auto";
+});    
      
 </script>
 </body>
