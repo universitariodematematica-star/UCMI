@@ -388,6 +388,28 @@ document.getElementById('filtroPerfil').addEventListener('change', renderizar);
         currentId = id; 
         currentData = snap.data();
         const d = currentData;
+
+let htmlAsignaturas = "";
+
+if (Array.isArray(d.asignaturas) && d.asignaturas.length > 0) {
+    htmlAsignaturas += `
+        <div class="col-12 mb-3 text-uppercase" 
+            style="color:var(--dorado-ucmi); font-weight:bold;">
+            Asignaturas postuladas
+        </div>
+    `;
+
+    d.asignaturas.forEach(a => {
+        htmlAsignaturas += `
+            <div class="col-6 mb-2">
+                <span class="badge bg-secondary">
+                    ${a.asignatura || a.nombre}
+                </span>
+            </div>
+        `;
+    });
+}
+        
         const esDocente = d.perfil === "Docente Academia";
         
         // Preparar horarios si es docente
@@ -428,7 +450,14 @@ document.getElementById('filtroPerfil').addEventListener('change', renderizar);
             <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">UBICACIÓN</label><br>${d.ubicacion}</div>
             <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO</label><br>${d.email}</div>
             <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">WHATSAPP</label><br>${d.whatsapp}</div>
-            <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">MÓDULOS</label><br>${d.modulos}</div>
+            <div class="col-12 mb-3">
+                <label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">ASIGNATURAS</label><br>
+                ${
+                    Array.isArray(d.asignaturas)
+                        ? d.asignaturas.map(a => `<span class="badge bg-primary me-1">${a}</span>`).join("")
+                        : (d.asignaturas || "Sin asignaturas")
+                }
+            </div>
             <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold; border-top: 1px solid #333; padding-top:10px;">Información del Representante</div>
             <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">NOMBRE</label><br>${d.nombreRepresentante}</div>
             <div class="col-6 mb-3"><label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">CORREO</label><br>${d.email}</div>
@@ -531,6 +560,7 @@ try {
             rol: esDocente ? "docente" : "estudiante",
             claveInicial: passwordTemp,
             fechaRegistro: new Date().toISOString()
+            asignaturas: currentData.asignaturas || []
         });
 
         // 5. HISTORIAL Y LIMPIEZA
