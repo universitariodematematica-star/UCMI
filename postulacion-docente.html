@@ -314,30 +314,87 @@
             }
         });
         
-        datosTemporales = {
-            nombreResponsable: document.getElementById('nombreResponsable').value,
-            dniDocente: document.getElementById('dniDocente').value,
-            email: document.getElementById('email').value,
-            whatsapp: document.getElementById('whatsapp').value,
-            ubicacion: document.getElementById('ubicacion').value,
-            titulo: document.getElementById('titulo_universitario').value,
-            institucion_titulo: document.getElementById('institucion_titulo').value,
-            enlaceSintesis: document.getElementById('enlace_sintesis').value,
-            experienciaDocente: document.getElementById('anos_experiencia_docente').value,
-            niveles_atencion: document.getElementById('niveles_atencion').value,
-            razon_deseo_pertenencia: document.getElementById('razon_deseo_pertenencia').value,
-            horarios: horariosIndexados,
-            fecha: new Date().toLocaleString(),
-            perfil: "Docente Academia",
-            entidad: refEntidad
-        };
+        const asignaturasSeleccionadas = [];
+
+document
+    .querySelectorAll(".asignaturaCheck:checked")
+    .forEach(check => {
+
+        asignaturasSeleccionadas.push({
+            id: check.value,
+            nombre: check.nextElementSibling.textContent.trim()
+        });
+
+    });
+
+datosTemporales = {
+    nombreResponsable: document.getElementById('nombreResponsable').value,
+    dniDocente: document.getElementById('dniDocente').value,
+    email: document.getElementById('email').value,
+    whatsapp: document.getElementById('whatsapp').value,
+    ubicacion: document.getElementById('ubicacion').value,
+    titulo: document.getElementById('titulo_universitario').value,
+    institucion_titulo: document.getElementById('institucion_titulo').value,
+    enlaceSintesis: document.getElementById('enlace_sintesis').value,
+    experienciaDocente: document.getElementById('anos_experiencia_docente').value,
+    niveles_atencion: document.getElementById('niveles_atencion').value,
+    razon_deseo_pertenencia: document.getElementById('razon_deseo_pertenencia').value,
+
+    asignaturas: asignaturasSeleccionadas,
+
+    horarios: horariosIndexados,
+    fecha: new Date().toLocaleString(),
+    perfil: "Docente Academia",
+    entidad: refEntidad
+};
 
         let htmlDisponibilidad = "";
-        dias.forEach(dia => {
-            if (agendaGlobal[dia].length > 0) {
-                htmlDisponibilidad += `<div><strong>${dia}:</strong> ${agendaGlobal[dia].join(', ')}</div>`;
-            }
-        });
+
+dias.forEach(dia => {
+
+    if (agendaGlobal[dia].length > 0) {
+
+        htmlDisponibilidad += `
+            <div>
+                <strong>${dia}:</strong>
+                ${agendaGlobal[dia].join(", ")}
+            </div>
+        `;
+
+    }
+
+});
+
+let htmlAsignaturas = "";
+
+if (datosTemporales.asignaturas.length === 0) {
+
+    htmlAsignaturas = `
+        <span class="text-warning">
+            No seleccionó ninguna asignatura.
+        </span>
+    `;
+
+} else {
+
+    datosTemporales.asignaturas.forEach(asignatura => {
+
+        htmlAsignaturas += `
+            <span
+                class="badge rounded-pill me-2 mb-2"
+                style="
+                    background:#c5a059;
+                    color:#000;
+                    font-size:.9rem;
+                    padding:.55em .9em;
+                ">
+                ${asignatura.nombre}
+            </span>
+        `;
+
+    });
+
+}
 
         document.getElementById('bodyModal').innerHTML = `
             <p><strong>Nombre:</strong> ${datosTemporales.nombreResponsable}</p>
@@ -348,9 +405,21 @@
             <p><strong>Título:</strong> ${datosTemporales.titulo} (${datosTemporales.institucion_titulo})</p>
             <p><strong>Experiencia:</strong> ${datosTemporales.experienciaDocente} años</p>
             <p><strong>Niveles:</strong> ${datosTemporales.niveles_atencion}</p>
+
+            <p>
+                <strong>Asignaturas:</strong>
+            </p>
+            
+            <div class="mb-3">
+                ${htmlAsignaturas}
+            </div>
+            
             <p><strong>Razón:</strong> ${datosTemporales.razon_deseo_pertenencia}</p>
+            
             <hr>
+            
             <p><strong>Disponibilidad Horaria:</strong></p>
+            
             ${htmlDisponibilidad || "No seleccionada"}
         `;
         new bootstrap.Modal(document.getElementById('modalRevision')).show();
