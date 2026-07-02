@@ -310,10 +310,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// segunda auth para crear usuarios
+// segunda auth (crear usuarios)
 const secondaryApp = initializeApp(firebaseConfig, "Secondary");
 const secondaryAuth = getAuth(secondaryApp);
 
+/* ---------------- ESTADO GLOBAL ---------------- */
 let currentId = null;
 let currentData = null;
 let academiaNombreGlobal = "";
@@ -322,24 +323,24 @@ let registrosLocales = [];
 
 /* ---------------- AUTH ---------------- */
 onAuthStateChanged(auth, async (user) => {
-    const logoElement = document.getElementById('logoAcademia');
+    const logo = document.getElementById('logoAcademia');
 
-    if (user) {
-        const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+    if (!user) return;
 
-        if (userDoc.exists()) {
-            const data = userDoc.data();
+    const userDoc = await getDoc(doc(db, "usuarios", user.uid));
 
-            logoElement.src = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-            academiaNombreGlobal = data.entidad;
-            cuposMaximosGlobal = data.cupos || 0;
+    if (!userDoc.exists()) return;
 
-            actualizarCupos();
-            iniciarEscucha();
-        }
-    }
+    const data = userDoc.data();
 
-    logoElement.style.opacity = "1";
+    logo.src = data.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+    academiaNombreGlobal = data.entidad;
+    cuposMaximosGlobal = data.cupos || 0;
+
+    actualizarCupos();
+    iniciarEscucha();
+
+    logo.style.opacity = "1";
 });
 
 /* ---------------- CUPOS ---------------- */
@@ -356,9 +357,12 @@ async function actualizarCupos() {
         `Cupos: ${snap.size} / ${cuposMaximosGlobal}`;
 }
 
-/* ---------------- POSTULACIONES ---------------- */
+/* ---------------- ESCUCHA ---------------- */
 function iniciarEscucha() {
-    const q = query(collection(db, "postulaciones"), where("entidad", "==", academiaNombreGlobal));
+    const q = query(
+        collection(db, "postulaciones"),
+        where("entidad", "==", academiaNombreGlobal)
+    );
 
     onSnapshot(q, (snap) => {
         registrosLocales = snap.docs;
@@ -366,7 +370,7 @@ function iniciarEscucha() {
     });
 }
 
-/* ---------------- RENDER ---------------- */
+/* ---------------- RENDER TABLA ---------------- */
 function renderizar() {
     const lista = document.getElementById('listaMaestra');
     const filtro = document.getElementById('filtroPerfil').value;
@@ -376,21 +380,19 @@ function renderizar() {
     registrosLocales.forEach(docSnap => {
         const d = docSnap.data();
 
-        if (filtro !== "todos" && !d.perfil.toLowerCase().includes(filtro.toLowerCase())) return;
+        if (filtro !== "todos" && !d.perfil.toLowerCase().includes(filtro)) return;
 
         let clasePerfil = "bg-secondary";
 
         switch (d.perfil) {
-            case "Super Administrador": clasePerfil = "bg-super-admin"; break;
-            case "Administrador": clasePerfil = "bg-admin"; break;
-            case "Academia": clasePerfil = "bg-academia"; break;
-            case "Docente UCMI": clasePerfil = "bg-docente-ucmi"; break;
-            case "Estudiante UCMI": clasePerfil = "bg-estudiante-ucmi"; break;
             case "Docente Academia": clasePerfil = "bg-categoria-docente"; break;
             case "Estudiante Academia": clasePerfil = "bg-categoria-estudiante"; break;
+            case "Docente UCMI": clasePerfil = "bg-docente-ucmi"; break;
+            case "Estudiante UCMI": clasePerfil = "bg-estudiante-ucmi"; break;
         }
 
         const tr = document.createElement('tr');
+
         tr.innerHTML = `
             <td>
                 <div class="fw-bold">${d.nombreResponsable || 'N/A'}</div>
@@ -423,23 +425,32 @@ window.verExpediente = async (id) => {
     const d = currentData;
     const esDocente = d.perfil === "Docente Academia";
 
-    /* asignaturas */
-    const htmlAsignaturas = `
-        <div class="col-12 mb-3">
-            <label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">ASIGNATURAS</label><br>
-            ${
-                Array.isArray(d.asignaturas)
-                    ? d.asignaturas.map(a => `<span class="badge bg-primary me-1">${a}</span>`).join("")
-                    : (d.asignaturas || "Sin asignaturas")
-            }
-        </div>
-    `;
+    /* ---------------- ASIGNATURAS CORREGIDO ---------------- */
+    let htmlAsignaturas = "";
 
-    let html = `<div class="col-12 mb-4"><h5 style="color:var(--dorado-ucmi)">Expediente del Aspirante</h5></div>`;
+    if (Array.isArray(d.asignaturas) && d.asignaturas.length > 0) {
+        htmlAsignaturas = `
+            <div class="col-12 mb-3">
+                <label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">
+                    ASIGNATURAS
+                </label><br>
+                ${d.asignaturas.map(a => {
+                    const nombre = a?.nombre || "Sin nombre";
+                    return `<span class="badge bg-primary me-1">${nombre}</span>`;
+                }).join("")}
+            </div>
+        `;
+    }
+
+    let html = `<div class="col-12 mb-4">
+        <h5 style="color:var(--dorado-ucmi)">Expediente del Aspirante</h5>
+    </div>`;
 
     if (esDocente) {
         html += `
-        <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Docente</div>
+        <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">
+            Datos del Docente
+        </div>
 
         <div class="col-6 mb-3"><b>NOMBRE:</b><br>${d.nombreResponsable}</div>
         <div class="col-6 mb-3"><b>DNI:</b><br>${d.dniDocente}</div>
@@ -452,7 +463,9 @@ window.verExpediente = async (id) => {
         `;
     } else {
         html += `
-        <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">Datos del Estudiante</div>
+        <div class="col-12 mb-3 text-uppercase" style="color:var(--dorado-ucmi); font-weight:bold;">
+            Datos del Estudiante
+        </div>
 
         <div class="col-6 mb-3"><b>NOMBRE:</b><br>${d.nombreResponsable}</div>
         <div class="col-6 mb-3"><b>DNI:</b><br>${d.dniEstudiante}</div>
@@ -471,16 +484,18 @@ window.verExpediente = async (id) => {
 /* ---------------- WHATSAPP ---------------- */
 const prepararMensajeWhatsApp = (data, decision) => {
     const nombre = data.nombreResponsable || "Postulante";
-    const telefono = data.whatsapp || data.whatsappRepresentante || "";
-    const nombreAcademia = academiaNombreGlobal || "UCMI";
+    const telefono = data.whatsapp || "";
 
     if (!telefono) return;
 
-    const texto = (decision === "ACEPTADO")
-        ? `Hola ${nombre}, has sido ACEPTADO en ${nombreAcademia}`
-        : `Hola ${nombre}, tu postulación no fue aprobada en ${nombreAcademia}`;
+    const mensaje = (decision === "ACEPTADO")
+        ? `Hola ${nombre}, has sido ACEPTADO en ${academiaNombreGlobal}`
+        : `Hola ${nombre}, tu postulación fue RECHAZADA en ${academiaNombreGlobal}`;
 
-    window.open(`https://api.whatsapp.com/send?phone=${telefono}&text=${texto}`, '_blank');
+    window.open(
+        `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`,
+        "_blank"
+    );
 };
 
 /* ---------------- ACEPTAR ---------------- */
@@ -543,8 +558,7 @@ document.getElementById('btnLogout').onclick = async (e) => {
     await signOut(auth);
     window.location.href = "index.html";
 };
-    
-</script>    
+     
 </script>
 </body>
 </html>
