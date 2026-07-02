@@ -800,20 +800,12 @@ async function abrirSelectorProfesores(aulaId, entidad) {
 
             <div class="mt-4 d-flex justify-content-between">
 
-                <button
-                    id="guardarProfesores"
-                    class="btn btn-success">
-
+                <button id="guardarProfesores" class="btn btn-success">
                     Guardar profesores
-
                 </button>
 
-                <button
-                    id="cerrarProfesores"
-                    class="btn btn-danger">
-
+                <button id="cerrarProfesores" class="btn btn-danger">
                     Cerrar
-
                 </button>
 
             </div>
@@ -829,188 +821,134 @@ async function abrirSelectorProfesores(aulaId, entidad) {
 
     const listaProfesores = document.getElementById("listaProfesores");
 
-// Obtener el aula
-const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
+    // =========================
+    // OBTENER AULA
+    // =========================
+    const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
 
-if (!aulaSnap.exists()) {
+    if (!aulaSnap.exists()) {
+        listaProfesores.innerHTML = "El aula no existe.";
+        return;
+    }
 
-    listaProfesores.innerHTML = `
-        <div class="text-center">
-            El aula no existe.
-        </div>
-    `;
+    const aula = aulaSnap.data();
 
-    return;
-}
+    if (!aula.cursoId) {
+        listaProfesores.innerHTML = "Esta aula no tiene curso asignado.";
+        return;
+    }
 
-const aula = aulaSnap.data();
+    // =========================
+    // ASIGNATURAS DEL CURSO
+    // =========================
+    const asignaturasSnap = await getDocs(
+        query(
+            collection(db, "curso_asignaturas"),
+            where("cursoId", "==", aula.cursoId),
+            where("entidad", "==", entidad)
+        )
+    );
 
-if (!aula.cursoId) {
+    const asignaturasCurso = asignaturasSnap.docs.map(d => d.data().asignatura);
 
-    listaProfesores.innerHTML = `
-        <div class="text-center">
-            Esta aula todavía no tiene un curso asignado.
-        </div>
-    `;
+    // =========================
+    // DOCENTES
+    // =========================
+    const docentesSnap = await getDocs(
+        query(
+            collection(db, "usuarios"),
+            where("entidad", "==", entidad),
+            where("perfil", "==", "Docente Academia")
+        )
+    );
 
-    return;
-}
+    listaProfesores.innerHTML = "";
 
-// Obtener asignaturas del curso
-const asignaturasCursoSnap = await getDocs(
-    query(
-        collection(db, "curso_asignaturas"),
-        where("cursoId", "==", aula.cursoId),
-        where("entidad", "==", entidad)
-    )
-);
+    let hay = false;
 
-const asignaturasCurso = [];
+    docentesSnap.forEach(docSnap => {
 
-asignaturasCursoSnap.forEach(docSnap => {
-    asignaturasCurso.push(docSnap.data().asignatura);
-});
+        const d = docSnap.data();
 
-// Obtener docentes
-// Obtener docentes
-const docentesSnap = await getDocs(
-    query(
-        collection(db, "usuarios"),
-        where("entidad", "==", entidad),
-        where("perfil", "==", "Docente Academia")
-    )
-);
+        if (!Array.isArray(d.asignaturas)) return;
 
-listaProfesores.innerHTML = "";
-
-let encontrados = 0;
-
-docentesSnap.forEach(docSnap => {
-
-    const docente = docSnap.data();
-
-    let coincide = false;
-
-    if (Array.isArray(docente.asignaturas)) {
-
-        coincide = docente.asignaturas.some(a =>
+        const coincide = d.asignaturas.some(a =>
             asignaturasCurso.includes(a.asignatura)
         );
 
-    }
+        if (!coincide) return;
 
-    if (!coincide) return;
+        hay = true;
 
-    encontrados++;
+        const materias = d.asignaturas
+            .map(a => a.asignatura)
+            .join(", ");
 
-    const materias = docente.asignaturas
-        .map(a => a.asignatura)
-        .join(", ");
+        listaProfesores.innerHTML += `
+            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
 
-    listaProfesores.innerHTML += `
-        <div
-            class="d-flex justify-content-between align-items-center border-bottom py-2">
+                <div>
+                    <strong>${d.nombreResponsable}</strong><br>
+                    <small style="opacity:.7">${materias}</small>
+                </div>
 
-            <div>
-
-                <strong style="color:white;">
-                    ${docente.nombreResponsable}
-                </strong>
-
-                <br>
-
-                <small style="opacity:.7;">
-                    ${materias}
-                </small>
-
+                <input type="checkbox" value="${docSnap.id}">
             </div>
+        `;
+    });
 
-            <input
-                type="checkbox"
-                value="${docSnap.id}">
-
-        </div>
-    `;
-
-});
-
-if (encontrados === 0) {
-
-    listaProfesores.innerHTML = `
-        <div
-            class="text-center py-4"
-            style="color:rgba(255,255,255,.6);">
-
-            No existen profesores para las asignaturas de este curso.
-
-        </div>
-    `;
-
-}
-
-document.getElementById("guardarProfesores").onclick =
-async () => {
-
-    const checks = document.querySelectorAll(
-        '#listaProfesores input[type="checkbox"]:checked'
-    );
-
-    if (checks.length === 0) {
-
-        alert("Seleccione al menos un profesor.");
-
-        return;
-
+    if (!hay) {
+        listaProfesores.innerHTML = `
+            <div class="text-center" style="opacity:.7">
+                No hay profesores para las asignaturas de este curso.
+            </div>
+        `;
     }
 
-    const batch = writeBatch(db);
+    // =========================
+    // GUARDAR PROFESORES
+    // =========================
+    document.getElementById("guardarProfesores").onclick = async () => {
 
-    for (const check of checks) {
-
-        const usuarioId = check.value;
-
-        const usuarioSnap = await getDoc(
-            doc(db, "usuarios", usuarioId)
+        const checks = document.querySelectorAll(
+            '#listaProfesores input[type="checkbox"]:checked'
         );
 
-        if (!usuarioSnap.exists()) continue;
+        if (checks.length === 0) {
+            alert("Seleccione al menos un profesor.");
+            return;
+        }
 
-        const profesor = usuarioSnap.data();
+        const batch = writeBatch(db);
 
-        const ref = doc(
-            db,
-            "aula_integrantes",
-            aulaId + "_" + usuarioId
-        );
+        for (const c of checks) {
 
-        batch.set(ref, {
+            const usuarioId = c.value;
 
-            aulaId,
+            const userSnap = await getDoc(doc(db, "usuarios", usuarioId));
 
-            usuarioId,
+            if (!userSnap.exists()) continue;
 
-            perfil: profesor.perfil,
+            const p = userSnap.data();
 
-            entidad: profesor.entidad,
+            const ref = doc(db, "aula_integrantes", aulaId + "_" + usuarioId);
 
-            nombreResponsable: profesor.nombreResponsable,
+            batch.set(ref, {
+                aulaId,
+                usuarioId,
+                perfil: p.perfil,
+                entidad: p.entidad,
+                nombreResponsable: p.nombreResponsable,
+                email: p.email,
+                fechaAsignacion: serverTimestamp()
+            });
+        }
 
-            email: profesor.email,
+        await batch.commit();
 
-            fechaAsignacion: serverTimestamp()
-
-        });
-
-    }
-
-    await batch.commit();
-
-    alert("Profesores asignados correctamente.");
-
-    overlay.remove();
-
-};
-
+        alert("Profesores asignados correctamente.");
+        overlay.remove();
+    };
 };
 
 listaProfesores.innerHTML = "";
