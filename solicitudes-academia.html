@@ -571,20 +571,49 @@ try {
         // 4. GUARDAR EN FIRESTORE
         const docRefUsuario = doc(db, "usuarios", cred.user.uid);
         await setDoc(docRefUsuario, {
-            ...currentData,
-            estado: "activo",
-            rol: esDocente ? "docente" : "estudiante",
-            claveInicial: passwordTemp,
-            fechaRegistro: new Date().toISOString()
-        });
+    nombreResponsable: currentData.nombreResponsable,
+    email: currentData.email,
+    perfil: currentData.perfil,
+    entidad: currentData.entidad,
+
+    // 👇 CAMBIO CLAVE AQUÍ
+    asignaturas: Array.isArray(currentData.asignaturas)
+        ? currentData.asignaturas.map(a => ({
+            asignatura: a.asignatura || a.nombre
+        }))
+        : [],
+
+    estado: "activo",
+    rol: esDocente ? "docente" : "estudiante",
+    claveInicial: passwordTemp,
+    fechaRegistro: new Date().toISOString()
+});
 
         // 5. HISTORIAL Y LIMPIEZA
-        await addDoc(collection(db, "historial_postulaciones"), { 
-            ...currentData, 
-            fechaProceso: new Date().toISOString(), 
-            resultado: "Admitido", 
-            decisionFinal: "ACEPTADO" 
-        });
+        await addDoc(collection(db, "historial_postulaciones"), {
+    postulante: {
+        nombreResponsable: currentData.nombreResponsable,
+        email: currentData.email,
+        perfil: currentData.perfil,
+        asignaturas: currentData.asignaturas || [],
+        dniDocente: currentData.dniDocente || null,
+        dniEstudiante: currentData.dniEstudiante || null,
+        whatsapp: currentData.whatsapp || currentData.whatsappRepresentante || null,
+        entidad: currentData.entidad
+    },
+
+    decision: "ACEPTADO",
+    fechaProceso: new Date().toISOString(),
+
+    auditoria: {
+        adminUid: auth.currentUser?.uid || null,
+        adminEmail: auth.currentUser?.email || null,
+        accion: "confirmarAcceso",
+        userAgent: navigator.userAgent
+    },
+
+    postulacionId: currentId
+});
         await deleteDoc(doc(db, "postulaciones", currentId));
         
         // 6. DISPARO DE WHATSAPP
@@ -636,12 +665,30 @@ document.getElementById('btnEliminar').onclick = async () => {
     if (res.isConfirmed) {
         try {
             // 1. Guardar en historial
-            await addDoc(collection(db, "historial_postulaciones"), { 
-                ...currentData, 
-                fechaProceso: new Date().toISOString(), 
-                resultado: "Rechazado", 
-                decisionFinal: "RECHAZADO" 
-            });
+            await addDoc(collection(db, "historial_postulaciones"), {
+    postulante: {
+        nombreResponsable: currentData.nombreResponsable,
+        email: currentData.email,
+        perfil: currentData.perfil,
+        asignaturas: currentData.asignaturas || [],
+        dniDocente: currentData.dniDocente || null,
+        dniEstudiante: currentData.dniEstudiante || null,
+        whatsapp: currentData.whatsapp || currentData.whatsappRepresentante || null,
+        entidad: currentData.entidad
+    },
+
+    decision: "RECHAZADO",
+    fechaProceso: new Date().toISOString(),
+
+    auditoria: {
+        adminUid: auth.currentUser?.uid || null,
+        adminEmail: auth.currentUser?.email || null,
+        accion: "rechazarPostulacion",
+        userAgent: navigator.userAgent
+    },
+
+    postulacionId: currentId
+});
             
             // 2. Borrar de postulaciones
             await deleteDoc(doc(db, "postulaciones", currentId));
