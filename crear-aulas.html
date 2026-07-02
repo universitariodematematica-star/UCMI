@@ -402,49 +402,47 @@ document.querySelectorAll(".aula-card").forEach(card => {
     // =========================
     document.addEventListener("click", async (e) => {
 
-        if (e.target.classList.contains("btnEditar")) {
+    const btn = e.target.closest("button");
 
-            const id = e.target.dataset.id;
-            const actual = e.target.dataset.nombre;
+    if (!btn) return;
 
-            const nuevo = prompt("Nuevo nombre:", actual);
-            if (!nuevo) return;
+    if (btn.classList.contains("btnEditar")) {
 
-            await updateDoc(doc(db, "aulas", id), {
-                nombre_aula: nuevo.trim()
-            });
-        }
+        const id = btn.dataset.id;
+        const actual = btn.dataset.nombre;
 
-        if (e.target.classList.contains("btnBorrar")) {
+        const nuevo = prompt("Nuevo nombre:", actual);
+        if (!nuevo) return;
 
-            const id = e.target.dataset.id;
+        await updateDoc(doc(db, "aulas", id), {
+            nombre_aula: nuevo.trim()
+        });
+    }
 
-            if (!confirm("¿Eliminar aula?")) return;
+    if (btn.classList.contains("btnBorrar")) {
 
-            await deleteDoc(doc(db, "aulas", id));
-        }
+        const id = btn.dataset.id;
 
-        if (e.target.classList.contains("btnCursos")) {
-            abrirSelectorCursos(e.target.dataset.id, user.uid);
-        }
+        if (!confirm("¿Eliminar aula?")) return;
 
-        if (e.target.classList.contains("btnAlumnos")) {
-    abrirSelectorAlumnos(
-        e.target.dataset.id,
-        datosUsuario.entidad
-    );
-}
+        await deleteDoc(doc(db, "aulas", id));
+    }
 
-if (e.target.classList.contains("btnProfesores")) {
+    if (btn.classList.contains("btnCursos")) {
+        abrirSelectorCursos(btn.dataset.id, user.uid);
+    }
 
-    console.log("CLICK PROFESORES");
+    if (btn.classList.contains("btnAlumnos")) {
+        abrirSelectorAlumnos(btn.dataset.id, datosUsuario.entidad);
+    }
 
-    abrirSelectorProfesores(
-        e.target.dataset.id,
-        datosUsuario.entidad
-    );
-}
-    });
+    if (btn.classList.contains("btnProfesores")) {
+
+        console.log("CLICK PROFESORES OK");
+
+        abrirSelectorProfesores(btn.dataset.id, datosUsuario.entidad);
+    }
+});
 
 });
 
