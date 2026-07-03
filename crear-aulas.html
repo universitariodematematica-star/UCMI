@@ -114,30 +114,6 @@ const btnRegistrar = document.getElementById("btnRegistrar");
 const listaAulas = document.getElementById("listaAulas");
 
 // =========================
-// POPUP DE INTEGRANTES
-// =========================
-const popupIntegrantes = document.createElement("div");
-
-popupIntegrantes.id = "popupIntegrantes";
-
-popupIntegrantes.style.position = "fixed";
-popupIntegrantes.style.display = "none";
-popupIntegrantes.style.background = "#111";
-popupIntegrantes.style.color = "white";
-popupIntegrantes.style.padding = "12px";
-popupIntegrantes.style.borderRadius = "10px";
-popupIntegrantes.style.border = "1px solid rgba(255,255,255,.2)";
-popupIntegrantes.style.minWidth = "260px";
-popupIntegrantes.style.maxWidth = "320px";
-popupIntegrantes.style.maxHeight = "320px";
-popupIntegrantes.style.overflowY = "auto";
-popupIntegrantes.style.boxShadow = "0 10px 30px rgba(0,0,0,.5)";
-popupIntegrantes.style.zIndex = "999999";
-popupIntegrantes.style.pointerEvents = "none";
-
-document.body.appendChild(popupIntegrantes);
-    
-// =========================
 // AUTENTICACIÓN SEGURA
 // =========================
 onAuthStateChanged(auth, async (user) => {
@@ -154,40 +130,14 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    datosUsuarioGlobal = usuarioSnap.data();
-
-    console.log("USUARIO OK:", datosUsuarioGlobal);
-
-    // =========================
-// CARGAR INTEGRANTES DE TODAS LAS AULAS
-// =========================
-const integrantesPorAula = {};
-
-const integrantesSnap = await getDocs(
-    query(
-        collection(db, "aula_integrantes"),
-        where("entidad", "==", datosUsuarioGlobal.entidad)
-    )
-);
-
-integrantesSnap.forEach(docSnap => {
-
-    const integrante = docSnap.data();
-
-    if (!integrantesPorAula[integrante.aulaId]) {
-        integrantesPorAula[integrante.aulaId] = [];
-    }
-
-    integrantesPorAula[integrante.aulaId].push(integrante);
-
-});
+    const datosUsuario = usuarioSnap.data();
 
     // =========================
     // LISTA AULAS (SNAPSHOT ÚNICO)
     // =========================
     const q = query(
     collection(db, "aulas"),
-    where("entidad", "==", datosUsuarioGlobal.entidad),
+    where("entidad", "==", datosUsuario.entidad),
     orderBy("nombre_aula")
 );
 
@@ -214,7 +164,7 @@ integrantesSnap.forEach(docSnap => {
                     query(
                         collection(db, "curso_asignaturas"),
                         where("cursoId", "==", aula.cursoId),
-                        where("entidad", "==", datosUsuarioGlobal.entidad),
+                        where("entidad", "==", datosUsuario.entidad),
                         orderBy("asignatura")
                     )
                 );
@@ -231,154 +181,51 @@ integrantesSnap.forEach(docSnap => {
             }
 
             htmlAulas += `
-    <div
-        class="panel-cristal aula-card mb-3 d-flex justify-content-between align-items-start"
-        data-id="${docSnap.id}">
+                <div class="panel-cristal mb-3 d-flex justify-content-between align-items-start">
 
-        <div>
-            <h5 class="mb-0">${aula.nombre_aula}</h5>
+                    <div>
+                        <h5 class="mb-0">${aula.nombre_aula}</h5>
 
-            <small style="opacity:0.7">
-                🎓 Curso: ${nombreCurso}
-            </small>
+                        <small style="opacity:0.7">
+                            🎓 Curso: ${nombreCurso}
+                        </small>
 
-            <ul style="margin-top:8px; padding-left:18px;">
-                ${asignaturasHTML}
-            </ul>
-        </div>
+                        <ul style="margin-top:8px; padding-left:18px;">
+                            ${asignaturasHTML}
+                        </ul>
+                    </div>
 
-        <div class="d-flex gap-2">
+                    <div class="d-flex gap-2">
 
-            <button
-                class="btn btn-sm btn-primary btnEditar"
-                data-id="${docSnap.id}"
-                data-nombre="${aula.nombre_aula}">
-                ✏️ Editar
-            </button>
+                        <button class="btn btn-sm btn-primary btnEditar"
+                            data-id="${docSnap.id}"
+                            data-nombre="${aula.nombre_aula}">
+                            ✏️ Editar
+                        </button>
 
-            <button
-                class="btn btn-sm btn-warning btnCursos"
-                data-id="${docSnap.id}">
-                🎓 Cursos
-            </button>
+                        <button class="btn btn-sm btn-warning btnCursos"
+                            data-id="${docSnap.id}">
+                            🎓 Cursos
+                        </button>
 
-            <button
-                class="btn btn-sm btn-info btnAlumnos"
-                data-id="${docSnap.id}">
-                👥 Alumnos
-            </button>
-            
-            <button
-                class="btn btn-sm btn-secondary btnProfesores"
-                data-id="${docSnap.id}">
-                👨‍🏫 Profesores
-            </button>
-            
-            <button
-                class="btn btn-sm btn-danger btnBorrar"
-                data-id="${docSnap.id}">
-                🗑️ Borrar
-            </button>
-        </div>
+                        <button
+                            class="btn btn-sm btn-info btnAlumnos"
+                            data-id="${docSnap.id}">
+                            👥 Alumnos
+                        </button>
 
-    </div>
-`;
+                        <button class="btn btn-sm btn-danger btnBorrar"
+                            data-id="${docSnap.id}">
+                            🗑️ Borrar
+                        </button>
+
+                    </div>
+
+                </div>
+            `;
         }
 
         listaAulas.innerHTML = htmlAulas;
-
-        // =========================
-// POPUP DE INTEGRANTES
-// =========================
-document.querySelectorAll(".aula-card").forEach(card => {
-
-    card.addEventListener("mouseenter", () => {
-
-        const aulaId = card.dataset.id;
-
-        const integrantes = integrantesPorAula[aulaId] || [];
-
-        let html = `
-            <div style="font-weight:bold; margin-bottom:8px;">
-                👥 Integrantes (${integrantes.length})
-            </div>
-        `;
-
-        if (integrantes.length === 0) {
-
-            html += `
-                <div style="opacity:.7;">
-                    No hay alumnos asignados.
-                </div>
-            `;
-
-        } else {
-
-            integrantes.forEach(alumno => {
-
-                html += `
-                    <div style="
-                        padding:4px 0;
-                        border-bottom:1px solid rgba(255,255,255,.08);
-                    ">
-                        👤 ${alumno.nombreResponsable}
-                    </div>
-                `;
-
-            });
-
-        }
-
-        popupIntegrantes.innerHTML = html;
-        popupIntegrantes.style.display = "block";
-
-    });
-
-    card.addEventListener("mousemove", (e) => {
-
-    const margen = 15;
-
-    let left = e.clientX + margen;
-    let top = e.clientY + margen;
-
-    const popupWidth = popupIntegrantes.offsetWidth;
-    const popupHeight = popupIntegrantes.offsetHeight;
-
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    // Si se sale por la derecha, mostrar a la izquierda del cursor
-    if (left + popupWidth > viewportWidth - margen) {
-        left = e.clientX - popupWidth - margen;
-    }
-
-    // Si se sale por abajo, mostrar encima del cursor
-    if (top + popupHeight > viewportHeight - margen) {
-        top = e.clientY - popupHeight - margen;
-    }
-
-    // Evitar que quede fuera por la izquierda
-    if (left < margen) {
-        left = margen;
-    }
-
-    // Evitar que quede fuera por arriba
-    if (top < margen) {
-        top = margen;
-    }
-
-    popupIntegrantes.style.left = left + "px";
-    popupIntegrantes.style.top = top + "px";
-
-});
-
-    card.addEventListener("mouseleave", () => {
-
-        popupIntegrantes.style.display = "none";
-
-    });
-
-});
     });
 
     // =========================
@@ -391,7 +238,7 @@ document.querySelectorAll(".aula-card").forEach(card => {
 
         await addDoc(collection(db, "aulas"), {
             nombre_aula: nombre,
-            entidad: datosUsuarioGlobal.entidad,
+            entidad: datosUsuario.entidad,
             academiaId: user.uid,
             fechaCreacion: serverTimestamp()
         });
@@ -402,84 +249,41 @@ document.querySelectorAll(".aula-card").forEach(card => {
     // =========================
     // EVENTOS GLOBALES
     // =========================
-
-    let datosUsuarioGlobal = null;
-    
     document.addEventListener("click", async (e) => {
 
-    const btn = e.target.closest("button");
-    if (!btn) return;
+        if (e.target.classList.contains("btnEditar")) {
 
-    console.log("CLICK DETECTADO:", btn.className);
+            const id = e.target.dataset.id;
+            const actual = e.target.dataset.nombre;
 
-   if (!datosUsuarioGlobal) {
-    console.warn("datosUsuarioGlobal aún no está listo");
-    return;
-}
+            const nuevo = prompt("Nuevo nombre:", actual);
+            if (!nuevo) return;
 
-        // =========================
-// EDITAR AULA
-// =========================
-if (btn.classList.contains("btnEditar")) {
+            await updateDoc(doc(db, "aulas", id), {
+                nombre_aula: nuevo.trim()
+            });
+        }
 
-    const id = btn.dataset.id;
-    const actual = btn.dataset.nombre;
+        if (e.target.classList.contains("btnBorrar")) {
 
-    const nuevo = prompt("Nuevo nombre:", actual);
-    if (!nuevo) return;
+            const id = e.target.dataset.id;
 
-    await updateDoc(doc(db, "aulas", id), {
-        nombre_aula: nuevo.trim()
-    });
+            if (!confirm("¿Eliminar aula?")) return;
 
-    return;
-}
+            await deleteDoc(doc(db, "aulas", id));
+        }
 
-// =========================
-// CURSOS
-// =========================
-if (btn.classList.contains("btnCursos")) {
+        if (e.target.classList.contains("btnCursos")) {
+            abrirSelectorCursos(e.target.dataset.id, user.uid);
+        }
 
-    await abrirSelectorCursos(
-        btn.dataset.id,
-        datosUsuarioGlobal.uid || datosUsuarioGlobal.academiaId || user?.uid
+        if (e.target.classList.contains("btnAlumnos")) {
+        abrirSelectorAlumnos(
+        e.target.dataset.id,
+        datosUsuario.entidad
     );
-
-    return;
 }
-
-// =========================
-// BORRAR (IMPORTANTE MANTENERLO)
-// =========================
-if (btn.classList.contains("btnBorrar")) {
-
-    const id = btn.dataset.id;
-
-    if (!confirm("¿Eliminar aula?")) return;
-
-    await deleteDoc(doc(db, "aulas", id));
-
-    return;
-}
-
-    if (btn.classList.contains("btnProfesores")) {
-
-        console.log("ABRIENDO PROFESORES");
-
-        await abrirSelectorProfesores(
-            btn.dataset.id,
-            datosUsuarioGlobal.entidad
-        );
-    }
-
-    if (btn.classList.contains("btnAlumnos")) {
-
-        await abrirSelectorAlumnos(
-            btn.dataset.id,
-            datosUsuarioGlobal.entidad
-        );
-    }
-});
+    });
 
 });
 
@@ -794,200 +598,6 @@ document
 }
     
 }
-
-async function abrirSelectorProfesores(aulaId, entidad) {
-
-    const overlay = document.createElement("div");
-
-    overlay.style.position = "fixed";
-    overlay.style.left = "0";
-    overlay.style.top = "0";
-    overlay.style.width = "100%";
-    overlay.style.height = "100%";
-    overlay.style.background = "rgba(0,0,0,.75)";
-    overlay.style.display = "flex";
-    overlay.style.justifyContent = "center";
-    overlay.style.alignItems = "center";
-    overlay.style.zIndex = "99999";
-
-    overlay.innerHTML = `
-        <div style="
-            width:900px;
-            max-width:95%;
-            max-height:90%;
-            overflow:auto;
-            background:#111;
-            border-radius:16px;
-            padding:25px;
-            color:white;
-        ">
-
-            <h4 class="mb-4">
-                Asignar profesores al aula
-            </h4>
-
-            <div id="listaProfesores">
-                Cargando...
-            </div>
-
-            <div class="mt-4 d-flex justify-content-between">
-
-                <button id="guardarProfesores" class="btn btn-success">
-                    Guardar profesores
-                </button>
-
-                <button id="cerrarProfesores" class="btn btn-danger">
-                    Cerrar
-                </button>
-
-            </div>
-
-        </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    document.getElementById("cerrarProfesores").onclick = () => overlay.remove();
-
-    const lista = document.getElementById("listaProfesores");
-
-    // 1. Aula
-    const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
-    if (!aulaSnap.exists()) {
-        lista.innerHTML = "El aula no existe.";
-        return;
-    }
-
-    const aula = aulaSnap.data();
-
-    if (!aula.cursoId) {
-        lista.innerHTML = "El aula no tiene curso asignado.";
-        return;
-    }
-
-    // 2. Asignaturas del curso
-    const asignaturasSnap = await getDocs(
-        query(
-            collection(db, "curso_asignaturas"),
-            where("cursoId", "==", aula.cursoId),
-            where("entidad", "==", entidad)
-        )
-    );
-
-    const asignaturasCurso = [];
-    asignaturasSnap.forEach(d => {
-        asignaturasCurso.push(d.data().asignatura);
-    });
-
-    console.log("ASIGNATURAS DEL CURSO:", asignaturasCurso);
-
-
-
-    // 3. Docentes
-    const docentesSnap = await getDocs(
-        query(
-            collection(db, "usuarios"),
-            where("entidad", "==", entidad),
-            where("perfil", "==", "Docente Academia")
-        )
-    );
-
-        console.log("========== DOCENTES ==========");
-
-docentesSnap.forEach(docSnap => {
-
-    const d = docSnap.data();
-
-    console.log("ID:", docSnap.id);
-console.log(JSON.stringify(d, null, 2));
-});
-
-    lista.innerHTML = "";
-
-    let encontrados = 0;
-
-    docentesSnap.forEach(docSnap => {
-
-        const d = docSnap.data();
-
-        const asignaturasDocente = d.asignaturas || [];
-
-        const coincide = asignaturasDocente.some(a =>
-            asignaturasCurso.includes(a.asignatura)
-        );
-
-        console.log(
-    d.nombreResponsable,
-    "=>",
-    coincide
-);
-
-        console.log("-------------");
-console.log("DOCENTE:", d.nombreResponsable);
-console.log("ASIGNATURAS DEL CURSO:", asignaturasCurso);
-console.log("ASIGNATURAS DEL DOCENTE:", asignaturasDocente.map(a => a.asignatura));
-console.log("COINCIDE:", coincide);
-
-        if (!coincide) return;
-
-        encontrados++;
-
-        lista.innerHTML += `
-            <div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.1)">
-                <input type="checkbox" value="${docSnap.id}">
-                👨‍🏫 ${d.nombreResponsable}
-                <small style="opacity:.7">(${asignaturasDocente.map(a => a.asignatura).join(", ")})</small>
-            </div>
-        `;
-    });
-
-    if (encontrados === 0) {
-        lista.innerHTML = "No hay docentes con asignaturas compatibles.";
-    }
-
-    // Guardar
-    document.getElementById("guardarProfesores").onclick = async () => {
-
-        const checks = overlay.querySelectorAll("input[type=checkbox]:checked");
-
-        const batch = writeBatch(db);
-
-        for (const c of checks) {
-
-    const usuarioId = c.value;
-
-    const usuarioSnap = await getDoc(
-        doc(db, "usuarios", usuarioId)
-    );
-
-    if (!usuarioSnap.exists()) continue;
-
-    const profesor = usuarioSnap.data();
-
-    const ref = doc(
-        db,
-        "aula_integrantes",
-        aulaId + "_" + usuarioId
-    );
-
-    batch.set(ref, {
-        aulaId,
-        usuarioId,
-        perfil: profesor.perfil,
-        entidad: profesor.entidad,
-        nombreResponsable: profesor.nombreResponsable,
-        email: profesor.email,
-        fechaAsignacion: serverTimestamp()
-    });
-
-}
-
-        await batch.commit();
-
-        overlay.remove();
-        alert("Profesores asignados correctamente.");
-    };
-}    
     
 </script>
 
