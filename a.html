@@ -114,30 +114,6 @@ const btnRegistrar = document.getElementById("btnRegistrar");
 const listaAulas = document.getElementById("listaAulas");
 
 // =========================
-// POPUP DE INTEGRANTES
-// =========================
-const popupIntegrantes = document.createElement("div");
-
-popupIntegrantes.id = "popupIntegrantes";
-
-popupIntegrantes.style.position = "fixed";
-popupIntegrantes.style.display = "none";
-popupIntegrantes.style.background = "#111";
-popupIntegrantes.style.color = "white";
-popupIntegrantes.style.padding = "12px";
-popupIntegrantes.style.borderRadius = "10px";
-popupIntegrantes.style.border = "1px solid rgba(255,255,255,.2)";
-popupIntegrantes.style.minWidth = "260px";
-popupIntegrantes.style.maxWidth = "320px";
-popupIntegrantes.style.maxHeight = "320px";
-popupIntegrantes.style.overflowY = "auto";
-popupIntegrantes.style.boxShadow = "0 10px 30px rgba(0,0,0,.5)";
-popupIntegrantes.style.zIndex = "999999";
-popupIntegrantes.style.pointerEvents = "none";
-
-document.body.appendChild(popupIntegrantes);
-    
-// =========================
 // AUTENTICACIÓN SEGURA
 // =========================
 onAuthStateChanged(auth, async (user) => {
@@ -155,30 +131,6 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     const datosUsuario = usuarioSnap.data();
-
-    // =========================
-// CARGAR INTEGRANTES DE TODAS LAS AULAS
-// =========================
-const integrantesPorAula = {};
-
-const integrantesSnap = await getDocs(
-    query(
-        collection(db, "aula_integrantes"),
-        where("entidad", "==", datosUsuario.entidad)
-    )
-);
-
-integrantesSnap.forEach(docSnap => {
-
-    const integrante = docSnap.data();
-
-    if (!integrantesPorAula[integrante.aulaId]) {
-        integrantesPorAula[integrante.aulaId] = [];
-    }
-
-    integrantesPorAula[integrante.aulaId].push(integrante);
-
-});
 
     // =========================
     // LISTA AULAS (SNAPSHOT ÚNICO)
@@ -229,154 +181,51 @@ integrantesSnap.forEach(docSnap => {
             }
 
             htmlAulas += `
-    <div
-        class="panel-cristal aula-card mb-3 d-flex justify-content-between align-items-start"
-        data-id="${docSnap.id}">
+                <div class="panel-cristal mb-3 d-flex justify-content-between align-items-start">
 
-        <div>
-            <h5 class="mb-0">${aula.nombre_aula}</h5>
+                    <div>
+                        <h5 class="mb-0">${aula.nombre_aula}</h5>
 
-            <small style="opacity:0.7">
-                🎓 Curso: ${nombreCurso}
-            </small>
+                        <small style="opacity:0.7">
+                            🎓 Curso: ${nombreCurso}
+                        </small>
 
-            <ul style="margin-top:8px; padding-left:18px;">
-                ${asignaturasHTML}
-            </ul>
-        </div>
+                        <ul style="margin-top:8px; padding-left:18px;">
+                            ${asignaturasHTML}
+                        </ul>
+                    </div>
 
-        <div class="d-flex gap-2">
+                    <div class="d-flex gap-2">
 
-            <button
-                class="btn btn-sm btn-primary btnEditar"
-                data-id="${docSnap.id}"
-                data-nombre="${aula.nombre_aula}">
-                ✏️ Editar
-            </button>
+                        <button class="btn btn-sm btn-primary btnEditar"
+                            data-id="${docSnap.id}"
+                            data-nombre="${aula.nombre_aula}">
+                            ✏️ Editar
+                        </button>
 
-            <button
-                class="btn btn-sm btn-warning btnCursos"
-                data-id="${docSnap.id}">
-                🎓 Cursos
-            </button>
+                        <button class="btn btn-sm btn-warning btnCursos"
+                            data-id="${docSnap.id}">
+                            🎓 Cursos
+                        </button>
 
-            <button
-                class="btn btn-sm btn-info btnAlumnos"
-                data-id="${docSnap.id}">
-                👥 Alumnos
-            </button>
-            
-            <button
-                class="btn btn-sm btn-secondary btnProfesores"
-                data-id="${docSnap.id}">
-                👨‍🏫 Profesores
-            </button>
-            
-            <button
-                class="btn btn-sm btn-danger btnBorrar"
-                data-id="${docSnap.id}">
-                🗑️ Borrar
-            </button>
-        </div>
+                        <button
+                            class="btn btn-sm btn-info btnAlumnos"
+                            data-id="${docSnap.id}">
+                            👥 Alumnos
+                        </button>
 
-    </div>
-`;
+                        <button class="btn btn-sm btn-danger btnBorrar"
+                            data-id="${docSnap.id}">
+                            🗑️ Borrar
+                        </button>
+
+                    </div>
+
+                </div>
+            `;
         }
 
         listaAulas.innerHTML = htmlAulas;
-
-        // =========================
-// POPUP DE INTEGRANTES
-// =========================
-document.querySelectorAll(".aula-card").forEach(card => {
-
-    card.addEventListener("mouseenter", () => {
-
-        const aulaId = card.dataset.id;
-
-        const integrantes = integrantesPorAula[aulaId] || [];
-
-        let html = `
-            <div style="font-weight:bold; margin-bottom:8px;">
-                👥 Integrantes (${integrantes.length})
-            </div>
-        `;
-
-        if (integrantes.length === 0) {
-
-            html += `
-                <div style="opacity:.7;">
-                    No hay alumnos asignados.
-                </div>
-            `;
-
-        } else {
-
-            integrantes.forEach(alumno => {
-
-                html += `
-                    <div style="
-                        padding:4px 0;
-                        border-bottom:1px solid rgba(255,255,255,.08);
-                    ">
-                        👤 ${alumno.nombreResponsable}
-                    </div>
-                `;
-
-            });
-
-        }
-
-        popupIntegrantes.innerHTML = html;
-        popupIntegrantes.style.display = "block";
-
-    });
-
-    card.addEventListener("mousemove", (e) => {
-
-    const margen = 15;
-
-    let left = e.clientX + margen;
-    let top = e.clientY + margen;
-
-    const popupWidth = popupIntegrantes.offsetWidth;
-    const popupHeight = popupIntegrantes.offsetHeight;
-
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    // Si se sale por la derecha, mostrar a la izquierda del cursor
-    if (left + popupWidth > viewportWidth - margen) {
-        left = e.clientX - popupWidth - margen;
-    }
-
-    // Si se sale por abajo, mostrar encima del cursor
-    if (top + popupHeight > viewportHeight - margen) {
-        top = e.clientY - popupHeight - margen;
-    }
-
-    // Evitar que quede fuera por la izquierda
-    if (left < margen) {
-        left = margen;
-    }
-
-    // Evitar que quede fuera por arriba
-    if (top < margen) {
-        top = margen;
-    }
-
-    popupIntegrantes.style.left = left + "px";
-    popupIntegrantes.style.top = top + "px";
-
-});
-
-    card.addEventListener("mouseleave", () => {
-
-        popupIntegrantes.style.display = "none";
-
-    });
-
-});
     });
 
     // =========================
