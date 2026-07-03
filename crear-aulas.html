@@ -763,38 +763,46 @@ async function abrirSelectorProfesores(aulaId, entidad) {
 
     // 4. Lógica de guardado (Borrar antiguos y crear nuevos)
     document.getElementById("guardarProfesores").onclick = async () => {
-        const batch = writeBatch(db);
+    const batch = writeBatch(db);
 
-        // A. Borrar todos los registros antiguos de docentes en esta aula
-        asignadosSnap.forEach(docSnap => {
-            batch.delete(docSnap.ref);
+    // 1. ELIMINACIÓN: Borramos los que ya estaban
+    asignadosSnap.forEach(docSnap => {
+        batch.delete(docSnap.ref);
+    });
+
+    // 2. CREACIÓN
+    const checks = overlay.querySelectorAll("input[type=checkbox]:checked");
+    
+    for (const c of checks) {
+        const usuarioSnap = await getDoc(doc(db, "usuarios", c.value));
+        if (!usuarioSnap.exists()) continue;
+
+        const docente = usuarioSnap.data();
+        const ref = doc(db, "aula_integrantes", aulaId + "_" + c.value);
+
+        // FORZAMOS el valor de entidad aquí para asegurar que la regla de seguridad siempre reciba algo válido
+        const entidadValidada = docente.entidad || entidad;
+
+        batch.set(ref, {
+            aulaId: aulaId,
+            usuarioId: c.value,
+            perfil: "Docente Academia",
+            entidad: entidadValidada, // Usamos la variable asegurada
+            nombreResponsable: docente.nombreResponsable || "Sin nombre",
+            email: docente.email || "",
+            fechaAsignacion: serverTimestamp()
         });
+    }
 
-        // B. Crear los nuevos registros de los checkboxes seleccionados
-        const checks = overlay.querySelectorAll("input[type=checkbox]:checked");
-        
-        for (const c of checks) {
-            const usuarioSnap = await getDoc(doc(db, "usuarios", c.value));
-            if (!usuarioSnap.exists()) continue;
-
-            const docente = usuarioSnap.data();
-            const ref = doc(db, "aula_integrantes", aulaId + "_" + c.value);
-
-            batch.set(ref, {
-                aulaId: aulaId,
-                usuarioId: c.value,
-                perfil: "Docente Academia",
-                entidad: docente.entidad,
-                nombreResponsable: docente.nombreResponsable,
-                email: docente.email,
-                fechaAsignacion: serverTimestamp()
-            });
-        }
-
+    try {
         await batch.commit();
         overlay.remove();
         alert("Profesores actualizados correctamente.");
-    };
+    } catch (error) {
+        console.error("Error al guardar:", error);
+        alert("Error de permisos o red: " + error.message);
+    }
+};
 }    
     
 </script>
