@@ -698,27 +698,12 @@ async function abrirSelectorProfesores(aulaId, entidad) {
             padding:25px;
             color:white;
         ">
-
-            <h4 class="mb-4">
-                Asignar profesores al aula
-            </h4>
-
-            <div id="listaProfesores">
-                Cargando...
-            </div>
-
+            <h4 class="mb-4">Asignar profesores al aula</h4>
+            <div id="listaProfesores">Cargando...</div>
             <div class="mt-4 d-flex justify-content-between">
-
-                <button id="guardarProfesores" class="btn btn-success">
-                    Guardar profesores
-                </button>
-
-                <button id="cerrarProfesores" class="btn btn-danger">
-                    Cerrar
-                </button>
-
+                <button id="guardarProfesores" class="btn btn-success">Guardar profesores</button>
+                <button id="cerrarProfesores" class="btn btn-danger">Cerrar</button>
             </div>
-
         </div>
     `;
 
@@ -728,50 +713,28 @@ async function abrirSelectorProfesores(aulaId, entidad) {
 
     const lista = document.getElementById("listaProfesores");
 
-    // 1. Aula
+    // 1. Obtener datos del aula
     const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
     if (!aulaSnap.exists()) {
         lista.innerHTML = "El aula no existe.";
         return;
     }
 
-    const aula = aulaSnap.data();
-
+    // 2. Identificar docentes YA ASIGNADOS (para marcar los checkboxes)
     const asignadosSnap = await getDocs(
-    query(
-        collection(db, "aula_integrantes"),
-        where("aulaId", "==", aulaId),
-        where("perfil", "==", "Docente Academia")
-    )
-);
-
-const docentesAsignados = new Set();
-
-asignadosSnap.forEach(d => {
-    const data = d.data();
-    docentesAsignados.add(data.usuarioId);
-});
-
-    if (!aula.cursoId) {
-        lista.innerHTML = "El aula no tiene curso asignado.";
-        return;
-    }
-
-    // 2. Asignaturas del curso
-    const asignaturasSnap = await getDocs(
         query(
-            collection(db, "curso_asignaturas"),
-            where("cursoId", "==", aula.cursoId),
-            where("entidad", "==", entidad)
+            collection(db, "aula_integrantes"),
+            where("aulaId", "==", aulaId),
+            where("perfil", "==", "Docente Academia")
         )
     );
 
-    const asignaturasCurso = [];
-    asignaturasSnap.forEach(d => {
-        asignaturasCurso.push(d.data().asignatura);
+    const docentesAsignados = new Set();
+    asignadosSnap.forEach(d => {
+        docentesAsignados.add(d.data().usuarioId);
     });
 
-    // 3. Docentes
+    // 3. Cargar docentes de la entidad
     const docentesSnap = await getDocs(
         query(
             collection(db, "usuarios"),
@@ -782,72 +745,56 @@ asignadosSnap.forEach(d => {
 
     lista.innerHTML = "";
 
-    let encontrados = 0;
-
     docentesSnap.forEach(docSnap => {
-
         const d = docSnap.data();
-
         const asignaturasDocente = d.asignaturas || [];
-
-        const coincide = asignaturasDocente.some(a =>
-            asignaturasCurso.includes(a.asignatura)
-        );
-
-        if (!coincide) return;
-
-        encontrados++;
+        const asignaturasLista = asignaturasDocente.map(a => a.asignatura).join(", ");
 
         lista.innerHTML += `
             <div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.1)">
-                <input type="checkbox"
-               value="${docSnap.id}"
-               ${docentesAsignados.has(docSnap.id) ? "checked" : ""}>
+                <input type="checkbox" 
+                       value="${docSnap.id}" 
+                       ${docentesAsignados.has(docSnap.id) ? "checked" : ""}>
                 👨‍🏫 ${d.nombreResponsable}
-                <small style="opacity:.7">(${asignaturasDocente.map(a => a.asignatura).join(", ")})</small>
+                <small style="opacity:.7">(${asignaturasLista})</small>
             </div>
         `;
     });
 
-    if (encontrados === 0) {
-        lista.innerHTML = "No hay docentes con asignaturas compatibles.";
-    }
-
-    // Guardar
+    // 4. Lógica de guardado (Borrar antiguos y crear nuevos)
     document.getElementById("guardarProfesores").onclick = async () => {
+        const batch = writeBatch(db);
 
-    const checks = overlay.querySelectorAll("input[type=checkbox]:checked");
-
-    const batch = writeBatch(db);
-
-    for (const c of checks) {
-
-        const usuarioSnap = await getDoc(doc(db, "usuarios", c.value));
-
-        if (!usuarioSnap.exists()) continue;
-
-        const docente = usuarioSnap.data();
-
-        const ref = doc(db, "aula_integrantes", aulaId + "_" + c.value);
-
-        batch.set(ref, {
-            aulaId,
-            usuarioId: c.value,
-            perfil: docente.perfil,
-            entidad: docente.entidad,
-            nombreResponsable: docente.nombreResponsable,
-            email: docente.email,
-            fechaAsignacion: serverTimestamp()
+        // A. Borrar todos los registros antiguos de docentes en esta aula
+        asignadosSnap.forEach(docSnap => {
+            batch.delete(docSnap.ref);
         });
 
-    }
+        // B. Crear los nuevos registros de los checkboxes seleccionados
+        const checks = overlay.querySelectorAll("input[type=checkbox]:checked");
+        
+        for (const c of checks) {
+            const usuarioSnap = await getDoc(doc(db, "usuarios", c.value));
+            if (!usuarioSnap.exists()) continue;
 
-    await batch.commit();
+            const docente = usuarioSnap.data();
+            const ref = doc(db, "aula_integrantes", aulaId + "_" + c.value);
 
-    overlay.remove();
+            batch.set(ref, {
+                aulaId: aulaId,
+                usuarioId: c.value,
+                perfil: "Docente Academia",
+                entidad: docente.entidad,
+                nombreResponsable: docente.nombreResponsable,
+                email: docente.email,
+                fechaAsignacion: serverTimestamp()
+            });
+        }
 
-    alert("Profesores asignados correctamente.");
-};
+        await batch.commit();
+        overlay.remove();
+        alert("Profesores actualizados correctamente.");
+    };
 }    
     
 </script>
