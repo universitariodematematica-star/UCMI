@@ -175,17 +175,27 @@ const integrantesSnap = await getDocs(
 
 const alumnosPorAula = {};
 
+const alumnosPorAula = {};
+
 integrantesSnap.forEach(docSnap => {
 
     const data = docSnap.data();
 
+    // SOLO estudiantes
     if (data.perfil !== "Estudiante Academia") return;
 
-    if (!alumnosPorAula[data.aulaId]) {
-        alumnosPorAula[data.aulaId] = [];
+    const aulaId = data.aulaId;
+
+    if (!aulaId) return;
+
+    if (!alumnosPorAula[aulaId]) {
+        alumnosPorAula[aulaId] = [];
     }
 
-    alumnosPorAula[data.aulaId].push(data);
+    alumnosPorAula[aulaId].push({
+        nombre: data.nombreResponsable || "Sin nombre",
+        email: data.email || ""
+    });
 
 });    
 
@@ -418,7 +428,7 @@ document.querySelectorAll(".aula-card").forEach(card => {
                         padding:4px 0;
                         border-bottom:1px solid rgba(255,255,255,.08);
                     ">
-                        👤 ${alumno.nombreResponsable}
+                        👤 ${alumno.nombreResponsable || "Sin nombre"}
                     </div>
                 `;
 
