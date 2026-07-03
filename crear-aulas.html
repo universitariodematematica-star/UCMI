@@ -525,9 +525,13 @@ document
     async function cargarAlumnos() {
 
     const lista = document.getElementById("listaAlumnos");
+    const fechaSeleccionada = document.getElementById("fechaFiltro").value;
 
-    const fechaSeleccionada =
-        document.getElementById("fechaFiltro").value;
+    // Obtener alumnos ya asignados para marcarlos
+    const asignadosSnap = await getDocs(
+        query(collection(db, "aula_integrantes"), where("aulaId", "==", aulaId))
+    );
+    const alumnosAsignados = new Set(asignadosSnap.docs.map(d => d.data().usuarioId));
 
     if (!fechaSeleccionada) {
 
@@ -621,6 +625,13 @@ document
     asignadosSnap.forEach(docSnap => batch.delete(docSnap.ref));
 
     const checks = document.querySelectorAll('#listaAlumnos input[type="checkbox"]:checked');
+
+    if (checks.length === 0) {
+        await batch.commit();
+        alert("Alumnos actualizados (lista vacía).");
+        overlay.remove();
+        return;
+    }
 
     for (const check of checks) {
 
