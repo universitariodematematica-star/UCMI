@@ -904,18 +904,35 @@ console.log("COINCIDE:", coincide);
 
         const batch = writeBatch(db);
 
-        checks.forEach(c => {
+        for (const c of checks) {
 
-            const ref = doc(db, "aula_integrantes", aulaId + "_" + c.value);
+    const usuarioId = c.value;
 
-            batch.set(ref, {
-                aulaId,
-                usuarioId: c.value,
-                perfil: "Docente Academia",
-                entidad
-            });
+    const usuarioSnap = await getDoc(
+        doc(db, "usuarios", usuarioId)
+    );
 
-        });
+    if (!usuarioSnap.exists()) continue;
+
+    const profesor = usuarioSnap.data();
+
+    const ref = doc(
+        db,
+        "aula_integrantes",
+        aulaId + "_" + usuarioId
+    );
+
+    batch.set(ref, {
+        aulaId,
+        usuarioId,
+        perfil: profesor.perfil,
+        entidad: profesor.entidad,
+        nombreResponsable: profesor.nombreResponsable,
+        email: profesor.email,
+        fechaAsignacion: serverTimestamp()
+    });
+
+}
 
         await batch.commit();
 
