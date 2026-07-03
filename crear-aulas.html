@@ -769,55 +769,28 @@ async function abrirSelectorProfesores(aulaId, entidad) {
 
     let encontrados = 0;
 
-    const docentesFiltrados = [];
+    docentesSnap.forEach(docSnap => {
 
-docentesSnap.forEach(docSnap => {
+        const d = docSnap.data();
 
-    const d = docSnap.data();
+        const asignaturasDocente = d.asignaturas || [];
 
-    const asignaturasDocente = d.asignaturas || [];
+        const coincide = asignaturasDocente.some(a =>
+            asignaturasCurso.includes(a.asignatura)
+        );
 
-    // normalizar a array de strings
-    const listaDocente = asignaturasDocente.map(a => a.asignatura);
+        if (!coincide) return;
 
-    // intersección con asignaturas del curso
-    const coincide = listaDocente.some(a =>
-        asignaturasCurso.includes(a)
-    );
+        encontrados++;
 
-    if (!coincide) return;
-
-    docentesFiltrados.push({
-        id: docSnap.id,
-        data: d,
-        asignaturas: listaDocente
+        lista.innerHTML += `
+            <div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.1)">
+                <input type="checkbox" value="${docSnap.id}">
+                👨‍🏫 ${d.nombreResponsable}
+                <small style="opacity:.7">(${asignaturasDocente.map(a => a.asignatura).join(", ")})</small>
+            </div>
+        `;
     });
-
-});
-
-lista.innerHTML = "";
-
-docentesFiltrados.forEach(docente => {
-
-    const yaAsignado = false; 
-    // (luego lo conectamos con aula_integrantes)
-
-    lista.innerHTML += `
-        <div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.1)">
-            
-            <input type="checkbox"
-                   value="${docente.id}"
-                   ${yaAsignado ? "checked" : ""}>
-
-            👨‍🏫 ${docente.data.nombreResponsable}
-
-            <small style="opacity:.7">
-                (${docente.asignaturas.join(", ")})
-            </small>
-
-        </div>
-    `;
-});
 
     if (encontrados === 0) {
         lista.innerHTML = "No hay docentes con asignaturas compatibles.";
