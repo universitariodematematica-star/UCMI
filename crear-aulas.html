@@ -594,7 +594,8 @@ document
 
                 <input
                     type="checkbox"
-                    value="${docSnap.id}">
+                    value="${docSnap.id}"
+                    ${alumnosAsignados.has(docSnap.id) ? "checked" : ""}>
 
             </div>
         `;
@@ -611,19 +612,15 @@ document
 
     async function guardarAlumnos() {
 
-    const checks = document.querySelectorAll(
-        '#listaAlumnos input[type="checkbox"]:checked'
-    );
-
-    if (checks.length === 0) {
-
-        alert("Seleccione al menos un alumno.");
-
-        return;
-
-    }
-
     const batch = writeBatch(db);
+    
+    // Borrar alumnos actuales antes de guardar los nuevos
+    const asignadosSnap = await getDocs(
+        query(collection(db, "aula_integrantes"), where("aulaId", "==", aulaId), where("perfil", "==", "Estudiante Academia"))
+    );
+    asignadosSnap.forEach(docSnap => batch.delete(docSnap.ref));
+
+    const checks = document.querySelectorAll('#listaAlumnos input[type="checkbox"]:checked');
 
     for (const check of checks) {
 
