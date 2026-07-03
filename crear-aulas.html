@@ -799,28 +799,38 @@ async function abrirSelectorProfesores(aulaId, entidad) {
     // Guardar
     document.getElementById("guardarProfesores").onclick = async () => {
 
-        const checks = overlay.querySelectorAll("input[type=checkbox]:checked");
+    const checks = overlay.querySelectorAll("input[type=checkbox]:checked");
 
-        const batch = writeBatch(db);
+    const batch = writeBatch(db);
 
-        checks.forEach(c => {
+    for (const c of checks) {
 
-            const ref = doc(db, "aula_integrantes", aulaId + "_" + c.value);
+        const usuarioSnap = await getDoc(doc(db, "usuarios", c.value));
 
-            batch.set(ref, {
-                aulaId,
-                usuarioId: c.value,
-                perfil: "Docente Academia",
-                entidad
-            });
+        if (!usuarioSnap.exists()) continue;
 
+        const docente = usuarioSnap.data();
+
+        const ref = doc(db, "aula_integrantes", aulaId + "_" + c.value);
+
+        batch.set(ref, {
+            aulaId,
+            usuarioId: c.value,
+            perfil: docente.perfil,
+            entidad: docente.entidad,
+            nombreResponsable: docente.nombreResponsable,
+            email: docente.email,
+            fechaAsignacion: serverTimestamp()
         });
 
-        await batch.commit();
+    }
 
-        overlay.remove();
-        alert("Profesores asignados correctamente.");
-    };
+    await batch.commit();
+
+    overlay.remove();
+
+    alert("Profesores asignados correctamente.");
+};
 }    
     
 </script>
