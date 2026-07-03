@@ -154,9 +154,9 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    const datosUsuario = usuarioSnap.data();
+    datosUsuarioGlobal = usuarioSnap.data();
 
-    console.log("USUARIO OK:", datosUsuario);
+    console.log("USUARIO OK:", datosUsuarioGlobal);
 
     // =========================
 // CARGAR INTEGRANTES DE TODAS LAS AULAS
@@ -166,7 +166,7 @@ const integrantesPorAula = {};
 const integrantesSnap = await getDocs(
     query(
         collection(db, "aula_integrantes"),
-        where("entidad", "==", datosUsuario.entidad)
+        where("entidad", "==", datosUsuarioGlobal.entidad)
     )
 );
 
@@ -187,7 +187,7 @@ integrantesSnap.forEach(docSnap => {
     // =========================
     const q = query(
     collection(db, "aulas"),
-    where("entidad", "==", datosUsuario.entidad),
+    where("entidad", "==", datosUsuarioGlobal.entidad),
     orderBy("nombre_aula")
 );
 
@@ -214,7 +214,7 @@ integrantesSnap.forEach(docSnap => {
                     query(
                         collection(db, "curso_asignaturas"),
                         where("cursoId", "==", aula.cursoId),
-                        where("entidad", "==", datosUsuario.entidad),
+                        where("entidad", "==", datosUsuarioGlobal.entidad),
                         orderBy("asignatura")
                     )
                 );
@@ -391,7 +391,7 @@ document.querySelectorAll(".aula-card").forEach(card => {
 
         await addDoc(collection(db, "aulas"), {
             nombre_aula: nombre,
-            entidad: datosUsuario.entidad,
+            entidad: datosUsuarioGlobal.entidad,
             academiaId: user.uid,
             fechaCreacion: serverTimestamp()
         });
@@ -402,6 +402,9 @@ document.querySelectorAll(".aula-card").forEach(card => {
     // =========================
     // EVENTOS GLOBALES
     // =========================
+
+    let datosUsuarioGlobal = null;
+    
     document.addEventListener("click", async (e) => {
 
     const btn = e.target.closest("button");
@@ -409,10 +412,10 @@ document.querySelectorAll(".aula-card").forEach(card => {
 
     console.log("CLICK DETECTADO:", btn.className);
 
-    if (!datosUsuario) {
-        console.warn("datosUsuario aún no está listo");
-        return;
-    }
+   if (!datosUsuarioGlobal) {
+    console.warn("datosUsuarioGlobal aún no está listo");
+    return;
+}
 
         // =========================
 // EDITAR AULA
@@ -439,7 +442,7 @@ if (btn.classList.contains("btnCursos")) {
 
     await abrirSelectorCursos(
         btn.dataset.id,
-        datosUsuario.uid || datosUsuario.academiaId || user?.uid
+        datosUsuarioGlobal.uid || datosUsuarioGlobal.academiaId || user?.uid
     );
 
     return;
@@ -465,7 +468,7 @@ if (btn.classList.contains("btnBorrar")) {
 
         await abrirSelectorProfesores(
             btn.dataset.id,
-            datosUsuario.entidad
+            datosUsuarioGlobal.entidad
         );
     }
 
@@ -473,7 +476,7 @@ if (btn.classList.contains("btnBorrar")) {
 
         await abrirSelectorAlumnos(
             btn.dataset.id,
-            datosUsuario.entidad
+            datosUsuarioGlobal.entidad
         );
     }
 });
