@@ -156,6 +156,9 @@ onAuthStateChanged(auth, async (user) => {
 
     const datosUsuario = usuarioSnap.data();
 
+    window._entidad = datosUsuario.entidad;
+window._academiaId = user.uid;
+
     console.log("USUARIO OK:", datosUsuario);
 
     // =========================
@@ -169,6 +172,22 @@ const integrantesSnap = await getDocs(
         where("entidad", "==", datosUsuario.entidad)
     )
 );
+
+const alumnosPorAula = {};
+
+integrantesSnap.forEach(docSnap => {
+
+    const data = docSnap.data();
+
+    if (data.perfil !== "Estudiante Academia") return;
+
+    if (!alumnosPorAula[data.aulaId]) {
+        alumnosPorAula[data.aulaId] = [];
+    }
+
+    alumnosPorAula[data.aulaId].push(data);
+
+});    
 
 integrantesSnap.forEach(docSnap => {
 
@@ -286,6 +305,84 @@ integrantesSnap.forEach(docSnap => {
         }
 
         listaAulas.innerHTML = htmlAulas;
+
+        const popupAlumnos = document.createElement("div");
+
+popupAlumnos.style.position = "fixed";
+popupAlumnos.style.display = "none";
+popupAlumnos.style.background = "#111";
+popupAlumnos.style.color = "white";
+popupAlumnos.style.padding = "12px";
+popupAlumnos.style.borderRadius = "10px";
+popupAlumnos.style.border = "1px solid rgba(255,255,255,.2)";
+popupAlumnos.style.minWidth = "260px";
+popupAlumnos.style.maxWidth = "320px";
+popupAlumnos.style.maxHeight = "320px";
+popupAlumnos.style.overflowY = "auto";
+popupAlumnos.style.boxShadow = "0 10px 30px rgba(0,0,0,.5)";
+popupAlumnos.style.zIndex = "999999";
+popupAlumnos.style.pointerEvents = "none";
+
+document.body.appendChild(popupAlumnos);
+
+const alumnosPorAula = {};
+
+document.querySelectorAll(".panel-cristal").forEach(card => {
+
+    const aulaId = card.querySelector(".btnEditar")?.dataset.id;
+    if (!aulaId) return;
+
+    card.addEventListener("mouseenter", () => {
+
+        const alumnos = alumnosPorAula[aulaId] || [];
+
+        let html = `
+            <div style="font-weight:bold; margin-bottom:8px;">
+                👥 Alumnos (${alumnos.length})
+            </div>
+        `;
+
+        if (alumnos.length === 0) {
+
+            html += `
+                <div style="opacity:.7;">
+                    Sin alumnos
+                </div>
+            `;
+
+        } else {
+
+            alumnos.forEach(a => {
+
+                html += `
+                    <div style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,.08)">
+                        👤 ${a.nombreResponsable ?? "Sin nombre"}
+                        <br>
+                        <small style="opacity:.7">${a.email ?? ""}</small>
+                    </div>
+                `;
+
+            });
+
+        }
+
+        popupAlumnos.innerHTML = html;
+        popupAlumnos.style.display = "block";
+
+    });
+
+    card.addEventListener("mousemove", (e) => {
+
+        popupAlumnos.style.left = (e.clientX + 15) + "px";
+        popupAlumnos.style.top = (e.clientY + 15) + "px";
+
+    });
+
+    card.addEventListener("mouseleave", () => {
+        popupAlumnos.style.display = "none";
+    });
+
+});
 
         // =========================
 // POPUP DE INTEGRANTES
@@ -407,30 +504,41 @@ document.querySelectorAll(".aula-card").forEach(card => {
     const btn = e.target.closest("button");
     if (!btn) return;
 
-    console.log("CLICK DETECTADO:", btn.className);
+    if (btn.classList.contains("btnEditar")) {
 
-    if (!datosUsuario) {
-        console.warn("datosUsuario aún no está listo");
-        return;
+        const id = btn.dataset.id;
+        const actual = btn.dataset.nombre;
+
+        const nuevo = prompt("Nuevo nombre:", actual);
+        if (!nuevo) return;
+
+        await updateDoc(doc(db, "aulas", id), {
+            nombre_aula: nuevo.trim()
+        });
     }
 
-    if (btn.classList.contains("btnProfesores")) {
+    if (btn.classList.contains("btnBorrar")) {
 
-        console.log("ABRIENDO PROFESORES");
+        const id = btn.dataset.id;
 
-        await abrirSelectorProfesores(
-            btn.dataset.id,
-            datosUsuario.entidad
-        );
+        if (!confirm("¿Eliminar aula?")) return;
+
+        await deleteDoc(doc(db, "aulas", id));
+    }
+
+    if (btn.classList.contains("btnCursos")) {
+
+        abrirSelectorCursos(btn.dataset.id, window._academiaId);
     }
 
     if (btn.classList.contains("btnAlumnos")) {
 
-        await abrirSelectorAlumnos(
+        abrirSelectorAlumnos(
             btn.dataset.id,
-            datosUsuario.entidad
+            window._entidad
         );
     }
+
 });
 
 });
