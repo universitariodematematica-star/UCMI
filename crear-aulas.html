@@ -156,6 +156,9 @@ onAuthStateChanged(auth, async (user) => {
 
     const datosUsuario = usuarioSnap.data();
 
+    window._entidad = datosUsuario.entidad;
+window._academiaId = user.uid;
+
     console.log("USUARIO OK:", datosUsuario);
 
     // =========================
@@ -407,30 +410,41 @@ document.querySelectorAll(".aula-card").forEach(card => {
     const btn = e.target.closest("button");
     if (!btn) return;
 
-    console.log("CLICK DETECTADO:", btn.className);
+    if (btn.classList.contains("btnEditar")) {
 
-    if (!datosUsuario) {
-        console.warn("datosUsuario aún no está listo");
-        return;
+        const id = btn.dataset.id;
+        const actual = btn.dataset.nombre;
+
+        const nuevo = prompt("Nuevo nombre:", actual);
+        if (!nuevo) return;
+
+        await updateDoc(doc(db, "aulas", id), {
+            nombre_aula: nuevo.trim()
+        });
     }
 
-    if (btn.classList.contains("btnProfesores")) {
+    if (btn.classList.contains("btnBorrar")) {
 
-        console.log("ABRIENDO PROFESORES");
+        const id = btn.dataset.id;
 
-        await abrirSelectorProfesores(
-            btn.dataset.id,
-            datosUsuario.entidad
-        );
+        if (!confirm("¿Eliminar aula?")) return;
+
+        await deleteDoc(doc(db, "aulas", id));
+    }
+
+    if (btn.classList.contains("btnCursos")) {
+
+        abrirSelectorCursos(btn.dataset.id, window._academiaId);
     }
 
     if (btn.classList.contains("btnAlumnos")) {
 
-        await abrirSelectorAlumnos(
+        abrirSelectorAlumnos(
             btn.dataset.id,
-            datosUsuario.entidad
+            window._entidad
         );
     }
+
 });
 
 });
