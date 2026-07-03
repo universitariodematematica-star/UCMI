@@ -737,6 +737,25 @@ async function abrirSelectorProfesores(aulaId, entidad) {
 
     const aula = aulaSnap.data();
 
+    const asignadosSnap = await getDocs(
+    query(
+        collection(db, "aula_integrantes"),
+        where("aulaId", "==", aulaId)
+    )
+);
+
+const docentesAsignados = new Set();
+
+asignadosSnap.forEach(d => {
+
+    const data = d.data();
+
+    if (data.perfil === "Docente Academia") {
+        docentesAsignados.add(data.usuarioId);
+    }
+
+});
+
     if (!aula.cursoId) {
         lista.innerHTML = "El aula no tiene curso asignado.";
         return;
@@ -785,7 +804,9 @@ async function abrirSelectorProfesores(aulaId, entidad) {
 
         lista.innerHTML += `
             <div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.1)">
-                <input type="checkbox" value="${docSnap.id}">
+                <input type="checkbox"
+               value="${docSnap.id}"
+               ${docentesAsignados.has(docSnap.id) ? "checked" : ""}>
                 👨‍🏫 ${d.nombreResponsable}
                 <small style="opacity:.7">(${asignaturasDocente.map(a => a.asignatura).join(", ")})</small>
             </div>
