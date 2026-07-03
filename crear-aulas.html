@@ -523,94 +523,53 @@ document
     .onclick = guardarAlumnos;
     
     async function cargarAlumnos() {
+        const lista = document.getElementById("listaAlumnos");
+        const fechaSeleccionada = document.getElementById("fechaFiltro").value;
 
-    const lista = document.getElementById("listaAlumnos");
-    const fechaSeleccionada = document.getElementById("fechaFiltro").value;
+        if (!fechaSeleccionada) {
+            lista.innerHTML = `<div class="text-center py-4" style="color:rgba(255,255,255,.6);">Seleccione una fecha para mostrar los alumnos.</div>`;
+            return;
+        }
 
-    // Obtener alumnos ya asignados para marcarlos
-    // Definimos la variable al inicio de la función de forma constante
-    let alumnosAsignados = new Set();
-    
-    // Obtener alumnos ya asignados para marcarlos
-    const asignadosSnap = await getDocs(
-        query(collection(db, "aula_integrantes"), where("aulaId", "==", aulaId), where("perfil", "==", "Estudiante Academia"))
-    );
-    alumnosAsignados = new Set(asignadosSnap.docs.map(d => d.data().usuarioId));
+        lista.innerHTML = "Cargando...";
 
-    if (!fechaSeleccionada) {
+        // 1. Obtener ASIGNADOS primero (dentro del flujo)
+        const asignadosSnap = await getDocs(
+            query(collection(db, "aula_integrantes"), where("aulaId", "==", aulaId))
+        );
+        const alumnosAsignados = new Set(asignadosSnap.docs.map(d => d.data().usuarioId));
 
-        lista.innerHTML = `
-            <div
-                class="text-center py-4"
-                style="color:rgba(255,255,255,.6);">
+        // 2. Obtener todos los alumnos
+        const q = query(
+            collection(db, "usuarios"),
+            where("entidad", "==", entidad),
+            where("perfil", "==", "Estudiante Academia")
+        );
+        const snap = await getDocs(q);
 
-                Seleccione una fecha para mostrar los alumnos.
+        lista.innerHTML = "";
+        const fechaFiltro = new Date(fechaSeleccionada + "T00:00:00");
 
-            </div>
-        `;
+        snap.forEach(docSnap => {
+            const d = docSnap.data();
+            
+            // Filtro de fecha
+            if (d.fechaRegistro) {
+                const fechaAlumno = new Date(d.fechaRegistro);
+                if (fechaAlumno < fechaFiltro) return;
+            }
 
-        return;
-    }
-
-    lista.innerHTML = "Cargando...";
-
-    const fechaMinima = Timestamp.fromDate(
-        new Date(fechaSeleccionada + "T00:00:00")
-    );
-
-    const q = query(
-        collection(db, "usuarios"),
-        where("entidad", "==", entidad),
-        where("perfil", "==", "Estudiante Academia")
-    );
-
-    const snap = await getDocs(q);
-
-    lista.innerHTML = "";
-
-    snap.forEach(docSnap => {
-
-        const d = docSnap.data();
-
-        if (fechaSeleccionada && d.fechaRegistro) {
-
-    const fechaAlumno = new Date(d.fechaRegistro);
-    const fechaFiltro = new Date(fechaSeleccionada + "T00:00:00");
-
-    if (fechaAlumno < fechaFiltro) {
-        return;
-    }
-
-}
-
-        lista.innerHTML += `
-            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-
-                <div>
-
-                    <strong style="color:white;">
-                        ${d.nombreResponsable}
-                    </strong>
-
-                    <br>
-
-                    <small style="opacity:.7;">
-                        ${d.email}
-                    </small>
-
+            lista.innerHTML += `
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div>
+                        <strong style="color:white;">${d.nombreResponsable}</strong><br>
+                        <small style="opacity:.7;">${d.email}</small>
+                    </div>
+                    <input type="checkbox" value="${docSnap.id}" ${alumnosAsignados.has(docSnap.id) ? "checked" : ""}>
                 </div>
-
-                <input
-                    type="checkbox"
-                    value="${docSnap.id}"
-                    ${alumnosAsignados.has(docSnap.id) ? "checked" : ""}>
-
-            </div>
-        `;
-
-    });
-
-}
+            `;
+        });
+    }
 
     cargarAlumnos();
     
