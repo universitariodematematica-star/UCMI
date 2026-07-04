@@ -25,22 +25,72 @@
     <div id="plantilla"></div>
 
     <script type="module">
-        // 1. Cargar la plantilla global
-        const html = await fetch("componentes/plantilla-academia.html");
-        document.getElementById("plantilla").innerHTML = await html.text();
 
-        // 2. Cargar el JS de la plantilla (que maneja el sidebar y logout)
-        await import("./componentes/plantilla-academia.js");
+import { db } from "./componentes/firebase-config.js";
 
-        // 3. Cargar el contenido específico de esta página dinámicamente
-        // Nota: Asegúrate de tener un archivo 'contenido-solicitudes.html' o similar
-        const contenido = await fetch("componentes/contenido-solicitudes.html");
-        document.getElementById("contenido").innerHTML = await contenido.text();
+import {
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // 4. Inicializar la lógica específica de esta vista
-        // Puedes importar aquí el script que antes estaba embebido
-        await import("./componentes/solicitudes-logica.js");
-    </script>
+// =========================
+// CARGAR PLANTILLA
+// =========================
+
+const html = await fetch("componentes/plantilla-academia.html");
+document.getElementById("plantilla").innerHTML = await html.text();
+
+await import("./componentes/plantilla-academia.js");
+
+// =========================
+// CONTENIDO
+// =========================
+
+document.getElementById("contenido").innerHTML = `
+<div class="container-fluid py-4">
+
+    <h2 id="tituloAula" class="text-white">
+        Cargando...
+    </h2>
+
+</div>
+`;
+
+// =========================
+// OBTENER ID DEL AULA
+// =========================
+
+const params = new URLSearchParams(window.location.search);
+const aulaId = params.get("id");
+
+// =========================
+// CARGAR AULA
+// =========================
+
+if (!aulaId) {
+
+    document.getElementById("tituloAula").textContent =
+        "No se recibió el ID del aula.";
+
+} else {
+
+    const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
+
+    if (aulaSnap.exists()) {
+
+        document.getElementById("tituloAula").textContent =
+            aulaSnap.data().nombre_aula;
+
+    } else {
+
+        document.getElementById("tituloAula").textContent =
+            "El aula no existe.";
+
+    }
+
+}
+
+</script>
 
 </body>
 </html>
