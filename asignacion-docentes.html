@@ -226,23 +226,46 @@ document.getElementById("btnGuardarAsignacion").onclick = async () => {
     const asignaciones = [];
 
     checks.forEach(c => {
-
         asignaciones.push({
+            aulaId: aulaId,
             docenteId: c.dataset.docente,
             asignatura: c.dataset.asignatura,
-            aulaId: aulaId
+            entidad: aula.entidad
         });
-
     });
 
     console.log("ASIGNACIONES LISTAS:", asignaciones);
 
-    Swal.fire({
-        icon: "success",
-        title: "Listo",
-        text: "Asignaciones capturadas (aún no guardadas en Firestore)"
-    });
+    try {
 
+        for (const a of asignaciones) {
+
+            console.log("Guardando:", a);
+
+            const ref = await addDoc(
+                collection(db, "aula_docente_asignacion"),
+                a
+            );
+
+            console.log("✔ Guardado con ID:", ref.id);
+        }
+
+        Swal.fire({
+            icon: "success",
+            title: "Guardado",
+            text: "Asignaciones guardadas correctamente"
+        });
+
+    } catch (error) {
+
+        console.error("❌ ERROR FIRESTORE:", error);
+
+        Swal.fire({
+            icon: "error",
+            title: "Error Firestore",
+            text: error.message
+        });
+    }
 };    
 
 </script>
