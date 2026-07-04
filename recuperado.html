@@ -3,766 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI</title>
+    <title>UCMI - Asignación de Docentes</title>
 
-    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <!-- Plantilla -->
     <link rel="stylesheet" href="componentes/plantilla-academia.css">
 
     <style>
-
-        .panel-cristal{
-            background:rgba(255,255,255,.08);
-            backdrop-filter:blur(18px);
-            -webkit-backdrop-filter:blur(18px);
-            border:1px solid rgba(255,255,255,.15);
-            border-radius:18px;
-            padding:30px;
-            max-width:900px;
+        body {
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png')
+            no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
         }
 
-        .form-control{
-            background:rgba(255,255,255,.08);
-            border:1px solid rgba(255,255,255,.2);
-            color:white;
+        .panel-cristal {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 18px;
+            padding: 20px;
+            color: white;
         }
 
-        .form-control:focus{
-            background:rgba(255,255,255,.12);
-            color:white;
-            border-color:#c5a059;
-            box-shadow:none;
+        table {
+            color: white;
         }
 
-        .form-control::placeholder{
-            color:rgba(255,255,255,.5);
+        th, td {
+            vertical-align: middle;
+            text-align: center;
         }
-
-        .btn-registrar{
-            background:#c5a059;
-            border:none;
-            color:#111;
-            font-weight:600;
-            padding:0 25px;
-        }
-
-        .btn-registrar:hover{
-            background:#d8b26a;
-        }
-
-        .modal-cristal {
-    background: rgba(255, 255, 255, 0.08) !important;
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 18px;
-    padding: 25px;
-    color: white;
-}
-
     </style>
-
 </head>
+
 <body>
 
 <div id="plantilla"></div>
 
 <script type="module">
 
-    import { db, auth } from "./componentes/firebase-config.js";
+import { db } from "./componentes/firebase-config.js";
 
 import {
-    collection,
-    addDoc,
-    serverTimestamp,
     doc,
     getDoc,
+    collection,
     getDocs,
     query,
-    where,
-    updateDoc,
-    deleteDoc,
-    onSnapshot,
-    orderBy,
-    writeBatch,
-    Timestamp
+    where
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
 // =========================
-// CARGA PLANTILLA
+// CARGAR PLANTILLA
 // =========================
 const html = await fetch("componentes/plantilla-academia.html");
 document.getElementById("plantilla").innerHTML = await html.text();
 
-document.getElementById("contenido").innerHTML = `
-<div class="panel-cristal mb-4">
-    <h5 class="mb-4">
-        Escriba el nombre del aula y pulse <strong>Registrar</strong>.
-    </h5>
-
-    <div class="d-flex gap-3">
-        <input id="txtNombre" type="text" class="form-control" placeholder="Escriba aquí...">
-        <button id="btnRegistrar" class="btn btn-registrar">Registrar</button>
-    </div>
-</div>
-
-<div id="listaAulas"></div>
-`;
-
 await import("./componentes/plantilla-academia.js");
 
-const txtNombre = document.getElementById("txtNombre");
-const btnRegistrar = document.getElementById("btnRegistrar");
-const listaAulas = document.getElementById("listaAulas");
-
-    
 // =========================
-// AUTENTICACIÓN SEGURA
+// ID DEL AULA
 // =========================
-onAuthStateChanged(auth, async (user) => {
+const params = new URLSearchParams(window.location.search);
+const aulaId = params.get("aulaId");
 
-    if (!user) {
-        console.log("No autenticado");
-        return;
-    }
-
-    const usuarioSnap = await getDoc(doc(db, "usuarios", user.uid));
-
-    if (!usuarioSnap.exists()) {
-        console.error("Usuario no existe");
-        return;
-    }
-
-    const datosUsuario = usuarioSnap.data();
-
-    window._entidad = datosUsuario.entidad;
-window._academiaId = user.uid;
-
-    console.log("USUARIO OK:", datosUsuario);
-
-    // =========================
-// CARGAR INTEGRANTES DE TODAS LAS AULAS
-// =========================
-const integrantesPorAula = {};
-
-const integrantesSnap = await getDocs(
-    query(
-        collection(db, "aula_integrantes"),
-        where("entidad", "==", datosUsuario.entidad)
-    )
-);
-
-const alumnosPorAula = {};
-
-integrantesSnap.forEach(docSnap => {
-
-    const data = docSnap.data();
-
-    if (data.perfil !== "Estudiante Academia") return;
-
-    if (!alumnosPorAula[data.aulaId]) {
-        alumnosPorAula[data.aulaId] = [];
-    }
-
-    alumnosPorAula[data.aulaId].push(data);
-
-});    
-
-integrantesSnap.forEach(docSnap => {
-
-    const integrante = docSnap.data();
-
-    if (!integrantesPorAula[integrante.aulaId]) {
-        integrantesPorAula[integrante.aulaId] = [];
-    }
-
-    integrantesPorAula[integrante.aulaId].push(integrante);
-
-});
-
-    // =========================
-    // LISTA AULAS (SNAPSHOT ÚNICO)
-    // =========================
-    const q = query(
-    collection(db, "aulas"),
-    where("entidad", "==", datosUsuario.entidad),
-    orderBy("nombre_aula")
-);
-
-    onSnapshot(q, async (snapshot) => {
-
-        let htmlAulas = "";
-
-        for (const docSnap of snapshot.docs) {
-
-            const aula = docSnap.data();
-
-            let nombreCurso = "Sin curso asignado";
-            let asignaturasHTML = "";
-
-            if (aula.cursoId) {
-
-                const cursoSnap = await getDoc(doc(db, "cursos", aula.cursoId));
-
-                if (cursoSnap.exists()) {
-                    nombreCurso = cursoSnap.data().nombre_curso;
-                }
-
-                const asignaturasSnap = await getDocs(
-                    query(
-                        collection(db, "curso_asignaturas"),
-                        where("cursoId", "==", aula.cursoId),
-                        where("entidad", "==", datosUsuario.entidad),
-                        orderBy("asignatura")
-                    )
-                );
-
-                asignaturasSnap.forEach(a => {
-                    const data = a.data();
-
-                    asignaturasHTML += `
-                        <li style="color:white; font-size:0.9rem;">
-                            📘 ${data.asignatura}
-                        </li>
-                    `;
-                });
-            }
-
-            htmlAulas += `
-    <div
-        class="panel-cristal aula-card mb-3 d-flex justify-content-between align-items-start"
-        data-id="${docSnap.id}">
-
-        <div>
-            <h5 class="mb-0">${aula.nombre_aula}</h5>
-
-            <small style="opacity:0.7">
-                🎓 Curso: ${nombreCurso}
-            </small>
-
-            <ul style="margin-top:8px; padding-left:18px;">
-                ${asignaturasHTML}
-            </ul>
+if (!aulaId) {
+    document.getElementById("contenido").innerHTML = `
+        <div class="panel-cristal">
+            No se recibió el aulaId.
         </div>
+    `;
+    throw new Error("Falta aulaId");
+}
 
-        <div class="d-flex gap-2">
+// =========================
+// CONTENIDO BASE
+// =========================
+document.getElementById("contenido").innerHTML = `
+<div class="container-fluid py-3">
 
-            <button
-                class="btn btn-sm btn-primary btnEditar"
-                data-id="${docSnap.id}"
-                data-nombre="${aula.nombre_aula}">
-                ✏️ Editar
-            </button>
-
-            <button
-                class="btn btn-sm btn-warning btnCursos"
-                data-id="${docSnap.id}">
-                🎓 Cursos
-            </button>
-
-            <button
-                class="btn btn-sm btn-info btnAlumnos"
-                data-id="${docSnap.id}">
-                👥 Alumnos
-            </button>
-            
-            <button
-                class="btn btn-sm btn-secondary btnProfesores"
-                data-id="${docSnap.id}">
-                👨‍🏫 Profesores
-            </button>
-            
-            <button
-                class="btn btn-sm btn-danger btnBorrar"
-                data-id="${docSnap.id}">
-                🗑️ Borrar
-            </button>
-        </div>
-
+    <div class="panel-cristal mb-3">
+        <h2 id="tituloAula">Cargando aula...</h2>
     </div>
+
+    <div class="panel-cristal">
+        <h5>Asignación de docentes</h5>
+        <div id="tabla"></div>
+    </div>
+
+</div>
 `;
-        }
-
-        listaAulas.innerHTML = htmlAulas;
-
-        // POPUP DE ALUMNOS ELIMINADO (ANTES ERA HOVER EN CARD)
-        
-    });
-
-    // =========================
-    // CREAR AULA
-    // =========================
-    btnRegistrar.onclick = async () => {
-
-        const nombre = txtNombre.value.trim();
-        if (!nombre) return;
-
-        await addDoc(collection(db, "aulas"), {
-            nombre_aula: nombre,
-            entidad: datosUsuario.entidad,
-            academiaId: user.uid,
-            fechaCreacion: serverTimestamp()
-        });
-
-        txtNombre.value = "";
-    };
-
-    // =========================
-    // EVENTOS GLOBALES
-    // =========================
-    document.addEventListener("click", async (e) => {
-
-    const btn = e.target.closest("button");
-    if (!btn) return;
-
-    if (btn.classList.contains("btnEditar")) {
-
-        const id = btn.dataset.id;
-        const actual = btn.dataset.nombre;
-
-        const nuevo = prompt("Nuevo nombre:", actual);
-        if (!nuevo) return;
-
-        await updateDoc(doc(db, "aulas", id), {
-            nombre_aula: nuevo.trim()
-        });
-    }
-
-    if (btn.classList.contains("btnBorrar")) {
-
-        const id = btn.dataset.id;
-
-        if (!confirm("¿Eliminar aula?")) return;
-
-        await deleteDoc(doc(db, "aulas", id));
-    }
-
-    if (btn.classList.contains("btnCursos")) {
-
-        abrirSelectorCursos(btn.dataset.id, window._academiaId);
-    }
-
-    if (btn.classList.contains("btnAlumnos")) {
-
-    abrirSelectorAlumnos(
-        btn.dataset.id,
-        window._entidad
-    );
-}
-
-if (btn.classList.contains("btnProfesores")) {
-
-    abrirSelectorProfesores(
-        btn.dataset.id,
-        window._entidad
-    );
-}
-
-});
-
-});
 
 // =========================
-// MODAL CURSOS
+// CARGAR AULA
 // =========================
-async function abrirSelectorCursos(aulaId, userId) {
+const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
 
-    const overlay = document.createElement("div");
+if (!aulaSnap.exists()) {
+    document.getElementById("tituloAula").textContent = "Aula no encontrada";
+    throw new Error("Aula no existe");
+}
 
-    overlay.style.position = "fixed";
-    overlay.style.top = 0;
-    overlay.style.left = 0;
-    overlay.style.width = "100%";
-    overlay.style.height = "100%";
-    overlay.style.background = "rgba(0,0,0,0.3)";
-    overlay.style.display = "flex";
-    overlay.style.alignItems = "center";
-    overlay.style.justifyContent = "center";
-    overlay.style.zIndex = 9999;
+const aula = aulaSnap.data();
+document.getElementById("tituloAula").textContent = aula.nombre_aula;
 
-    const cursosSnap = await getDocs(
+// =========================
+// CARGAR ASIGNATURAS DEL AULA
+// =========================
+let asignaturas = [];
+
+if (aula.cursoId) {
+
+    const asigSnap = await getDocs(
         query(
-            collection(db, "cursos"),
-            where("academiaId", "==", userId)
+            collection(db, "curso_asignaturas"),
+            where("cursoId", "==", aula.cursoId)
         )
     );
 
-    let html = `
-        <div class="modal-cristal">
-            <h4>Asignar curso</h4>
+    asignaturas = asigSnap.docs.map(d => d.data().asignatura);
+}
 
-            <select
-                    id="selectCurso"
-                    class="form-control mb-3"
-                    style="
-                        background:#0b2a52;
-                        color:white;
-                        border:1px solid #3d6fb6;
-                    ">
-    `;
-
-                    cursosSnap.forEach(c => {
-                    html += `
-                        <option
-                            value="${c.id}"
-                            style="
-                                background:#0b2a52;
-                                color:white;
-                            ">
-                            ${c.data().nombre_curso}
-                        </option>
-                    `;
-                });
-
-    html += `
-            </select>
-
-            <button id="asignar" class="btn btn-success w-100">Asignar</button>
-            <button id="cerrar" class="btn btn-danger w-100 mt-2">Cerrar</button>
-        </div>
-    `;
-
-    overlay.innerHTML = html;
-    document.body.appendChild(overlay);
-
-    document.getElementById("cerrar").onclick = () => overlay.remove();
-
-    document.getElementById("asignar").onclick = async () => {
-
-        const cursoId = document.getElementById("selectCurso").value;
-
-        await updateDoc(doc(db, "aulas", aulaId), {
-            cursoId
-        });
-
-        overlay.remove();
-    };
-} 
-
-    // =========================
-// MODAL ALUMNOS
 // =========================
-async function abrirSelectorAlumnos(aulaId, entidad) {
-
-    const overlay = document.createElement("div");
-
-    overlay.style.position = "fixed";
-    overlay.style.left = "0";
-    overlay.style.top = "0";
-    overlay.style.width = "100%";
-    overlay.style.height = "100%";
-    overlay.style.background = "rgba(0,0,0,0.3)";
-    overlay.style.display = "flex";
-    overlay.style.justifyContent = "center";
-    overlay.style.alignItems = "center";
-    overlay.style.zIndex = "99999";
-
-    overlay.innerHTML = `
-        <div class="modal-cristal" style="width:900px; max-width:95%; max-height:90%; overflow:auto;">
-
-            <h4 class="mb-4">
-                Asignar alumnos al aula
-            </h4>
-
-            <div class="mb-3">
-
-                <label class="mb-2">
-                    Mostrar alumnos registrados desde:
-                </label>
-
-                <input
-                    type="date"
-                    id="fechaFiltro"
-                    class="form-control">
-
-            </div>
-
-            <div id="listaAlumnos"></div>
-
-            <div class="mt-4 d-flex justify-content-between">
-
-    <button
-        id="guardarAlumnos"
-        class="btn btn-success">
-
-        Guardar alumnos
-
-    </button>
-
-    <button
-        id="cerrarAlumnos"
-        class="btn btn-danger">
-
-        Cerrar
-
-    </button>
-
-</div>
-
-        </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-document.getElementById("fechaFiltro").value = "";
-
-document.getElementById("cerrarAlumnos").onclick = () => {
-    overlay.remove();
-};
-
-document
-    .getElementById("guardarAlumnos")
-    .onclick = guardarAlumnos;
-    
-    async function cargarAlumnos() {
-
-    const lista = document.getElementById("listaAlumnos");
-
-    const fechaSeleccionada =
-        document.getElementById("fechaFiltro").value;
-
-    if (!fechaSeleccionada) {
-
-        lista.innerHTML = `
-            <div
-                class="text-center py-4"
-                style="color:rgba(255,255,255,.6);">
-
-                Seleccione una fecha para mostrar los alumnos.
-
-            </div>
-        `;
-
-        return;
-    }
-
-    lista.innerHTML = "Cargando...";
-
-    const fechaMinima = Timestamp.fromDate(
-        new Date(fechaSeleccionada + "T00:00:00")
-    );
-
-    const q = query(
+// CARGAR DOCENTES
+// =========================
+const docentesSnap = await getDocs(
+    query(
         collection(db, "usuarios"),
-        where("entidad", "==", entidad),
-        where("perfil", "==", "Estudiante Academia")
-    );
+        where("entidad", "==", aula.entidad),
+        where("perfil", "==", "Docente Academia")
+    )
+);
 
-    const snap = await getDocs(q);
+const docentes = [];
 
-    lista.innerHTML = "";
+docentesSnap.forEach(d => {
+    docentes.push({
+        id: d.id,
+        ...d.data()
+    });
+});
 
-    snap.forEach(docSnap => {
+// =========================
+// TABLA BASE (MATRIZ)
+// =========================
+let htmlTabla = `
+<table class="table table-dark table-bordered">
+    <thead>
+        <tr>
+            <th>Asignatura</th>
+`;
 
-        const d = docSnap.data();
+docentes.forEach(docente => {
+    htmlTabla += `<th>${docente.nombreResponsable}</th>`;
+});
 
-        if (fechaSeleccionada && d.fechaRegistro) {
+htmlTabla += `
+        </tr>
+    </thead>
+    <tbody>
+`;
 
-    const fechaAlumno = new Date(d.fechaRegistro);
-    const fechaFiltro = new Date(fechaSeleccionada + "T00:00:00");
+// filas por asignatura
+asignaturas.forEach(asig => {
 
-    if (fechaAlumno < fechaFiltro) {
-        return;
-    }
+    htmlTabla += `<tr>`;
+    htmlTabla += `<td>${asig}</td>`;
 
-}
+    docentes.forEach(docente => {
 
-        lista.innerHTML += `
-            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+        const compatible = (docente.asignaturas || [])
+            .some(a => a.asignatura === asig);
 
-                <div>
-
-                    <strong style="color:white;">
-                        ${d.nombreResponsable}
-                    </strong>
-
-                    <br>
-
-                    <small style="opacity:.7;">
-                        ${d.email}
-                    </small>
-
-                </div>
-
-                <input
-                    type="checkbox"
-                    value="${docSnap.id}">
-
-            </div>
+        htmlTabla += `
+            <td>
+                <input type="checkbox"
+                    data-docente="${docente.id}"
+                    data-asignatura="${asig}"
+                    ${compatible ? "" : "disabled"}>
+            </td>
         `;
-
     });
 
-}
+    htmlTabla += `</tr>`;
+});
 
-    cargarAlumnos();
-    
-document
-    .getElementById("fechaFiltro")
-    .addEventListener("change", cargarAlumnos);
+htmlTabla += `</tbody></table>`;
 
-    async function guardarAlumnos() {
+// =========================
+// RENDER
+// =========================
+document.getElementById("tabla").innerHTML = htmlTabla;
 
-    const checks = document.querySelectorAll(
-        '#listaAlumnos input[type="checkbox"]:checked'
-    );
-
-    if (checks.length === 0) {
-
-        alert("Seleccione al menos un alumno.");
-
-        return;
-
-    }
-
-    const batch = writeBatch(db);
-
-    for (const check of checks) {
-
-        const usuarioId = check.value;
-
-        const usuarioSnap = await getDoc(
-            doc(db, "usuarios", usuarioId)
-        );
-
-        if (!usuarioSnap.exists()) continue;
-
-        const alumno = usuarioSnap.data();
-
-        const ref = doc(
-            db,
-            "aula_integrantes",
-            aulaId + "_" + usuarioId
-        );
-
-        batch.set(ref, {
-
-            aulaId,
-
-            usuarioId,
-
-            perfil: alumno.perfil,
-
-            entidad: alumno.entidad,
-
-            nombreResponsable: alumno.nombreResponsable,
-
-            email: alumno.email,
-
-            fechaAsignacion: serverTimestamp()
-
-        });
-
-    }
-
-    await batch.commit();
-
-    alert("Alumnos asignados correctamente.");
-
-    overlay.remove();
-
-}
-    
-}
-
-async function abrirSelectorProfesores(aulaId, entidad) {
-    const overlay = document.createElement("div");
-    overlay.style.position = "fixed"; overlay.style.left = "0"; overlay.style.top = "0";
-    overlay.style.width = "100%"; overlay.style.height = "100%";
-    overlay.style.background = "rgba(0,0,0,0.3)"; overlay.style.display = "flex";
-    overlay.style.justifyContent = "center"; overlay.style.alignItems = "center";
-    overlay.style.zIndex = "99999";
-
-    overlay.innerHTML = `
-        <div class="modal-cristal" style="width:900px; max-width:95%; max-height:90%; overflow:auto;">
-            <h4 class="mb-4">Asignar profesores al aula</h4>
-            <div id="listaProfesores">Cargando profesores compatibles...</div>
-            <div class="mt-4 d-flex justify-content-between">
-                <button id="guardarProfesores" class="btn btn-success">Guardar profesores</button>
-                <button id="cerrarProfesores" class="btn btn-danger">Cerrar</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(overlay);
-
-    document.getElementById("cerrarProfesores").onclick = () => overlay.remove();
-    const lista = document.getElementById("listaProfesores");
-
-    // 1. Obtener datos del aula para saber su cursoId
-    const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
-    if (!aulaSnap.exists()) { lista.innerHTML = "Aula no encontrada."; return; }
-    const aula = aulaSnap.data();
-
-    // 2. Obtener asignaturas del curso asociado a esta aula
-    const cursoAsigSnap = await getDocs(query(collection(db, "curso_asignaturas"), where("cursoId", "==", aula.cursoId)));
-    const asignaturasAula = cursoAsigSnap.docs.map(d => d.data().asignatura);
-
-    // 3. Identificar docentes ya asignados
-    const asignadosSnap = await getDocs(query(collection(db, "aula_integrantes"), where("aulaId", "==", aulaId), where("perfil", "==", "Docente Academia")));
-    const docentesAsignados = new Set(asignadosSnap.docs.map(d => d.data().usuarioId));
-
-    // 4. Cargar docentes de la entidad
-    const docentesSnap = await getDocs(query(collection(db, "usuarios"), where("entidad", "==", entidad), where("perfil", "==", "Docente Academia")));
-
-    lista.innerHTML = "";
-    docentesSnap.forEach(docSnap => {
-        const d = docSnap.data();
-        const asignaturasDocente = (d.asignaturas || []).map(a => a.asignatura);
-        
-        // FILTRO: ¿Tiene al menos una asignatura compatible?
-        const esCompatible = asignaturasDocente.some(asig => asignaturasAula.includes(asig));
-
-        if (esCompatible) {
-            lista.innerHTML += `
-                <div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,.1)">
-                    <input type="checkbox" value="${docSnap.id}" ${docentesAsignados.has(docSnap.id) ? "checked" : ""}>
-                    👨‍🏫 ${d.nombreResponsable}
-                    <small style="opacity:.7">(${asignaturasDocente.join(", ")})</small>
-                </div>
-            `;
-        }
-    });
-
-    // 5. Lógica de guardado
-    document.getElementById("guardarProfesores").onclick = async () => {
-        const batch = writeBatch(db);
-        asignadosSnap.forEach(docSnap => batch.delete(docSnap.ref));
-
-        const checks = overlay.querySelectorAll("input[type=checkbox]:checked");
-        for (const c of checks) {
-            const userSnap = await getDoc(doc(db, "usuarios", c.value));
-            if (!userSnap.exists()) continue;
-            const docente = userSnap.data();
-            
-            batch.set(doc(db, "aula_integrantes", aulaId + "_" + c.value), {
-                aulaId: aulaId,
-                usuarioId: c.value,
-                perfil: "Docente Academia",
-                entidad: docente.entidad || entidad,
-                nombreResponsable: docente.nombreResponsable,
-                email: docente.email,
-                fechaAsignacion: serverTimestamp()
-            });
-        }
-
-        try {
-            await batch.commit();
-            overlay.remove();
-            alert("Profesores actualizados correctamente.");
-        } catch (error) {
-            alert("Error: " + error.message);
-        }
-    };
-}    
-    
 </script>
 
 </body>
