@@ -70,7 +70,8 @@ import {
     collection,
     getDocs,
     query,
-    where
+    where,
+    addDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // =========================
@@ -242,25 +243,54 @@ document.getElementById("btnGuardarAsignacion").onclick = async () => {
         '#tabla input[type="checkbox"]:checked'
     );
 
-    const asignaciones = [];
+    if (checks.length === 0) {
 
-    checks.forEach(c => {
-
-        asignaciones.push({
-            docenteId: c.dataset.docente,
-            asignatura: c.dataset.asignatura,
-            aulaId: aulaId
+        Swal.fire({
+            icon: "warning",
+            title: "Sin asignaciones",
+            text: "Debe seleccionar al menos un docente."
         });
 
-    });
+        return;
+    }
 
-    console.log("ASIGNACIONES LISTAS:", asignaciones);
+    try {
 
-    Swal.fire({
-        icon: "success",
-        title: "Listo",
-        text: "Asignaciones capturadas (aún no guardadas en Firestore)"
-    });
+        for (const c of checks) {
+
+            const datos = {
+                aulaId: aulaId,
+                docenteId: c.dataset.docente,
+                asignatura: c.dataset.asignatura,
+                entidad: aula.entidad
+            };
+
+            console.log("Guardando:", datos);
+
+            await addDoc(
+                collection(db, "aula_docente_asignacion"),
+                datos
+            );
+
+        }
+
+        Swal.fire({
+            icon: "success",
+            title: "Correcto",
+            text: "Las asignaciones fueron guardadas."
+        });
+
+    } catch (error) {
+
+        console.error("ERROR FIRESTORE:", error);
+
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: error.message
+        });
+
+    }
 
 };    
 
