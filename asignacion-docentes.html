@@ -71,7 +71,8 @@ import {
     getDocs,
     query,
     where,
-    addDoc
+    addDoc,
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // =========================
@@ -258,34 +259,55 @@ document.getElementById("btnGuardarAsignacion").onclick = async () => {
 
     try {
 
-        for (const c of checks) {
+    // ===========================
+    // ELIMINAR ASIGNACIONES ANTERIORES
+    // ===========================
 
-            const datos = {
-    aulaId: aulaId,
-    cursoId: aula.cursoId,
-    nombre_aula: aula.nombre_aula,
-    docenteId: c.dataset.docente,
-    nombreResponsable: c.dataset.nombre,
-    asignatura: c.dataset.asignatura,
-    entidad: aula.entidad
-};
+    const anteriores = await getDocs(
+        query(
+            collection(db, "aula_docente_asignacion"),
+            where("aulaId", "==", aulaId)
+        )
+    );
 
-            console.log("Guardando:", datos);
+    for (const documento of anteriores.docs) {
 
-            await addDoc(
-                collection(db, "aula_docente_asignacion"),
-                datos
-            );
+        await deleteDoc(documento.ref);
 
-        }
+    }
 
-        Swal.fire({
-            icon: "success",
-            title: "Correcto",
-            text: "Las asignaciones fueron guardadas."
-        });
+    // ===========================
+    // GUARDAR NUEVAS
+    // ===========================
 
-    } catch (error) {
+    for (const c of checks) {
+
+        const datos = {
+            aulaId: aulaId,
+            cursoId: aula.cursoId,
+            nombre_aula: aula.nombre_aula,
+            docenteId: c.dataset.docente,
+            nombreResponsable: c.dataset.nombre,
+            asignatura: c.dataset.asignatura,
+            entidad: aula.entidad
+        };
+
+        console.log("Guardando:", datos);
+
+        await addDoc(
+            collection(db, "aula_docente_asignacion"),
+            datos
+        );
+
+    }
+
+    Swal.fire({
+        icon: "success",
+        title: "Correcto",
+        text: "Las asignaciones fueron actualizadas."
+    });
+
+} catch (error) {
 
         console.error("ERROR FIRESTORE:", error);
 
