@@ -138,13 +138,26 @@ const docentesSnap = await getDocs(
     )
 );
 
-const docentes = [];
+const docentesCompatibles = [];
 
 docentesSnap.forEach(d => {
-    docentes.push({
-        id: d.id,
-        ...d.data()
-    });
+
+    const data = d.data();
+
+    const materiasDocente = (data.asignaturas || [])
+        .map(a => a.asignatura);
+
+    const esCompatible = materiasDocente.some(m =>
+        asignaturas.includes(m)
+    );
+
+    if (esCompatible) {
+        docentesCompatibles.push({
+            id: d.id,
+            ...data,
+            materiasDocente
+        });
+    }
 });
 
 // =========================
@@ -157,7 +170,7 @@ let htmlTabla = `
             <th>Asignatura</th>
 `;
 
-docentes.forEach(docente => {
+docentesCompatibles.forEach(docente => {
     htmlTabla += `<th>${docente.nombreResponsable}</th>`;
 });
 
@@ -173,19 +186,18 @@ asignaturas.forEach(asig => {
     htmlTabla += `<tr>`;
     htmlTabla += `<td>${asig}</td>`;
 
-    docentes.forEach(docente => {
+    docentesCompatibles.forEach(docente => {
 
-        const compatible = (docente.asignaturas || [])
-            .some(a => a.asignatura === asig);
+        const compatible = docente.materiasDocente.includes(asig);
 
-        htmlTabla += `
-            <td>
-                <input type="checkbox"
-                    data-docente="${docente.id}"
-                    data-asignatura="${asig}"
-                    ${compatible ? "" : "disabled"}>
-            </td>
-        `;
+htmlTabla += `
+    <td>
+        <input type="checkbox"
+            data-docente="${docente.id}"
+            data-asignatura="${asig}"
+            ${compatible ? "" : "disabled"}>
+    </td>
+`;
     });
 
     htmlTabla += `</tr>`;
