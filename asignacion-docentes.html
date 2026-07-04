@@ -264,24 +264,33 @@ document.getElementById("btnGuardarAsignacion").onclick = async () => {
     // ===========================
 
     const anteriores = await getDocs(
-        query(
-            collection(db, "aula_docente_asignacion"),
-            where("aulaId", "==", aulaId)
-        )
-    );
+    query(
+        collection(db, "aula_docente_asignacion"),
+        where("aulaId", "==", aulaId)
+    )
+);
 
-    console.log("Aula actual:", aulaId);
-console.log("Documentos encontrados:", anteriores.size);
+console.log("Documentos a borrar:", anteriores.size);
 
-anteriores.forEach(doc => {
-    console.log(doc.id, doc.data());
-});    
+for (const documento of anteriores.docs) {
 
-    for (const documento of anteriores.docs) {
+    console.log("Intentando borrar:", documento.id);
+
+    try {
 
         await deleteDoc(documento.ref);
 
+        console.log("Borrado correctamente:", documento.id);
+
+    } catch (e) {
+
+        console.error("ERROR AL BORRAR", documento.id, e);
+
+        throw e;
+
     }
+
+}
 
     // ===========================
     // GUARDAR NUEVAS
