@@ -336,7 +336,7 @@
                         <tr>
                             <th>ESTUDIANTE</th>
                             <th>CONTACTO</th>
-                            <th>MÓDULOS ACTIVOS</th>
+                            <th>AULA</th>
                             <th class="text-center">DETALLES</th>
                             <th class="text-center">ASIGNAR</th>
                             <th class="text-center">ELIMINAR</th>
@@ -424,13 +424,26 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
         return nombreA.localeCompare(nombreB);
     });
     
-    // 4. Renderizado
-    estudiantes.forEach(doc => {
+// 4. Renderizado con cruce de aula
+    for (const doc of estudiantes) {
         const d = doc.data();
+        
+        // Consultar en aula_integrantes
+        const qAula = query(collection(db, "aula_integrantes"), where("usuarioId", "==", doc.id));
+        const snapAula = await getDocs(qAula);
+        
+        let infoAula = '<span class="text-danger fw-bold" style="text-shadow: 0 0 8px rgba(255,0,0,0.8);">SIN AULA</span>';
+        
+        if (!snapAula.empty) {
+            const aulaId = snapAula.docs[0].data().aulaId;
+            const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
+            if (aulaSnap.exists()) {
+                infoAula = `<span class="badge" style="background-color: #c5a059; color: #06090f;">${aulaSnap.data().nombre_aula}</span>`;
+            }
+        }
+
         const tr = document.createElement('tr');
         tr.className = 'fila-estudiante';
-        tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
-        
         tr.innerHTML = `
             <td>
                 <div class="fw-bold">${d.nombreResponsable || 'Sin Nombre'}</div>
@@ -445,9 +458,7 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
                     </a>
                 </small>
             </td>
-            <td>
-                ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
-            </td>
+            <td>${infoAula}</td>
             <td class="text-center">
                 <button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(d).replace(/'/g, '&#39;')}'>
                 <i class="bi bi-eye"></i>
@@ -459,14 +470,13 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
                 </a>
             </td>
             <td class="text-center">
-                <button class="btn btn-sm btn-danger btn-eliminar" 
-                        data-id="${doc.id}">
+                <button class="btn btn-sm btn-danger btn-eliminar" data-id="${doc.id}">
                     <i class="bi bi-trash3"></i>
                 </button>
             </td>
         `;
         tbody.appendChild(tr);
-    });
+    }
 }
     document.getElementById('buscador').addEventListener('input', e => {
         const t = e.target.value.toLowerCase();
