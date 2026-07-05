@@ -3,362 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCMI - Asignación de Docentes</title>
+    <title>UCMI - Panel de Control</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    
     <link rel="stylesheet" href="componentes/plantilla-academia.css">
 
     <style>
-        body {
-            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png')
-            no-repeat center center fixed;
-            background-size: cover;
+        /* Mantén aquí tus estilos específicos de esta vista o muévelos a la plantilla */
+        body { 
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+            background-size: cover; 
             min-height: 100vh;
         }
-
-        .panel-cristal {
-            background: rgba(255,255,255,0.08);
-            backdrop-filter: blur(18px);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 18px;
-            padding: 20px;
-            color: white;
-        }
-
-        .panel-glass {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 18px;
-        
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-        
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-        
-            padding: 20px;
-        }
-
-        table {
-            margin-bottom: 0;
-        }
-
-        table {
-            color: white;
-        }
-
-        th, td {
-            vertical-align: middle;
-            text-align: center;
-        }
-
-.table-container {
-        overflow-x: auto;
-        margin-top: 20px;
-    }
-
-    /* Efecto Hover en las filas */
-    .table-hover tbody tr:hover {
-        background-color: rgba(255, 255, 255, 0.15) !important;
-        transition: background 0.2s ease;
-    }
-
-    /* Checkbox más grande */
-    .checkbox-lg {
-        width: 22px;
-        height: 22px;
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-    /* Estado cuando es compatible (Disponible) */
-    .checkbox-lg:not(:disabled) {
-        accent-color: #198754; /* Color verde de Bootstrap success */
-        opacity: 1;
-    }
-
-    /* Estado cuando NO es compatible (Oscurecido) */
-    .checkbox-lg:disabled {
-        background-color: #333;
-        border: 1px solid #555;
-        opacity: 0.3; /* Lo hace ver más oscuro/apagado */
-        cursor: not-allowed;
-    }
-        
     </style>
 </head>
-
 <body>
 
-<div id="plantilla"></div>
+    <div id="plantilla"></div>
 
-<script type="module">
+    <script type="module">
 
 import { db } from "./componentes/firebase-config.js";
 
 import {
     doc,
-    getDoc,
-    collection,
-    getDocs,
-    query,
-    where,
-    addDoc,
-    deleteDoc
+    getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // =========================
 // CARGAR PLANTILLA
 // =========================
+
 const html = await fetch("componentes/plantilla-academia.html");
 document.getElementById("plantilla").innerHTML = await html.text();
 
 await import("./componentes/plantilla-academia.js");
 
 // =========================
-// ID DEL AULA
+// CONTENIDO
 // =========================
-const params = new URLSearchParams(window.location.search);
-const aulaId = params.get("aulaId");
 
-if (!aulaId) {
-    document.getElementById("contenido").innerHTML = `
-        <div class="panel-cristal">
-            No se recibió el aulaId.
-        </div>
-    `;
-    throw new Error("Falta aulaId");
-}
-
-// =========================
-// CONTENIDO BASE
-// =========================
 document.getElementById("contenido").innerHTML = `
-<div class="container-fluid py-3">
+<div class="container-fluid py-4">
 
-    <div class="panel-cristal mb-3">
-        <h2 id="tituloAula">Cargando aula...</h2>
-    </div>
-
-    <div class="panel-cristal">
-    <h5>Asignación de docentes</h5>
-
-    <div class="panel-glass mt-3 p-3">
-    <div id="tabla"></div>
-    </div>
-
-    <div class="d-flex justify-content-end mt-3">
-        <button id="btnGuardarAsignacion" class="btn btn-success">
-            Guardar asignación
-        </button>
-    </div>
-</div>
+    <h2 id="tituloAula" class="text-white">
+        Cargando...
+    </h2>
 
 </div>
 `;
+
+// =========================
+// OBTENER ID DEL AULA
+// =========================
+
+const params = new URLSearchParams(window.location.search);
+const aulaId = params.get("id");
 
 // =========================
 // CARGAR AULA
 // =========================
-const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
 
-if (!aulaSnap.exists()) {
-    document.getElementById("tituloAula").textContent = "Aula no encontrada";
-    throw new Error("Aula no existe");
+if (!aulaId) {
+
+    document.getElementById("tituloAula").textContent =
+        "No se recibió el ID del aula.";
+
+} else {
+
+    const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
+
+    if (aulaSnap.exists()) {
+
+        document.getElementById("tituloAula").textContent =
+            aulaSnap.data().nombre_aula;
+
+    } else {
+
+        document.getElementById("tituloAula").textContent =
+            "El aula no existe.";
+
+    }
+
 }
-
-const aula = aulaSnap.data();
-document.getElementById("tituloAula").textContent = aula.nombre_aula;
-
-// =========================
-// CARGAR ASIGNATURAS DEL AULA
-// =========================
-let asignaturas = [];
-
-if (aula.cursoId) {
-
-    const asigSnap = await getDocs(
-        query(
-            collection(db, "curso_asignaturas"),
-            where("cursoId", "==", aula.cursoId)
-        )
-    );
-
-    asignaturas = asigSnap.docs.map(d => d.data().asignatura);
-}
-
-// =========================
-// CARGAR DOCENTES
-// =========================
-const docentesSnap = await getDocs(
-    query(
-        collection(db, "usuarios"),
-        where("entidad", "==", aula.entidad),
-        where("perfil", "==", "Docente Academia")
-    )
-);
-
-const docentesCompatibles = [];
-docentesSnap.forEach(d => {
-    const data = d.data();
-    const materiasDocente = (data.asignaturas || []).map(a => a.asignatura);
-    const esCompatible = materiasDocente.some(m => asignaturas.includes(m));
-
-    if (esCompatible) {
-        docentesCompatibles.push({ id: d.id, ...data, materiasDocente });
-    }
-});
-
-// =========================
-// CARGAR ASIGNACIONES PREVIAS (PARA MARCAR CHECKS)
-// =========================
-const asignacionesSnap = await getDocs(
-    query(
-        collection(db, "aula_docente_asignacion"),
-        where("aulaId", "==", aulaId)
-    )
-);
-
-const asignacionesGuardadas = new Set();
-asignacionesSnap.forEach(doc => {
-    const data = doc.data();
-    asignacionesGuardadas.add(`${data.docenteId}|${data.asignatura}`);
-});
-
-// =========================
-// TABLA BASE (MATRIZ)
-// =========================
-let htmlTabla = `
-<table class="table table-dark table-bordered table-hover">
-    <thead>
-        <tr>
-            <th>Asignatura</th>
-`;
-
-docentesCompatibles.forEach(docente => {
-    htmlTabla += `<th>${docente.nombreResponsable}</th>`;
-});
-
-htmlTabla += `</tr></thead><tbody>`;
-
-asignaturas.forEach(asig => {
-    htmlTabla += `<tr><td><strong>${asig}</strong></td>`;
-
-    docentesCompatibles.forEach(docente => {
-        const compatible = docente.materiasDocente.includes(asig);
-        const estaMarcado = asignacionesGuardadas.has(`${docente.id}|${asig}`);
-
-        htmlTabla += `
-        <td>
-            <input
-                type="checkbox"
-                class="checkbox-lg"
-                data-docente="${docente.id}"
-                data-nombre="${docente.nombreResponsable}"
-                data-asignatura="${asig}"
-                ${compatible ? "" : "disabled"}
-                ${estaMarcado ? "checked" : ""}>
-        </td>
-        `;
-    });
-    htmlTabla += `</tr>`;
-});
-
-htmlTabla += `</tbody></table>`;
-
-// =========================
-// RENDER
-// =========================
-document.getElementById("tabla").innerHTML = `<div class="table-container">${htmlTabla}</div>`;
-
-document.getElementById("btnGuardarAsignacion").onclick = async () => {
-
-    const checks = document.querySelectorAll(
-        '#tabla input[type="checkbox"]:checked'
-    );
-
-    if (checks.length === 0) {
-
-        Swal.fire({
-            icon: "warning",
-            title: "Sin asignaciones",
-            text: "Debe seleccionar al menos un docente."
-        });
-
-        return;
-    }
-
-    try {
-
-    // ===========================
-    // ELIMINAR ASIGNACIONES ANTERIORES
-    // ===========================
-
-    const anteriores = await getDocs(
-    query(
-        collection(db, "aula_docente_asignacion"),
-        where("aulaId", "==", aulaId)
-    )
-);
-
-console.log("Documentos a borrar:", anteriores.size);
-
-// PON ESTO EN SU LUGAR:
-try {
-    console.log("Borrando documentos...");
-    await Promise.all(anteriores.docs.map(doc => deleteDoc(doc.ref)));
-    console.log("Todos los documentos anteriores fueron borrados correctamente.");
-} catch (e) {
-    console.error("Error crítico durante el borrado masivo:", e);
-    throw new Error("No se pudo limpiar la asignación anterior: " + e.message);
-}
-
-    // ===========================
-    // GUARDAR NUEVAS
-    // ===========================
-
-    for (const c of checks) {
-
-        const datos = {
-            aulaId: aulaId,
-            cursoId: aula.cursoId,
-            nombre_aula: aula.nombre_aula,
-            docenteId: c.dataset.docente,
-            nombreResponsable: c.dataset.nombre,
-            asignatura: c.dataset.asignatura,
-            entidad: aula.entidad
-        };
-
-        console.log("Guardando:", datos);
-
-        await addDoc(
-            collection(db, "aula_docente_asignacion"),
-            datos
-        );
-
-    }
-
-    Swal.fire({
-        icon: "success",
-        title: "Correcto",
-        text: "Las asignaciones fueron actualizadas."
-    });
-
-} catch (error) {
-
-        console.error("ERROR FIRESTORE:", error);
-
-        Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: error.message
-        });
-
-    }
-
-};    
 
 </script>
 
