@@ -228,7 +228,7 @@ asignacionesSnap.forEach(doc => {
 });
 
 // =========================
-// TABLA BASE (MATRIZ)
+// TABLA BASE (MATRIZ) - CAMBIO A RADIO BUTTONS
 // =========================
 let htmlTabla = `
 <table class="table table-dark table-bordered table-hover">
@@ -241,9 +241,12 @@ docentesCompatibles.forEach(docente => {
     htmlTabla += `<th>${docente.nombreResponsable}</th>`;
 });
 
-htmlTabla += `</tr></thead><tbody>`;
+// Agregamos una opción para "Ninguno" por si quieren quitar una asignación
+htmlTabla += `<th>Ninguno</th></tr></thead><tbody>`;
 
 asignaturas.forEach(asig => {
+    // Usamos el nombre de la asignatura como 'name' del radio para que solo se elija uno por fila
+    const radioName = `radio_${asig.replace(/\s+/g, '_')}`;
     htmlTabla += `<tr><td><strong>${asig}</strong></td>`;
 
     docentesCompatibles.forEach(docente => {
@@ -253,7 +256,8 @@ asignaturas.forEach(asig => {
         htmlTabla += `
         <td>
             <input
-                type="checkbox"
+                type="radio"
+                name="${radioName}"
                 class="checkbox-lg"
                 data-docente="${docente.id}"
                 data-nombre="${docente.nombreResponsable}"
@@ -263,7 +267,9 @@ asignaturas.forEach(asig => {
         </td>
         `;
     });
-    htmlTabla += `</tr>`;
+
+    // Opción "Ninguno"
+    htmlTabla += `<td><input type="radio" name="${radioName}" class="checkbox-lg" data-docente="ninguno" data-nombre="Ninguno" data-asignatura="${asig}"></td></tr>`;
 });
 
 htmlTabla += `</tbody></table>`;
