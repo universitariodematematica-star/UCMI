@@ -70,7 +70,9 @@ import {
     collection,
     getDocs,
     query,
-    where
+    where,
+    addDoc,
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // =========================
@@ -218,8 +220,10 @@ asignaturas.forEach(asig => {
 
 htmlTabla += `
     <td>
-        <input type="checkbox"
+        <input
+            type="checkbox"
             data-docente="${docente.id}"
+            data-nombre="${docente.nombreResponsable}"
             data-asignatura="${asig}"
             ${compatible ? "" : "disabled"}>
     </td>
@@ -242,25 +246,84 @@ document.getElementById("btnGuardarAsignacion").onclick = async () => {
         '#tabla input[type="checkbox"]:checked'
     );
 
-    const asignaciones = [];
+    if (checks.length === 0) {
 
-    checks.forEach(c => {
-
-        asignaciones.push({
-            docenteId: c.dataset.docente,
-            asignatura: c.dataset.asignatura,
-            aulaId: aulaId
+        Swal.fire({
+            icon: "warning",
+            title: "Sin asignaciones",
+            text: "Debe seleccionar al menos un docente."
         });
 
-    });
+        return;
+    }
 
-    console.log("ASIGNACIONES LISTAS:", asignaciones);
+    try {
+
+    // ===========================
+    // ELIMINAR ASIGNACIONES ANTERIORES
+    // ===========================
+
+    const anteriores = await getDocs(
+    query(
+        collection(db, "aula_docente_asignacion"),
+        where("aulaId", "==", aulaId)
+    )
+);
+
+console.log("Documentos a borrar:", anteriores.size);
+
+// PON ESTO EN SU LUGAR:
+try {
+    console.log("Borrando documentos...");
+    await Promise.all(anteriores.docs.map(doc => deleteDoc(doc.ref)));
+    console.log("Todos los documentos anteriores fueron borrados correctamente.");
+} catch (e) {
+    console.error("Error crítico durante el borrado masivo:", e);
+    throw new Error("No se pudo limpiar la asignación anterior: " + e.message);
+}
+
+    // ===========================
+    // GUARDAR NUEVAS
+    // ===========================
+
+    for (const c of checks) {
+
+        const datos = {
+            aulaId: aulaId,
+            cursoId: aula.cursoId,
+            nombre_aula: aula.nombre_aula,
+            docenteId: c.dataset.docente,
+            nombreResponsable: c.dataset.nombre,
+            asignatura: c.dataset.asignatura,
+            entidad: aula.entidad
+        };
+
+        console.log("Guardando:", datos);
+
+        await addDoc(
+            collection(db, "aula_docente_asignacion"),
+            datos
+        );
+
+    }
 
     Swal.fire({
         icon: "success",
-        title: "Listo",
-        text: "Asignaciones capturadas (aún no guardadas en Firestore)"
+        title: "Correcto",
+        text: "Las asignaciones fueron actualizadas."
     });
+
+} catch (error) {
+
+        console.error("ERROR FIRESTORE:", error);
+
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: error.message
+        });
+
+    }
 
 };    
 
