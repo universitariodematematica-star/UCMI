@@ -167,25 +167,30 @@ const docentesSnap = await getDocs(
 );
 
 const docentesCompatibles = [];
-
 docentesSnap.forEach(d => {
-
     const data = d.data();
-
-    const materiasDocente = (data.asignaturas || [])
-        .map(a => a.asignatura);
-
-    const esCompatible = materiasDocente.some(m =>
-        asignaturas.includes(m)
-    );
+    const materiasDocente = (data.asignaturas || []).map(a => a.asignatura);
+    const esCompatible = materiasDocente.some(m => asignaturas.includes(m));
 
     if (esCompatible) {
-        docentesCompatibles.push({
-            id: d.id,
-            ...data,
-            materiasDocente
-        });
+        docentesCompatibles.push({ id: d.id, ...data, materiasDocente });
     }
+});
+
+// =========================
+// CARGAR ASIGNACIONES PREVIAS (PARA MARCAR CHECKS)
+// =========================
+const asignacionesSnap = await getDocs(
+    query(
+        collection(db, "aula_docente_asignacion"),
+        where("aulaId", "==", aulaId)
+    )
+);
+
+const asignacionesGuardadas = new Set();
+asignacionesSnap.forEach(doc => {
+    const data = doc.data();
+    asignacionesGuardadas.add(`${data.docenteId}|${data.asignatura}`);
 });
 
 // =========================
@@ -202,34 +207,28 @@ docentesCompatibles.forEach(docente => {
     htmlTabla += `<th>${docente.nombreResponsable}</th>`;
 });
 
-htmlTabla += `
-        </tr>
-    </thead>
-    <tbody>
-`;
+htmlTabla += `</tr></thead><tbody>`;
 
-// filas por asignatura
 asignaturas.forEach(asig => {
-
-    htmlTabla += `<tr>`;
-    htmlTabla += `<td>${asig}</td>`;
+    htmlTabla += `<tr><td>${asig}</td>`;
 
     docentesCompatibles.forEach(docente => {
-
         const compatible = docente.materiasDocente.includes(asig);
+        // Comprobamos si este docente ya tiene asignada esta materia
+        const estaMarcado = asignacionesGuardadas.has(`${docente.id}|${asig}`);
 
-htmlTabla += `
-    <td>
-        <input
-            type="checkbox"
-            data-docente="${docente.id}"
-            data-nombre="${docente.nombreResponsable}"
-            data-asignatura="${asig}"
-            ${compatible ? "" : "disabled"}>
-    </td>
-`;
+        htmlTabla += `
+        <td>
+            <input
+                type="checkbox"
+                data-docente="${docente.id}"
+                data-nombre="${docente.nombreResponsable}"
+                data-asignatura="${asig}"
+                ${compatible ? "" : "disabled"}
+                ${estaMarcado ? "checked" : ""}>
+        </td>
+        `;
     });
-
     htmlTabla += `</tr>`;
 });
 
