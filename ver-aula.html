@@ -12,11 +12,18 @@
     <link rel="stylesheet" href="componentes/plantilla-academia.css">
 
     <style>
-        /* Mantén aquí tus estilos específicos de esta vista o muévelos a la plantilla */
         body { 
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
             background-size: cover; 
             min-height: 100vh;
+        }
+        .panel-cristal {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 18px;
+            padding: 20px;
+            color: white;
         }
     </style>
 </head>
@@ -26,71 +33,74 @@
 
     <script type="module">
 
-import { db } from "./componentes/firebase-config.js";
+    import { db } from "./componentes/firebase-config.js";
+    import {
+        doc,
+        getDoc,
+        collection,
+        getDocs,
+        query,
+        where
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-import {
-    doc,
-    getDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    // Cargar plantilla
+    const html = await fetch("componentes/plantilla-academia.html");
+    document.getElementById("plantilla").innerHTML = await html.text();
+    await import("./componentes/plantilla-academia.js");
 
-// =========================
-// CARGAR PLANTILLA
-// =========================
+    // Obtener ID del aula
+    const params = new URLSearchParams(window.location.search);
+    const aulaId = params.get("id");
 
-const html = await fetch("componentes/plantilla-academia.html");
-document.getElementById("plantilla").innerHTML = await html.text();
+    const contenidoDiv = document.getElementById("contenido");
 
-await import("./componentes/plantilla-academia.js");
-
-// =========================
-// CONTENIDO
-// =========================
-
-document.getElementById("contenido").innerHTML = `
-<div class="container-fluid py-4">
-
-    <h2 id="tituloAula" class="text-white">
-        Cargando...
-    </h2>
-
-</div>
-`;
-
-// =========================
-// OBTENER ID DEL AULA
-// =========================
-
-const params = new URLSearchParams(window.location.search);
-const aulaId = params.get("id");
-
-// =========================
-// CARGAR AULA
-// =========================
-
-if (!aulaId) {
-
-    document.getElementById("tituloAula").textContent =
-        "No se recibió el ID del aula.";
-
-} else {
-
-    const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
-
-    if (aulaSnap.exists()) {
-
-        document.getElementById("tituloAula").textContent =
-            aulaSnap.data().nombre_aula;
-
+    if (!aulaId) {
+        contenidoDiv.innerHTML = `<div class="panel-cristal">No se recibió el ID del aula.</div>`;
     } else {
+        try {
+            // 1. Cargar datos del aula
+            const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
+            
+            if (aulaSnap.exists()) {
+                const aulaData = aulaSnap.data();
 
-        document.getElementById("tituloAula").textContent =
-            "El aula no existe.";
+                // 2. Cargar Docentes
+                const profSnap = await getDocs(query(collection(db, "aula_docente_asignacion"), where("aulaId", "==", aulaId)));
+                let htmlProf = profSnap.docs.map(d => `<li class="list-group-item bg-transparent text-white border-secondary">${d.data().asignatura}: <strong>${d.data().nombreResponsable}</strong></li>`).join('');
 
+                // 3. Cargar Estudiantes
+                const alumSnap = await getDocs(query(collection(db, "aula_integrantes"), where("aulaId", "==", aulaId), where("perfil", "==", "Estudiante")));
+                let htmlAlum = alumSnap.docs.map(d => `<li class="list-group-item bg-transparent text-white border-secondary">${d.data().nombre}</li>`).join('');
+
+                // Renderizar
+                contenidoDiv.innerHTML = `
+                <div class="container-fluid py-4">
+                    <h2 class="text-white mb-4">${aulaData.nombre_aula}</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel-cristal mb-3">
+                                <h5><i class="bi bi-person-video3"></i> Profesores Asignados</h5>
+                                <ul class="list-group mt-3">${htmlProf || '<li class="list-group-item bg-transparent text-white border-0">Sin asignaciones</li>'}</ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="panel-cristal mb-3">
+                                <h5><i class="bi bi-people"></i> Estudiantes</h5>
+                                <ul class="list-group mt-3">${htmlAlum || '<li class="list-group-item bg-transparent text-white border-0">Sin estudiantes</li>'}</ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            } else {
+                contenidoDiv.innerHTML = `<div class="panel-cristal">El aula no existe.</div>`;
+            }
+        } catch (error) {
+            console.error("Error cargando aula:", error);
+            contenidoDiv.innerHTML = `<div class="panel-cristal">Error al cargar la información.</div>`;
+        }
     }
-
-}
-
-</script>
-
+    </script>
 </body>
 </html>
