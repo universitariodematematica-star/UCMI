@@ -604,38 +604,65 @@ const prepararMensajeWhatsApp = (data, decision) => {
 document.getElementById('btnConfirmarAcceso').onclick = async () => {
     if (!currentData) return;
 
-    const esDocente = currentData.perfil === "Docente Academia";
+    try {
+        const esDocente = currentData.perfil === "Docente Academia";
+        const dni = currentData.dniDocente || currentData.dniEstudiante || "";
+        const password = dni.length >= 6 ? dni : "UCMI2026";
 
-    const dni = currentData.dniDocente || currentData.dniEstudiante || "";
-    const password = dni.length >= 6 ? dni : "UCMI2026";
+        // Intentar crear el usuario en Auth
+        const cred = await createUserWithEmailAndPassword(
+            secondaryAuth,
+            currentData.email,
+            password
+        );
 
-    const cred = await createUserWithEmailAndPassword(
-        secondaryAuth,
-        currentData.email,
-        password
-    );
+        // Guardar en Firestore
+        await setDoc(doc(db, "usuarios", cred.user.uid), {
+            ...currentData,
+            asignaturas: currentData.asignaturas || [],
+            estado: "activo",
+            rol: esDocente ? "docente" : "estudiante",
+            claveInicial: password,
+            fechaRegistro: new Date().toISOString()
+        });
 
-    await setDoc(doc(db, "usuarios", cred.user.uid), {
-        ...currentData,
-        asignaturas: currentData.asignaturas || [],
-        estado: "activo",
-        rol: esDocente ? "docente" : "estudiante",
-        claveInicial: password,
-        fechaRegistro: new Date().toISOString()
-    });
+        // Guardar en historial
+        await addDoc(collection(db, "historial_postulaciones"), {
+            ...currentData,
+            asignaturas: currentData.asignaturas || [],
+            resultado: "Admitido",
+            fechaProceso: new Date().toISOString()
+        });
 
-    await addDoc(collection(db, "historial_postulaciones"), {
-        ...currentData,
-        asignaturas: currentData.asignaturas || [],
-        resultado: "Admitido",
-        fechaProceso: new Date().toISOString()
-    });
+        // Eliminar postulación
+        await deleteDoc(doc(db, "postulaciones", currentId));
 
-    await deleteDoc(doc(db, "postulaciones", currentId));
+        prepararMensajeWhatsApp(currentData, "ACEPTADO");
+        location.reload();
 
-    prepararMensajeWhatsApp(currentData, "ACEPTADO");
+    } catch (error) {
+        console.error("Error al activar:", error);
 
-    location.reload();
+        if (error.code === 'auth/email-already-in-use') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Correo Duplicado',
+                text: 'Este correo electrónico ya tiene una cuenta creada en el sistema.',
+                background: '#1a2a3a',
+                color: '#fff',
+                confirmButtonColor: '#c5a059'
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error inesperado',
+                text: 'No se pudo completar la activación: ' + error.message,
+                background: '#1a2a3a',
+                color: '#fff',
+                confirmButtonColor: '#c5a059'
+            });
+        }
+    }
 };
 
 /* ---------------- RECHAZAR ---------------- */
