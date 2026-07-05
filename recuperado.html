@@ -336,7 +336,7 @@
                         <tr>
                             <th>ESTUDIANTE</th>
                             <th>CONTACTO</th>
-                            <th>MÓDULOS ACTIVOS</th>
+                            <th>AULA</th>
                             <th class="text-center">DETALLES</th>
                             <th class="text-center">ASIGNAR</th>
                             <th class="text-center">ELIMINAR</th>
@@ -395,12 +395,11 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
     const tbody = document.getElementById('tabla-body');
     const filtroModulo = document.getElementById('filtroModulo');
 
-    // 1. LIMPIEZA TOTAL: Evita duplicados en el selector y la tabla
+    // 1. LIMPIEZA TOTAL
     tbody.innerHTML = '';
-    // Mantenemos solo la opción inicial "Todos los Módulos"
     filtroModulo.innerHTML = '<option value="">Todos los Módulos</option>';
     
-    // 2. Carga de filtros (ahora seguro)
+    // 2. Carga de filtros
     if(mods) {
         Object.keys(mods).forEach(m => { 
             if(mods[m]) {
@@ -413,20 +412,35 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
     
     document.getElementById('cupos-utilizados').innerText = snap.size;
     
-    // 3. Ordenamiento con limpieza de espacios (trim)
     const estudiantes = [];
-    snap.forEach(doc => estudiantes.push(doc));
+    snap.forEach(d => estudiantes.push(d));
     
     estudiantes.sort((a, b) => {
-        // .trim() elimina espacios accidentales al inicio o final del nombre
         const nombreA = (a.data().nombreResponsable || "").trim().toLowerCase();
         const nombreB = (b.data().nombreResponsable || "").trim().toLowerCase();
         return nombreA.localeCompare(nombreB);
     });
     
-    // 4. Renderizado
-    estudiantes.forEach(doc => {
-        const d = doc.data();
+    // 3. Renderizado con cruce de aula
+    for (const estudianteDoc of estudiantes) {
+        const d = estudianteDoc.data();
+        
+        // Consultar el aula en 'aula_integrantes' usando el ID del documento del estudiante
+        const qAula = query(collection(db, "aula_integrantes"), where("usuarioId", "==", estudianteDoc.id));
+        const snapAula = await getDocs(qAula);
+        
+        let infoAula = '<span class="text-danger fw-bold" style="text-shadow: 0 0 8px rgba(255,0,0,0.8);">SIN AULA</span>';
+        
+        if (!snapAula.empty) {
+            const aulaId = snapAula.docs[0].data().aulaId;
+            // Usamos la función 'doc' importada correctamente
+            const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
+            if (aulaSnap.exists()) {
+                const nombreAula = aulaSnap.data().nombre_aula;
+                infoAula = `<span class="badge" style="background-color: #c5a059; color: #06090f;">${nombreAula}</span>`;
+            }
+        }
+
         const tr = document.createElement('tr');
         tr.className = 'fila-estudiante';
         tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
@@ -445,28 +459,25 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
                     </a>
                 </small>
             </td>
-            <td>
-                ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
-            </td>
+            <td>${infoAula}</td>
             <td class="text-center">
                 <button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(d).replace(/'/g, '&#39;')}'>
                 <i class="bi bi-eye"></i>
                 </button>
             </td>
             <td class="text-center">
-                <a href="asignar-asignaturas-alumnos.html?uid=${doc.id}" class="btn btn-sm btn-outline-light btn-asignar">
+                <a href="asignar-asignaturas-alumnos.html?uid=${estudianteDoc.id}" class="btn btn-sm btn-outline-light btn-asignar">
                     <i class="bi bi-arrow-right"></i>
                 </a>
             </td>
             <td class="text-center">
-                <button class="btn btn-sm btn-danger btn-eliminar" 
-                        data-id="${doc.id}">
+                <button class="btn btn-sm btn-danger btn-eliminar" data-id="${estudianteDoc.id}">
                     <i class="bi bi-trash3"></i>
                 </button>
             </td>
         `;
         tbody.appendChild(tr);
-    });
+    }
 }
     document.getElementById('buscador').addEventListener('input', e => {
         const t = e.target.value.toLowerCase();
