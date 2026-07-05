@@ -68,9 +68,21 @@
                 const profSnap = await getDocs(query(collection(db, "aula_docente_asignacion"), where("aulaId", "==", aulaId)));
                 let htmlProf = profSnap.docs.map(d => `<li class="list-group-item bg-transparent text-white border-secondary">${d.data().asignatura}: <strong>${d.data().nombreResponsable}</strong></li>`).join('');
 
-                // 3. Cargar Estudiantes
-                const alumSnap = await getDocs(query(collection(db, "aula_integrantes"), where("aulaId", "==", aulaId), where("perfil", "==", "Estudiante")));
-                let htmlAlum = alumSnap.docs.map(d => `<li class="list-group-item bg-transparent text-white border-secondary">${d.data().nombre}</li>`).join('');
+                // 3. Cargar Estudiantes (CORREGIDO)
+const alumSnap = await getDocs(
+    query(
+        collection(db, "aula_integrantes"), 
+        where("aulaId", "==", aulaId), 
+        where("perfil", "==", "Estudiante Academia") // <--- Cambio aquí
+    )
+);
+
+// Usamos nombreResponsable, que es el campo que tiene el nombre en tu documento
+let htmlAlum = alumSnap.docs.map(d => `
+    <li class="list-group-item bg-transparent text-white border-secondary">
+        ${d.data().nombreResponsable}
+    </li>
+`).join('');
 
                 // Renderizar
                 contenidoDiv.innerHTML = `
