@@ -398,7 +398,6 @@
             logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
             logo.style.opacity = "1";
             
-            // Iniciamos la carga inicial
             iniciarEscuchaDirectorio(d.entidad);
         }
     });
@@ -407,21 +406,29 @@
         const tbody = document.getElementById('tabla-body');
         const filtroAula = document.getElementById('filtroAula');
         
-        // Cargar aulas una sola vez
+        // Cargar y ordenar aulas alfabéticamente
         const aulasSnap = await getDocs(query(collection(db, "aulas"), where("entidad", "==", entidad)));
-        filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
-        const mapaAulas = {}; // Para acceso rápido
+        const listaAulas = [];
         aulasSnap.forEach(doc => {
-            mapaAulas[doc.id] = doc.data().nombre_aula;
-            filtroAula.innerHTML += `<option value="${doc.id}">${doc.data().nombre_aula}</option>`;
+            listaAulas.push({ id: doc.id, nombre: doc.data().nombre_aula });
+        });
+        
+        listaAulas.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+        // Llenar filtro principal
+        filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
+        const mapaAulas = {}; 
+        listaAulas.forEach(aula => {
+            mapaAulas[aula.id] = aula.nombre;
+            filtroAula.innerHTML += `<option value="${aula.id}">${aula.nombre}</option>`;
         });
 
-        // Obtener estudiantes una sola vez
+        // Obtener estudiantes
         const estSnap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
         const listaEstudiantes = estSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         document.getElementById('cupos-utilizados').innerText = listaEstudiantes.length;
 
-        // Escucha en tiempo real de la colección de integrantes
+        // Escucha en tiempo real
         onSnapshot(collection(db, "aula_integrantes"), (snapshot) => {
             const mapaAsignaciones = {};
             snapshot.forEach(doc => {
@@ -436,7 +443,6 @@
                 
                 const tr = document.createElement('tr');
                 tr.className = 'fila-estudiante';
-                tr.setAttribute('data-aula', aulaId || "sin-aula");
                 tr.innerHTML = `
                     <td><div class="fw-bold">${est.nombreResponsable || 'Sin Nombre'}</div><small>${est.dniEstudiante || ''}</small></td>
                     <td><small>${est.email}<br><a href="https://wa.me/${(est.whatsapp || '').toString().replace(/\D/g, '')}" target="_blank" class="text-success text-decoration-none fw-bold">${est.whatsapp || '-'}</a></small></td>
@@ -450,7 +456,7 @@
         });
     }
 
-    // --- MANEJADORES DE ACCIÓN ---
+    // Manejadores
     document.getElementById('tabla-body').addEventListener('click', async (e) => {
         const btnAccion = e.target.closest('.btn-accion-aula');
         if (btnAccion) {
@@ -463,8 +469,15 @@
                 }
             } else {
                 const select = document.getElementById('selectAulaModal');
+                // Asignar opciones ordenadas del filtro principal
                 select.innerHTML = document.getElementById('filtroAula').innerHTML;
                 select.querySelector('option[value=""]').remove();
+                
+                // Aplicar estilo Azul UCMI al select del modal
+                select.style.backgroundColor = "#06090f";
+                select.style.color = "white";
+                select.style.border = "1px solid #c5a059";
+                
                 document.getElementById('inputUidAsignar').value = uid;
                 new bootstrap.Modal(document.getElementById('modalAsignarAula')).show();
             }
