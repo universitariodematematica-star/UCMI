@@ -313,7 +313,7 @@
     <main class="super-overlay">
         <div class="navbar-top">
             <div>
-                <h4 class="fw-bold m-0">Directorio Académico de Alumnos </h4>
+                <h4 class="fw-bold m-0">Directorio Académico de Alumnos</h4>
                 <div class="d-flex align-items-center gap-2 mt-1">
                     <small class="text-white-50">Academia: <span id="label-academia" class="fw-bold text-warning">...</span></small>
                     <span id="badge-cupos" class="badge badge-cupos bg-dark border border-success text-success ms-2">
@@ -322,8 +322,8 @@
                 </div>
             </div>
             <div class="d-flex gap-2">
-                <select id="filtroAula" class="form-select" style="width: 200px;">
-                    <option value="">Todas las Aulas</option>
+                <select id="filtroModulo" class="form-select" style="width: 200px;">
+                    <option value="">Todos los Módulos</option>
                 </select>
                 <input type="text" id="buscador" class="form-control" placeholder="Buscar..." style="width: 280px;">
             </div>
@@ -336,7 +336,7 @@
                         <tr>
                             <th>ESTUDIANTE</th>
                             <th>CONTACTO</th>
-                            <th>AULA</th>
+                            <th>MÓDULOS ACTIVOS</th>
                             <th class="text-center">DETALLES</th>
                             <th class="text-center">ASIGNAR</th>
                             <th class="text-center">ELIMINAR</th>
@@ -393,55 +393,43 @@
 
 async function cargarDirectorio(entidad, cuposMax, mods) {
     const tbody = document.getElementById('tabla-body');
-const filtroAula = document.getElementById('filtroAula');
-// 1. LIMPIEZA TOTAL
-tbody.innerHTML = '';
-filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
+    const filtroModulo = document.getElementById('filtroModulo');
 
-// 2. CARGAR AULAS DESDE FIRESTORE
-const aulasSnap = await getDocs(query(collection(db, "aulas"), where("entidad", "==", entidad)));
-aulasSnap.forEach(doc => {
-    filtroAula.innerHTML += `<option value="${doc.id}">${doc.data().nombre_aula}</option>`;
-});
+    // 1. LIMPIEZA TOTAL: Evita duplicados en el selector y la tabla
+    tbody.innerHTML = '';
+    // Mantenemos solo la opción inicial "Todos los Módulos"
+    filtroModulo.innerHTML = '<option value="">Todos los Módulos</option>';
+    
+    // 2. Carga de filtros (ahora seguro)
+    if(mods) {
+        Object.keys(mods).forEach(m => { 
+            if(mods[m]) {
+                filtroModulo.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; 
+            }
+        });
+    }
     
     const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
     
     document.getElementById('cupos-utilizados').innerText = snap.size;
     
+    // 3. Ordenamiento con limpieza de espacios (trim)
     const estudiantes = [];
-    snap.forEach(d => estudiantes.push(d));
+    snap.forEach(doc => estudiantes.push(doc));
     
     estudiantes.sort((a, b) => {
+        // .trim() elimina espacios accidentales al inicio o final del nombre
         const nombreA = (a.data().nombreResponsable || "").trim().toLowerCase();
         const nombreB = (b.data().nombreResponsable || "").trim().toLowerCase();
         return nombreA.localeCompare(nombreB);
     });
     
-// 3. Renderizado con cruce de aula
-    for (const estudianteDoc of estudiantes) {
-        const d = estudianteDoc.data();
-        
-        // --- AQUÍ ESTÁ LA CORRECCIÓN ---
-        let idAula = "sin-aula"; 
-        // -------------------------------
-
-        const qAula = query(collection(db, "aula_integrantes"), where("usuarioId", "==", estudianteDoc.id));
-        const snapAula = await getDocs(qAula);
-        
-        let infoAula = '<span class="badge" style="background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid #e74c3c;">SIN AULA</span>';
-        
-        if (!snapAula.empty) {
-            idAula = snapAula.docs[0].data().aulaId; // Asignamos el ID real aquí
-            const aulaSnap = await getDoc(doc(db, "aulas", idAula));
-            if (aulaSnap.exists()) {
-                const nombreAula = aulaSnap.data().nombre_aula;
-                infoAula = `<span class="badge" style="background-color: #06090f; color: #c5a059; border: 1px solid #c5a059;">${nombreAula}</span>`;
-            }
-        }
-
+    // 4. Renderizado
+    estudiantes.forEach(doc => {
+        const d = doc.data();
         const tr = document.createElement('tr');
         tr.className = 'fila-estudiante';
-        tr.setAttribute('data-aula', idAula); // Ahora sí existe la variable
+        tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
         
         tr.innerHTML = `
             <td>
@@ -457,85 +445,184 @@ aulasSnap.forEach(doc => {
                     </a>
                 </small>
             </td>
-            <td>${infoAula}</td>
+            <td>
+                ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
+            </td>
             <td class="text-center">
                 <button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(d).replace(/'/g, '&#39;')}'>
                 <i class="bi bi-eye"></i>
                 </button>
             </td>
             <td class="text-center">
-                <a href="asignar-asignaturas-alumnos.html?uid=${estudianteDoc.id}" class="btn btn-sm btn-outline-light btn-asignar">
+                <a href="asignar-asignaturas-alumnos.html?uid=${doc.id}" class="btn btn-sm btn-outline-light btn-asignar">
                     <i class="bi bi-arrow-right"></i>
                 </a>
             </td>
             <td class="text-center">
-                <button class="btn btn-sm btn-danger btn-eliminar" data-id="${estudianteDoc.id}">
+                <button class="btn btn-sm btn-danger btn-eliminar" 
+                        data-id="${doc.id}">
                     <i class="bi bi-trash3"></i>
                 </button>
             </td>
         `;
         tbody.appendChild(tr);
-    }
+    });
 }
     document.getElementById('buscador').addEventListener('input', e => {
         const t = e.target.value.toLowerCase();
         document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = f.innerText.toLowerCase().includes(t) ? '' : 'none');
     });
 
-    document.getElementById('filtroAula').addEventListener('change', e => {
-    const aulaSeleccionada = e.target.value; 
-    document.querySelectorAll('.fila-estudiante').forEach(f => {
-        const aulaFila = f.getAttribute('data-aula');
-        f.style.display = (aulaSeleccionada === "" || aulaFila === aulaSeleccionada) ? '' : 'none';
+    document.getElementById('filtroModulo').addEventListener('change', e => {
+        const m = e.target.value.toLowerCase();
+        document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = (m === "" || f.getAttribute('data-modulos').includes(m)) ? '' : 'none');
     });
-});
 
-    document.getElementById('tabla-body').addEventListener('click', async (e) => {
-    
+    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
+
+// Listener para abrir el modal con los datos del alumno
+document.getElementById('tabla-body').addEventListener('click', (e) => {
+
+    // =========================
     // 1. BOTÓN VER DETALLES
+    // =========================
     const btnVer = e.target.closest('.btn-ver');
+
     if (btnVer) {
-        const d = JSON.parse(btnVer.getAttribute('data-info').replace(/&#39;/g, "'"));
-        const waLink = (num) => num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
-        
+
+        const d = JSON.parse(
+            btnVer.getAttribute('data-info').replace(/&#39;/g, "'")
+        );
+
+        const waLink = (num) =>
+            num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
+
         let html = `
             <div class="resumen-card mb-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
                 <h6 class="text-warning mb-3 fw-bold">DATOS DEL ESTUDIANTE</h6>
                 <div class="row g-2">
                     <div class="col-12"><span class="text-white-50 small">Nombre Completo</span><div class="text-white fw-bold">${d.nombreResponsable || 'N/A'}</div></div>
                     <div class="col-md-6"><span class="text-white-50 small">DNI / ID</span><div class="text-white fw-bold">${d.dniEstudiante || 'N/A'}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">WhatsApp</span><a href="${waLink(d.whatsapp)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">${d.whatsapp || 'N/A'} <i class="bi bi-whatsapp"></i></a></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Género</span><div class="text-white fw-bold">${d.genero || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Nacimiento</span><div class="text-white fw-bold">${d.fechaNacimiento || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Edad</span><div class="text-white fw-bold">${d.edadEstudiante || 'N/A'} años</div></div>
+                    <div class="col-12"><span class="text-white-50 small">Ubicación</span><div class="text-white fw-bold">${d.ubicacion || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">Email</span><div class="text-white fw-bold">${d.email || 'N/A'}</div></div>
+                    <div class="col-md-6">
+                        <span class="text-white-50 small">WhatsApp</span>
+                        <a href="${waLink(d.whatsapp)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
+                            ${d.whatsapp || 'N/A'} <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+                    <div class="col-12"><span class="text-white-50 small">Promedio de Bachillerato</span><div class="text-warning fw-bold">${d.promediocatualbachillerato || 'N/A'}</div></div>
+                    <div class="col-12 mt-2">
+                        <span class="text-white-50 small">Módulos Seleccionados</span>
+                        <div class="text-info fw-bold">${(d.modulos || []).join(' • ') || 'Ninguno'}</div>
+                    </div>
                 </div>
-            </div>`;
+            </div>
+        `;
+
+        if (d.nombreRepresentante) {
+            html += `
+            <div class="resumen-card" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #ffc107;">
+                <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
+                <div class="row g-2">
+                    <div class="col-12"><span class="text-white-50 small">Nombre Tutor</span><div class="text-white fw-bold">${d.nombreRepresentante}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">DNI Tutor</span><div class="text-white fw-bold">${d.dniRepresentante || 'N/A'}</div></div>
+                    <div class="col-md-6">
+                        <span class="text-white-50 small">WhatsApp Tutor</span>
+                        <a href="${waLink(d.whatsappRepresentante)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
+                            ${d.whatsappRepresentante || 'N/A'} <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
         document.getElementById('cuerpoDetalles').innerHTML = html;
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
     }
 
-    // 2. BOTÓN DESASIGNAR (Si el usuario ya tiene aula)
-    const btnDesasignar = e.target.closest('.btn-accion-aula[data-accion="desasignar"]');
-    if (btnDesasignar) {
-        const uid = btnDesasignar.dataset.uid;
-        if (confirm("¿Seguro que deseas retirar a este alumno de su aula actual?")) {
-            // Buscamos el documento en aula_integrantes
-            const q = query(collection(db, "aula_integrantes"), where("usuarioId", "==", uid));
-            const snap = await getDocs(q);
-            
-            // Borramos el documento encontrado
-            snap.forEach(async (docSnap) => {
-                await deleteDoc(doc(db, "aula_integrantes", docSnap.id));
-            });
-            
-            alert("Alumno desasignado correctamente.");
-            location.reload(); // Recargamos para que el botón cambie a "Asignar"
-        }
-    }
+    // =========================
+    // 2. BOTÓN ELIMINAR
+    // =========================
+const btnEliminar = e.target.closest('.btn-eliminar');
 
-    // 3. BOTÓN ELIMINAR (Tu lógica actual)
-    const btnEliminar = e.target.closest('.btn-eliminar');
-    if (btnEliminar) {
-        usuarioAEliminar = btnEliminar.dataset.id;
-        new bootstrap.Modal(document.getElementById('modalConfirmDelete')).show();
-    }
+if (btnEliminar) {
+
+    usuarioAEliminar = btnEliminar.dataset.id;
+
+    // abrir primer modal
+    new bootstrap.Modal(
+        document.getElementById('modalConfirmDelete')
+    ).show();
+}
+
+/* =========================
+   PASO 1 → abrir segundo modal
+   ========================= */
+document.getElementById('btnConfirmStep1').onclick = () => {
+
+    const modal1El = document.getElementById('modalConfirmDelete');
+    const modal2El = document.getElementById('modalDangerDelete');
+
+    const modal1 = bootstrap.Modal.getInstance(modal1El);
+
+    // 1. cerrar primer modal
+    modal1.hide();
+
+    // 2. esperar a que termine la animación de Bootstrap (150–300ms realista)
+    modal1El.addEventListener('hidden.bs.modal', () => {
+
+        // pequeño delay para suavizar aún más la transición visual
+        setTimeout(() => {
+            const modal2 = new bootstrap.Modal(modal2El, {
+                backdrop: 'static',
+                keyboard: false
+            });
+
+            modal2.show();
+        }, 120);
+
+    }, { once: true });
+};
+
+/* =========================
+   PASO 2 → eliminación final
+   ========================= */
+document.getElementById('btnFinalDelete').onclick = async () => {
+
+    if (!usuarioAEliminar) return;
+
+    const docRef = doc(db, "usuarios", usuarioAEliminar);
+    const snap = await getDoc(docRef);
+
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+
+    await addDoc(collection(db, "correosPendientesEliminar"), {
+        correoAnterior: data.email || "",
+        correoNuevo: data.email || "",
+        estado: "pendiente",
+        fecha: new Date(),
+        uidAnterior: usuarioAEliminar,
+        uidNuevo: ""
+    });
+
+    await deleteDoc(docRef);
+
+    const modal2 = bootstrap.Modal.getInstance(
+        document.getElementById('modalDangerDelete')
+    );
+    modal2.hide();
+
+    usuarioAEliminar = null;
+
+    location.reload();
+};
 });
     
 </script>
