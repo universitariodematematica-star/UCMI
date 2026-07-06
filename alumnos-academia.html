@@ -393,18 +393,9 @@
 
     let currentId = null;
     let currentData = null;
+    const mapaEstudiantes = {};
 
     // Modifica tu función verExpediente para llenar estas variables:
-    window.verExpediente = (id, dataString) => {
-        currentId = id;
-        currentData = JSON.parse(dataString.replace(/&#39;/g, "'"));
-        
-        document.getElementById('contenidoModal').innerHTML = `
-            <p><strong>Estudiante:</strong> ${currentData.nombreResponsable}</p>
-            <p><strong>Email:</strong> ${currentData.email}</p>
-        `;
-        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-    };
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "index.html"; return; }
@@ -448,6 +439,7 @@
 
             tbody.innerHTML = '';
             listaEstudiantes.sort((a, b) => (a.nombreResponsable || "").localeCompare(b.nombreResponsable || "")).forEach(est => {
+                mapaEstudiantes[est.id] = est;
                 const aulaId = mapaAsignaciones[est.id];
                 const tieneAula = !!aulaId;
                 const nombreAula = mapaAulas[aulaId] || "Aula desconocida";
@@ -459,7 +451,12 @@
                     <td><div class="fw-bold">${est.nombreResponsable || 'Sin Nombre'}</div><small>${est.dniEstudiante || ''}</small></td>
                     <td><small>${est.email}<br><a href="https://wa.me/${(est.whatsapp || '').toString().replace(/\D/g, '')}" target="_blank" class="text-success text-decoration-none fw-bold">${est.whatsapp || '-'}</a></small></td>
                     <td>${tieneAula ? `<span class="badge" style="background-color: #06090f; color: #c5a059; border: 1px solid #c5a059;">${nombreAula}</span>` : '<span class="badge" style="background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid #e74c3c;">SIN AULA</span>'}</td>
-                    <td class="text-center"><button class="btn btn-sm btn-panel" onclick="verExpediente('${est.id}', '${JSON.stringify(est).replace(/'/g, '&#39;')}')"><i class="bi bi-eye"></i></button></td>
+                    <td class="text-center">
+    <button class="btn btn-sm btn-panel btn-detalles"
+        data-id="${est.id}">
+        <i class="bi bi-eye"></i>
+    </button>
+</td>
                     <td class="text-center"><button class="btn btn-sm ${tieneAula ? 'btn-outline-danger' : 'btn-outline-success'} btn-accion-aula" data-uid="${est.id}" data-accion="${tieneAula ? 'desasignar' : 'asignar'}"><i class="bi ${tieneAula ? 'bi-person-dash' : 'bi-person-plus'}"></i></button></td>
                     <td class="text-center"><button class="btn btn-sm btn-danger btn-eliminar" data-id="${est.id}"><i class="bi bi-trash3"></i></button></td>
                 `;
@@ -470,24 +467,68 @@
 
     // --- MANEJADORES DE ACCIÓN ---
     document.getElementById('tabla-body').addEventListener('click', async (e) => {
-        const btnAccion = e.target.closest('.btn-accion-aula');
-        if (btnAccion) {
-            const { uid, accion } = btnAccion.dataset;
-            if (accion === 'desasignar') {
-                if (confirm("¿Retirar a este alumno de su aula?")) {
-                    const q = query(collection(db, "aula_integrantes"), where("usuarioId", "==", uid));
-                    const snap = await getDocs(q);
-                    await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "aula_integrantes", d.id))));
-                }
-            } else {
-                const select = document.getElementById('selectAulaModal');
-                select.innerHTML = document.getElementById('filtroAula').innerHTML;
-                select.querySelector('option[value=""]').remove();
-                document.getElementById('inputUidAsignar').value = uid;
-                new bootstrap.Modal(document.getElementById('modalAsignarAula')).show();
+
+    // ===== BOTÓN DETALLES =====
+    const btnDetalles = e.target.closest('.btn-detalles');
+    if (btnDetalles) {
+
+        const est = mapaEstudiantes[btnDetalles.dataset.id];
+
+        currentId = btnDetalles.dataset.id;
+        currentData = est;
+
+        document.getElementById('contenidoModal').innerHTML = `
+            <p><strong>Estudiante:</strong> ${est.nombreResponsable}</p>
+            <p><strong>Email:</strong> ${est.email}</p>
+        `;
+
+        bootstrap.Modal.getOrCreateInstance(
+            document.getElementById('modalDetalles')
+        ).show();
+
+        return;
+    }
+
+    // ===== BOTÓN ASIGNAR / DESASIGNAR =====
+    const btnAccion = e.target.closest('.btn-accion-aula');
+    if (btnAccion) {
+
+        const { uid, accion } = btnAccion.dataset;
+
+        if (accion === 'desasignar') {
+
+            if (confirm("¿Retirar a este alumno de su aula?")) {
+
+                const q = query(
+                    collection(db, "aula_integrantes"),
+                    where("usuarioId", "==", uid)
+                );
+
+                const snap = await getDocs(q);
+
+                await Promise.all(
+                    snap.docs.map(d =>
+                        deleteDoc(doc(db, "aula_integrantes", d.id))
+                    )
+                );
             }
+
+        } else {
+
+            const select = document.getElementById('selectAulaModal');
+
+            select.innerHTML = document.getElementById('filtroAula').innerHTML;
+
+            select.querySelector('option[value=""]').remove();
+
+            document.getElementById('inputUidAsignar').value = uid;
+
+            bootstrap.Modal.getOrCreateInstance(
+                document.getElementById('modalAsignarAula')
+            ).show();
         }
-    });
+    }
+});
 
     document.getElementById('btnConfirmarAsignacion').addEventListener('click', async () => {
         const uid = document.getElementById('inputUidAsignar').value;
