@@ -361,22 +361,12 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  getDoc,
-  deleteDoc,
-  addDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        getFirestore, collection, query, where, getDocs, doc, getDoc, deleteDoc, addDoc, onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
     const auth = getAuth();
-    let usuarioAEliminar = null;
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "index.html"; return; }
@@ -387,180 +377,99 @@
             const logo = document.getElementById('logoAcademia');
             logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
             logo.style.opacity = "1";
-            cargarDirectorio(d.entidad, d.cupos || 0, d["modulos-ofertados-academia"]);
+            
+            // Iniciamos la carga inicial
+            iniciarEscuchaDirectorio(d.entidad);
         }
     });
 
-async function cargarDirectorio(entidad, cuposMax, mods) {
-    const tbody = document.getElementById('tabla-body');
-    const filtroAula = document.getElementById('filtroAula');
-    tbody.innerHTML = '';
-    filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
-
-    const aulasSnap = await getDocs(query(collection(db, "aulas"), where("entidad", "==", entidad)));
-    aulasSnap.forEach(doc => {
-        filtroAula.innerHTML += `<option value="${doc.id}">${doc.data().nombre_aula}</option>`;
-    });
-
-    const integrantesSnap = await getDocs(collection(db, "aula_integrantes"));
-    const mapaAsignaciones = {};
-    integrantesSnap.forEach(doc => {
-        mapaAsignaciones[doc.data().usuarioId] = { aulaId: doc.data().aulaId };
-    });
-
-    const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
-    document.getElementById('cupos-utilizados').innerText = snap.size;
-
-    const estudiantes = [];
-    snap.forEach(d => estudiantes.push({ id: d.id, ...d.data() }));
-    estudiantes.sort((a, b) => (a.nombreResponsable || "").localeCompare(b.nombreResponsable || ""));
-
-    for (const est of estudiantes) {
-        const asignacion = mapaAsignaciones[est.id];
-        const tieneAula = !!asignacion;
+    async function iniciarEscuchaDirectorio(entidad) {
+        const tbody = document.getElementById('tabla-body');
+        const filtroAula = document.getElementById('filtroAula');
         
-        let infoAula = '<span class="badge" style="background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid #e74c3c;">SIN AULA</span>';
-        let idAulaFila = "sin-aula";
+        // Cargar aulas una sola vez
+        const aulasSnap = await getDocs(query(collection(db, "aulas"), where("entidad", "==", entidad)));
+        filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
+        const mapaAulas = {}; // Para acceso rápido
+        aulasSnap.forEach(doc => {
+            mapaAulas[doc.id] = doc.data().nombre_aula;
+            filtroAula.innerHTML += `<option value="${doc.id}">${doc.data().nombre_aula}</option>`;
+        });
 
-        if (tieneAula) {
-            idAulaFila = asignacion.aulaId;
-            const aulaDoc = aulasSnap.docs.find(a => a.id === idAulaFila);
-            infoAula = `<span class="badge" style="background-color: #06090f; color: #c5a059; border: 1px solid #c5a059;">${aulaDoc ? aulaDoc.data().nombre_aula : "Aula"}</span>`;
-        }
+        // Obtener estudiantes una sola vez
+        const estSnap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
+        const listaEstudiantes = estSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        document.getElementById('cupos-utilizados').innerText = listaEstudiantes.length;
 
-        const tr = document.createElement('tr');
-        tr.className = 'fila-estudiante';
-        tr.setAttribute('data-aula', idAulaFila);
-        tr.innerHTML = `
-            <td><div class="fw-bold">${est.nombreResponsable || 'Sin Nombre'}</div><small>${est.dniEstudiante || ''}</small></td>
-            <td><small>${est.email}<br><a href="https://wa.me/${(est.whatsapp || '').toString().replace(/\D/g, '')}" target="_blank" class="text-success text-decoration-none fw-bold">${est.whatsapp || '-'}</a></small></td>
-            <td>${infoAula}</td>
-            <td class="text-center"><button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(est).replace(/'/g, '&#39;')}'><i class="bi bi-eye"></i></button></td>
-            <td class="text-center"><button class="btn btn-sm ${tieneAula ? 'btn-outline-danger' : 'btn-outline-success'} btn-accion-aula" data-uid="${est.id}" data-accion="${tieneAula ? 'desasignar' : 'asignar'}"><i class="bi ${tieneAula ? 'bi-person-dash' : 'bi-person-plus'}"></i></button></td>
-            <td class="text-center"><button class="btn btn-sm btn-danger btn-eliminar" data-id="${est.id}"><i class="bi bi-trash3"></i></button></td>
-        `;
-        tbody.appendChild(tr);
+        // Escucha en tiempo real de la colección de integrantes
+        onSnapshot(collection(db, "aula_integrantes"), (snapshot) => {
+            const mapaAsignaciones = {};
+            snapshot.forEach(doc => {
+                mapaAsignaciones[doc.data().usuarioId] = doc.data().aulaId;
+            });
+
+            tbody.innerHTML = '';
+            listaEstudiantes.sort((a, b) => (a.nombreResponsable || "").localeCompare(b.nombreResponsable || "")).forEach(est => {
+                const aulaId = mapaAsignaciones[est.id];
+                const tieneAula = !!aulaId;
+                const nombreAula = mapaAulas[aulaId] || "Aula desconocida";
+                
+                const tr = document.createElement('tr');
+                tr.className = 'fila-estudiante';
+                tr.setAttribute('data-aula', aulaId || "sin-aula");
+                tr.innerHTML = `
+                    <td><div class="fw-bold">${est.nombreResponsable || 'Sin Nombre'}</div><small>${est.dniEstudiante || ''}</small></td>
+                    <td><small>${est.email}<br><a href="https://wa.me/${(est.whatsapp || '').toString().replace(/\D/g, '')}" target="_blank" class="text-success text-decoration-none fw-bold">${est.whatsapp || '-'}</a></small></td>
+                    <td>${tieneAula ? `<span class="badge" style="background-color: #06090f; color: #c5a059; border: 1px solid #c5a059;">${nombreAula}</span>` : '<span class="badge" style="background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid #e74c3c;">SIN AULA</span>'}</td>
+                    <td class="text-center"><button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(est).replace(/'/g, '&#39;')}'><i class="bi bi-eye"></i></button></td>
+                    <td class="text-center"><button class="btn btn-sm ${tieneAula ? 'btn-outline-danger' : 'btn-outline-success'} btn-accion-aula" data-uid="${est.id}" data-accion="${tieneAula ? 'desasignar' : 'asignar'}"><i class="bi ${tieneAula ? 'bi-person-dash' : 'bi-person-plus'}"></i></button></td>
+                    <td class="text-center"><button class="btn btn-sm btn-danger btn-eliminar" data-id="${est.id}"><i class="bi bi-trash3"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
     }
-}
-    document.getElementById('buscador').addEventListener('input', e => {
-        const t = e.target.value.toLowerCase();
-        document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = f.innerText.toLowerCase().includes(t) ? '' : 'none');
-    });
 
-    document.getElementById('filtroAula').addEventListener('change', e => {
-    const aulaSeleccionada = e.target.value; 
-    document.querySelectorAll('.fila-estudiante').forEach(f => {
-        const aulaFila = f.getAttribute('data-aula');
-        f.style.display = (aulaSeleccionada === "" || aulaFila === aulaSeleccionada) ? '' : 'none';
-    });
-});
-
+    // --- MANEJADORES DE ACCIÓN ---
     document.getElementById('tabla-body').addEventListener('click', async (e) => {
-    
-    // 1. BOTÓN VER DETALLES
-    const btnVer = e.target.closest('.btn-ver');
-    if (btnVer) {
-        const d = JSON.parse(btnVer.getAttribute('data-info').replace(/&#39;/g, "'"));
-        const waLink = (num) => num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
-        
-        let html = `
-            <div class="resumen-card mb-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
-                <h6 class="text-warning mb-3 fw-bold">DATOS DEL ESTUDIANTE</h6>
-                <div class="row g-2">
-                    <div class="col-12"><span class="text-white-50 small">Nombre Completo</span><div class="text-white fw-bold">${d.nombreResponsable || 'N/A'}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">DNI / ID</span><div class="text-white fw-bold">${d.dniEstudiante || 'N/A'}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">WhatsApp</span><a href="${waLink(d.whatsapp)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">${d.whatsapp || 'N/A'} <i class="bi bi-whatsapp"></i></a></div>
-                </div>
-            </div>`;
-        document.getElementById('cuerpoDetalles').innerHTML = html;
-        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-    }
-
-    // 2. MANEJO UNIFICADO DE BOTÓN ASIGNAR / DESASIGNAR
-const btnAccion = e.target.closest('.btn-accion-aula');
-if (btnAccion) {
-    const uid = btnAccion.dataset.uid;
-    const accion = btnAccion.dataset.accion;
-
-    if (accion === 'desasignar') {
-        if (confirm("¿Seguro que deseas retirar a este alumno de su aula actual?")) {
-            const q = query(collection(db, "aula_integrantes"), where("usuarioId", "==", uid));
-            const snap = await getDocs(q);
-            
-            // Usamos Promise.all para asegurar que se borren antes de recargar
-            await Promise.all(snap.docs.map(docSnap => deleteDoc(doc(db, "aula_integrantes", docSnap.id))));
-            
-            alert("Alumno desasignado correctamente.");
-            location.reload(); 
+        const btnAccion = e.target.closest('.btn-accion-aula');
+        if (btnAccion) {
+            const { uid, accion } = btnAccion.dataset;
+            if (accion === 'desasignar') {
+                if (confirm("¿Retirar a este alumno de su aula?")) {
+                    const q = query(collection(db, "aula_integrantes"), where("usuarioId", "==", uid));
+                    const snap = await getDocs(q);
+                    await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "aula_integrantes", d.id))));
+                }
+            } else {
+                const select = document.getElementById('selectAulaModal');
+                select.innerHTML = document.getElementById('filtroAula').innerHTML;
+                select.querySelector('option[value=""]').remove();
+                document.getElementById('inputUidAsignar').value = uid;
+                new bootstrap.Modal(document.getElementById('modalAsignarAula')).show();
+            }
         }
-    } else if (accion === 'asignar') {
-    // 1. Buscamos el objeto del estudiante en el array 'estudiantes' 
-    // (Asegúrate de que 'estudiantes' esté accesible en este scope o búscalos en la tabla)
-    const select = document.getElementById('selectAulaModal');
-    select.innerHTML = document.getElementById('filtroAula').innerHTML;
-    select.querySelector('option[value=""]').remove();
-    
-    document.getElementById('inputUidAsignar').value = uid;
-    
-    // GUARDAMOS LOS DATOS DEL ALUMNO EN UN CAMPO OCULTO O DATASET
-    // Aquí necesitamos obtener el objeto 'est' del estudiante. 
-    // Si no puedes acceder al objeto 'est' directamente, busca el botón y extrae la info.
-    const btnAsignar = e.target.closest('.btn-accion-aula');
-    // Asumiremos que el botón tiene la info o que podemos obtenerla.
-    // Una forma fácil: guardar los datos en un data-attribute cuando creamos el botón.
-    new bootstrap.Modal(document.getElementById('modalAsignarAula')).show();
-}
-}
-
-    // 3. BOTÓN ELIMINAR (Tu lógica actual)
-    const btnEliminar = e.target.closest('.btn-eliminar');
-    if (btnEliminar) {
-        usuarioAEliminar = btnEliminar.dataset.id;
-        new bootstrap.Modal(document.getElementById('modalConfirmDelete')).show();
-    }
-});
+    });
 
     document.getElementById('btnConfirmarAsignacion').addEventListener('click', async () => {
-    const uid = document.getElementById('inputUidAsignar').value;
-    const aulaId = document.getElementById('selectAulaModal').value;
-    
-    if (!aulaId) return alert("Selecciona un aula");
-
-    try {
-        // 1. Buscamos el documento del estudiante en "usuarios"
-        const userDocRef = doc(db, "usuarios", uid);
-        const userSnap = await getDoc(userDocRef);
-        
-        if (!userSnap.exists()) {
-            throw new Error("No se encontraron los datos del estudiante en la base de datos.");
-        }
-
+        const uid = document.getElementById('inputUidAsignar').value;
+        const aulaId = document.getElementById('selectAulaModal').value;
+        const userSnap = await getDoc(doc(db, "usuarios", uid));
         const userData = userSnap.data();
 
-        // 2. Construimos el objeto con los datos exactos que necesitas
-        const nuevoIntegrante = {
+        await addDoc(collection(db, "aula_integrantes"), {
+            usuarioId: uid,
             aulaId: aulaId,
             email: userData.email || "",
-            entidad: document.getElementById('label-academia').innerText,
-            fechaAsignacion: new Date(),
             nombreResponsable: userData.nombreResponsable || "Sin nombre",
+            entidad: document.getElementById('label-academia').innerText,
             perfil: "Estudiante Academia",
-            usuarioId: uid
-        };
-
-        // 3. Guardamos en aula_integrantes
-        await addDoc(collection(db, "aula_integrantes"), nuevoIntegrante);
-        
-        alert("Alumno asignado correctamente.");
-        location.reload();
-    } catch (e) {
-        console.error("Error al asignar:", e);
-        alert("Error al asignar: " + e.message);
-    }
-});
-    
+            fechaAsignacion: new Date()
+        });
+        bootstrap.Modal.getInstance(document.getElementById('modalAsignarAula')).hide();
+    });
 </script>
-
+    
 <div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content" style="background: #0b0f1a; border: 1px solid #c5a059; border-radius: 25px;">
