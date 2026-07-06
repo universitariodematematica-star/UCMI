@@ -490,69 +490,23 @@ aulasSnap.forEach(doc => {
     });
 });
 
-    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
-
-// Listener para abrir el modal con los datos del alumno
-document.getElementById('tabla-body').addEventListener('click', (e) => {
-
-    // =========================
+    document.getElementById('tabla-body').addEventListener('click', async (e) => {
+    
     // 1. BOTÓN VER DETALLES
-    // =========================
     const btnVer = e.target.closest('.btn-ver');
-
     if (btnVer) {
-
-        const d = JSON.parse(
-            btnVer.getAttribute('data-info').replace(/&#39;/g, "'")
-        );
-
-        const waLink = (num) =>
-            num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
-
+        const d = JSON.parse(btnVer.getAttribute('data-info').replace(/&#39;/g, "'"));
+        const waLink = (num) => num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
+        
         let html = `
             <div class="resumen-card mb-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
                 <h6 class="text-warning mb-3 fw-bold">DATOS DEL ESTUDIANTE</h6>
                 <div class="row g-2">
                     <div class="col-12"><span class="text-white-50 small">Nombre Completo</span><div class="text-white fw-bold">${d.nombreResponsable || 'N/A'}</div></div>
                     <div class="col-md-6"><span class="text-white-50 small">DNI / ID</span><div class="text-white fw-bold">${d.dniEstudiante || 'N/A'}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">Género</span><div class="text-white fw-bold">${d.genero || 'N/A'}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">Nacimiento</span><div class="text-white fw-bold">${d.fechaNacimiento || 'N/A'}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">Edad</span><div class="text-white fw-bold">${d.edadEstudiante || 'N/A'} años</div></div>
-                    <div class="col-12"><span class="text-white-50 small">Ubicación</span><div class="text-white fw-bold">${d.ubicacion || 'N/A'}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">Email</span><div class="text-white fw-bold">${d.email || 'N/A'}</div></div>
-                    <div class="col-md-6">
-                        <span class="text-white-50 small">WhatsApp</span>
-                        <a href="${waLink(d.whatsapp)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
-                            ${d.whatsapp || 'N/A'} <i class="bi bi-whatsapp"></i>
-                        </a>
-                    </div>
-                    <div class="col-12"><span class="text-white-50 small">Promedio de Bachillerato</span><div class="text-warning fw-bold">${d.promediocatualbachillerato || 'N/A'}</div></div>
-                    <div class="col-12 mt-2">
-                        <span class="text-white-50 small">Módulos Seleccionados</span>
-                        <div class="text-info fw-bold">${(d.modulos || []).join(' • ') || 'Ninguno'}</div>
-                    </div>
+                    <div class="col-md-6"><span class="text-white-50 small">WhatsApp</span><a href="${waLink(d.whatsapp)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">${d.whatsapp || 'N/A'} <i class="bi bi-whatsapp"></i></a></div>
                 </div>
-            </div>
-        `;
-
-        if (d.nombreRepresentante) {
-            html += `
-            <div class="resumen-card" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #ffc107;">
-                <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
-                <div class="row g-2">
-                    <div class="col-12"><span class="text-white-50 small">Nombre Tutor</span><div class="text-white fw-bold">${d.nombreRepresentante}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">DNI Tutor</span><div class="text-white fw-bold">${d.dniRepresentante || 'N/A'}</div></div>
-                    <div class="col-md-6">
-                        <span class="text-white-50 small">WhatsApp Tutor</span>
-                        <a href="${waLink(d.whatsappRepresentante)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
-                            ${d.whatsappRepresentante || 'N/A'} <i class="bi bi-whatsapp"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            `;
-        }
-
+            </div>`;
         document.getElementById('cuerpoDetalles').innerHTML = html;
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
     }
@@ -576,84 +530,12 @@ document.getElementById('tabla-body').addEventListener('click', (e) => {
         }
     }
 
-    // =========================
-    // 2. BOTÓN ELIMINAR
-    // =========================
-const btnEliminar = e.target.closest('.btn-eliminar');
-
-if (btnEliminar) {
-
-    usuarioAEliminar = btnEliminar.dataset.id;
-
-    // abrir primer modal
-    new bootstrap.Modal(
-        document.getElementById('modalConfirmDelete')
-    ).show();
-}
-
-/* =========================
-   PASO 1 → abrir segundo modal
-   ========================= */
-document.getElementById('btnConfirmStep1').onclick = () => {
-
-    const modal1El = document.getElementById('modalConfirmDelete');
-    const modal2El = document.getElementById('modalDangerDelete');
-
-    const modal1 = bootstrap.Modal.getInstance(modal1El);
-
-    // 1. cerrar primer modal
-    modal1.hide();
-
-    // 2. esperar a que termine la animación de Bootstrap (150–300ms realista)
-    modal1El.addEventListener('hidden.bs.modal', () => {
-
-        // pequeño delay para suavizar aún más la transición visual
-        setTimeout(() => {
-            const modal2 = new bootstrap.Modal(modal2El, {
-                backdrop: 'static',
-                keyboard: false
-            });
-
-            modal2.show();
-        }, 120);
-
-    }, { once: true });
-};
-
-/* =========================
-   PASO 2 → eliminación final
-   ========================= */
-document.getElementById('btnFinalDelete').onclick = async () => {
-
-    if (!usuarioAEliminar) return;
-
-    const docRef = doc(db, "usuarios", usuarioAEliminar);
-    const snap = await getDoc(docRef);
-
-    if (!snap.exists()) return;
-
-    const data = snap.data();
-
-    await addDoc(collection(db, "correosPendientesEliminar"), {
-        correoAnterior: data.email || "",
-        correoNuevo: data.email || "",
-        estado: "pendiente",
-        fecha: new Date(),
-        uidAnterior: usuarioAEliminar,
-        uidNuevo: ""
-    });
-
-    await deleteDoc(docRef);
-
-    const modal2 = bootstrap.Modal.getInstance(
-        document.getElementById('modalDangerDelete')
-    );
-    modal2.hide();
-
-    usuarioAEliminar = null;
-
-    location.reload();
-};
+    // 3. BOTÓN ELIMINAR (Tu lógica actual)
+    const btnEliminar = e.target.closest('.btn-eliminar');
+    if (btnEliminar) {
+        usuarioAEliminar = btnEliminar.dataset.id;
+        new bootstrap.Modal(document.getElementById('modalConfirmDelete')).show();
+    }
 });
     
 </script>
