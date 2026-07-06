@@ -393,88 +393,51 @@
 
 async function cargarDirectorio(entidad, cuposMax, mods) {
     const tbody = document.getElementById('tabla-body');
-const filtroAula = document.getElementById('filtroAula');
-// 1. LIMPIEZA TOTAL
-tbody.innerHTML = '';
-filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
+    const filtroAula = document.getElementById('filtroAula');
+    tbody.innerHTML = '';
+    filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
 
-// 2. CARGAR AULAS DESDE FIRESTORE
-const aulasSnap = await getDocs(query(collection(db, "aulas"), where("entidad", "==", entidad)));
-aulasSnap.forEach(doc => {
-    filtroAula.innerHTML += `<option value="${doc.id}">${doc.data().nombre_aula}</option>`;
-});
-    
-    const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
-    
-    document.getElementById('cupos-utilizados').innerText = snap.size;
-    
-    const estudiantes = [];
-    snap.forEach(d => estudiantes.push(d));
-    
-    estudiantes.sort((a, b) => {
-        const nombreA = (a.data().nombreResponsable || "").trim().toLowerCase();
-        const nombreB = (b.data().nombreResponsable || "").trim().toLowerCase();
-        return nombreA.localeCompare(nombreB);
+    const aulasSnap = await getDocs(query(collection(db, "aulas"), where("entidad", "==", entidad)));
+    aulasSnap.forEach(doc => {
+        filtroAula.innerHTML += `<option value="${doc.id}">${doc.data().nombre_aula}</option>`;
     });
-    
-// 3. Renderizado con cruce de aula
-    for (const estudianteDoc of estudiantes) {
-        const d = estudianteDoc.data();
-        
-        // --- AQUÍ ESTÁ LA CORRECCIÓN ---
-        let idAula = "sin-aula"; 
-        // -------------------------------
 
-        const qAula = query(collection(db, "aula_integrantes"), where("usuarioId", "==", estudianteDoc.id));
-        const snapAula = await getDocs(qAula);
+    const integrantesSnap = await getDocs(collection(db, "aula_integrantes"));
+    const mapaAsignaciones = {};
+    integrantesSnap.forEach(doc => {
+        mapaAsignaciones[doc.data().usuarioId] = { aulaId: doc.data().aulaId };
+    });
+
+    const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
+    document.getElementById('cupos-utilizados').innerText = snap.size;
+
+    const estudiantes = [];
+    snap.forEach(d => estudiantes.push({ id: d.id, ...d.data() }));
+    estudiantes.sort((a, b) => (a.nombreResponsable || "").localeCompare(b.nombreResponsable || ""));
+
+    for (const est of estudiantes) {
+        const asignacion = mapaAsignaciones[est.id];
+        const tieneAula = !!asignacion;
         
         let infoAula = '<span class="badge" style="background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid #e74c3c;">SIN AULA</span>';
-        
-        if (!snapAula.empty) {
-            idAula = snapAula.docs[0].data().aulaId; // Asignamos el ID real aquí
-            const aulaSnap = await getDoc(doc(db, "aulas", idAula));
-            if (aulaSnap.exists()) {
-                const nombreAula = aulaSnap.data().nombre_aula;
-                infoAula = `<span class="badge" style="background-color: #06090f; color: #c5a059; border: 1px solid #c5a059;">${nombreAula}</span>`;
-            }
+        let idAulaFila = "sin-aula";
+
+        if (tieneAula) {
+            idAulaFila = asignacion.aulaId;
+            const aulaDoc = aulasSnap.docs.find(a => a.id === idAulaFila);
+            infoAula = `<span class="badge" style="background-color: #06090f; color: #c5a059; border: 1px solid #c5a059;">${aulaDoc ? aulaDoc.data().nombre_aula : "Aula"}</span>`;
         }
 
         const tr = document.createElement('tr');
         tr.className = 'fila-estudiante';
-        tr.setAttribute('data-aula', idAula); // Ahora sí existe la variable
-        
+        tr.setAttribute('data-aula', idAulaFila);
         tr.innerHTML = `
-            <td>
-                <div class="fw-bold">${d.nombreResponsable || 'Sin Nombre'}</div>
-                <small class="text-secondary">${d.dniEstudiante || ''}</small>
-            </td>
-            <td>
-                <small>${d.email}<br>
-                    <a href="https://wa.me/${(d.whatsapp || '').toString().replace(/\D/g, '')}" 
-                       target="_blank" 
-                       class="text-success text-decoration-none fw-bold">
-                       ${d.whatsapp || '-'}
-                    </a>
-                </small>
-            </td>
+            <td><div class="fw-bold">${est.nombreResponsable || 'Sin Nombre'}</div><small>${est.dniEstudiante || ''}</small></td>
+            <td><small>${est.email}<br><a href="https://wa.me/${(est.whatsapp || '').toString().replace(/\D/g, '')}" target="_blank" class="text-success text-decoration-none fw-bold">${est.whatsapp || '-'}</a></small></td>
             <td>${infoAula}</td>
-            <td class="text-center">
-                <button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(d).replace(/'/g, '&#39;')}'>
-                <i class="bi bi-eye"></i>
-                </button>
-            </td>
-            <td class="text-center">
-                <button class="btn btn-sm ${tieneAula ? 'btn-outline-danger' : 'btn-outline-success'} btn-accion-aula" 
-                        data-uid="${estudianteDoc.id}" 
-                        data-accion="${tieneAula ? 'desasignar' : 'asignar'}">
-                    <i class="bi ${tieneAula ? 'bi-person-dash' : 'bi-person-plus'}"></i>
-                </button>
-            </td>
-            <td class="text-center">
-                <button class="btn btn-sm btn-danger btn-eliminar" data-id="${estudianteDoc.id}">
-                    <i class="bi bi-trash3"></i>
-                </button>
-            </td>
+            <td class="text-center"><button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(est).replace(/'/g, '&#39;')}'><i class="bi bi-eye"></i></button></td>
+            <td class="text-center"><button class="btn btn-sm ${tieneAula ? 'btn-outline-danger' : 'btn-outline-success'} btn-accion-aula" data-uid="${est.id}" data-accion="${tieneAula ? 'desasignar' : 'asignar'}"><i class="bi ${tieneAula ? 'bi-person-dash' : 'bi-person-plus'}"></i></button></td>
+            <td class="text-center"><button class="btn btn-sm btn-danger btn-eliminar" data-id="${est.id}"><i class="bi bi-trash3"></i></button></td>
         `;
         tbody.appendChild(tr);
     }
