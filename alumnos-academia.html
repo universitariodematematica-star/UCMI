@@ -557,6 +557,25 @@ document.getElementById('tabla-body').addEventListener('click', (e) => {
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
     }
 
+    // 2. BOTÓN DESASIGNAR (Si el usuario ya tiene aula)
+    const btnDesasignar = e.target.closest('.btn-accion-aula[data-accion="desasignar"]');
+    if (btnDesasignar) {
+        const uid = btnDesasignar.dataset.uid;
+        if (confirm("¿Seguro que deseas retirar a este alumno de su aula actual?")) {
+            // Buscamos el documento en aula_integrantes
+            const q = query(collection(db, "aula_integrantes"), where("usuarioId", "==", uid));
+            const snap = await getDocs(q);
+            
+            // Borramos el documento encontrado
+            snap.forEach(async (docSnap) => {
+                await deleteDoc(doc(db, "aula_integrantes", docSnap.id));
+            });
+            
+            alert("Alumno desasignado correctamente.");
+            location.reload(); // Recargamos para que el botón cambie a "Asignar"
+        }
+    }
+
     // =========================
     // 2. BOTÓN ELIMINAR
     // =========================
