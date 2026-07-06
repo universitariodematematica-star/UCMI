@@ -250,177 +250,131 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import {
-    getFirestore,
-    doc,
-    getDoc,
-    updateDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-import {
-    getAuth,
-    onAuthStateChanged,
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
+    const auth = getAuth();
 
-const firebaseConfig = {
-    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
-    authDomain: "ucmi-13796634.firebaseapp.com",
-    projectId: "ucmi-13796634",
-    storageBucket: "ucmi-13796634.firebasestorage.app",
-    messagingSenderId: "1090719609536",
-    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-let userId = null;
-const contenedor = document.getElementById('modules-container');
-const sectionTitle = document.getElementById('section-title');
-
-const cargarDatos = async () => {
-    if (!userId) {
-        contenedor.innerHTML =
-            '<p class="text-center opacity-50">Sesión expirada.</p>';
-        return;
-    }
-
-    try {
-        const docRef = doc(db, "usuarios", userId);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-
-            const misModulos = data.modulos || [];
-            const estados = data['modulos-ofertados-academia'] || {};
-
-            sectionTitle.innerText = "Módulos Académicos";
-
-            if (misModulos.length === 0) {
-                contenedor.innerHTML =
-                    '<p class="text-center opacity-50 mt-5">No tienes módulos asignados.</p>';
-                return;
-            }
-
-            contenedor.innerHTML = misModulos.map((nombre, index) => {
-                const estaActivo = estados[nombre] === true;
-
-                return `
-                    <div class="module-item">
-                        <div class="d-flex align-items-center">
-                            <div class="me-3 opacity-50">
-                                <i class="bi bi-stack"></i>
-                            </div>
-                            <div>
-                                <h3 class="m-0" style="font-size:1rem;">
-                                    ${nombre}
-                                </h3>
-                            </div>
-                        </div>
-
-                        <div class="d-flex align-items-center">
-                            <span
-                                id="label-${index}"
-                                class="status-label ${estaActivo ? 'text-publico' : 'text-oculto'}">
-                                ${estaActivo ? 'Público' : 'Oculto'}
-                            </span>
-
-                            <div class="form-check form-switch m-0">
-                                <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    id="switch-${index}"
-                                    ${estaActivo ? 'checked' : ''}
-                                    onchange="window.actualizarVisibilidad(${index}, '${nombre}')">
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-        } else {
-            contenedor.innerHTML =
-                `<p class="text-center opacity-50">Usuario [${userId}] no encontrado.</p>`;
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = "index.html"; return; }
+        const userSnap = await getDoc(doc(db, "usuarios", user.email));
+        if (userSnap.exists()) {
+            const d = userSnap.data();
+            document.getElementById('label-academia').innerText = d.entidad || "Sede";
+            const logo = document.getElementById('logoAcademia');
+            logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+            logo.style.opacity = "1";
+            cargarDirectorio(d.entidad, d.cupos || 0, d["modulos-ofertados-academia"]);
         }
-    }
-    catch (error) {
-        console.error(error);
-        contenedor.innerHTML =
-            '<p class="text-center text-danger">Error de conexión.</p>';
-    }
-};
+    });
 
-window.actualizarVisibilidad = async (index, nombreModulo) => {
-    const sw = document.getElementById(`switch-${index}`);
-    const label = document.getElementById(`label-${index}`);
+    async function cargarDirectorio(entidad, cuposMax, mods) {
+        const tbody = document.getElementById('tabla-body');
+        const filtroModulo = document.getElementById('filtroModulo');
 
-    label.innerText = sw.checked ? "Público" : "Oculto";
-    label.className =
-        sw.checked
-            ? "status-label text-publico"
-            : "status-label text-oculto";
-
-    try {
-        const userRef = doc(db, "usuarios", userId);
-
-        await updateDoc(userRef, {
-            [`modulos-ofertados-academia.${nombreModulo}`]: sw.checked
+        tbody.innerHTML = '';
+        filtroModulo.innerHTML = '<option value="">Todos los Módulos</option>';
+        
+        if(mods) {
+            Object.keys(mods).sort().forEach(m => { 
+                if(mods[m]) filtroModulo.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; 
+            });
+        }
+        
+        const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
+        document.getElementById('cupos-utilizados').innerText = snap.size;
+        
+        const estudiantes = [];
+        snap.forEach(doc => estudiantes.push(doc));
+        
+        estudiantes.sort((a, b) => (a.data().nombreResponsable || "").trim().toLowerCase().localeCompare((b.data().nombreResponsable || "").trim().toLowerCase()));
+        
+        estudiantes.forEach(doc => {
+            const d = doc.data();
+            const tr = document.createElement('tr');
+            tr.className = 'fila-estudiante';
+            tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
+            
+            tr.innerHTML = `
+                <td>
+                    <div class="fw-bold">${d.nombreResponsable || 'Sin Nombre'}</div>
+                    <small class="text-secondary">ID: ${d.dniEstudiante || 'N/A'}</small>
+                </td>
+                <td>
+                    <small>${d.email || ''}<br>
+                    <a href="https://wa.me/${(d.whatsapp || '').toString().replace(/\D/g, '')}" target="_blank" class="text-success text-decoration-none fw-bold">${d.whatsapp || '-'}</a></small>
+                </td>
+                <td>
+                    <div class="fw-bold small">${d.nombreRepresentante || '-'}</div>
+                    <small class="text-muted">${d.whatsappRepresentante || ''}</small>
+                </td>
+                <td>
+                    <div class="small">Edad: ${d.edadEstudiante || '-'}</div>
+                    <div class="small">Loc: ${d.ubicacion || '-'}</div>
+                    <div class="text-warning small">Prom: ${d.promediocatualbachillerato || '-'}</div>
+                </td>
+                <td>
+                    ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(d).replace(/'/g, '&#39;')}'>
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
         });
     }
-    catch (error) {
-        console.error(error);
 
-        sw.checked = !sw.checked;
+    // Filtros de búsqueda
+    document.getElementById('buscador').addEventListener('input', e => {
+        const t = e.target.value.toLowerCase();
+        document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = f.innerText.toLowerCase().includes(t) ? '' : 'none');
+    });
 
-        label.innerText = sw.checked ? "Público" : "Oculto";
-        label.className =
-            sw.checked
-                ? "status-label text-publico"
-                : "status-label text-oculto";
-    }
-};    
+    document.getElementById('filtroModulo').addEventListener('change', e => {
+        const m = e.target.value.toLowerCase();
+        document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = (m === "" || f.getAttribute('data-modulos').includes(m)) ? '' : 'none');
+    });
 
-onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-        window.location.href = "index.html";
-        return;
-    }
+    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
 
-    console.log("USER:", user.uid);
-
-    const userSnap = await getDoc(doc(db, "usuarios", user.uid));
-
-if (userSnap.exists()) {
-    const d = userSnap.data();
-
-    console.log("DOC DATA:", d);
-
-    const logo = document.getElementById('logoAcademia');
-
-    logo.onload = () => {
-        logo.style.opacity = "1";
-    };
-
-    logo.src =
-        d.logoCustom ||
-        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-
-    userId = user.uid;
-    cargarDatos();
-}
-});
-
-document.getElementById('btnLogout')
-.addEventListener('click', () =>
-    signOut(auth).then(() =>
-        window.location.href = "index.html"
-    )
-);    
-
+    // Modal de Detalles
+    document.getElementById('tabla-body').addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-ver');
+        if (btn) {
+            const d = JSON.parse(btn.getAttribute('data-info').replace(/&#39;/g, "'"));
+            const waLink = (num) => num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
+            
+            let html = `
+                <div class="resumen-card mb-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
+                    <h6 class="text-warning mb-3 fw-bold">DATOS DEL ESTUDIANTE</h6>
+                    <div class="row g-2">
+                        <div class="col-12"><span class="text-white-50 small">Nombre</span><div class="text-white fw-bold">${d.nombreResponsable || 'N/A'}</div></div>
+                        <div class="col-md-6"><span class="text-white-50 small">DNI / ID</span><div class="text-white fw-bold">${d.dniEstudiante || 'N/A'}</div></div>
+                        <div class="col-md-6"><span class="text-white-50 small">Email</span><div class="text-white fw-bold">${d.email || 'N/A'}</div></div>
+                        <div class="col-md-6"><span class="text-white-50 small">Edad</span><div class="text-white fw-bold">${d.edadEstudiante || 'N/A'}</div></div>
+                        <div class="col-md-6"><span class="text-white-50 small">Ubicación</span><div class="text-white fw-bold">${d.ubicacion || 'N/A'}</div></div>
+                        <div class="col-12"><span class="text-white-50 small">Promedio</span><div class="text-warning fw-bold">${d.promediocatualbachillerato || 'N/A'}</div></div>
+                    </div>
+                </div>`;
+            
+            if (d.nombreRepresentante) {
+                html += `
+                <div class="resumen-card" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #ffc107;">
+                    <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
+                    <div class="row g-2">
+                        <div class="col-12"><span class="text-white-50 small">Nombre Tutor</span><div class="text-white fw-bold">${d.nombreRepresentante}</div></div>
+                        <div class="col-md-6"><span class="text-white-50 small">WhatsApp Tutor</span><a href="${waLink(d.whatsappRepresentante)}" target="_blank" class="d-block text-success fw-bold">${d.whatsappRepresentante || 'N/A'}</a></div>
+                    </div>
+                </div>`;
+            }
+            document.getElementById('cuerpoDetalles').innerHTML = html;
+            new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+        }
+    });
 </script>    
     
 </body>
