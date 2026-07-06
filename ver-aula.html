@@ -39,7 +39,7 @@
         collection,
         query,
         where,
-        onSnapshot
+        onSnapshot // IMPORTANTE: Agregado para tiempo real
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // Cargar plantilla
@@ -47,7 +47,6 @@
     document.getElementById("plantilla").innerHTML = await html.text();
     await import("./componentes/plantilla-academia.js");
 
-    // Obtener ID del aula
     const params = new URLSearchParams(window.location.search);
     const aulaId = params.get("id");
     const contenidoDiv = document.getElementById("contenido");
@@ -55,69 +54,46 @@
     if (!aulaId) {
         contenidoDiv.innerHTML = `<div class="panel-cristal">No se recibió el ID del aula.</div>`;
     } else {
-        try {
-            // 1. Cargar datos del aula una sola vez
-            const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
-            
-            if (aulaSnap.exists()) {
-                const aulaData = aulaSnap.data();
-
-                // 2. Renderizar estructura inicial
-                contenidoDiv.innerHTML = `
-                <div class="container-fluid py-4">
-                    <h2 class="text-white mb-4">${aulaData.nombre_aula}</h2>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="panel-cristal mb-3">
-                                <h5><i class="bi bi-person-video3"></i> Profesores Asignados</h5>
-                                <ul class="list-group mt-3" id="lista-profesores">
-                                    <li class="list-group-item bg-transparent text-white border-0">Cargando...</li>
-                                </ul>
-                            </div>
+        // Renderizamos la estructura base una sola vez
+        contenidoDiv.innerHTML = `
+            <div class="container-fluid py-4">
+                <h2 class="text-white mb-4" id="titulo-aula">Cargando aula...</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="panel-cristal mb-3">
+                            <h5><i class="bi bi-person-video3"></i> Profesores Asignados</h5>
+                            <ul class="list-group mt-3" id="lista-profesores"></ul>
                         </div>
-                        <div class="col-md-6">
-                            <div class="panel-cristal mb-3">
-                                <h5><i class="bi bi-people"></i> Estudiantes</h5>
-                                <ul class="list-group mt-3" id="lista-estudiantes">
-                                    <li class="list-group-item bg-transparent text-white border-0">Cargando...</li>
-                                </ul>
-                            </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="panel-cristal mb-3">
+                            <h5><i class="bi bi-people"></i> Estudiantes</h5>
+                            <ul class="list-group mt-3" id="lista-estudiantes"></ul>
                         </div>
                     </div>
                 </div>
-                `;
+            </div>`;
 
-                // 3. Listener en Tiempo Real para Profesores
-                const profQuery = query(collection(db, "aula_docente_asignacion"), where("aulaId", "==", aulaId));
-                onSnapshot(profQuery, (profSnap) => {
-                    const lista = document.getElementById("lista-profesores");
-                    const htmlProf = profSnap.docs.map(d => `
-                        <li class="list-group-item bg-transparent text-white border-secondary">
-                            ${d.data().asignatura}: <strong>${d.data().nombreResponsable}</strong>
-                        </li>
-                    `).join('');
-                    lista.innerHTML = htmlProf || '<li class="list-group-item bg-transparent text-white border-0">Sin asignaciones</li>';
-                });
-
-                // 4. Listener en Tiempo Real para Estudiantes
-                const alumQuery = query(collection(db, "aula_integrantes"), where("aulaId", "==", aulaId));
-                onSnapshot(alumQuery, (alumSnap) => {
-                    const lista = document.getElementById("lista-estudiantes");
-                    const htmlAlum = alumSnap.docs.map(d => `
-                        <li class="list-group-item bg-transparent text-white border-secondary">
-                            ${d.data().nombreResponsable}
-                        </li>
-                    `).join('');
-                    lista.innerHTML = htmlAlum || '<li class="list-group-item bg-transparent text-white border-0">Sin estudiantes</li>';
-                });
-
-            } else {
-                contenidoDiv.innerHTML = `<div class="panel-cristal">El aula no existe.</div>`;
+        // 1. Cargar datos del aula (snapshot para el título)
+        onSnapshot(doc(db, "aulas", aulaId), (aulaSnap) => {
+            if (aulaSnap.exists()) {
+                document.getElementById("titulo-aula").innerText = aulaSnap.data().nombre_aula;
             }
-        } catch (error) {
-            console.error("Error cargando aula:", error);
-            contenidoDiv.innerHTML = `<div class="panel-cristal">Error al cargar la información.</div>`;
-        }
+        });
+
+        // 2. Listener para Profesores (en tiempo real)
+        const profQuery = query(collection(db, "aula_docente_asignacion"), where("aulaId", "==", aulaId));
+        onSnapshot(profQuery, (profSnap) => {
+            const htmlProf = profSnap.docs.map(d => `<li class="list-group-item bg-transparent text-white border-secondary">${d.data().asignatura}: <strong>${d.data().nombreResponsable}</strong></li>`).join('');
+            document.getElementById("lista-profesores").innerHTML = htmlProf || '<li class="list-group-item bg-transparent text-white border-0">Sin asignaciones</li>';
+        });
+
+        // 3. Listener para Estudiantes (en tiempo real)
+        const alumQuery = query(collection(db, "aula_integrantes"), where("aulaId", "==", aulaId));
+        onSnapshot(alumQuery, (alumSnap) => {
+            const htmlAlum = alumSnap.docs.map(d => `<li class="list-group-item bg-transparent text-white border-secondary">${d.data().nombreResponsable}</li>`).join('');
+            document.getElementById("lista-estudiantes").innerHTML = htmlAlum || '<li class="list-group-item bg-transparent text-white border-0">Sin estudiantes</li>';
+        });
     }
 </script>
 </body>
