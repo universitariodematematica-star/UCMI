@@ -322,8 +322,8 @@
                 </div>
             </div>
             <div class="d-flex gap-2">
-                <select id="filtroModulo" class="form-select" style="width: 200px;">
-                    <option value="">Todos los Módulos</option>
+                <select id="filtroAula" class="form-select" style="width: 200px;">
+                    <option value="">Todas las Aulas</option>
                 </select>
                 <input type="text" id="buscador" class="form-control" placeholder="Buscar..." style="width: 280px;">
             </div>
@@ -393,20 +393,16 @@
 
 async function cargarDirectorio(entidad, cuposMax, mods) {
     const tbody = document.getElementById('tabla-body');
-    const filtroModulo = document.getElementById('filtroModulo');
+const filtroAula = document.getElementById('filtroAula');
+// 1. LIMPIEZA TOTAL
+tbody.innerHTML = '';
+filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
 
-    // 1. LIMPIEZA TOTAL
-    tbody.innerHTML = '';
-    filtroModulo.innerHTML = '<option value="">Todos los Módulos</option>';
-    
-    // 2. Carga de filtros
-    if(mods) {
-        Object.keys(mods).forEach(m => { 
-            if(mods[m]) {
-                filtroModulo.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; 
-            }
-        });
-    }
+// 2. CARGAR AULAS DESDE FIRESTORE
+const aulasSnap = await getDocs(query(collection(db, "aulas"), where("entidad", "==", entidad)));
+aulasSnap.forEach(doc => {
+    filtroAula.innerHTML += `<option value="${doc.id}">${doc.data().nombre_aula}</option>`;
+});
     
     const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
     
@@ -421,29 +417,31 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
         return nombreA.localeCompare(nombreB);
     });
     
-    // 3. Renderizado con cruce de aula
+// 3. Renderizado con cruce de aula
     for (const estudianteDoc of estudiantes) {
         const d = estudianteDoc.data();
         
-        // Consultar el aula en 'aula_integrantes' usando el ID del documento del estudiante
+        // --- AQUÍ ESTÁ LA CORRECCIÓN ---
+        let idAula = "sin-aula"; 
+        // -------------------------------
+
         const qAula = query(collection(db, "aula_integrantes"), where("usuarioId", "==", estudianteDoc.id));
         const snapAula = await getDocs(qAula);
         
-        let infoAula = '<span class="text-danger fw-bold" style="text-shadow: 0 0 8px rgba(255,0,0,0.8);">SIN AULA</span>';
+        let infoAula = '<span class="badge" style="background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid #e74c3c;">SIN AULA</span>';
         
         if (!snapAula.empty) {
-            const aulaId = snapAula.docs[0].data().aulaId;
-            // Usamos la función 'doc' importada correctamente
-            const aulaSnap = await getDoc(doc(db, "aulas", aulaId));
+            idAula = snapAula.docs[0].data().aulaId; // Asignamos el ID real aquí
+            const aulaSnap = await getDoc(doc(db, "aulas", idAula));
             if (aulaSnap.exists()) {
                 const nombreAula = aulaSnap.data().nombre_aula;
-                infoAula = `<span class="badge" style="background-color: #c5a059; color: #06090f;">${nombreAula}</span>`;
+                infoAula = `<span class="badge" style="background-color: #06090f; color: #c5a059; border: 1px solid #c5a059;">${nombreAula}</span>`;
             }
         }
 
         const tr = document.createElement('tr');
         tr.className = 'fila-estudiante';
-        tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
+        tr.setAttribute('data-aula', idAula); // Ahora sí existe la variable
         
         tr.innerHTML = `
             <td>
@@ -484,10 +482,13 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
         document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = f.innerText.toLowerCase().includes(t) ? '' : 'none');
     });
 
-    document.getElementById('filtroModulo').addEventListener('change', e => {
-        const m = e.target.value.toLowerCase();
-        document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = (m === "" || f.getAttribute('data-modulos').includes(m)) ? '' : 'none');
+    document.getElementById('filtroAula').addEventListener('change', e => {
+    const aulaSeleccionada = e.target.value; 
+    document.querySelectorAll('.fila-estudiante').forEach(f => {
+        const aulaFila = f.getAttribute('data-aula');
+        f.style.display = (aulaSeleccionada === "" || aulaFila === aulaSeleccionada) ? '' : 'none';
     });
+});
 
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
 
