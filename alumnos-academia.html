@@ -524,28 +524,38 @@ if (btnAccion) {
     const uid = document.getElementById('inputUidAsignar').value;
     const aulaId = document.getElementById('selectAulaModal').value;
     
-    // Necesitamos obtener los datos del alumno. 
-    // Puedes buscarlos en la tabla o pasarlos al modal desde el inicio.
-    // Para este ejemplo, supongamos que los buscamos en la UI:
-    const fila = document.querySelector(`[data-uid="${uid}"]`).closest('tr');
-    
-    const nuevoIntegrante = {
-        usuarioId: uid,
-        aulaId: aulaId,
-        email: fila.cells[1].innerText.split('\n')[0].trim(), // Extraemos el email
-        nombreResponsable: fila.cells[0].querySelector('.fw-bold').innerText,
-        entidad: document.getElementById('label-academia').innerText,
-        perfil: "Estudiante Academia",
-        fechaAsignacion: new Date() // Firebase lo convertirá a Timestamp automáticamente
-    };
+    if (!aulaId) return alert("Selecciona un aula");
 
     try {
+        // 1. Buscamos el documento del estudiante en "usuarios"
+        const userDocRef = doc(db, "usuarios", uid);
+        const userSnap = await getDoc(userDocRef);
+        
+        if (!userSnap.exists()) {
+            throw new Error("No se encontraron los datos del estudiante en la base de datos.");
+        }
+
+        const userData = userSnap.data();
+
+        // 2. Construimos el objeto con los datos exactos que necesitas
+        const nuevoIntegrante = {
+            aulaId: aulaId,
+            email: userData.email || "",
+            entidad: document.getElementById('label-academia').innerText,
+            fechaAsignacion: new Date(),
+            nombreResponsable: userData.nombreResponsable || "Sin nombre",
+            perfil: "Estudiante Academia",
+            usuarioId: uid
+        };
+
+        // 3. Guardamos en aula_integrantes
         await addDoc(collection(db, "aula_integrantes"), nuevoIntegrante);
-        alert("Alumno asignado correctamente con toda su información.");
+        
+        alert("Alumno asignado correctamente.");
         location.reload();
     } catch (e) {
         console.error("Error al asignar:", e);
-        alert("Error: " + e.message);
+        alert("Error al asignar: " + e.message);
     }
 });
     
