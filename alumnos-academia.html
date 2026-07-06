@@ -468,76 +468,163 @@
     // --- MANEJADORES DE ACCIÓN ---
     document.getElementById('tabla-body').addEventListener('click', async (e) => {
 
-    // ===== BOTÓN DETALLES =====
-    const btnDetalles = e.target.closest('.btn-detalles');
-    if (btnDetalles) {
+// ===== BOTÓN DETALLES =====
+const btnDetalles = e.target.closest('.btn-detalles');
 
-        const est = mapaEstudiantes[btnDetalles.dataset.id];
+if (btnDetalles) {
 
-        currentId = btnDetalles.dataset.id;
-        currentData = est;
+    const est = mapaEstudiantes[btnDetalles.dataset.id];
 
-        const d = est;
+    currentId = btnDetalles.dataset.id;
+    currentData = est;
 
-const waLink = (num) =>
-    num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
+    const d = est;
 
-let html = `
-    ...
-    AQUÍ pegas TODO el HTML grande que ya tenías
-    usando d.nombreResponsable,
-    d.email,
-    d.modulos,
-    etc.
-`;
+    const waLink = (num) =>
+        num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
 
-        if (d.nombreRepresentante) {
-
-    html += `
-        <div class="resumen-card mt-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #ffc107;">
-            <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
+    let html = `
+        <div class="resumen-card mb-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
+            <h6 class="text-warning mb-3 fw-bold">DATOS DEL ESTUDIANTE</h6>
 
             <div class="row g-2">
 
                 <div class="col-12">
-                    <span class="text-white-50 small">Nombre Tutor</span>
-                    <div class="text-white fw-bold">
-                        ${d.nombreRepresentante}
-                    </div>
+                    <span class="text-white-50 small">Nombre Completo</span>
+                    <div class="text-white fw-bold">${d.nombreResponsable || 'N/A'}</div>
                 </div>
 
                 <div class="col-md-6">
-                    <span class="text-white-50 small">DNI Tutor</span>
-                    <div class="text-white fw-bold">
-                        ${d.dniRepresentante || 'N/A'}
-                    </div>
+                    <span class="text-white-50 small">DNI / ID</span>
+                    <div class="text-white fw-bold">${d.dniEstudiante || 'N/A'}</div>
                 </div>
 
                 <div class="col-md-6">
-                    <span class="text-white-50 small">WhatsApp Tutor</span>
+                    <span class="text-white-50 small">Género</span>
+                    <div class="text-white fw-bold">${d.genero || 'N/A'}</div>
+                </div>
 
-                    <a href="${waLink(d.whatsappRepresentante)}"
+                <div class="col-md-6">
+                    <span class="text-white-50 small">Nacimiento</span>
+                    <div class="text-white fw-bold">${d.fechaNacimiento || d.fechanacimiento || 'N/A'}</div>
+                </div>
+
+                <div class="col-md-6">
+                    <span class="text-white-50 small">Edad</span>
+                    <div class="text-white fw-bold">${d.edadEstudiante || d.edadestudiante || 'N/A'} años</div>
+                </div>
+
+                <div class="col-12">
+                    <span class="text-white-50 small">Ubicación</span>
+                    <div class="text-white fw-bold">${d.ubicacion || 'N/A'}</div>
+                </div>
+
+                <div class="col-md-6">
+                    <span class="text-white-50 small">Email</span>
+                    <div class="text-white fw-bold">${d.email || 'N/A'}</div>
+                </div>
+
+                <div class="col-md-6">
+                    <span class="text-white-50 small">WhatsApp</span>
+
+                    <a href="${waLink(d.whatsapp)}"
                        target="_blank"
                        class="d-block text-success fw-bold text-decoration-none">
 
-                        ${d.whatsappRepresentante || 'N/A'}
+                        ${d.whatsapp || 'N/A'}
                         <i class="bi bi-whatsapp"></i>
 
                     </a>
                 </div>
 
+                <div class="col-12">
+                    <span class="text-white-50 small">
+                        Promedio de Bachillerato
+                    </span>
+
+                    <div class="text-warning fw-bold">
+                        ${d.promediocatualbachillerato || 'N/A'}
+                    </div>
+                </div>
+
+                <div class="col-12 mt-2">
+                    <span class="text-white-50 small">
+                        Módulos Seleccionados
+                    </span>
+
+                    <div class="text-info fw-bold">
+                        ${(d.modulos || []).join(' • ') || 'Ninguno'}
+                    </div>
+                </div>
+
             </div>
+
         </div>
     `;
 
-}
+    if (d.nombreRepresentante || d.nombrerepresentante) {
 
-        bootstrap.Modal.getOrCreateInstance(
-            document.getElementById('modalDetalles')
-        ).show();
+        html += `
+            <div class="resumen-card mt-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #ffc107;">
 
-        return;
+                <h6 class="text-warning mb-3 fw-bold">
+                    REPRESENTANTE LEGAL
+                </h6>
+
+                <div class="row g-2">
+
+                    <div class="col-12">
+                        <span class="text-white-50 small">
+                            Nombre Tutor
+                        </span>
+
+                        <div class="text-white fw-bold">
+                            ${d.nombreRepresentante || d.nombrerepresentante || 'N/A'}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <span class="text-white-50 small">
+                            DNI Tutor
+                        </span>
+
+                        <div class="text-white fw-bold">
+                            ${d.dniRepresentante || d.dnirepresentante || 'N/A'}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <span class="text-white-50 small">
+                            WhatsApp Tutor
+                        </span>
+
+                        <a href="${waLink(d.whatsappRepresentante || d.whatsapprepresentante)}"
+                           target="_blank"
+                           class="d-block text-success fw-bold text-decoration-none">
+
+                            ${d.whatsappRepresentante || d.whatsapprepresentante || 'N/A'}
+
+                            <i class="bi bi-whatsapp"></i>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+        `;
     }
+
+    document.getElementById("contenidoModal").innerHTML = html;
+
+    bootstrap.Modal.getOrCreateInstance(
+        document.getElementById("modalDetalles")
+    ).show();
+
+    return;
+}
 
     // ===== BOTÓN ASIGNAR / DESASIGNAR =====
     const btnAccion = e.target.closest('.btn-accion-aula');
