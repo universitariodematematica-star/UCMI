@@ -156,6 +156,11 @@
     border: none !important;
     padding: 20px !important;
     vertical-align: middle;
+
+    /* CONTROL CORRECTO DE TEXTO */
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
 }
 
 /* 5. Bordes redondeados en los extremos */
@@ -270,7 +275,11 @@
 
 #listaMaestra {
     background: transparent !important;
-}        
+}   
+
+   .table td:nth-child(2) small {
+    white-space: nowrap;
+}     
         
     </style>
 </head>
@@ -286,12 +295,13 @@
         </div>
         <nav class="sidebar-nav">
             <a href="solicitudes-academia.html" class="nav-item-ucmi"><i class="bi bi-person-badge"></i> SOLICITUDES</a>
-            <a href="#" class="nav-item-ucmi active"><i class="bi bi-mortarboard"></i> ALUMNOS</a>
-            <a href="#" class="nav-item-ucmi"><i class="bi bi-people"></i> USUARIOS</a>
-            <a href="#" class="nav-item-ucmi"><i class="bi bi-clock-history"></i> HISTORIAL</a>
-            <a href="#" class="nav-item-ucmi"><i class="bi bi-person-vcard"></i> DIRECTORIO</a>
-            <a href="#" class="nav-item-ucmi"><i class="bi bi-tags"></i> OFERTAS</a>
-            <a href="#" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
+            <a href="alumnos-academia.html" class="nav-item-ucmi"><i class="bi bi-mortarboard"></i> ALUMNOS</a>
+            <a href="docentes-academia.html" class="nav-item-ucmi"><i class="bi bi-people"></i> DOCENTES</a>
+            <a href="modificaciones.html" class="nav-item-ucmi"><i class="bi bi-pencil-square"></i></i> MODIFICACIONES</a>
+            <a href="cursos.html" class="nav-item-ucmi"><i class="bi bi-journal-bookmark"></i> CURSOS</a>
+            <a href="crear-aulas.html" class="nav-item-ucmi"><i class="bi bi-easel"></i> AULAS</a>
+            <a href="academia-modulos.html" class="nav-item-ucmi"><i class="bi bi-grid-1x2"></i> MÓDULOS</a>
+            <a href="contenidos-academia.html" class="nav-item-ucmi"><i class="bi bi-collection"></i> CONTENIDO</a>
             <a href="#" class="nav-item-ucmi"><i class="bi bi-trash3"></i> PAPELERA</a>
         </nav>
         <div class="mt-4 pt-4 border-top border-secondary">
@@ -303,7 +313,7 @@
     <main class="super-overlay">
         <div class="navbar-top">
             <div>
-                <h4 class="fw-bold m-0">Directorio Académico</h4>
+                <h4 class="fw-bold m-0">Directorio Académico de Alumnos</h4>
                 <div class="d-flex align-items-center gap-2 mt-1">
                     <small class="text-white-50">Academia: <span id="label-academia" class="fw-bold text-warning">...</span></small>
                     <span id="badge-cupos" class="badge badge-cupos bg-dark border border-success text-success ms-2">
@@ -312,8 +322,8 @@
                 </div>
             </div>
             <div class="d-flex gap-2">
-                <select id="filtroModulo" class="form-select" style="width: 200px;">
-                    <option value="">Todos los Módulos</option>
+                <select id="filtroAula" class="form-select" style="width: 200px;">
+                    <option value="">Todas las Aulas</option>
                 </select>
                 <input type="text" id="buscador" class="form-control" placeholder="Buscar..." style="width: 280px;">
             </div>
@@ -326,14 +336,15 @@
                         <tr>
                             <th>ESTUDIANTE</th>
                             <th>CONTACTO</th>
-                            <th>REPRESENTANTE</th>
-                            <th>MÓDULOS ACTIVOS</th>
+                            <th>AULA</th>
                             <th class="text-center">DETALLES</th>
+                            <th class="text-center">ASIGNAR</th>
+                            <th class="text-center">ELIMINAR</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-body">
                         <tr>
-                            <td colspan="5" class="text-center py-5">
+                            <td colspan="6" class="text-center py-5">
                                 <div class="spinner-border text-warning" role="status"></div>
                                 <p class="mt-2 text-white-50">Sincronizando con la nube...</p>
                             </td>
@@ -349,15 +360,27 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  getDoc,
+  deleteDoc,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
     const auth = getAuth();
+    let usuarioAEliminar = null;
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "index.html"; return; }
-        const userSnap = await getDoc(doc(db, "usuarios", user.email));
+        const userSnap = await getDoc(doc(db, "usuarios", user.uid));
         if (userSnap.exists()) {
             const d = userSnap.data();
             document.getElementById('label-academia').innerText = d.entidad || "Sede";
@@ -370,43 +393,55 @@
 
 async function cargarDirectorio(entidad, cuposMax, mods) {
     const tbody = document.getElementById('tabla-body');
-    const filtroModulo = document.getElementById('filtroModulo');
+const filtroAula = document.getElementById('filtroAula');
+// 1. LIMPIEZA TOTAL
+tbody.innerHTML = '';
+filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
 
-    // 1. LIMPIEZA TOTAL: Evita duplicados en el selector y la tabla
-    tbody.innerHTML = '';
-    // Mantenemos solo la opción inicial "Todos los Módulos"
-    filtroModulo.innerHTML = '<option value="">Todos los Módulos</option>';
-    
-    // 2. Carga de filtros (ahora seguro)
-    if(mods) {
-        Object.keys(mods).forEach(m => { 
-            if(mods[m]) {
-                filtroModulo.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; 
-            }
-        });
-    }
+// 2. CARGAR AULAS DESDE FIRESTORE
+const aulasSnap = await getDocs(query(collection(db, "aulas"), where("entidad", "==", entidad)));
+aulasSnap.forEach(doc => {
+    filtroAula.innerHTML += `<option value="${doc.id}">${doc.data().nombre_aula}</option>`;
+});
     
     const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
     
     document.getElementById('cupos-utilizados').innerText = snap.size;
     
-    // 3. Ordenamiento con limpieza de espacios (trim)
     const estudiantes = [];
-    snap.forEach(doc => estudiantes.push(doc));
+    snap.forEach(d => estudiantes.push(d));
     
     estudiantes.sort((a, b) => {
-        // .trim() elimina espacios accidentales al inicio o final del nombre
         const nombreA = (a.data().nombreResponsable || "").trim().toLowerCase();
         const nombreB = (b.data().nombreResponsable || "").trim().toLowerCase();
         return nombreA.localeCompare(nombreB);
     });
     
-    // 4. Renderizado
-    estudiantes.forEach(doc => {
-        const d = doc.data();
+// 3. Renderizado con cruce de aula
+    for (const estudianteDoc of estudiantes) {
+        const d = estudianteDoc.data();
+        
+        // --- AQUÍ ESTÁ LA CORRECCIÓN ---
+        let idAula = "sin-aula"; 
+        // -------------------------------
+
+        const qAula = query(collection(db, "aula_integrantes"), where("usuarioId", "==", estudianteDoc.id));
+        const snapAula = await getDocs(qAula);
+        
+        let infoAula = '<span class="badge" style="background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid #e74c3c;">SIN AULA</span>';
+        
+        if (!snapAula.empty) {
+            idAula = snapAula.docs[0].data().aulaId; // Asignamos el ID real aquí
+            const aulaSnap = await getDoc(doc(db, "aulas", idAula));
+            if (aulaSnap.exists()) {
+                const nombreAula = aulaSnap.data().nombre_aula;
+                infoAula = `<span class="badge" style="background-color: #06090f; color: #c5a059; border: 1px solid #c5a059;">${nombreAula}</span>`;
+            }
+        }
+
         const tr = document.createElement('tr');
         tr.className = 'fila-estudiante';
-        tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
+        tr.setAttribute('data-aula', idAula); // Ahora sí existe la variable
         
         tr.innerHTML = `
             <td>
@@ -422,89 +457,90 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
                     </a>
                 </small>
             </td>
-            <td>
-                <small>${d.nombreRepresentante || '-'}</small>
-            </td>
-            <td>
-                ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
-            </td>
+            <td>${infoAula}</td>
             <td class="text-center">
                 <button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(d).replace(/'/g, '&#39;')}'>
                 <i class="bi bi-eye"></i>
                 </button>
             </td>
+            <td class="text-center">
+                <button class="btn btn-sm ${tieneAula ? 'btn-outline-danger' : 'btn-outline-success'} btn-accion-aula" 
+                        data-uid="${estudianteDoc.id}" 
+                        data-accion="${tieneAula ? 'desasignar' : 'asignar'}">
+                    <i class="bi ${tieneAula ? 'bi-person-dash' : 'bi-person-plus'}"></i>
+                </button>
+            </td>
+            <td class="text-center">
+                <button class="btn btn-sm btn-danger btn-eliminar" data-id="${estudianteDoc.id}">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            </td>
         `;
         tbody.appendChild(tr);
-    });
+    }
 }
     document.getElementById('buscador').addEventListener('input', e => {
         const t = e.target.value.toLowerCase();
         document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = f.innerText.toLowerCase().includes(t) ? '' : 'none');
     });
 
-    document.getElementById('filtroModulo').addEventListener('change', e => {
-        const m = e.target.value.toLowerCase();
-        document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = (m === "" || f.getAttribute('data-modulos').includes(m)) ? '' : 'none');
+    document.getElementById('filtroAula').addEventListener('change', e => {
+    const aulaSeleccionada = e.target.value; 
+    document.querySelectorAll('.fila-estudiante').forEach(f => {
+        const aulaFila = f.getAttribute('data-aula');
+        f.style.display = (aulaSeleccionada === "" || aulaFila === aulaSeleccionada) ? '' : 'none';
     });
+});
 
-    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
-
-// Listener para abrir el modal con los datos del alumno
-document.getElementById('tabla-body').addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn-ver');
-    if (btn) {
-        // Obtenemos los datos desde el atributo data-info
-        const d = JSON.parse(btn.getAttribute('data-info').replace(/&#39;/g, "'"));
+    document.getElementById('tabla-body').addEventListener('click', async (e) => {
+    
+    // 1. BOTÓN VER DETALLES
+    const btnVer = e.target.closest('.btn-ver');
+    if (btnVer) {
+        const d = JSON.parse(btnVer.getAttribute('data-info').replace(/&#39;/g, "'"));
+        const waLink = (num) => num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
         
-// Construimos el contenido HTML del modal
-// Función auxiliar para generar el enlace de WhatsApp
-const waLink = (num) => num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
-
-let html = `
-    <div class="resumen-card mb-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
-        <h6 class="text-warning mb-3 fw-bold">DATOS DEL ESTUDIANTE</h6>
-        <div class="row g-2">
-            <div class="col-12"><span class="text-white-50 small">Nombre Completo</span><div class="text-white fw-bold">${d.nombreResponsable || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">DNI / ID</span><div class="text-white fw-bold">${d.dniEstudiante || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Género</span><div class="text-white fw-bold">${d.genero || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Nacimiento</span><div class="text-white fw-bold">${d.fechaNacimiento || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Edad</span><div class="text-white fw-bold">${d.edadEstudiante || 'N/A'} años</div></div>
-            <div class="col-12"><span class="text-white-50 small">Ubicación</span><div class="text-white fw-bold">${d.ubicacion || 'N/A'}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">Email</span><div class="text-white fw-bold">${d.email || 'N/A'}</div></div>
-            <div class="col-md-6">
-                <span class="text-white-50 small">WhatsApp</span>
-                <a href="${waLink(d.whatsapp)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
-                    ${d.whatsapp || 'N/A'} <i class="bi bi-whatsapp"></i>
-                </a>
-            </div>
-            <div class="col-12"><span class="text-white-50 small">Promedio de Bachillerato</span><div class="text-warning fw-bold">${d.promediocatualbachillerato || 'N/A'}</div></div>
-            <div class="col-12 mt-2">
-                <span class="text-white-50 small">Módulos Seleccionados</span>
-                <div class="text-info fw-bold">${(d.modulos || []).join(' • ') || 'Ninguno'}</div>
-            </div>
-        </div>
-    </div>`;
-
-// Si el estudiante tiene representante, mostramos la sección
-if (d.nombreRepresentante) {
-    html += `
-    <div class="resumen-card" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #ffc107;">
-        <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
-        <div class="row g-2">
-            <div class="col-12"><span class="text-white-50 small">Nombre Tutor</span><div class="text-white fw-bold">${d.nombreRepresentante}</div></div>
-            <div class="col-md-6"><span class="text-white-50 small">DNI Tutor</span><div class="text-white fw-bold">${d.dniRepresentante || 'N/A'}</div></div>
-            <div class="col-md-6">
-                <span class="text-white-50 small">WhatsApp Tutor</span>
-                <a href="${waLink(d.whatsappRepresentante)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
-                    ${d.whatsappRepresentante || 'N/A'} <i class="bi bi-whatsapp"></i>
-                </a>
-            </div>
-        </div>
-    </div>`;
-}
-
+        let html = `
+            <div class="resumen-card mb-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
+                <h6 class="text-warning mb-3 fw-bold">DATOS DEL ESTUDIANTE</h6>
+                <div class="row g-2">
+                    <div class="col-12"><span class="text-white-50 small">Nombre Completo</span><div class="text-white fw-bold">${d.nombreResponsable || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">DNI / ID</span><div class="text-white fw-bold">${d.dniEstudiante || 'N/A'}</div></div>
+                    <div class="col-md-6"><span class="text-white-50 small">WhatsApp</span><a href="${waLink(d.whatsapp)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">${d.whatsapp || 'N/A'} <i class="bi bi-whatsapp"></i></a></div>
+                </div>
+            </div>`;
         document.getElementById('cuerpoDetalles').innerHTML = html;
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+    }
+
+    // 2. MANEJO UNIFICADO DE BOTÓN ASIGNAR / DESASIGNAR
+const btnAccion = e.target.closest('.btn-accion-aula');
+if (btnAccion) {
+    const uid = btnAccion.dataset.uid;
+    const accion = btnAccion.dataset.accion;
+
+    if (accion === 'desasignar') {
+        if (confirm("¿Seguro que deseas retirar a este alumno de su aula actual?")) {
+            const q = query(collection(db, "aula_integrantes"), where("usuarioId", "==", uid));
+            const snap = await getDocs(q);
+            
+            // Usamos Promise.all para asegurar que se borren antes de recargar
+            await Promise.all(snap.docs.map(docSnap => deleteDoc(doc(db, "aula_integrantes", docSnap.id))));
+            
+            alert("Alumno desasignado correctamente.");
+            location.reload(); 
+        }
+    } else if (accion === 'asignar') {
+        // Opción: Redirigir si no quieres crear un modal de asignación complejo aquí
+        window.location.href = `asignar-asignaturas-alumnos.html?uid=${uid}`;
+    }
+}
+
+    // 3. BOTÓN ELIMINAR (Tu lógica actual)
+    const btnEliminar = e.target.closest('.btn-eliminar');
+    if (btnEliminar) {
+        usuarioAEliminar = btnEliminar.dataset.id;
+        new bootstrap.Modal(document.getElementById('modalConfirmDelete')).show();
     }
 });
     
@@ -525,6 +561,48 @@ if (d.nombreRepresentante) {
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="modalConfirmDelete" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white border border-danger">
+
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title text-danger">Confirmación</h5>
+      </div>
+
+      <div class="modal-body">
+        ¿Seguro que quieres eliminar el usuario?
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnConfirmStep1">Sí, continuar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalDangerDelete" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white border border-warning">
+
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title text-warning">Advertencia crítica</h5>
+      </div>
+
+      <div class="modal-body">
+        Si lo eliminas se borrarán todos los datos, ¿procedes?
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnFinalDelete">Eliminar definitivamente</button>
+      </div>
+
+    </div>
+  </div>
+</div>    
     
 </body>
 </html>
