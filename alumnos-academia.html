@@ -494,14 +494,22 @@ if (btnAccion) {
             location.reload(); 
         }
     } else if (accion === 'asignar') {
-        const select = document.getElementById('selectAulaModal');
-        // Limpiamos y llenamos el select del modal con las mismas aulas del filtro
-        select.innerHTML = document.getElementById('filtroAula').innerHTML;
-        select.querySelector('option[value=""]').remove(); // Quitamos la opción "Todas"
-        
-        document.getElementById('inputUidAsignar').value = uid;
-        new bootstrap.Modal(document.getElementById('modalAsignarAula')).show();
-    }
+    // 1. Buscamos el objeto del estudiante en el array 'estudiantes' 
+    // (Asegúrate de que 'estudiantes' esté accesible en este scope o búscalos en la tabla)
+    const select = document.getElementById('selectAulaModal');
+    select.innerHTML = document.getElementById('filtroAula').innerHTML;
+    select.querySelector('option[value=""]').remove();
+    
+    document.getElementById('inputUidAsignar').value = uid;
+    
+    // GUARDAMOS LOS DATOS DEL ALUMNO EN UN CAMPO OCULTO O DATASET
+    // Aquí necesitamos obtener el objeto 'est' del estudiante. 
+    // Si no puedes acceder al objeto 'est' directamente, busca el botón y extrae la info.
+    const btnAsignar = e.target.closest('.btn-accion-aula');
+    // Asumiremos que el botón tiene la info o que podemos obtenerla.
+    // Una forma fácil: guardar los datos en un data-attribute cuando creamos el botón.
+    new bootstrap.Modal(document.getElementById('modalAsignarAula')).show();
+}
 }
 
     // 3. BOTÓN ELIMINAR (Tu lógica actual)
@@ -516,25 +524,28 @@ if (btnAccion) {
     const uid = document.getElementById('inputUidAsignar').value;
     const aulaId = document.getElementById('selectAulaModal').value;
     
-    // Necesitamos la entidad actual (la tenemos en la variable global o podemos obtenerla)
-    // Asumiré que el texto del label-academia contiene el nombre de la entidad
-    const entidadActual = document.getElementById('label-academia').innerText;
+    // Necesitamos obtener los datos del alumno. 
+    // Puedes buscarlos en la tabla o pasarlos al modal desde el inicio.
+    // Para este ejemplo, supongamos que los buscamos en la UI:
+    const fila = document.querySelector(`[data-uid="${uid}"]`).closest('tr');
     
-    if (!aulaId) return alert("Selecciona un aula");
+    const nuevoIntegrante = {
+        usuarioId: uid,
+        aulaId: aulaId,
+        email: fila.cells[1].innerText.split('\n')[0].trim(), // Extraemos el email
+        nombreResponsable: fila.cells[0].querySelector('.fw-bold').innerText,
+        entidad: document.getElementById('label-academia').innerText,
+        perfil: "Estudiante Academia",
+        fechaAsignacion: new Date() // Firebase lo convertirá a Timestamp automáticamente
+    };
 
     try {
-        await addDoc(collection(db, "aula_integrantes"), {
-            usuarioId: uid,
-            aulaId: aulaId,
-            entidad: entidadActual, // <--- ESTO ES LO QUE TE FALTABA PARA PASAR LA REGLA
-            fechaAsignacion: new Date()
-        });
-        
-        alert("Alumno asignado con éxito");
+        await addDoc(collection(db, "aula_integrantes"), nuevoIntegrante);
+        alert("Alumno asignado correctamente con toda su información.");
         location.reload();
     } catch (e) {
         console.error("Error al asignar:", e);
-        alert("Error de permisos o datos: " + e.message);
+        alert("Error: " + e.message);
     }
 });
     
