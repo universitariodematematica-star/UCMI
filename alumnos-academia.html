@@ -502,9 +502,24 @@ listaAulas.forEach(aula => {
 });
 
         // Obtener estudiantes una sola vez
-        const estSnap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
-        const listaEstudiantes = estSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        onSnapshot(
+    query(
+        collection(db, "usuarios"),
+        where("perfil", "==", "Estudiante Academia"),
+        where("entidad", "==", entidad)
+    ),
+    (estSnap) => {
+
+        const listaEstudiantes = estSnap.docs.map(d => ({
+            id: d.id,
+            ...d.data()
+        }));
+
         document.getElementById('cupos-utilizados').innerText = listaEstudiantes.length;
+
+        renderTabla(listaEstudiantes);
+    }
+);
 
         // Escucha en tiempo real de la colección de integrantes
         onSnapshot(collection(db, "aula_integrantes"), (snapshot) => {
@@ -546,6 +561,84 @@ listaAulas.forEach(aula => {
             });
         });
     }
+
+ function renderTabla(listaEstudiantes) {
+
+    const tbody = document.getElementById('tabla-body');
+
+    listaEstudiantes.sort((a, b) =>
+        (a.nombreResponsable || "").localeCompare(b.nombreResponsable || "")
+    );
+
+    tbody.innerHTML = '';
+
+    listaEstudiantes.forEach(est => {
+
+        mapaEstudiantes[est.id] = est;
+
+        const aulaId = est.aulaId || null;
+        const tieneAula = !!aulaId;
+
+        const tr = document.createElement('tr');
+
+        tr.className = 'fila-estudiante';
+        tr.setAttribute('data-aula', aulaId || "sin-aula");
+
+        tr.innerHTML = `
+            <td>
+                <div class="fw-bold">${est.nombreResponsable || 'Sin Nombre'}</div>
+                <small>${est.dniEstudiante || ''}</small>
+            </td>
+
+            <td>
+                <small>
+                    ${est.email}
+                    <br>
+                    <a href="https://wa.me/${(est.whatsapp || '').replace(/\D/g,'')}"
+                       target="_blank"
+                       class="text-success text-decoration-none fw-bold">
+                        ${est.whatsapp || '-'}
+                    </a>
+                </small>
+            </td>
+
+            <td>
+                ${tieneAula
+                    ? `<span class="badge bg-dark text-warning border border-warning">
+                        ASIGNADO
+                      </span>`
+                    : `<span class="badge bg-danger">
+                        SIN AULA
+                      </span>`
+                }
+            </td>
+
+            <td class="text-center">
+                <button class="btn btn-sm btn-panel btn-detalles"
+                        data-id="${est.id}">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </td>
+
+            <td class="text-center">
+                <button class="btn btn-sm ${tieneAula ? 'btn-danger' : 'btn-success'} btn-accion-aula"
+                        data-uid="${est.id}"
+                        data-accion="${tieneAula ? 'desasignar' : 'asignar'}">
+                    <i class="bi ${tieneAula ? 'bi-person-dash' : 'bi-person-plus'}"></i>
+                </button>
+            </td>
+
+            <td class="text-center">
+                <button class="btn btn-sm btn-danger btn-eliminar"
+                        data-id="${est.id}">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+}   
 
     // --- MANEJADORES DE ACCIÓN ---
     document.getElementById('tabla-body').addEventListener('click', async (e) => {
