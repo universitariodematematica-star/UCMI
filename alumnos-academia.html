@@ -516,19 +516,25 @@ if (btnAccion) {
     const uid = document.getElementById('inputUidAsignar').value;
     const aulaId = document.getElementById('selectAulaModal').value;
     
+    // Necesitamos la entidad actual (la tenemos en la variable global o podemos obtenerla)
+    // Asumiré que el texto del label-academia contiene el nombre de la entidad
+    const entidadActual = document.getElementById('label-academia').innerText;
+    
     if (!aulaId) return alert("Selecciona un aula");
 
     try {
         await addDoc(collection(db, "aula_integrantes"), {
             usuarioId: uid,
             aulaId: aulaId,
-            fechaAsignacion: new Date() // o serverTimestamp()
+            entidad: entidadActual, // <--- ESTO ES LO QUE TE FALTABA PARA PASAR LA REGLA
+            fechaAsignacion: new Date()
         });
+        
         alert("Alumno asignado con éxito");
         location.reload();
     } catch (e) {
         console.error("Error al asignar:", e);
-        alert("Hubo un error al asignar el aula.");
+        alert("Error de permisos o datos: " + e.message);
     }
 });
     
