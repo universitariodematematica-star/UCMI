@@ -494,8 +494,13 @@ if (btnAccion) {
             location.reload(); 
         }
     } else if (accion === 'asignar') {
-        // Opción: Redirigir si no quieres crear un modal de asignación complejo aquí
-        window.location.href = `asignar-asignaturas-alumnos.html?uid=${uid}`;
+        const select = document.getElementById('selectAulaModal');
+        // Limpiamos y llenamos el select del modal con las mismas aulas del filtro
+        select.innerHTML = document.getElementById('filtroAula').innerHTML;
+        select.querySelector('option[value=""]').remove(); // Quitamos la opción "Todas"
+        
+        document.getElementById('inputUidAsignar').value = uid;
+        new bootstrap.Modal(document.getElementById('modalAsignarAula')).show();
     }
 }
 
@@ -504,6 +509,26 @@ if (btnAccion) {
     if (btnEliminar) {
         usuarioAEliminar = btnEliminar.dataset.id;
         new bootstrap.Modal(document.getElementById('modalConfirmDelete')).show();
+    }
+});
+
+    document.getElementById('btnConfirmarAsignacion').addEventListener('click', async () => {
+    const uid = document.getElementById('inputUidAsignar').value;
+    const aulaId = document.getElementById('selectAulaModal').value;
+    
+    if (!aulaId) return alert("Selecciona un aula");
+
+    try {
+        await addDoc(collection(db, "aula_integrantes"), {
+            usuarioId: uid,
+            aulaId: aulaId,
+            fechaAsignacion: new Date() // o serverTimestamp()
+        });
+        alert("Alumno asignado con éxito");
+        location.reload();
+    } catch (e) {
+        console.error("Error al asignar:", e);
+        alert("Hubo un error al asignar el aula.");
     }
 });
     
@@ -565,6 +590,26 @@ if (btnAccion) {
 
     </div>
   </div>
+</div>
+
+<div class="modal fade" id="modalAsignarAula" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: #0b0f1a; border: 1px solid #c5a059; border-radius: 15px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-warning">Asignar Estudiante a Aula</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-white-50">Selecciona el aula para este estudiante:</p>
+                <select id="selectAulaModal" class="form-select"></select>
+                <input type="hidden" id="inputUidAsignar">
+            </div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-warning" id="btnConfirmarAsignacion">Confirmar Asignación</button>
+            </div>
+        </div>
+    </div>
 </div>    
     
 </body>
