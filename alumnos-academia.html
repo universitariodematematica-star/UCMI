@@ -360,18 +360,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  getDoc,
-  deleteDoc,
-  addDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
@@ -387,275 +376,102 @@
             const logo = document.getElementById('logoAcademia');
             logo.src = d.logoCustom || "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
             logo.style.opacity = "1";
-            cargarDirectorio(d.entidad, d.cupos || 0, d["modulos-ofertados-academia"]);
+            cargarDirectorio(d.entidad, d.cupos || 0);
         }
     });
 
-async function cargarDirectorio(entidad, cuposMax, mods) {
-    const tbody = document.getElementById('tabla-body');
-const filtroAula = document.getElementById('filtroAula');
-// 1. LIMPIEZA TOTAL
-tbody.innerHTML = '';
-filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
+    async function cargarDirectorio(entidad, cuposMax) {
+        const tbody = document.getElementById('tabla-body');
+        const filtroAula = document.getElementById('filtroAula');
+        tbody.innerHTML = '';
+        const aulasSnap = await getDocs(query(collection(db, "aulas"), where("entidad", "==", entidad)));
+        aulasSnap.forEach(doc => { filtroAula.innerHTML += `<option value="${doc.id}">${doc.data().nombre_aula}</option>`; });
+        
+        const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
+        document.getElementById('cupos-utilizados').innerText = snap.size;
+        
+        for (const estudianteDoc of snap.docs) {
+            const d = estudianteDoc.data();
+            const snapAula = await getDocs(query(collection(db, "aula_integrantes"), where("usuarioId", "==", estudianteDoc.id)));
+            let idAula = "sin-aula";
+            let nombreAula = "SIN AULA";
+            
+            if (!snapAula.empty) {
+                idAula = snapAula.docs[0].data().aulaId;
+                const aulaSnap = await getDoc(doc(db, "aulas", idAula));
+                nombreAula = aulaSnap.exists() ? aulaSnap.data().nombre_aula : "Error";
+            }
 
-// 2. CARGAR AULAS DESDE FIRESTORE
-const aulasSnap = await getDocs(query(collection(db, "aulas"), where("entidad", "==", entidad)));
-aulasSnap.forEach(doc => {
-    filtroAula.innerHTML += `<option value="${doc.id}">${doc.data().nombre_aula}</option>`;
-});
-    
-    const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
-    
-    document.getElementById('cupos-utilizados').innerText = snap.size;
-    
-    const estudiantes = [];
-    snap.forEach(d => estudiantes.push(d));
-    
-    estudiantes.sort((a, b) => {
-        const nombreA = (a.data().nombreResponsable || "").trim().toLowerCase();
-        const nombreB = (b.data().nombreResponsable || "").trim().toLowerCase();
-        return nombreA.localeCompare(nombreB);
-    });
-    
-// 3. Renderizado con cruce de aula
-    for (const estudianteDoc of estudiantes) {
-        const d = estudianteDoc.data();
-        
-        // --- AQUÍ ESTÁ LA CORRECCIÓN ---
-        let idAula = "sin-aula"; 
-        // -------------------------------
+            const tr = document.createElement('tr');
+            tr.className = 'fila-estudiante';
+            tr.setAttribute('data-aula', idAula);
+            tr.innerHTML = `
+                <td><div class="fw-bold">${d.nombreResponsable || 'Sin Nombre'}</div><small class="text-secondary">${d.dniEstudiante || ''}</small></td>
+                <td><small>${d.email}<br><a href="https://wa.me/${(d.whatsapp || '').toString().replace(/\D/g, '')}" target="_blank" class="text-success text-decoration-none fw-bold">${d.whatsapp || '-'}</a></small></td>
+                <td><span class="badge ${idAula === 'sin-aula' ? 'bg-danger' : 'bg-dark border border-warning text-warning'}">${nombreAula}</span></td>
+                <td class="text-center"><button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(d).replace(/'/g, '&#39;')}'>Ver</button></td>
+                <td class="text-center">
+                    ${idAula !== "sin-aula" 
+                        ? `<button class="btn btn-sm btn-outline-danger btn-accion-aula" data-uid="${estudianteDoc.id}" data-accion="desasignar">Quitar</button>` 
+                        : `<a href="asignar-asignaturas-alumnos.html?uid=${estudianteDoc.id}" class="btn btn-sm btn-outline-warning">Asignar</a>`}
+                </td>
+                <td class="text-center"><button class="btn btn-sm btn-danger btn-eliminar" data-id="${estudianteDoc.id}">Eliminar</button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+    }
 
-        const qAula = query(collection(db, "aula_integrantes"), where("usuarioId", "==", estudianteDoc.id));
-        const snapAula = await getDocs(qAula);
-        
-        let infoAula = '<span class="badge" style="background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid #e74c3c;">SIN AULA</span>';
-        
-        if (!snapAula.empty) {
-            idAula = snapAula.docs[0].data().aulaId; // Asignamos el ID real aquí
-            const aulaSnap = await getDoc(doc(db, "aulas", idAula));
-            if (aulaSnap.exists()) {
-                const nombreAula = aulaSnap.data().nombre_aula;
-                infoAula = `<span class="badge" style="background-color: #06090f; color: #c5a059; border: 1px solid #c5a059;">${nombreAula}</span>`;
+    // LISTENER ÚNICO PARA TODA LA TABLA
+    document.getElementById('tabla-body').addEventListener('click', async (e) => {
+        const btnVer = e.target.closest('.btn-ver');
+        const btnDes = e.target.closest('.btn-accion-aula');
+        const btnDel = e.target.closest('.btn-eliminar');
+
+        if (btnVer) {
+            const d = JSON.parse(btnVer.getAttribute('data-info').replace(/&#39;/g, "'"));
+            document.getElementById('cuerpoDetalles').innerHTML = `<pre>${JSON.stringify(d, null, 2)}</pre>`; // Simplificado para probar
+            new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+        }
+
+        if (btnDes && btnDes.dataset.accion === "desasignar") {
+            if (confirm("¿Retirar alumno de esta aula?")) {
+                const q = query(collection(db, "aula_integrantes"), where("usuarioId", "==", btnDes.dataset.uid));
+                const snap = await getDocs(q);
+                snap.forEach(async (d) => await deleteDoc(doc(db, "aula_integrantes", d.id)));
+                location.reload();
             }
         }
 
-        const tr = document.createElement('tr');
-        tr.className = 'fila-estudiante';
-        tr.setAttribute('data-aula', idAula); // Ahora sí existe la variable
-        
-        tr.innerHTML = `
-            <td>
-                <div class="fw-bold">${d.nombreResponsable || 'Sin Nombre'}</div>
-                <small class="text-secondary">${d.dniEstudiante || ''}</small>
-            </td>
-            <td>
-                <small>${d.email}<br>
-                    <a href="https://wa.me/${(d.whatsapp || '').toString().replace(/\D/g, '')}" 
-                       target="_blank" 
-                       class="text-success text-decoration-none fw-bold">
-                       ${d.whatsapp || '-'}
-                    </a>
-                </small>
-            </td>
-            <td>${infoAula}</td>
-            <td class="text-center">
-                <button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(d).replace(/'/g, '&#39;')}'>
-                <i class="bi bi-eye"></i>
-                </button>
-            </td>
-            <td class="text-center">
-                ${idAula !== "sin-aula" ? 
-                    `<button class="btn btn-sm btn-outline-danger btn-accion-aula" data-uid="${estudianteDoc.id}" data-accion="desasignar">
-                        <i class="bi bi-x-circle"></i>
-                     </button>` : 
-                    `<a href="asignar-asignaturas-alumnos.html?uid=${estudianteDoc.id}" class="btn btn-sm btn-outline-warning btn-accion-aula">
-                        <i class="bi bi-plus-circle"></i>
-                     </a>`
-                }
-            </td>
-            <td class="text-center">
-                <button class="btn btn-sm btn-danger btn-eliminar" data-id="${estudianteDoc.id}">
-                    <i class="bi bi-trash3"></i>
-                </button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    }
-}
+        if (btnDel) {
+            usuarioAEliminar = btnDel.dataset.id;
+            new bootstrap.Modal(document.getElementById('modalConfirmDelete')).show();
+        }
+    });
+
+    // Lógica de eliminación (Botones de modales)
+    document.getElementById('btnConfirmStep1').onclick = () => {
+        bootstrap.Modal.getInstance(document.getElementById('modalConfirmDelete')).hide();
+        setTimeout(() => new bootstrap.Modal(document.getElementById('modalDangerDelete')).show(), 500);
+    };
+
+    document.getElementById('btnFinalDelete').onclick = async () => {
+        if (usuarioAEliminar) {
+            await deleteDoc(doc(db, "usuarios", usuarioAEliminar));
+            location.reload();
+        }
+    };
+    
     document.getElementById('buscador').addEventListener('input', e => {
         const t = e.target.value.toLowerCase();
         document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = f.innerText.toLowerCase().includes(t) ? '' : 'none');
     });
 
     document.getElementById('filtroAula').addEventListener('change', e => {
-    const aulaSeleccionada = e.target.value; 
-    document.querySelectorAll('.fila-estudiante').forEach(f => {
-        const aulaFila = f.getAttribute('data-aula');
-        f.style.display = (aulaSeleccionada === "" || aulaFila === aulaSeleccionada) ? '' : 'none';
+        document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = (e.target.value === "" || f.getAttribute('data-aula') === e.target.value) ? '' : 'none');
     });
-});
 
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
-
-// Listener para abrir el modal con los datos del alumno
-document.getElementById('tabla-body').addEventListener('click', (e) => {
-
-    // =========================
-    // 1. BOTÓN VER DETALLES
-    // =========================
-    const btnVer = e.target.closest('.btn-ver');
-
-    if (btnVer) {
-
-        const d = JSON.parse(
-            btnVer.getAttribute('data-info').replace(/&#39;/g, "'")
-        );
-
-        const waLink = (num) =>
-            num ? `https://wa.me/${num.toString().replace(/\D/g, '')}` : "#";
-
-        let html = `
-            <div class="resumen-card mb-3" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #c5a059;">
-                <h6 class="text-warning mb-3 fw-bold">DATOS DEL ESTUDIANTE</h6>
-                <div class="row g-2">
-                    <div class="col-12"><span class="text-white-50 small">Nombre Completo</span><div class="text-white fw-bold">${d.nombreResponsable || 'N/A'}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">DNI / ID</span><div class="text-white fw-bold">${d.dniEstudiante || 'N/A'}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">Género</span><div class="text-white fw-bold">${d.genero || 'N/A'}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">Nacimiento</span><div class="text-white fw-bold">${d.fechaNacimiento || 'N/A'}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">Edad</span><div class="text-white fw-bold">${d.edadEstudiante || 'N/A'} años</div></div>
-                    <div class="col-12"><span class="text-white-50 small">Ubicación</span><div class="text-white fw-bold">${d.ubicacion || 'N/A'}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">Email</span><div class="text-white fw-bold">${d.email || 'N/A'}</div></div>
-                    <div class="col-md-6">
-                        <span class="text-white-50 small">WhatsApp</span>
-                        <a href="${waLink(d.whatsapp)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
-                            ${d.whatsapp || 'N/A'} <i class="bi bi-whatsapp"></i>
-                        </a>
-                    </div>
-                    <div class="col-12"><span class="text-white-50 small">Promedio de Bachillerato</span><div class="text-warning fw-bold">${d.promediocatualbachillerato || 'N/A'}</div></div>
-                    <div class="col-12 mt-2">
-                        <span class="text-white-50 small">Módulos Seleccionados</span>
-                        <div class="text-info fw-bold">${(d.modulos || []).join(' • ') || 'Ninguno'}</div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        if (d.nombreRepresentante) {
-            html += `
-            <div class="resumen-card" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 4px solid #ffc107;">
-                <h6 class="text-warning mb-3 fw-bold">REPRESENTANTE LEGAL</h6>
-                <div class="row g-2">
-                    <div class="col-12"><span class="text-white-50 small">Nombre Tutor</span><div class="text-white fw-bold">${d.nombreRepresentante}</div></div>
-                    <div class="col-md-6"><span class="text-white-50 small">DNI Tutor</span><div class="text-white fw-bold">${d.dniRepresentante || 'N/A'}</div></div>
-                    <div class="col-md-6">
-                        <span class="text-white-50 small">WhatsApp Tutor</span>
-                        <a href="${waLink(d.whatsappRepresentante)}" target="_blank" class="d-block text-success fw-bold text-decoration-none">
-                            ${d.whatsappRepresentante || 'N/A'} <i class="bi bi-whatsapp"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            `;
-        }
-
-        document.getElementById('cuerpoDetalles').innerHTML = html;
-        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
-    }
-
-    // 2. LÓGICA DE DESASIGNACIÓN (Solo se activa al hacer clic en el botón de quitar aula)
-    const btnDesasignar = e.target.closest('.btn-accion-aula[data-accion="desasignar"]');
-    if (btnDesasignar) {
-        const uid = btnDesasignar.dataset.uid;
-        if (confirm("¿Seguro que deseas retirar al alumno de esta aula?")) {
-            const q = query(collection(db, "aula_integrantes"), where("usuarioId", "==", uid));
-            const snap = await getDocs(q);
-            snap.forEach(async (docSnap) => {
-                await deleteDoc(doc(db, "aula_integrantes", docSnap.id));
-            });
-            alert("Alumno desasignado.");
-            location.reload(); // Recarga para actualizar el estado
-        }
-    }
-
-    // =========================
-    // 2. BOTÓN ELIMINAR
-    // =========================
-const btnEliminar = e.target.closest('.btn-eliminar');
-
-if (btnEliminar) {
-
-    usuarioAEliminar = btnEliminar.dataset.id;
-
-    // abrir primer modal
-    new bootstrap.Modal(
-        document.getElementById('modalConfirmDelete')
-    ).show();
-}
-
-/* =========================
-   PASO 1 → abrir segundo modal
-   ========================= */
-document.getElementById('btnConfirmStep1').onclick = () => {
-
-    const modal1El = document.getElementById('modalConfirmDelete');
-    const modal2El = document.getElementById('modalDangerDelete');
-
-    const modal1 = bootstrap.Modal.getInstance(modal1El);
-
-    // 1. cerrar primer modal
-    modal1.hide();
-
-    // 2. esperar a que termine la animación de Bootstrap (150–300ms realista)
-    modal1El.addEventListener('hidden.bs.modal', () => {
-
-        // pequeño delay para suavizar aún más la transición visual
-        setTimeout(() => {
-            const modal2 = new bootstrap.Modal(modal2El, {
-                backdrop: 'static',
-                keyboard: false
-            });
-
-            modal2.show();
-        }, 120);
-
-    }, { once: true });
-};
-
-/* =========================
-   PASO 2 → eliminación final
-   ========================= */
-document.getElementById('btnFinalDelete').onclick = async () => {
-
-    if (!usuarioAEliminar) return;
-
-    const docRef = doc(db, "usuarios", usuarioAEliminar);
-    const snap = await getDoc(docRef);
-
-    if (!snap.exists()) return;
-
-    const data = snap.data();
-
-    await addDoc(collection(db, "correosPendientesEliminar"), {
-        correoAnterior: data.email || "",
-        correoNuevo: data.email || "",
-        estado: "pendiente",
-        fecha: new Date(),
-        uidAnterior: usuarioAEliminar,
-        uidNuevo: ""
-    });
-
-    await deleteDoc(docRef);
-
-    const modal2 = bootstrap.Modal.getInstance(
-        document.getElementById('modalDangerDelete')
-    );
-    modal2.hide();
-
-    usuarioAEliminar = null;
-
-    location.reload();
-};
-});
+</script>
     
 </script>
 
