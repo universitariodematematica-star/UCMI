@@ -338,7 +338,7 @@
                             <th>CONTACTO</th>
                             <th>AULA</th>
                             <th class="text-center">DETALLES</th>
-                            <th class="text-center">ASIGNAR</th>
+                            <th class="text-center">ACCIONES</th>
                             <th class="text-center">ELIMINAR</th>
                         </tr>
                     </thead>
@@ -464,9 +464,14 @@ aulasSnap.forEach(doc => {
                 </button>
             </td>
             <td class="text-center">
-                <a href="asignar-asignaturas-alumnos.html?uid=${estudianteDoc.id}" class="btn btn-sm btn-outline-light btn-asignar">
-                    <i class="bi bi-arrow-right"></i>
-                </a>
+                ${idAula !== "sin-aula" ? 
+                    `<button class="btn btn-sm btn-outline-danger btn-accion-aula" data-uid="${estudianteDoc.id}" data-accion="desasignar">
+                        <i class="bi bi-x-circle"></i>
+                     </button>` : 
+                    `<a href="asignar-asignaturas-alumnos.html?uid=${estudianteDoc.id}" class="btn btn-sm btn-outline-warning btn-accion-aula">
+                        <i class="bi bi-plus-circle"></i>
+                     </a>`
+                }
             </td>
             <td class="text-center">
                 <button class="btn btn-sm btn-danger btn-eliminar" data-id="${estudianteDoc.id}">
@@ -555,6 +560,21 @@ document.getElementById('tabla-body').addEventListener('click', (e) => {
 
         document.getElementById('cuerpoDetalles').innerHTML = html;
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+    }
+
+    // 2. LÓGICA DE DESASIGNACIÓN (Solo se activa al hacer clic en el botón de quitar aula)
+    const btnDesasignar = e.target.closest('.btn-accion-aula[data-accion="desasignar"]');
+    if (btnDesasignar) {
+        const uid = btnDesasignar.dataset.uid;
+        if (confirm("¿Seguro que deseas retirar al alumno de esta aula?")) {
+            const q = query(collection(db, "aula_integrantes"), where("usuarioId", "==", uid));
+            const snap = await getDocs(q);
+            snap.forEach(async (docSnap) => {
+                await deleteDoc(doc(db, "aula_integrantes", docSnap.id));
+            });
+            alert("Alumno desasignado.");
+            location.reload(); // Recarga para actualizar el estado
+        }
     }
 
     // =========================
