@@ -439,6 +439,7 @@
 
     let currentId = null;
     let currentData = null;
+    let usuarioAEliminar = null;
     const mapaEstudiantes = {};
 
     // Modifica tu función verExpediente para llenar estas variables:
@@ -746,6 +747,21 @@ if (btnDetalles) {
             ).show();
         }
     }
+
+// ===== BOTÓN ELIMINAR =====
+const btnEliminar = e.target.closest('.btn-eliminar');
+
+if (btnEliminar) {
+
+    usuarioAEliminar = btnEliminar.dataset.id;
+
+    bootstrap.Modal.getOrCreateInstance(
+        document.getElementById('modalConfirmDelete')
+    ).show();
+
+    return;
+}
+        
 });
 
     document.getElementById('btnConfirmarAsignacion').addEventListener('click', async () => {
@@ -796,6 +812,87 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
             Swal.fire('Error', error.message, 'error');
         }
     };
+
+// =========================
+// PASO 1
+// =========================
+document.getElementById('btnConfirmStep1').onclick = () => {
+
+    const modal1El = document.getElementById('modalConfirmDelete');
+    const modal2El = document.getElementById('modalDangerDelete');
+
+    bootstrap.Modal
+        .getOrCreateInstance(modal1El)
+        .hide();
+
+    modal1El.addEventListener('hidden.bs.modal', () => {
+
+        bootstrap.Modal
+            .getOrCreateInstance(modal2El)
+            .show();
+
+    }, { once: true });
+
+};
+
+// =========================
+// ELIMINACIÓN DEFINITIVA
+// =========================
+document.getElementById('btnFinalDelete').onclick = async () => {
+
+    if (!usuarioAEliminar) return;
+
+    try {
+
+        const docRef = doc(db, "usuarios", usuarioAEliminar);
+        const snap = await getDoc(docRef);
+
+        if (!snap.exists()) return;
+
+        const data = snap.data();
+
+        await addDoc(
+            collection(db, "correosPendientesEliminar"),
+            {
+                correoAnterior: data.email || "",
+                correoNuevo: data.email || "",
+                estado: "pendiente",
+                fecha: new Date(),
+                uidAnterior: usuarioAEliminar,
+                uidNuevo: ""
+            }
+        );
+
+        await deleteDoc(docRef);
+
+        bootstrap.Modal
+            .getOrCreateInstance(
+                document.getElementById('modalDangerDelete')
+            )
+            .hide();
+
+        usuarioAEliminar = null;
+
+        Swal.fire({
+            icon: "success",
+            title: "Alumno eliminado",
+            text: "El estudiante fue enviado correctamente al proceso de eliminación.",
+            confirmButtonColor: "#c5a059"
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No fue posible eliminar el estudiante."
+        });
+
+    }
+
+};    
     
 </script>
 
