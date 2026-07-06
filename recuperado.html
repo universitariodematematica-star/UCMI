@@ -313,7 +313,7 @@
     <main class="super-overlay">
         <div class="navbar-top">
             <div>
-                <h4 class="fw-bold m-0">Directorio Académico de Alumnos</h4>
+                <h4 class="fw-bold m-0">Directorio Académico de Alumnos 1</h4>
                 <div class="d-flex align-items-center gap-2 mt-1">
                     <small class="text-white-50">Academia: <span id="label-academia" class="fw-bold text-warning">...</span></small>
                     <span id="badge-cupos" class="badge badge-cupos bg-dark border border-success text-success ms-2">
@@ -494,9 +494,22 @@ if (btnAccion) {
             location.reload(); 
         }
     } else if (accion === 'asignar') {
-        // Opción: Redirigir si no quieres crear un modal de asignación complejo aquí
-        window.location.href = `asignar-asignaturas-alumnos.html?uid=${uid}`;
-    }
+    // 1. Buscamos el objeto del estudiante en el array 'estudiantes' 
+    // (Asegúrate de que 'estudiantes' esté accesible en este scope o búscalos en la tabla)
+    const select = document.getElementById('selectAulaModal');
+    select.innerHTML = document.getElementById('filtroAula').innerHTML;
+    select.querySelector('option[value=""]').remove();
+    
+    document.getElementById('inputUidAsignar').value = uid;
+    
+    // GUARDAMOS LOS DATOS DEL ALUMNO EN UN CAMPO OCULTO O DATASET
+    // Aquí necesitamos obtener el objeto 'est' del estudiante. 
+    // Si no puedes acceder al objeto 'est' directamente, busca el botón y extrae la info.
+    const btnAsignar = e.target.closest('.btn-accion-aula');
+    // Asumiremos que el botón tiene la info o que podemos obtenerla.
+    // Una forma fácil: guardar los datos en un data-attribute cuando creamos el botón.
+    new bootstrap.Modal(document.getElementById('modalAsignarAula')).show();
+}
 }
 
     // 3. BOTÓN ELIMINAR (Tu lógica actual)
@@ -504,6 +517,45 @@ if (btnAccion) {
     if (btnEliminar) {
         usuarioAEliminar = btnEliminar.dataset.id;
         new bootstrap.Modal(document.getElementById('modalConfirmDelete')).show();
+    }
+});
+
+    document.getElementById('btnConfirmarAsignacion').addEventListener('click', async () => {
+    const uid = document.getElementById('inputUidAsignar').value;
+    const aulaId = document.getElementById('selectAulaModal').value;
+    
+    if (!aulaId) return alert("Selecciona un aula");
+
+    try {
+        // 1. Buscamos el documento del estudiante en "usuarios"
+        const userDocRef = doc(db, "usuarios", uid);
+        const userSnap = await getDoc(userDocRef);
+        
+        if (!userSnap.exists()) {
+            throw new Error("No se encontraron los datos del estudiante en la base de datos.");
+        }
+
+        const userData = userSnap.data();
+
+        // 2. Construimos el objeto con los datos exactos que necesitas
+        const nuevoIntegrante = {
+            aulaId: aulaId,
+            email: userData.email || "",
+            entidad: document.getElementById('label-academia').innerText,
+            fechaAsignacion: new Date(),
+            nombreResponsable: userData.nombreResponsable || "Sin nombre",
+            perfil: "Estudiante Academia",
+            usuarioId: uid
+        };
+
+        // 3. Guardamos en aula_integrantes
+        await addDoc(collection(db, "aula_integrantes"), nuevoIntegrante);
+        
+        alert("Alumno asignado correctamente.");
+        location.reload();
+    } catch (e) {
+        console.error("Error al asignar:", e);
+        alert("Error al asignar: " + e.message);
     }
 });
     
@@ -565,6 +617,26 @@ if (btnAccion) {
 
     </div>
   </div>
+</div>
+
+<div class="modal fade" id="modalAsignarAula" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: #0b0f1a; border: 1px solid #c5a059; border-radius: 15px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-warning">Asignar Estudiante a Aula</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-white-50">Selecciona el aula para este estudiante:</p>
+                <select id="selectAulaModal" class="form-select"></select>
+                <input type="hidden" id="inputUidAsignar">
+            </div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-warning" id="btnConfirmarAsignacion">Confirmar Asignación</button>
+            </div>
+        </div>
+    </div>
 </div>    
     
 </body>
