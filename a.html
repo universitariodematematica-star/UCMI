@@ -464,11 +464,9 @@ aulasSnap.forEach(doc => {
                 </button>
             </td>
             <td class="text-center">
-                <button class="btn btn-sm ${tieneAula ? 'btn-outline-danger' : 'btn-outline-success'} btn-accion-aula" 
-                        data-uid="${estudianteDoc.id}" 
-                        data-accion="${tieneAula ? 'desasignar' : 'asignar'}">
-                    <i class="bi ${tieneAula ? 'bi-person-dash' : 'bi-person-plus'}"></i>
-                </button>
+                <a href="asignar-asignaturas-alumnos.html?uid=${estudianteDoc.id}" class="btn btn-sm btn-outline-light btn-asignar">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
             </td>
             <td class="text-center">
                 <button class="btn btn-sm btn-danger btn-eliminar" data-id="${estudianteDoc.id}">
@@ -513,28 +511,24 @@ aulasSnap.forEach(doc => {
         new bootstrap.Modal(document.getElementById('modalDetalles')).show();
     }
 
-    // 2. MANEJO UNIFICADO DE BOTÓN ASIGNAR / DESASIGNAR
-const btnAccion = e.target.closest('.btn-accion-aula');
-if (btnAccion) {
-    const uid = btnAccion.dataset.uid;
-    const accion = btnAccion.dataset.accion;
-
-    if (accion === 'desasignar') {
+    // 2. BOTÓN DESASIGNAR (Si el usuario ya tiene aula)
+    const btnDesasignar = e.target.closest('.btn-accion-aula[data-accion="desasignar"]');
+    if (btnDesasignar) {
+        const uid = btnDesasignar.dataset.uid;
         if (confirm("¿Seguro que deseas retirar a este alumno de su aula actual?")) {
+            // Buscamos el documento en aula_integrantes
             const q = query(collection(db, "aula_integrantes"), where("usuarioId", "==", uid));
             const snap = await getDocs(q);
             
-            // Usamos Promise.all para asegurar que se borren antes de recargar
-            await Promise.all(snap.docs.map(docSnap => deleteDoc(doc(db, "aula_integrantes", docSnap.id))));
+            // Borramos el documento encontrado
+            snap.forEach(async (docSnap) => {
+                await deleteDoc(doc(db, "aula_integrantes", docSnap.id));
+            });
             
             alert("Alumno desasignado correctamente.");
-            location.reload(); 
+            location.reload(); // Recargamos para que el botón cambie a "Asignar"
         }
-    } else if (accion === 'asignar') {
-        // Opción: Redirigir si no quieres crear un modal de asignación complejo aquí
-        window.location.href = `asignar-asignaturas-alumnos.html?uid=${uid}`;
     }
-}
 
     // 3. BOTÓN ELIMINAR (Tu lógica actual)
     const btnEliminar = e.target.closest('.btn-eliminar');
