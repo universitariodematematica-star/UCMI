@@ -417,13 +417,42 @@
         const filtroAula = document.getElementById('filtroAula');
         
         // Cargar aulas una sola vez
-        const aulasSnap = await getDocs(query(collection(db, "aulas"), where("entidad", "==", entidad)));
-        filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
-        const mapaAulas = {}; // Para acceso rápido
-        aulasSnap.forEach(doc => {
-            mapaAulas[doc.id] = doc.data().nombre_aula;
-            filtroAula.innerHTML += `<option value="${doc.id}">${doc.data().nombre_aula}</option>`;
-        });
+        const aulasSnap = await getDocs(
+    query(
+        collection(db, "aulas"),
+        where("entidad", "==", entidad)
+    )
+);
+
+filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
+
+const mapaAulas = {};
+
+// Convertir a arreglo
+const listaAulas = aulasSnap.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+}));
+
+// Ordenar alfabéticamente por nombre
+listaAulas.sort((a, b) =>
+    (a.nombre_aula || "").localeCompare(
+        b.nombre_aula || "",
+        'es',
+        { sensitivity: 'base' }
+    )
+);
+
+// Llenar mapa y select
+listaAulas.forEach(aula => {
+    mapaAulas[aula.id] = aula.nombre_aula;
+
+    filtroAula.innerHTML += `
+        <option value="${aula.id}">
+            ${aula.nombre_aula}
+        </option>
+    `;
+});
 
         // Obtener estudiantes una sola vez
         const estSnap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Estudiante Academia"), where("entidad", "==", entidad)));
