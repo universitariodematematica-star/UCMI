@@ -6,6 +6,8 @@
     <title>UCMI - Panel de Control</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
         :root {
@@ -356,17 +358,53 @@
     </main>
 </div>
 
+<div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content p-3" style="background: rgba(6, 9, 15, 0.95) !important; backdrop-filter: blur(20px); border: 1px solid rgba(197, 160, 89, 0.2); border-radius: 20px;">
+            <div class="modal-header border-0">
+                <h4 class="fw-bold">Expediente del Aspirante</h4>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoModal"></div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-outline-danger rounded-pill px-4" id="btnEliminar">Rechazar</button>
+                <button class="btn btn-success rounded-pill px-4" id="btnConfirmarAcceso">Activar Acceso</button>
+            </div>
+        </div>
+    </div>
+</div>    
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import {
-        getFirestore, collection, query, where, getDocs, doc, getDoc, deleteDoc, addDoc, onSnapshot
+        getFirestore, collection, query, where, getDocs, doc, getDoc, deleteDoc, addDoc, onSnapshot, setDoc
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    const db = getFirestore(initializeApp({apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"}));
-    const auth = getAuth();
+    // Reemplaza tus líneas actuales (245-251) por esto:
+    const firebaseConfig = { apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI", authDomain: "ucmi-13796634.firebaseapp.com", projectId: "ucmi-13796634", storageBucket: "ucmi-13796634.firebasestorage.app", messagingSenderId: "1090719609536", appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325" };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+    const secondaryAuth = getAuth(secondaryApp);
+
+    let currentId = null;
+    let currentData = null;
+
+    // Modifica tu función verExpediente para llenar estas variables:
+    window.verExpediente = (id, dataString) => {
+        currentId = id;
+        currentData = JSON.parse(dataString.replace(/&#39;/g, "'"));
+        
+        document.getElementById('contenidoModal').innerHTML = `
+            <p><strong>Estudiante:</strong> ${currentData.nombreResponsable}</p>
+            <p><strong>Email:</strong> ${currentData.email}</p>
+        `;
+        new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+    };
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "index.html"; return; }
@@ -421,7 +459,7 @@
                     <td><div class="fw-bold">${est.nombreResponsable || 'Sin Nombre'}</div><small>${est.dniEstudiante || ''}</small></td>
                     <td><small>${est.email}<br><a href="https://wa.me/${(est.whatsapp || '').toString().replace(/\D/g, '')}" target="_blank" class="text-success text-decoration-none fw-bold">${est.whatsapp || '-'}</a></small></td>
                     <td>${tieneAula ? `<span class="badge" style="background-color: #06090f; color: #c5a059; border: 1px solid #c5a059;">${nombreAula}</span>` : '<span class="badge" style="background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid #e74c3c;">SIN AULA</span>'}</td>
-                    <td class="text-center"><button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(est).replace(/'/g, '&#39;')}'><i class="bi bi-eye"></i></button></td>
+                    <td class="text-center"><button class="btn btn-sm btn-panel" onclick="verExpediente('${est.id}', '${JSON.stringify(est).replace(/'/g, '&#39;')}')"><i class="bi bi-eye"></i></button></td>
                     <td class="text-center"><button class="btn btn-sm ${tieneAula ? 'btn-outline-danger' : 'btn-outline-success'} btn-accion-aula" data-uid="${est.id}" data-accion="${tieneAula ? 'desasignar' : 'asignar'}"><i class="bi ${tieneAula ? 'bi-person-dash' : 'bi-person-plus'}"></i></button></td>
                     <td class="text-center"><button class="btn btn-sm btn-danger btn-eliminar" data-id="${est.id}"><i class="bi bi-trash3"></i></button></td>
                 `;
@@ -468,23 +506,27 @@
         });
         bootstrap.Modal.getInstance(document.getElementById('modalAsignarAula')).hide();
     });
-</script>
+
+document.getElementById('btnConfirmarAcceso').onclick = async () => {
+        if (!currentId || !currentData) return;
+        
+        try {
+            Swal.fire({ title: 'Creando cuenta...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            
+            // Crea el usuario en Auth usando la instancia secundaria
+            const userCredential = await createUserWithEmailAndPassword(secondaryAuth, currentData.email, "UCMI2026*");
+            
+            // Actualiza el documento original con el nuevo UID
+            await setDoc(doc(db, "usuarios", currentId), { ...currentData, uid: userCredential.user.uid, estado: "activo" }, { merge: true });
+            
+            Swal.fire('¡Éxito!', 'Acceso activado correctamente', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
+        } catch (error) {
+            Swal.fire('Error', error.message, 'error');
+        }
+    };
     
-<div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content" style="background: #0b0f1a; border: 1px solid #c5a059; border-radius: 25px;">
-      <div class="modal-header border-bottom border-secondary">
-        <h5 class="modal-title fw-bold text-warning">
-            <i class="bi bi-person-lines-fill me-2"></i>DETALLES DEL ESTUDIANTE
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body px-4" id="cuerpoDetalles">
-        <p class="text-center text-white-50">Cargando información...</p>
-      </div>
-    </div>
-  </div>
-</div>
+</script>
 
 <div class="modal fade" id="modalConfirmDelete" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
