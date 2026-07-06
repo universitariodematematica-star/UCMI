@@ -441,6 +441,8 @@
     let currentData = null;
     let usuarioAEliminar = null;
     const mapaEstudiantes = {};
+    let listaEstudiantes = [];
+    let mapaAsignaciones = {};
 
     // Modifica tu función verExpediente para llenar estas variables:
 
@@ -460,49 +462,47 @@
     });
 
     async function iniciarEscuchaDirectorio(entidad) {
-        const tbody = document.getElementById('tabla-body');
-        const filtroAula = document.getElementById('filtroAula');
-        
-        // Cargar aulas una sola vez
-        const aulasSnap = await getDocs(
-    query(
-        collection(db, "aulas"),
-        where("entidad", "==", entidad)
-    )
-);
+    const tbody = document.getElementById('tabla-body');
+    const filtroAula = document.getElementById('filtroAula');
 
-filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
+    // Cargar aulas una sola vez
+    const aulasSnap = await getDocs(
+        query(
+            collection(db, "aulas"),
+            where("entidad", "==", entidad)
+        )
+    );
 
-const mapaAulas = {};
+    filtroAula.innerHTML = '<option value="">Todas las Aulas</option>';
 
-// Convertir a arreglo
-const listaAulas = aulasSnap.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-}));
+    const mapaAulas = {};
 
-// Ordenar alfabéticamente por nombre
-listaAulas.sort((a, b) =>
-    (a.nombre_aula || "").localeCompare(
-        b.nombre_aula || "",
-        'es',
-        { sensitivity: 'base' }
-    )
-);
+    const listaAulas = aulasSnap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    }));
 
-// Llenar mapa y select
-listaAulas.forEach(aula => {
-    mapaAulas[aula.id] = aula.nombre_aula;
+    listaAulas.sort((a, b) =>
+        (a.nombre_aula || "").localeCompare(
+            b.nombre_aula || "",
+            'es',
+            { sensitivity: 'base' }
+        )
+    );
 
-    filtroAula.innerHTML += `
-        <option value="${aula.id}">
-            ${aula.nombre_aula}
-        </option>
-    `;
-});
+    listaAulas.forEach(aula => {
+        mapaAulas[aula.id] = aula.nombre_aula;
 
-        // Obtener estudiantes una sola vez
-        onSnapshot(
+        filtroAula.innerHTML += `
+            <option value="${aula.id}">
+                ${aula.nombre_aula}
+            </option>
+        `;
+    });
+
+    // 🔥 AQUÍ guardamos la referencia GLOBAL
+    // 🔥 ESTUDIANTES (estado global)
+onSnapshot(
     query(
         collection(db, "usuarios"),
         where("perfil", "==", "Estudiante Academia"),
@@ -510,79 +510,52 @@ listaAulas.forEach(aula => {
     ),
     (estSnap) => {
 
-        const listaEstudiantes = estSnap.docs.map(d => ({
+        listaEstudiantes = estSnap.docs.map(d => ({
             id: d.id,
             ...d.data()
         }));
 
-        document.getElementById('cupos-utilizados').innerText = listaEstudiantes.length;
+        document.getElementById('cupos-utilizados').innerText =
+            listaEstudiantes.length;
 
-        renderTabla(listaEstudiantes);
+        renderTabla(listaEstudiantes, mapaAsignaciones, mapaAulas);
     }
 );
 
-        // Escucha en tiempo real de la colección de integrantes
-        onSnapshot(collection(db, "aula_integrantes"), (snapshot) => {
-            const mapaAsignaciones = {};
-            snapshot.forEach(doc => {
-                mapaAsignaciones[doc.data().usuarioId] = doc.data().aulaId;
-            });
+    // 🔥 guardamos asignaciones GLOBALMENTE
+    // 🔥 ASIGNACIONES (estado global)
+onSnapshot(collection(db, "aula_integrantes"), (snapshot) => {
 
-            tbody.innerHTML = '';
-            listaEstudiantes.sort((a, b) => (a.nombreResponsable || "").localeCompare(b.nombreResponsable || "")).forEach(est => {
-                mapaEstudiantes[est.id] = est;
-                const aulaId = mapaAsignaciones[est.id];
-                const tieneAula = !!aulaId;
-                const nombreAula = mapaAulas[aulaId] || "Aula desconocida";
-                
-                const tr = document.createElement('tr');
-                tr.className = 'fila-estudiante';
-                tr.setAttribute('data-aula', aulaId || "sin-aula");
-                tr.innerHTML = `
-                    <td><div class="fw-bold">${est.nombreResponsable || 'Sin Nombre'}</div><small>${est.dniEstudiante || ''}</small></td>
-                    <td><small>${est.email}<br><a href="https://wa.me/${(est.whatsapp || '').toString().replace(/\D/g, '')}" target="_blank" class="text-success text-decoration-none fw-bold">${est.whatsapp || '-'}</a></small></td>
-                    <td>${tieneAula ? `<span class="badge" style="background-color: #06090f; color: #c5a059; border: 1px solid #c5a059;">${nombreAula}</span>` : '<span class="badge" style="background-color: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid #e74c3c;">SIN AULA</span>'}</td>
-                    <td class="text-center">
-    <button class="btn btn-sm btn-panel btn-detalles"
-        data-id="${est.id}">
-        <i class="bi bi-eye"></i>
-    </button>
-</td>
-                    <td class="text-center">
-    <button class="btn btn-sm ${tieneAula ? 'btn-danger' : 'btn-success'} btn-accion-aula"
-        data-uid="${est.id}"
-        data-accion="${tieneAula ? 'desasignar' : 'asignar'}">
-        <i class="bi ${tieneAula ? 'bi-person-dash' : 'bi-person-plus'}"></i>
-    </button>
-</td>
-                    <td class="text-center"><button class="btn btn-sm btn-danger btn-eliminar" data-id="${est.id}"><i class="bi bi-trash3"></i></button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        });
-    }
+    mapaAsignaciones = {};
 
- function renderTabla(listaEstudiantes) {
+    snapshot.forEach(doc => {
+        mapaAsignaciones[doc.data().usuarioId] = doc.data().aulaId;
+    });
+
+    renderTabla(listaEstudiantes, mapaAsignaciones, mapaAulas);
+});
+}
+
+function renderTabla(lista, mapaAsignaciones, mapaAulas) {
 
     const tbody = document.getElementById('tabla-body');
 
-    listaEstudiantes.sort((a, b) =>
+    tbody.innerHTML = '';
+
+    const listaOrdenada = [...lista].sort((a, b) =>
         (a.nombreResponsable || "").localeCompare(b.nombreResponsable || "")
     );
 
-    tbody.innerHTML = '';
-
-    listaEstudiantes.forEach(est => {
+    listaOrdenada.forEach(est => {
 
         mapaEstudiantes[est.id] = est;
 
-        const aulaId = est.aulaId || null;
+        const aulaId = mapaAsignaciones?.[est.id] || null;
         const tieneAula = !!aulaId;
+        const nombreAula = mapaAulas?.[aulaId] || "SIN AULA";
 
         const tr = document.createElement('tr');
-
         tr.className = 'fila-estudiante';
-        tr.setAttribute('data-aula', aulaId || "sin-aula");
 
         tr.innerHTML = `
             <td>
@@ -592,8 +565,7 @@ listaAulas.forEach(aula => {
 
             <td>
                 <small>
-                    ${est.email}
-                    <br>
+                    ${est.email}<br>
                     <a href="https://wa.me/${(est.whatsapp || '').replace(/\D/g,'')}"
                        target="_blank"
                        class="text-success text-decoration-none fw-bold">
@@ -605,11 +577,11 @@ listaAulas.forEach(aula => {
             <td>
                 ${tieneAula
                     ? `<span class="badge bg-dark text-warning border border-warning">
-                        ASIGNADO
-                      </span>`
+                        ${nombreAula}
+                    </span>`
                     : `<span class="badge bg-danger">
                         SIN AULA
-                      </span>`
+                    </span>`
                 }
             </td>
 
@@ -638,8 +610,7 @@ listaAulas.forEach(aula => {
 
         tbody.appendChild(tr);
     });
-}   
-
+}
     // --- MANEJADORES DE ACCIÓN ---
     document.getElementById('tabla-body').addEventListener('click', async (e) => {
 
