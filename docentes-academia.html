@@ -333,7 +333,7 @@
             </div>
             <div class="d-flex gap-2">
                 <select id="filtroModulo" class="form-select" style="width: 200px;">
-                    <option value="">Todos los Módulos</option>
+                    <option value="">Todas las Asignaturas</option>
                 </select>
                 <input type="text" id="buscador" class="form-control" placeholder="Buscar..." style="width: 280px;">
             </div>
@@ -399,15 +399,6 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
     // Mantenemos solo la opción inicial "Todos los Módulos"
     filtroModulo.innerHTML = '<option value="">Todos los Módulos</option>';
     
-    // 2. Carga de filtros (ahora seguro)
-    if(mods) {
-        Object.keys(mods).forEach(m => { 
-            if(mods[m]) {
-                filtroModulo.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`; 
-            }
-        });
-    }
-    
     // ================================
 // DOCENTES
 // ================================
@@ -419,6 +410,25 @@ const snap = await getDocs(
         where("entidad", "==", entidad)
     )
 );
+
+const asignaturasFiltro = new Set();
+
+snap.forEach(doc => {
+    const datos = doc.data();
+
+    (datos.asignaturas || []).forEach(a => {
+        const nombre = typeof a === "object" ? a.asignatura : a;
+        if (nombre) asignaturasFiltro.add(nombre);
+    });
+});
+
+filtroModulo.innerHTML = '<option value="">Todas las Asignaturas</option>';
+
+[...asignaturasFiltro].sort().forEach(a => {
+    filtroModulo.innerHTML += `
+        <option value="${a.toLowerCase()}">${a}</option>
+    `;
+});    
 
 document.getElementById('cupos-utilizados').innerText = snap.size;
 
@@ -469,7 +479,13 @@ snap.forEach(doc => estudiantes.push(doc));
         const d = doc.data();
         const tr = document.createElement('tr');
         tr.className = 'fila-estudiante';
-        tr.setAttribute('data-modulos', (d.modulos || []).join(',').toLowerCase());
+        tr.setAttribute(
+    'data-asignaturas',
+    (d.asignaturas || [])
+        .map(a => typeof a === "object" ? a.asignatura : a)
+        .join(',')
+        .toLowerCase()
+);
         
         tr.innerHTML = `
             <td>
@@ -523,9 +539,15 @@ snap.forEach(doc => estudiantes.push(doc));
     });
 
     document.getElementById('filtroModulo').addEventListener('change', e => {
-        const m = e.target.value.toLowerCase();
-        document.querySelectorAll('.fila-estudiante').forEach(f => f.style.display = (m === "" || f.getAttribute('data-modulos').includes(m)) ? '' : 'none');
+    const a = e.target.value.toLowerCase();
+
+    document.querySelectorAll('.fila-estudiante').forEach(f => {
+        f.style.display =
+            (a === "" || f.getAttribute('data-asignaturas').includes(a))
+            ? ''
+            : 'none';
     });
+});
 
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth).then(() => window.location.href = "index.html"));
 
