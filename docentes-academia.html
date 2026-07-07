@@ -408,13 +408,54 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
         });
     }
     
-    const snap = await getDocs(query(collection(db, "usuarios"), where("perfil", "==", "Docente Academia"), where("entidad", "==", entidad)));
-    
-    document.getElementById('cupos-utilizados').innerText = snap.size;
-    
-    // 3. Ordenamiento con limpieza de espacios (trim)
-    const estudiantes = [];
-    snap.forEach(doc => estudiantes.push(doc));
+    // ================================
+// DOCENTES
+// ================================
+
+const snap = await getDocs(
+    query(
+        collection(db, "usuarios"),
+        where("perfil", "==", "Docente Academia"),
+        where("entidad", "==", entidad)
+    )
+);
+
+document.getElementById('cupos-utilizados').innerText = snap.size;
+
+// ================================
+// ASIGNATURAS POR DOCENTE
+// ================================
+
+const asignacionesSnap = await getDocs(
+    query(
+        collection(db, "aula_docente_asignacion"),
+        where("entidad", "==", entidad)
+    )
+);
+
+// docenteId -> Set(asignaturas)
+const mapaAsignaturas = {};
+
+asignacionesSnap.forEach(doc => {
+
+    const d = doc.data();
+
+    if (!mapaAsignaturas[d.docenteId]) {
+        mapaAsignaturas[d.docenteId] = new Set();
+    }
+
+    if (d.asignatura) {
+        mapaAsignaturas[d.docenteId].add(d.asignatura);
+    }
+
+});
+
+// ================================
+// LISTA DE DOCENTES
+// ================================
+
+const estudiantes = [];
+snap.forEach(doc => estudiantes.push(doc));
     
     estudiantes.sort((a, b) => {
         // .trim() elimina espacios accidentales al inicio o final del nombre
@@ -445,8 +486,20 @@ async function cargarDirectorio(entidad, cuposMax, mods) {
                 </small>
             </td>
             <td>
-                ${(d.modulos || []).map(m => `<span class="badge badge-modulo">${m}</span>`).join('')}
-            </td>
+    ${(() => {
+
+        const asignaturas = mapaAsignaturas[doc.id]
+            ? [...mapaAsignaturas[doc.id]]
+            : [];
+
+        return asignaturas.length
+            ? asignaturas.map(a =>
+                `<span class="badge badge-modulo">${a}</span>`
+              ).join('')
+            : '<span class="text-white-50">Sin asignaturas</span>';
+
+    })()}
+</td>
 <td class="text-center">
     <button class="btn btn-sm btn-panel btn-ver" data-info='${JSON.stringify(d).replace(/'/g, '&#39;')}'>
         <i class="bi bi-eye"></i>
