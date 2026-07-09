@@ -131,7 +131,68 @@ function actualizarVistaPrevia(){
     const doc = preview.contentWindow.document;
 
     doc.open();
-    doc.write(editor.value);
+
+    doc.write(`
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"></script>
+
+<style>
+body{
+    font-family:Segoe UI, sans-serif;
+    padding:20px;
+    line-height:1.6;
+}
+
+img{
+    max-width:100%;
+}
+
+table{
+    border-collapse:collapse;
+}
+
+table,td,th{
+    border:1px solid #ccc;
+    padding:6px;
+}
+</style>
+
+</head>
+
+<body>
+
+${editor.value}
+
+<script>
+window.addEventListener("load", function(){
+
+    renderMathInElement(document.body,{
+        delimiters:[
+            {left:"$$", right:"$$", display:true},
+            {left:"$", right:"$", display:false},
+            {left:"\\\\(", right:"\\\\)", display:false},
+            {left:"\\\\[", right:"\\\\]", display:true}
+        ],
+        throwOnError:false
+    });
+
+});
+<\/script>
+
+</body>
+</html>
+    `);
+
     doc.close();
 
 }    
