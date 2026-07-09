@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,6 +6,7 @@
 <title>Editor de Contenido</title>
 
 <style>
+
 body{
     margin:0;
     font-family:Segoe UI;
@@ -18,8 +20,8 @@ body{
     background: rgba(255,255,255,0.08);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 20px;
-    padding: 20px;
+    border-radius:20px;
+    padding:20px;
 }
 
 /* editor */
@@ -32,6 +34,7 @@ textarea{
     padding:15px;
     border-radius:10px;
 }
+
 button{
     margin-top:10px;
     padding:10px 20px;
@@ -41,246 +44,486 @@ button{
     color:#111;
     font-weight:bold;
     cursor:pointer;
-    transition: all .3s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,.25);
+    transition:.3s;
 }
 
 button:hover{
-    background:#d6b06a;
-    transform: translateY(-3px) scale(1.03);
-    box-shadow:
-        0 10px 25px rgba(0,0,0,.35),
-        0 0 20px rgba(197,160,89,.45);
-} 
-
-button:active{
-    transform: translateY(-1px) scale(0.98);
-}    
+    transform:translateY(-3px);
+}
 
 #btnVolver{
     margin-left:10px;
 }
 
- button{
-    margin-top:10px;
-    padding:10px 20px;
-    border:none;
-    border-radius:10px;
-    background:#c5a059;
-    font-weight:bold;
-    cursor:pointer;
-}   
-    
 </style>
+
 </head>
+
 
 <body>
 
+
 <div class="panel">
 
-    <h2>Editor de Contenido</h2>
 
-    <h4 id="titulo">Cargando tópico...</h4>
+<h2>Editor de Contenido</h2>
 
-    <textarea id="editor" placeholder="Escribe HTML aquí..."></textarea>
 
-    <button id="btnGuardar">Guardar contenido</button>
-    <button id="btnVolver">← Volver a tópicos</button>
+<h4 id="titulo">
+Cargando tópico...
+</h4>
 
-    <h3 style="margin-top:20px;">Vista previa</h3>
+
+<textarea 
+id="editor"
+placeholder="Escribe HTML aquí...">
+</textarea>
+
+
+<button id="btnGuardar">
+Guardar contenido
+</button>
+
+
+<button id="btnVolver">
+← Volver a tópicos
+</button>
+
+
+
+<h3 style="margin-top:20px;">
+Vista previa
+</h3>
+
+
 
 <iframe
-    id="preview"
-    class="panel"
-    style="
-        width:100%;
-        min-height:700px;
-        background:white;
-        border:none;
-        border-radius:15px;
-    ">
+id="preview"
+class="panel"
+style="
+width:100%;
+min-height:700px;
+background:white;
+border:none;
+border-radius:15px;
+">
 </iframe>
+
+
 
 </div>
 
+
+
 <script type="module">
 
+
 import { db } from "./firebase-config.js";
+
+
 import {
-    doc,
-    getDoc,
-    collection,
-    query,
-    where,
-    getDocs,
-    addDoc,
-    updateDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+doc,
+getDoc,
+collection,
+query,
+where,
+getDocs,
+addDoc,
+updateDoc
+}
+from
+"https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+
 
 const params = new URLSearchParams(window.location.search);
+
+
 const topicoId = params.get("topicoId");
+
 const ramaId = params.get("ramaId");
+
+
 const editor = document.getElementById("editor");
+
 const preview = document.getElementById("preview");
 
-// actualizar vista previa en vivo
-editor.addEventListener("input", actualizarVistaPrevia);
+
+
+// ===============================
+// VISTA PREVIA CON KATEX
+// ===============================
+
+
+editor.addEventListener(
+"input",
+actualizarVistaPrevia
+);
+
+
 
 function actualizarVistaPrevia(){
 
-    const doc = preview.contentWindow.document;
 
-    doc.open();
+const documento = preview.contentWindow.document;
 
-    const contenido = editor.value;
 
-    doc.write(`
+documento.open();
+
+
+
+documento.write(`
+
 <!DOCTYPE html>
+
 <html lang="es">
+
 
 <head>
 
+
 <meta charset="UTF-8">
+
 
 <link rel="stylesheet"
 href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
 
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"><\/script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"><\/script>
+
 
 
 <style>
 
 body{
-    font-family:Segoe UI, sans-serif;
-    padding:20px;
-    line-height:1.6;
+
+font-family:Segoe UI,sans-serif;
+
+padding:20px;
+
+line-height:1.6;
+
+color:#222;
+
 }
+
 
 img{
-    max-width:100%;
+
+max-width:100%;
+
 }
+
 
 table{
-    border-collapse:collapse;
+
+border-collapse:collapse;
+
 }
 
+
 table,td,th{
-    border:1px solid #ccc;
-    padding:6px;
+
+border:1px solid #ccc;
+
+padding:6px;
+
 }
+
+
+.formula{
+
+background:#eef7fa;
+
+padding:15px;
+
+border-left:5px solid #2980b9;
+
+}
+
 
 </style>
 
+
 </head>
+
 
 
 <body>
 
 
-${contenido}
+
+${editor.value}
+
 
 
 <script>
 
-document.addEventListener("DOMContentLoaded", function(){
 
-    renderMathInElement(document.body,{
-        delimiters:[
-            {
-                left:"$$",
-                right:"$$",
-                display:true
-            },
-            {
-                left:"$",
-                right:"$",
-                display:false
-            }
-        ],
-        throwOnError:false
-    });
+document.addEventListener(
+"DOMContentLoaded",
+function(){
 
-});
+
+renderMathInElement(
+document.body,
+{
+
+delimiters:[
+
+{
+left:"$$",
+right:"$$",
+display:true
+},
+
+{
+left:"$",
+right:"$",
+display:false
+},
+
+{
+left:"\\\\(",
+right:"\\\\)",
+display:false
+},
+
+{
+left:"\\\\[",
+right:"\\\\]",
+display:true
+}
+
+],
+
+throwOnError:false
+
+}
+
+);
+
+
+}
+
+);
+
 
 <\/script>
 
 
+
 </body>
 
+
 </html>
+
+
 `);
 
-    doc.close();
 
-}    
 
-let contenidoId = null;
+documento.close();
 
-// 1. cargar tópico
+
+}
+
+
+
+
+
+let contenidoId=null;
+
+
+
+// ===============================
+// CARGAR TOPICO
+// ===============================
+
+
 async function cargarTopico(){
 
-    const snap = await getDoc(doc(db, "topicos", topicoId));
 
-    if(snap.exists()){
-        document.getElementById("titulo").innerText = snap.data().tema;
-    }
+const snap = await getDoc(
+doc(db,"topicos",topicoId)
+);
+
+
+
+if(snap.exists()){
+
+document.getElementById("titulo").innerText =
+snap.data().tema;
+
 }
 
-// 2. cargar contenido si existe
+
+}
+
+
+
+
+// ===============================
+// CARGAR CONTENIDO
+// ===============================
+
+
 async function cargarContenido(){
 
-    const q = query(
-        collection(db, "contenidos"),
-        where("topicoId", "==", topicoId)
-    );
 
-    const snap = await getDocs(q);
+const q=query(
 
-    if(!snap.empty){
-        const data = snap.docs[0];
+collection(db,"contenidos"),
 
-        contenidoId = data.id;
+where("topicoId","==",topicoId)
 
-        document.getElementById("editor").value = data.data().html || "";
-        actualizarVistaPrevia();
-    }
+);
+
+
+
+const snap=await getDocs(q);
+
+
+
+if(!snap.empty){
+
+
+const data=snap.docs[0];
+
+
+contenidoId=data.id;
+
+
+editor.value=data.data().html || "";
+
+
+actualizarVistaPrevia();
+
+
 }
 
-// 3. guardar contenido
+
+}
+
+
+
+
+
+// ===============================
+// GUARDAR
+// ===============================
+
+
 async function guardar(){
 
-    const html = document.getElementById("editor").value;
 
-    if(contenidoId){
-        // actualizar
-        await updateDoc(doc(db, "contenidos", contenidoId), {
-            html
-        });
-    } else {
-        // crear nuevo
-        await addDoc(collection(db, "contenidos"), {
-            topicoId,
-            html,
-            creado: new Date()
-        });
-    }
 
-    alert("Contenido guardado");
-    window.location.href = `topicos.html?ramaId=${ramaId}`;
+const html=editor.value;
+
+
+
+if(contenidoId){
+
+
+await updateDoc(
+
+doc(db,"contenidos",contenidoId),
+
+{
+
+html
+
 }
 
-// eventos
-document.getElementById("btnGuardar").addEventListener("click", guardar);
-document.getElementById("btnVolver").addEventListener("click", () => {
-    window.location.href = `topicos.html?ramaId=${ramaId}`;
-});   
+);
+
+
+
+}else{
+
+
+await addDoc(
+
+collection(db,"contenidos"),
+
+{
+
+topicoId,
+
+html,
+
+creado:new Date()
+
+}
+
+);
+
+
+}
+
+
+
+alert("Contenido guardado");
+
+
+window.location.href=
+`topicos.html?ramaId=${ramaId}`;
+
+
+}
+
+
+
+
+
+// ===============================
+// EVENTOS
+// ===============================
+
+
+document
+.getElementById("btnGuardar")
+.addEventListener(
+"click",
+guardar
+);
+
+
+
+document
+.getElementById("btnVolver")
+.addEventListener(
+"click",
+()=>{
+
+window.location.href=
+`topicos.html?ramaId=${ramaId}`;
+
+}
+
+);
+
+
+
+
+// iniciar
 
 cargarTopico();
+
 cargarContenido();
 
+
+
 </script>
-<!--<script type="module" src="js/alertas-globales.js"></script>-->
+
+
+
 </body>
+
 </html>
+```
