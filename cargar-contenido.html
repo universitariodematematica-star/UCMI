@@ -89,7 +89,17 @@ button:active{
 
     <h3 style="margin-top:20px;">Vista previa</h3>
 
-<div id="preview" class="panel"></div>
+<iframe
+    id="preview"
+    class="panel"
+    style="
+        width:100%;
+        min-height:700px;
+        background:white;
+        border:none;
+        border-radius:15px;
+    ">
+</iframe>
 
 </div>
 
@@ -113,10 +123,18 @@ const ramaId = params.get("ramaId");
 const editor = document.getElementById("editor");
 const preview = document.getElementById("preview");
 
-// actualizar en vivo
-editor.addEventListener("input", () => {
-    preview.innerHTML = editor.value;
-});    
+// actualizar vista previa en vivo
+editor.addEventListener("input", actualizarVistaPrevia);
+
+function actualizarVistaPrevia(){
+
+    const doc = preview.contentWindow.document;
+
+    doc.open();
+    doc.write(editor.value);
+    doc.close();
+
+}    
 
 let contenidoId = null;
 
@@ -146,7 +164,7 @@ async function cargarContenido(){
         contenidoId = data.id;
 
         document.getElementById("editor").value = data.data().html || "";
-        preview.innerHTML = data.data().html || "";
+        actualizarVistaPrevia();
     }
 }
 
