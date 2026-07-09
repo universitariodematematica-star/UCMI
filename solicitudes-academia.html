@@ -504,39 +504,97 @@ window.verExpediente = async (id) => {
         htmlAsignaturas += `</div>`;
     }
 
-    /* ---------------- HORARIOS ---------------- */
-    let htmlHorarios = "";
+/* ---------------- HORARIOS ---------------- */
+function renderizarDisponibilidad(horariosActivos) {
 
-    if (esDocente && Array.isArray(d.horarios)) {
-        const dias = ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'];
-        const agrupado = {};
+    const dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
 
-        d.horarios.forEach(idx => {
-            const dia = dias[idx % 7];
-            const hora = Math.floor(idx / 7);
+    let html = `
+        <div class="grid-horaria"
+             style="
+                display:grid;
+                grid-template-columns:40px repeat(7,1fr);
+                gap:2px;
+                font-size:0.6rem;
+             ">
 
-            if (!agrupado[dia]) agrupado[dia] = [];
-            agrupado[dia].push(`${hora}:00`);
-        });
+            <div></div>
 
-        htmlHorarios = `
-            <div class="col-12 mt-3">
-                <label style="color:#2ecc71; font-weight:bold; font-size:0.7rem;">
-                    HORARIOS
-                </label>
+            ${dias.map(dia =>
+                `<div style="
+                    text-align:center;
+                    color:#c5a059;
+                    font-weight:bold;
+                ">${dia}</div>`
+            ).join('')}
+    `;
+
+    for (let hora = 0; hora < 24; hora++) {
+
+        html += `
+            <div style="
+                color:rgba(255,255,255,.45);
+                text-align:right;
+                padding-right:4px;
+            ">
+                ${hora}:00
             </div>
         `;
 
-        dias.forEach(dia => {
-            if (agrupado[dia]) {
-                htmlHorarios += `
-                    <div class="col-12 mb-1">
-                        <b>${dia}:</b> ${agrupado[dia].sort((a,b)=>a-b).join(', ')}
-                    </div>
-                `;
-            }
-        });
+        for (let dia = 0; dia < 7; dia++) {
+
+            const indice = (hora * 7) + dia;
+
+            html += `
+                <div
+                    style="
+                        height:10px;
+                        border-radius:2px;
+                        ${horariosActivos.includes(indice)
+                            ? 'background:#28a745;'
+                            : 'background:rgba(255,255,255,.10);'
+                        }
+                    ">
+                </div>
+            `;
+        }
     }
+
+    html += `</div>`;
+
+    return html;
+}
+
+let htmlHorarios = "";
+
+if (esDocente) {
+
+    htmlHorarios = `
+        <div class="col-12 mt-4">
+            <label style="
+                color:#2ecc71;
+                font-weight:bold;
+                font-size:.7rem;
+            ">
+                DISPONIBILIDAD HORARIA
+            </label>
+
+            <div
+                class="mt-2 p-2"
+                style="
+                    background:rgba(0,0,0,.30);
+                    border-radius:10px;
+                ">
+                ${
+                    Array.isArray(d.horarios)
+                        ? renderizarDisponibilidad(d.horarios)
+                        : '<div class="text-white-50">No registra disponibilidad.</div>'
+                }
+            </div>
+
+        </div>
+    `;
+}
 
     /* ---------------- BLOQUE GENERAL ---------------- */
     let html = `
