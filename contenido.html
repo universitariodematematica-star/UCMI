@@ -71,8 +71,71 @@ async function cargar(){
         const data = snap.docs[0].data();
 
         docIframe.open();
-        docIframe.write(data.html);
-        docIframe.close();
+
+docIframe.write(`
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+#errorContenido{
+    background:#5c1a1a;
+    color:white;
+    padding:20px;
+    border-radius:15px;
+    margin:20px;
+    border:1px solid #ff6b6b;
+    font-family:Segoe UI;
+}
+</style>
+
+<script>
+
+window.onerror = function(
+    mensaje,
+    archivo,
+    linea
+){
+
+    const mostrar = () => {
+
+        const error = document.createElement("div");
+
+        error.id="errorContenido";
+
+        error.innerHTML = 
+        "<h3>Error en el contenido interactivo:</h3>" +
+        "<p>" + mensaje + "</p>" +
+        "<small>Línea: " + linea + "</small>";
+
+        document.body.prepend(error);
+
+    };
+
+    if(document.body){
+        mostrar();
+    }else{
+        window.addEventListener(
+            "DOMContentLoaded",
+            mostrar
+        );
+    }
+
+};
+
+<\/script>
+
+</head>
+
+<body>
+
+${data.html}
+
+</body>
+
+</html>
+`);
+
+docIframe.close();
 
     }else{
 
