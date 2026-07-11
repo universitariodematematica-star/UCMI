@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Crear plantilla matemática - UCMI</title>
+
+    <style>
+
+        body {
+            margin: 0;
+            padding: 40px;
+            background: #06090f;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .contenedor {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #c5a059;
+        }
+
+        .panel {
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+        }
+
+        .bloque {
+            margin-bottom: 25px;
+        }
+
+        .titulo {
+            color: #c5a059;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .dato {
+            padding: 15px;
+            background: #1a2a3a;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        button {
+            padding: 12px 25px;
+            background: #c5a059;
+            color: #06090f;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="contenedor">
+
+        <h1>Crear plantilla matemática</h1>
+
+        <div class="panel">
+
+            <div class="bloque">
+
+                <div class="titulo">
+                    Nombre
+                </div>
+
+                <div class="dato">
+                    Recta tangente a una función cuadrática
+                </div>
+
+            </div>
+
+
+            <div class="bloque">
+
+                <div class="titulo">
+                    Enunciado parametrizado
+                </div>
+
+                <div class="dato">
+                    Dada la función definida por
+                    $f(x)={{A}}x^2+{{B}}x+{{C}}$,
+                    encuentre la ecuación de la recta tangente
+                    a la gráfica de la función en el punto
+                    donde $x={{t}}$.
+                </div>
+
+            </div>
+
+
+            <div class="bloque">
+
+                <div class="titulo">
+                    Parámetros
+                </div>
+
+                <div class="dato">
+
+                    A: entero entre -3 y 3, excepto 0
+
+                    <br>
+
+                    B: entero entre -3 y 3, excepto 0
+
+                    <br>
+
+                    C: entero entre -3 y 3, excepto 0
+
+                    <br>
+
+                    t: entero entre -3 y 3
+
+                </div>
+
+            </div>
+
+
+            <div class="bloque">
+
+                <div class="titulo">
+                    Respuesta parametrizada
+                </div>
+
+                <div class="dato">
+                    $y=(2{{A}}{{t}}+{{B}})x-{{A}}{{t}}^2+{{C}}$
+                </div>
+
+            </div>
+
+
+            <button id="btnGuardar">
+                Guardar plantilla
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <script type="module">
+
+        import { db } from "./firebase-config.js";
+
+        import {
+            collection,
+            addDoc,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+
+        const btnGuardar =
+            document.getElementById("btnGuardar");
+
+
+        btnGuardar.addEventListener(
+            "click",
+            async function () {
+
+
+                btnGuardar.disabled = true;
+
+                btnGuardar.textContent =
+                    "Guardando...";
+
+
+                try {
+
+
+                    const plantilla = {
+
+
+                        nombre:
+                            "Recta tangente a una función cuadrática",
+
+
+                        tipo:
+                            "matematica_parametrizada",
+
+
+                        enunciado:
+                            "Dada la función definida por $f(x)={{A}}x^2+{{B}}x+{{C}}$, encuentre la ecuación de la recta tangente a la gráfica de la función en el punto donde $x={{t}}$.",
+
+
+                        parametros: {
+
+
+                            A: {
+
+                                tipo: "entero",
+
+                                minimo: -3,
+
+                                maximo: 3,
+
+                                excluir: [0]
+
+                            },
+
+
+                            B: {
+
+                                tipo: "entero",
+
+                                minimo: -3,
+
+                                maximo: 3,
+
+                                excluir: [0]
+
+                            },
+
+
+                            C: {
+
+                                tipo: "entero",
+
+                                minimo: -3,
+
+                                maximo: 3,
+
+                                excluir: [0]
+
+                            },
+
+
+                            t: {
+
+                                tipo: "entero",
+
+                                minimo: -3,
+
+                                maximo: 3,
+
+                                excluir: []
+
+                            }
+
+
+                        },
+
+
+                        respuesta:
+                            "$y=(2{{A}}{{t}}+{{B}})x-{{A}}{{t}}^2+{{C}}$",
+
+
+                        fechaCreacion:
+                            serverTimestamp()
+
+
+                    };
+
+
+                    const plantillaRef =
+                        await addDoc(
+                            collection(
+                                db,
+                                "plantillas_matematicas"
+                            ),
+                            plantilla
+                        );
+
+
+                    console.log(
+                        "PLANTILLA CREADA:",
+                        plantillaRef.id
+                    );
+
+
+                    alert(
+                        "Plantilla matemática guardada correctamente."
+                    );
+
+
+                    btnGuardar.textContent =
+                        "Plantilla guardada";
+
+
+                } catch (error) {
+
+
+                    console.error(
+                        "ERROR AL GUARDAR PLANTILLA:",
+                        error
+                    );
+
+
+                    alert(
+                        "Error al guardar la plantilla: " +
+                        error.message
+                    );
+
+
+                    btnGuardar.disabled = false;
+
+                    btnGuardar.textContent =
+                        "Guardar plantilla";
+
+
+                }
+
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
