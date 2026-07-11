@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Ver examen - UCMI</title>
+
+    <style>
+
+        body {
+            margin: 0;
+            padding: 40px;
+            background: #06090f;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .contenedor {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #c5a059;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 30px;
+            background: #1a2a3a;
+            color: white;
+            border: 1px solid #c5a059;
+            border-radius: 8px;
+        }
+
+        .pregunta {
+            padding: 25px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+        }
+
+        .numero {
+            color: #c5a059;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .texto-pregunta {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .opcion {
+            display: block;
+            padding: 12px;
+            margin: 8px 0;
+            background: #1a2a3a;
+            border-radius: 8px;
+        }
+
+        .opcion input {
+            margin-right: 10px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="contenedor">
+
+        <h1>Visor de examen</h1>
+
+        <select id="selectorExamen">
+
+            <option value="">
+                Seleccione un examen
+            </option>
+
+        </select>
+
+        <div id="examen"></div>
+
+    </div>
+
+
+    <script type="module">
+
+        import { db } from "./firebase-config.js";
+
+        import {
+            collection,
+            getDocs,
+            query,
+            where
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+
+        const selectorExamen =
+            document.getElementById("selectorExamen");
+
+        const examen =
+            document.getElementById("examen");
+
+
+        // ===============================================
+        // CARGAR EXÁMENES
+        // ===============================================
+
+        async function cargarExamenes() {
+
+            try {
+
+                const snapshot = await getDocs(
+                    collection(db, "examenes")
+                );
+
+
+                snapshot.forEach(function (documento) {
+
+                    const datos = documento.data();
+
+
+                    const opcion =
+                        document.createElement("option");
+
+
+                    opcion.value = documento.id;
+
+                    opcion.textContent = datos.nombre;
+
+
+                    selectorExamen.appendChild(opcion);
+
+                });
+
+
+            } catch (error) {
+
+                console.error(
+                    "ERROR AL CARGAR EXÁMENES:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        // ===============================================
+        // SELECCIONAR EXAMEN
+        // ===============================================
+
+        selectorExamen.addEventListener(
+            "change",
+            async function () {
+
+                const examenId =
+                    selectorExamen.value;
+
+
+                examen.innerHTML = "";
+
+
+                if (!examenId) {
+
+                    return;
+
+                }
+
+
+                await cargarPreguntas(examenId);
+
+            }
+        );
+
+
+        // ===============================================
+        // CARGAR PREGUNTAS
+        // ===============================================
+
+        async function cargarPreguntas(examenId) {
+
+            examen.innerHTML =
+                "<p>Cargando preguntas...</p>";
+
+
+            try {
+
+                const consulta = query(
+                    collection(db, "preguntas_test"),
+                    where("examenId", "==", examenId)
+                );
+
+
+                const snapshot =
+                    await getDocs(consulta);
+
+
+                examen.innerHTML = "";
+
+
+                if (snapshot.empty) {
+
+                    examen.innerHTML =
+                        "<p>Este examen no tiene preguntas.</p>";
+
+                    return;
+
+                }
+
+
+                let numero = 1;
+
+
+                snapshot.forEach(function (documento) {
+
+                    const datos = documento.data();
+
+
+                    const bloque =
+                        document.createElement("div");
+
+
+                    bloque.className = "pregunta";
+
+
+                    let opcionesHTML = "";
+
+
+                    datos.opciones.forEach(
+                        function (opcion, indice) {
+
+                            opcionesHTML += `
+
+                                <label class="opcion">
+
+                                    <input
+                                        type="radio"
+                                        name="pregunta_${documento.id}"
+                                        value="${indice}"
+                                    >
+
+                                    ${opcion}
+
+                                </label>
+
+                            `;
+
+                        }
+                    );
+
+
+                    bloque.innerHTML = `
+
+                        <div class="numero">
+                            Pregunta ${numero}
+                        </div>
+
+                        <div class="texto-pregunta">
+                            ${datos.pregunta}
+                        </div>
+
+                        ${opcionesHTML}
+
+                    `;
+
+
+                    examen.appendChild(bloque);
+
+
+                    numero++;
+
+                });
+
+
+            } catch (error) {
+
+                console.error(
+                    "ERROR AL CARGAR PREGUNTAS:",
+                    error
+                );
+
+
+                examen.innerHTML = `
+                    <p>
+                        Error al cargar el examen:
+                        ${error.message}
+                    </p>
+                `;
+
+            }
+
+        }
+
+
+        // ===============================================
+        // INICIO
+        // ===============================================
+
+        cargarExamenes();
+
+    </script>
+
+</body>
+
+</html>
