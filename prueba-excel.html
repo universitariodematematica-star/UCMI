@@ -70,13 +70,49 @@
 
         <div class="panel">
 
-            <p>Seleccione un archivo Excel.</p>
+            <p>Nombre del examen:</p>
 
-            <input
-                type="file"
-                id="archivoExcel"
-                accept=".xlsx,.xls"
-            >
+<input
+    type="text"
+    id="nombreExamen"
+    placeholder="Ejemplo: Examen de ubicación de inglés"
+    style="
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        background: #1a2a3a;
+        color: white;
+        border: 1px solid #c5a059;
+        border-radius: 8px;
+        box-sizing: border-box;
+    "
+>
+
+<button id="btnCrearExamen" style="
+    padding: 12px 25px;
+    background: #c5a059;
+    color: #06090f;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+">
+    Crear examen
+</button>
+
+<div id="zonaExcel" style="display: none; margin-top: 30px;">
+
+    <p id="examenActual"></p>
+
+    <p>Seleccione un archivo Excel.</p>
+
+    <input
+        type="file"
+        id="archivoExcel"
+        accept=".xlsx,.xls"
+    >
+
+</div>
 
             <div id="resultado"></div>
 
@@ -110,19 +146,111 @@
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 
+    const nombreExamen = document.getElementById("nombreExamen");
+    const btnCrearExamen = document.getElementById("btnCrearExamen");
+
+    const zonaExcel = document.getElementById("zonaExcel");
+    const examenActual = document.getElementById("examenActual");
+
     const archivoExcel = document.getElementById("archivoExcel");
     const resultado = document.getElementById("resultado");
     const btnEnviar = document.getElementById("btnEnviar");
 
+
+    let examenId = null;
+
     let filasExcel = [];
 
+
+    // ===============================================
+    // CREAR EXAMEN
+    // ===============================================
+
+    btnCrearExamen.addEventListener("click", async function () {
+
+        const nombre = nombreExamen.value.trim();
+
+
+        if (!nombre) {
+
+            alert("Escriba el nombre del examen.");
+
+            return;
+
+        }
+
+
+        btnCrearExamen.disabled = true;
+
+        btnCrearExamen.textContent = "Creando...";
+
+
+        try {
+
+            const examenRef = await addDoc(
+                collection(db, "examenes"),
+                {
+                    nombre: nombre,
+                    fechaCreacion: serverTimestamp()
+                }
+            );
+
+
+            examenId = examenRef.id;
+
+
+            examenActual.innerHTML = `
+                <strong>Examen actual:</strong>
+                ${nombre}
+            `;
+
+
+            nombreExamen.disabled = true;
+
+            btnCrearExamen.style.display = "none";
+
+            zonaExcel.style.display = "block";
+
+
+            console.log("EXAMEN CREADO:", examenId);
+
+
+            alert("Examen creado correctamente.");
+
+
+        } catch (error) {
+
+            console.error("ERROR AL CREAR EXAMEN:", error);
+
+
+            alert(
+                "Error al crear el examen: " +
+                error.message
+            );
+
+
+            btnCrearExamen.disabled = false;
+
+            btnCrearExamen.textContent = "Crear examen";
+
+        }
+
+    });
+
+
+    // ===============================================
+    // LEER EXCEL
+    // ===============================================
 
     archivoExcel.addEventListener("change", function (evento) {
 
         const archivo = evento.target.files[0];
 
+
         if (!archivo) {
+
             return;
+
         }
 
 
@@ -141,15 +269,20 @@
 
             const nombreHoja = libro.SheetNames[0];
 
+
             const hoja = libro.Sheets[nombreHoja];
 
 
-            filasExcel = window.XLSX.utils.sheet_to_json(hoja, {
-                header: 1
-            });
+            filasExcel = window.XLSX.utils.sheet_to_json(
+                hoja,
+                {
+                    header: 1
+                }
+            );
 
 
             mostrarTabla(filasExcel);
+
 
             btnEnviar.style.display = "block";
 
@@ -161,7 +294,21 @@
     });
 
 
+    // ===============================================
+    // GUARDAR PREGUNTAS
+    // ===============================================
+
     btnEnviar.addEventListener("click", async function () {
+
+
+        if (!examenId) {
+
+            alert("Primero debe crear un examen.");
+
+            return;
+
+        }
+
 
         if (filasExcel.length <= 1) {
 
@@ -176,24 +323,35 @@
 
 
         btnEnviar.disabled = true;
+
         btnEnviar.textContent = "Enviando...";
 
 
         try {
 
+
             for (const fila of preguntas) {
 
+
                 const pregunta = fila[0];
+
                 const opcionA = fila[1];
+
                 const opcionB = fila[2];
+
                 const opcionC = fila[3];
+
                 const opcionD = fila[4];
+
                 const correcta = fila[5];
 
 
                 await addDoc(
                     collection(db, "preguntas_test"),
                     {
+
+                        examenId: examenId,
+
                         pregunta: pregunta,
 
                         opciones: [
@@ -206,6 +364,7 @@
                         correcta: correcta,
 
                         fechaCreacion: serverTimestamp()
+
                     }
                 );
 
@@ -214,25 +373,36 @@
 
             alert(
                 preguntas.length +
-                " preguntas guardadas correctamente en Firestore."
+                " preguntas guardadas correctamente."
             );
 
 
-            console.log("PREGUNTAS GUARDADAS:", preguntas);
+            console.log(
+                "PREGUNTAS ASOCIADAS AL EXAMEN:",
+                examenId
+            );
 
 
         } catch (error) {
 
-            console.error("ERROR FIRESTORE:", error);
+
+            console.error(
+                "ERROR FIRESTORE:",
+                error
+            );
+
 
             alert(
                 "Error al guardar las preguntas: " +
                 error.message
             );
 
+
         } finally {
 
+
             btnEnviar.disabled = false;
+
             btnEnviar.textContent = "Enviar preguntas";
 
         }
@@ -240,16 +410,25 @@
     });
 
 
+    // ===============================================
+    // MOSTRAR TABLA
+    // ===============================================
+
     function mostrarTabla(filas) {
+
 
         resultado.innerHTML = "";
 
 
         if (filas.length === 0) {
 
-            resultado.innerHTML = "<p>El archivo está vacío.</p>";
+
+            resultado.innerHTML =
+                "<p>El archivo está vacío.</p>";
+
 
             btnEnviar.style.display = "none";
+
 
             return;
 
@@ -261,10 +440,12 @@
 
         filas.forEach(function (fila, indice) {
 
+
             const tr = document.createElement("tr");
 
 
             fila.forEach(function (celda) {
+
 
                 const elemento = indice === 0
                     ? document.createElement("th")
@@ -289,7 +470,6 @@
     }
 
 </script>
-
 </body>
 
 </html>
