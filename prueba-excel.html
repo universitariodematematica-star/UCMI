@@ -99,7 +99,16 @@
     </div>
 
 
-    <script>
+    <script type="module">
+
+    import { db } from "./firebase-config.js";
+
+    import {
+        collection,
+        addDoc,
+        serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
 
     const archivoExcel = document.getElementById("archivoExcel");
     const resultado = document.getElementById("resultado");
@@ -124,7 +133,8 @@
 
             const datos = new Uint8Array(e.target.result);
 
-            const libro = XLSX.read(datos, {
+
+            const libro = window.XLSX.read(datos, {
                 type: "array"
             });
 
@@ -134,7 +144,7 @@
             const hoja = libro.Sheets[nombreHoja];
 
 
-            filasExcel = XLSX.utils.sheet_to_json(hoja, {
+            filasExcel = window.XLSX.utils.sheet_to_json(hoja, {
                 header: 1
             });
 
@@ -151,7 +161,7 @@
     });
 
 
-    btnEnviar.addEventListener("click", function () {
+    btnEnviar.addEventListener("click", async function () {
 
         if (filasExcel.length <= 1) {
 
@@ -165,14 +175,67 @@
         const preguntas = filasExcel.slice(1);
 
 
-        console.log("PREGUNTAS A ENVIAR:", preguntas);
+        btnEnviar.disabled = true;
+        btnEnviar.textContent = "Enviando...";
 
 
-        alert(
-            "Se procesarán " +
-            preguntas.length +
-            " preguntas."
-        );
+        try {
+
+            for (const fila of preguntas) {
+
+                const pregunta = fila[0];
+                const opcionA = fila[1];
+                const opcionB = fila[2];
+                const opcionC = fila[3];
+                const opcionD = fila[4];
+                const correcta = fila[5];
+
+
+                await addDoc(
+                    collection(db, "preguntas_test"),
+                    {
+                        pregunta: pregunta,
+
+                        opciones: [
+                            opcionA,
+                            opcionB,
+                            opcionC,
+                            opcionD
+                        ],
+
+                        correcta: correcta,
+
+                        fechaCreacion: serverTimestamp()
+                    }
+                );
+
+            }
+
+
+            alert(
+                preguntas.length +
+                " preguntas guardadas correctamente en Firestore."
+            );
+
+
+            console.log("PREGUNTAS GUARDADAS:", preguntas);
+
+
+        } catch (error) {
+
+            console.error("ERROR FIRESTORE:", error);
+
+            alert(
+                "Error al guardar las preguntas: " +
+                error.message
+            );
+
+        } finally {
+
+            btnEnviar.disabled = false;
+            btnEnviar.textContent = "Enviar preguntas";
+
+        }
 
     });
 
