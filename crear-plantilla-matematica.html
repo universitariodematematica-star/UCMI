@@ -2,6 +2,7 @@
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -9,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Crear plantilla matemática - UCMI</title>
+    <title>Plantillas matemáticas - UCMI</title>
 
     <style>
 
@@ -22,11 +23,12 @@
         }
 
         .contenedor {
-            max-width: 900px;
+            max-width: 1000px;
             margin: auto;
         }
 
-        h1 {
+        h1,
+        h2 {
             color: #c5a059;
         }
 
@@ -37,25 +39,36 @@
             border-radius: 15px;
         }
 
-        .bloque {
-            margin-bottom: 25px;
+        .campo {
+            margin-bottom: 20px;
         }
 
-        .titulo {
+        label {
+            display: block;
             color: #c5a059;
             font-weight: bold;
             margin-bottom: 8px;
         }
 
-        .dato {
-            padding: 15px;
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
             background: #1a2a3a;
+            color: white;
+            border: 1px solid #c5a059;
             border-radius: 8px;
-            line-height: 1.6;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            min-height: 130px;
+            resize: vertical;
         }
 
         button {
-            padding: 12px 25px;
+            padding: 12px 20px;
             background: #c5a059;
             color: #06090f;
             border: none;
@@ -69,6 +82,35 @@
             cursor: not-allowed;
         }
 
+        .parametro {
+            padding: 20px;
+            margin-bottom: 15px;
+            background: #1a2a3a;
+            border-radius: 10px;
+        }
+
+        .fila {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-eliminar {
+            margin-top: 10px;
+            background: #8b2f2f;
+            color: white;
+        }
+
+        .seccion {
+            margin-top: 35px;
+        }
+
+        #btnGuardar {
+            margin-top: 30px;
+            width: 100%;
+            font-size: 16px;
+        }
+
     </style>
 
 </head>
@@ -77,76 +119,89 @@
 
     <div class="contenedor">
 
-        <h1>Crear plantilla matemática</h1>
+        <h1>
+            Constructor de plantillas matemáticas
+        </h1>
 
         <div class="panel">
 
-            <div class="bloque">
 
-                <div class="titulo">
-                    Nombre
-                </div>
+            <div class="campo">
 
-                <div class="dato">
-                    Recta tangente a una función cuadrática
-                </div>
+                <label>
+                    Nombre de la plantilla
+                </label>
+
+                <input
+                    type="text"
+                    id="nombre"
+                    placeholder="Ejemplo: Pendiente entre dos puntos"
+                >
 
             </div>
 
 
-            <div class="bloque">
+            <div class="campo">
 
-                <div class="titulo">
+                <label>
                     Enunciado parametrizado
-                </div>
+                </label>
 
-                <div class="dato">
-                    Dada la función definida por
-                    $f(x)={{A}}x^2+{{B}}x+{{C}}$,
-                    encuentre la ecuación de la recta tangente
-                    a la gráfica de la función en el punto
-                    donde $x={{t}}$.
-                </div>
+                <textarea
+                    id="enunciado"
+                    placeholder="Use {{nombreParametro}} para insertar parámetros."
+                ></textarea>
 
             </div>
 
 
-            <div class="bloque">
+            <div class="seccion">
 
-                <div class="titulo">
+                <h2>
                     Parámetros
-                </div>
+                </h2>
 
-                <div class="dato">
+                <div id="listaParametros"></div>
 
-                    A: entero entre -3 y 3, excepto 0
+                <button id="btnAgregarParametro">
+                    Agregar parámetro
+                </button>
 
-                    <br>
+            </div>
 
-                    B: entero entre -3 y 3, excepto 0
 
-                    <br>
+            <div class="seccion">
 
-                    C: entero entre -3 y 3, excepto 0
+                <h2>
+                    Restricciones
+                </h2>
 
-                    <br>
+                <div class="campo">
 
-                    t: entero entre -3 y 3
+                    <label>
+                        Una restricción por línea
+                    </label>
+
+                    <textarea
+                        id="restricciones"
+                        placeholder="Ejemplo:&#10;x1 != x2"
+                    ></textarea>
 
                 </div>
 
             </div>
 
 
-            <div class="bloque">
+            <div class="seccion">
 
-                <div class="titulo">
+                <h2>
                     Respuesta parametrizada
-                </div>
+                </h2>
 
-                <div class="dato">
-                    $y=(2{{A}}{{t}}+{{B}})x-{{A}}{{t}}^2+{{C}}$
-                </div>
+                <textarea
+                    id="respuesta"
+                    placeholder="Ejemplo: $m=\frac{{{y2}}-{{y1}}}{{{x2}}-{{x1}}}$"
+                ></textarea>
 
             </div>
 
@@ -154,6 +209,7 @@
             <button id="btnGuardar">
                 Guardar plantilla
             </button>
+
 
         </div>
 
@@ -171,13 +227,394 @@
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 
+        const nombre =
+            document.getElementById("nombre");
+
+        const enunciado =
+            document.getElementById("enunciado");
+
+        const listaParametros =
+            document.getElementById("listaParametros");
+
+        const btnAgregarParametro =
+            document.getElementById("btnAgregarParametro");
+
+        const restricciones =
+            document.getElementById("restricciones");
+
+        const respuesta =
+            document.getElementById("respuesta");
+
         const btnGuardar =
             document.getElementById("btnGuardar");
 
 
+        // ===============================================
+        // AGREGAR PARÁMETRO
+        // ===============================================
+
+        btnAgregarParametro.addEventListener(
+            "click",
+            function () {
+
+                agregarParametro();
+
+            }
+        );
+
+
+        function agregarParametro() {
+
+
+            const bloque =
+                document.createElement("div");
+
+
+            bloque.className = "parametro";
+
+
+            bloque.innerHTML = `
+
+                <div class="fila">
+
+                    <div>
+
+                        <label>
+                            Nombre
+                        </label>
+
+                        <input
+                            type="text"
+                            class="parametro-nombre"
+                            placeholder="Ejemplo: x1"
+                        >
+
+                    </div>
+
+
+                    <div>
+
+                        <label>
+                            Tipo
+                        </label>
+
+                        <select class="parametro-tipo">
+
+                            <option value="entero">
+                                Entero
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div>
+
+                        <label>
+                            Mínimo
+                        </label>
+
+                        <input
+                            type="number"
+                            class="parametro-minimo"
+                        >
+
+                    </div>
+
+
+                    <div>
+
+                        <label>
+                            Máximo
+                        </label>
+
+                        <input
+                            type="number"
+                            class="parametro-maximo"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="campo">
+
+                    <label>
+                        Valores excluidos
+                    </label>
+
+                    <input
+                        type="text"
+                        class="parametro-excluir"
+                        placeholder="Ejemplo: 0, 2, -2"
+                    >
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="btn-eliminar"
+                >
+                    Eliminar parámetro
+                </button>
+
+            `;
+
+
+            const btnEliminar =
+                bloque.querySelector(".btn-eliminar");
+
+
+            btnEliminar.addEventListener(
+                "click",
+                function () {
+
+                    bloque.remove();
+
+                }
+            );
+
+
+            listaParametros.appendChild(bloque);
+
+
+        }
+
+
+        // ===============================================
+        // OBTENER PARÁMETROS
+        // ===============================================
+
+        function obtenerParametros() {
+
+
+            const parametros = {};
+
+
+            const bloques =
+                listaParametros.querySelectorAll(
+                    ".parametro"
+                );
+
+
+            for (const bloque of bloques) {
+
+
+                const nombreParametro =
+                    bloque
+                        .querySelector(".parametro-nombre")
+                        .value
+                        .trim();
+
+
+                const tipo =
+                    bloque
+                        .querySelector(".parametro-tipo")
+                        .value;
+
+
+                const minimoTexto =
+                    bloque
+                        .querySelector(".parametro-minimo")
+                        .value;
+
+
+                const maximoTexto =
+                    bloque
+                        .querySelector(".parametro-maximo")
+                        .value;
+
+
+                const excluirTexto =
+                    bloque
+                        .querySelector(".parametro-excluir")
+                        .value
+                        .trim();
+
+
+                if (!nombreParametro) {
+
+                    throw new Error(
+                        "Todos los parámetros deben tener nombre."
+                    );
+
+                }
+
+
+                if (
+                    minimoTexto === "" ||
+                    maximoTexto === ""
+                ) {
+
+                    throw new Error(
+                        "Todos los parámetros deben tener mínimo y máximo."
+                    );
+
+                }
+
+
+                const minimo =
+                    Number(minimoTexto);
+
+
+                const maximo =
+                    Number(maximoTexto);
+
+
+                if (minimo > maximo) {
+
+                    throw new Error(
+                        "El mínimo no puede ser mayor que el máximo."
+                    );
+
+                }
+
+
+                if (
+                    Object.prototype.hasOwnProperty.call(
+                        parametros,
+                        nombreParametro
+                    )
+                ) {
+
+                    throw new Error(
+                        "El parámetro " +
+                        nombreParametro +
+                        " está repetido."
+                    );
+
+                }
+
+
+                let excluir = [];
+
+
+                if (excluirTexto) {
+
+
+                    excluir =
+                        excluirTexto
+                            .split(",")
+                            .map(function (valor) {
+
+                                return Number(
+                                    valor.trim()
+                                );
+
+                            });
+
+
+                    if (
+                        excluir.some(
+                            function (valor) {
+
+                                return Number.isNaN(valor);
+
+                            }
+                        )
+                    ) {
+
+                        throw new Error(
+                            "Los valores excluidos deben ser números."
+                        );
+
+                    }
+
+
+                }
+
+
+                parametros[nombreParametro] = {
+
+                    tipo: tipo,
+
+                    minimo: minimo,
+
+                    maximo: maximo,
+
+                    excluir: excluir
+
+                };
+
+
+            }
+
+
+            return parametros;
+
+
+        }
+
+
+        // ===============================================
+        // OBTENER RESTRICCIONES
+        // ===============================================
+
+        function obtenerRestricciones() {
+
+
+            return restricciones
+                .value
+                .split("\n")
+                .map(function (restriccion) {
+
+                    return restriccion.trim();
+
+                })
+                .filter(function (restriccion) {
+
+                    return restriccion !== "";
+
+                });
+
+
+        }
+
+
+        // ===============================================
+        // GUARDAR PLANTILLA
+        // ===============================================
+
         btnGuardar.addEventListener(
             "click",
             async function () {
+
+
+                const nombrePlantilla =
+                    nombre.value.trim();
+
+
+                const enunciadoPlantilla =
+                    enunciado.value.trim();
+
+
+                const respuestaPlantilla =
+                    respuesta.value.trim();
+
+
+                if (!nombrePlantilla) {
+
+                    alert(
+                        "Escriba el nombre de la plantilla."
+                    );
+
+                    return;
+
+                }
+
+
+                if (!enunciadoPlantilla) {
+
+                    alert(
+                        "Escriba el enunciado parametrizado."
+                    );
+
+                    return;
+
+                }
 
 
                 btnGuardar.disabled = true;
@@ -189,11 +626,30 @@
                 try {
 
 
+                    const parametros =
+                        obtenerParametros();
+
+
+                    if (
+                        Object.keys(parametros).length === 0
+                    ) {
+
+                        throw new Error(
+                            "Debe agregar al menos un parámetro."
+                        );
+
+                    }
+
+
+                    const listaRestricciones =
+                        obtenerRestricciones();
+
+
                     const plantilla = {
 
 
                         nombre:
-                            "Recta tangente a una función cuadrática",
+                            nombrePlantilla,
 
 
                         tipo:
@@ -201,69 +657,19 @@
 
 
                         enunciado:
-                            "Dada la función definida por $f(x)={{A}}x^2+{{B}}x+{{C}}$, encuentre la ecuación de la recta tangente a la gráfica de la función en el punto donde $x={{t}}$.",
+                            enunciadoPlantilla,
 
 
-                        parametros: {
+                        parametros:
+                            parametros,
 
 
-                            A: {
-
-                                tipo: "entero",
-
-                                minimo: -3,
-
-                                maximo: 3,
-
-                                excluir: [0]
-
-                            },
-
-
-                            B: {
-
-                                tipo: "entero",
-
-                                minimo: -3,
-
-                                maximo: 3,
-
-                                excluir: [0]
-
-                            },
-
-
-                            C: {
-
-                                tipo: "entero",
-
-                                minimo: -3,
-
-                                maximo: 3,
-
-                                excluir: [0]
-
-                            },
-
-
-                            t: {
-
-                                tipo: "entero",
-
-                                minimo: -3,
-
-                                maximo: 3,
-
-                                excluir: []
-
-                            }
-
-
-                        },
+                        restricciones:
+                            listaRestricciones,
 
 
                         respuesta:
-                            "$y=(2{{A}}{{t}}+{{B}})x-{{A}}{{t}}^2+{{C}}$",
+                            respuestaPlantilla,
 
 
                         fechaCreacion:
@@ -289,13 +695,15 @@
                     );
 
 
-                    alert(
-                        "Plantilla matemática guardada correctamente."
+                    console.log(
+                        "DATOS DE LA PLANTILLA:",
+                        plantilla
                     );
 
 
-                    btnGuardar.textContent =
-                        "Plantilla guardada";
+                    alert(
+                        "Plantilla matemática guardada correctamente."
+                    );
 
 
                 } catch (error) {
@@ -308,9 +716,11 @@
 
 
                     alert(
-                        "Error al guardar la plantilla: " +
                         error.message
                     );
+
+
+                } finally {
 
 
                     btnGuardar.disabled = false;
@@ -324,6 +734,14 @@
 
             }
         );
+
+
+        // ===============================================
+        // PARÁMETRO INICIAL
+        // ===============================================
+
+        agregarParametro();
+
 
     </script>
 
