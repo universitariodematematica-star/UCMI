@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Prueba Excel - UCMI</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            background: #06090f;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .contenedor {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #c5a059;
+        }
+
+        .panel {
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+        }
+
+        input[type="file"] {
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid #555;
+            text-align: left;
+        }
+
+        th {
+            background: #1a2a3a;
+            color: #c5a059;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="contenedor">
+
+        <h1>Cargar preguntas desde Excel</h1>
+
+        <div class="panel">
+
+            <p>Seleccione un archivo Excel.</p>
+
+            <input
+                type="file"
+                id="archivoExcel"
+                accept=".xlsx,.xls"
+            >
+
+            <div id="resultado"></div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        const archivoExcel = document.getElementById("archivoExcel");
+        const resultado = document.getElementById("resultado");
+
+
+        archivoExcel.addEventListener("change", function (evento) {
+
+            const archivo = evento.target.files[0];
+
+            if (!archivo) {
+                return;
+            }
+
+
+            const lector = new FileReader();
+
+
+            lector.onload = function (e) {
+
+                const datos = new Uint8Array(e.target.result);
+
+                const libro = XLSX.read(datos, {
+                    type: "array"
+                });
+
+
+                const nombreHoja = libro.SheetNames[0];
+
+                const hoja = libro.Sheets[nombreHoja];
+
+
+                const filas = XLSX.utils.sheet_to_json(hoja, {
+                    header: 1
+                });
+
+
+                mostrarTabla(filas);
+
+            };
+
+
+            lector.readAsArrayBuffer(archivo);
+
+        });
+
+
+        function mostrarTabla(filas) {
+
+            resultado.innerHTML = "";
+
+
+            if (filas.length === 0) {
+
+                resultado.innerHTML = "<p>El archivo está vacío.</p>";
+
+                return;
+
+            }
+
+
+            const tabla = document.createElement("table");
+
+
+            filas.forEach(function (fila, indice) {
+
+                const tr = document.createElement("tr");
+
+
+                fila.forEach(function (celda) {
+
+                    const elemento = indice === 0
+                        ? document.createElement("th")
+                        : document.createElement("td");
+
+
+                    elemento.textContent = celda;
+
+
+                    tr.appendChild(elemento);
+
+                });
+
+
+                tabla.appendChild(tr);
+
+            });
+
+
+            resultado.appendChild(tabla);
+
+        }
+
+    </script>
+
+</body>
+
+</html>
