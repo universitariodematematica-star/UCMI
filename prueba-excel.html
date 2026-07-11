@@ -80,6 +80,20 @@
 
             <div id="resultado"></div>
 
+<button id="btnEnviar" style="
+    display: none;
+    margin-top: 25px;
+    padding: 12px 25px;
+    background: #c5a059;
+    color: #06090f;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+">
+    Enviar preguntas
+</button>
+
         </div>
 
     </div>
@@ -87,98 +101,131 @@
 
     <script>
 
-        const archivoExcel = document.getElementById("archivoExcel");
-        const resultado = document.getElementById("resultado");
+    const archivoExcel = document.getElementById("archivoExcel");
+    const resultado = document.getElementById("resultado");
+    const btnEnviar = document.getElementById("btnEnviar");
+
+    let filasExcel = [];
 
 
-        archivoExcel.addEventListener("change", function (evento) {
+    archivoExcel.addEventListener("change", function (evento) {
 
-            const archivo = evento.target.files[0];
+        const archivo = evento.target.files[0];
 
-            if (!archivo) {
-                return;
-            }
-
-
-            const lector = new FileReader();
+        if (!archivo) {
+            return;
+        }
 
 
-            lector.onload = function (e) {
-
-                const datos = new Uint8Array(e.target.result);
-
-                const libro = XLSX.read(datos, {
-                    type: "array"
-                });
+        const lector = new FileReader();
 
 
-                const nombreHoja = libro.SheetNames[0];
+        lector.onload = function (e) {
 
-                const hoja = libro.Sheets[nombreHoja];
+            const datos = new Uint8Array(e.target.result);
 
-
-                const filas = XLSX.utils.sheet_to_json(hoja, {
-                    header: 1
-                });
-
-
-                mostrarTabla(filas);
-
-            };
+            const libro = XLSX.read(datos, {
+                type: "array"
+            });
 
 
-            lector.readAsArrayBuffer(archivo);
+            const nombreHoja = libro.SheetNames[0];
 
-        });
-
-
-        function mostrarTabla(filas) {
-
-            resultado.innerHTML = "";
+            const hoja = libro.Sheets[nombreHoja];
 
 
-            if (filas.length === 0) {
-
-                resultado.innerHTML = "<p>El archivo está vacío.</p>";
-
-                return;
-
-            }
+            filasExcel = XLSX.utils.sheet_to_json(hoja, {
+                header: 1
+            });
 
 
-            const tabla = document.createElement("table");
+            mostrarTabla(filasExcel);
+
+            btnEnviar.style.display = "block";
+
+        };
 
 
-            filas.forEach(function (fila, indice) {
+        lector.readAsArrayBuffer(archivo);
 
-                const tr = document.createElement("tr");
-
-
-                fila.forEach(function (celda) {
-
-                    const elemento = indice === 0
-                        ? document.createElement("th")
-                        : document.createElement("td");
+    });
 
 
-                    elemento.textContent = celda;
+    btnEnviar.addEventListener("click", function () {
+
+        if (filasExcel.length <= 1) {
+
+            alert("No hay preguntas para enviar.");
+
+            return;
+
+        }
 
 
-                    tr.appendChild(elemento);
-
-                });
+        const preguntas = filasExcel.slice(1);
 
 
-                tabla.appendChild(tr);
+        console.log("PREGUNTAS A ENVIAR:", preguntas);
+
+
+        alert(
+            "Se procesarán " +
+            preguntas.length +
+            " preguntas."
+        );
+
+    });
+
+
+    function mostrarTabla(filas) {
+
+        resultado.innerHTML = "";
+
+
+        if (filas.length === 0) {
+
+            resultado.innerHTML = "<p>El archivo está vacío.</p>";
+
+            btnEnviar.style.display = "none";
+
+            return;
+
+        }
+
+
+        const tabla = document.createElement("table");
+
+
+        filas.forEach(function (fila, indice) {
+
+            const tr = document.createElement("tr");
+
+
+            fila.forEach(function (celda) {
+
+                const elemento = indice === 0
+                    ? document.createElement("th")
+                    : document.createElement("td");
+
+
+                elemento.textContent = celda;
+
+
+                tr.appendChild(elemento);
 
             });
 
 
-            resultado.appendChild(tabla);
+            tabla.appendChild(tr);
 
-        }
+        });
 
-    </script>
+
+        resultado.appendChild(tabla);
+
+    }
+
+</script>
 
 </body>
 
