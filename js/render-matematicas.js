@@ -1,11 +1,61 @@
 // js/render-matematicas.js
 
-export function activarRenderMatematico(documento){
+export function activarRenderMatematico(documento) {
 
-    // Evitar cargar MathJax dos veces
-    if(documento.getElementById("mathjax-script")){
+    const ventana = documento.defaultView;
+
+
+    // ===============================================
+    // SI MATHJAX YA ESTÁ CARGADO
+    // RENDERIZAR EL NUEVO CONTENIDO
+    // ===============================================
+
+    if (ventana.MathJax && ventana.MathJax.typesetPromise) {
+
+        ventana.MathJax.typesetPromise();
+
         return;
+
     }
+
+
+    // ===============================================
+    // CONFIGURAR MATHJAX
+    // ===============================================
+
+    ventana.MathJax = {
+
+        tex: {
+
+            inlineMath: [
+                ["$", "$"],
+                ["\\(", "\\)"]
+            ],
+
+            displayMath: [
+                ["$$", "$$"],
+                ["\\[", "\\]"]
+            ]
+
+        }
+
+    };
+
+
+    // ===============================================
+    // EVITAR CARGAR EL SCRIPT DOS VECES
+    // ===============================================
+
+    if (documento.getElementById("mathjax-script")) {
+
+        return;
+
+    }
+
+
+    // ===============================================
+    // CARGAR MATHJAX
+    // ===============================================
 
     const script = documento.createElement("script");
 
@@ -14,14 +64,17 @@ export function activarRenderMatematico(documento){
     script.type = "text/javascript";
 
     script.src =
-    "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
+        "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
 
 
     script.onload = () => {
 
-        if(documento.defaultView.MathJax){
+        if (
+            ventana.MathJax &&
+            ventana.MathJax.typesetPromise
+        ) {
 
-            documento.defaultView.MathJax.typesetPromise();
+            ventana.MathJax.typesetPromise();
 
         }
 
