@@ -27,8 +27,7 @@
             margin: auto;
         }
 
-        h1,
-        h2 {
+        h1 {
             color: #c5a059;
         }
 
@@ -40,7 +39,7 @@
         }
 
         .campo {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         label {
@@ -63,52 +62,33 @@
         }
 
         textarea {
-            min-height: 130px;
+            min-height: 150px;
             resize: vertical;
         }
 
+        .ayuda {
+            margin-top: 8px;
+            color: #b8c0cc;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
         button {
-            padding: 12px 20px;
+            width: 100%;
+            margin-top: 15px;
+            padding: 14px 25px;
             background: #c5a059;
             color: #06090f;
             border: none;
             border-radius: 8px;
             font-weight: bold;
+            font-size: 16px;
             cursor: pointer;
         }
 
         button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-        }
-
-        .parametro {
-            padding: 20px;
-            margin-bottom: 15px;
-            background: #1a2a3a;
-            border-radius: 10px;
-        }
-
-        .fila {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 10px;
-        }
-
-        .btn-eliminar {
-            margin-top: 10px;
-            background: #8b2f2f;
-            color: white;
-        }
-
-        .seccion {
-            margin-top: 35px;
-        }
-
-        #btnGuardar {
-            margin-top: 30px;
-            width: 100%;
-            font-size: 16px;
         }
 
     </style>
@@ -128,14 +108,14 @@
 
             <div class="campo">
 
-                <label>
+                <label for="nombre">
                     Nombre de la plantilla
                 </label>
 
                 <input
                     type="text"
                     id="nombre"
-                    placeholder="Ejemplo: Pendiente entre dos puntos"
+                    placeholder="Ejemplo: Recta tangente a una función cuadrática"
                 >
 
             </div>
@@ -143,65 +123,76 @@
 
             <div class="campo">
 
-                <label>
+                <label for="enunciado">
                     Enunciado parametrizado
                 </label>
 
                 <textarea
                     id="enunciado"
-                    placeholder="Use {{nombreParametro}} para insertar parámetros."
+                    placeholder="Use {{nombreParametro}} para insertar los datos generados."
                 ></textarea>
 
-            </div>
+                <div class="ayuda">
 
+                    Ejemplo:
 
-            <div class="seccion">
+                    <br>
 
-                <h2>
-                    Parámetros
-                </h2>
-
-                <div id="listaParametros"></div>
-
-                <button id="btnAgregarParametro">
-                    Agregar parámetro
-                </button>
-
-            </div>
-
-
-            <div class="seccion">
-
-                <h2>
-                    Restricciones
-                </h2>
-
-                <div class="campo">
-
-                    <label>
-                        Una restricción por línea
-                    </label>
-
-                    <textarea
-                        id="restricciones"
-                        placeholder="Ejemplo:&#10;x1 != x2"
-                    ></textarea>
+                    Dada la función
+                    $f(x)={{A}}x^2+{{B}}x+{{C}}$,
+                    encuentre la ecuación de la recta tangente
+                    en $x={{t}}$.
 
                 </div>
 
             </div>
 
 
-            <div class="seccion">
+            <div class="campo">
 
-                <h2>
+                <label for="generador">
+                    Generador matemático
+                </label>
+
+                <select id="generador">
+
+                    <option value="">
+                        Seleccione un generador
+                    </option>
+
+                    <option value="tangente_cuadratica">
+                        Tangente a función cuadrática
+                    </option>
+
+                </select>
+
+                <div class="ayuda">
+
+                    El generador produce los parámetros matemáticos
+                    necesarios para construir el ejercicio.
+
+                </div>
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="respuesta">
                     Respuesta parametrizada
-                </h2>
+                </label>
 
                 <textarea
                     id="respuesta"
-                    placeholder="Ejemplo: $m=\frac{{{y2}}-{{y1}}}{{{x2}}-{{x1}}}$"
+                    placeholder="Ejemplo: $y={{m}}x+{{bRecta}}$"
                 ></textarea>
+
+                <div class="ayuda">
+
+                    Puede utilizar cualquier dato producido
+                    por el generador matemático.
+
+                </div>
 
             </div>
 
@@ -230,348 +221,21 @@
         const nombre =
             document.getElementById("nombre");
 
+
         const enunciado =
             document.getElementById("enunciado");
 
-        const listaParametros =
-            document.getElementById("listaParametros");
 
-        const btnAgregarParametro =
-            document.getElementById("btnAgregarParametro");
+        const generador =
+            document.getElementById("generador");
 
-        const restricciones =
-            document.getElementById("restricciones");
 
         const respuesta =
             document.getElementById("respuesta");
 
+
         const btnGuardar =
             document.getElementById("btnGuardar");
-
-
-        // ===============================================
-        // AGREGAR PARÁMETRO
-        // ===============================================
-
-        btnAgregarParametro.addEventListener(
-            "click",
-            function () {
-
-                agregarParametro();
-
-            }
-        );
-
-
-        function agregarParametro() {
-
-
-            const bloque =
-                document.createElement("div");
-
-
-            bloque.className = "parametro";
-
-
-            bloque.innerHTML = `
-
-                <div class="fila">
-
-                    <div>
-
-                        <label>
-                            Nombre
-                        </label>
-
-                        <input
-                            type="text"
-                            class="parametro-nombre"
-                            placeholder="Ejemplo: x1"
-                        >
-
-                    </div>
-
-
-                    <div>
-
-                        <label>
-                            Tipo
-                        </label>
-
-                        <select class="parametro-tipo">
-
-                            <option value="entero">
-                                Entero
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div>
-
-                        <label>
-                            Mínimo
-                        </label>
-
-                        <input
-                            type="number"
-                            class="parametro-minimo"
-                        >
-
-                    </div>
-
-
-                    <div>
-
-                        <label>
-                            Máximo
-                        </label>
-
-                        <input
-                            type="number"
-                            class="parametro-maximo"
-                        >
-
-                    </div>
-
-                </div>
-
-
-                <div class="campo">
-
-                    <label>
-                        Valores excluidos
-                    </label>
-
-                    <input
-                        type="text"
-                        class="parametro-excluir"
-                        placeholder="Ejemplo: 0, 2, -2"
-                    >
-
-                </div>
-
-
-                <button
-                    type="button"
-                    class="btn-eliminar"
-                >
-                    Eliminar parámetro
-                </button>
-
-            `;
-
-
-            const btnEliminar =
-                bloque.querySelector(".btn-eliminar");
-
-
-            btnEliminar.addEventListener(
-                "click",
-                function () {
-
-                    bloque.remove();
-
-                }
-            );
-
-
-            listaParametros.appendChild(bloque);
-
-
-        }
-
-
-        // ===============================================
-        // OBTENER PARÁMETROS
-        // ===============================================
-
-        function obtenerParametros() {
-
-
-            const parametros = {};
-
-
-            const bloques =
-                listaParametros.querySelectorAll(
-                    ".parametro"
-                );
-
-
-            for (const bloque of bloques) {
-
-
-                const nombreParametro =
-                    bloque
-                        .querySelector(".parametro-nombre")
-                        .value
-                        .trim();
-
-
-                const tipo =
-                    bloque
-                        .querySelector(".parametro-tipo")
-                        .value;
-
-
-                const minimoTexto =
-                    bloque
-                        .querySelector(".parametro-minimo")
-                        .value;
-
-
-                const maximoTexto =
-                    bloque
-                        .querySelector(".parametro-maximo")
-                        .value;
-
-
-                const excluirTexto =
-                    bloque
-                        .querySelector(".parametro-excluir")
-                        .value
-                        .trim();
-
-
-                if (!nombreParametro) {
-
-                    throw new Error(
-                        "Todos los parámetros deben tener nombre."
-                    );
-
-                }
-
-
-                if (
-                    minimoTexto === "" ||
-                    maximoTexto === ""
-                ) {
-
-                    throw new Error(
-                        "Todos los parámetros deben tener mínimo y máximo."
-                    );
-
-                }
-
-
-                const minimo =
-                    Number(minimoTexto);
-
-
-                const maximo =
-                    Number(maximoTexto);
-
-
-                if (minimo > maximo) {
-
-                    throw new Error(
-                        "El mínimo no puede ser mayor que el máximo."
-                    );
-
-                }
-
-
-                if (
-                    Object.prototype.hasOwnProperty.call(
-                        parametros,
-                        nombreParametro
-                    )
-                ) {
-
-                    throw new Error(
-                        "El parámetro " +
-                        nombreParametro +
-                        " está repetido."
-                    );
-
-                }
-
-
-                let excluir = [];
-
-
-                if (excluirTexto) {
-
-
-                    excluir =
-                        excluirTexto
-                            .split(",")
-                            .map(function (valor) {
-
-                                return Number(
-                                    valor.trim()
-                                );
-
-                            });
-
-
-                    if (
-                        excluir.some(
-                            function (valor) {
-
-                                return Number.isNaN(valor);
-
-                            }
-                        )
-                    ) {
-
-                        throw new Error(
-                            "Los valores excluidos deben ser números."
-                        );
-
-                    }
-
-
-                }
-
-
-                parametros[nombreParametro] = {
-
-                    tipo: tipo,
-
-                    minimo: minimo,
-
-                    maximo: maximo,
-
-                    excluir: excluir
-
-                };
-
-
-            }
-
-
-            return parametros;
-
-
-        }
-
-
-        // ===============================================
-        // OBTENER RESTRICCIONES
-        // ===============================================
-
-        function obtenerRestricciones() {
-
-
-            return restricciones
-                .value
-                .split("\n")
-                .map(function (restriccion) {
-
-                    return restriccion.trim();
-
-                })
-                .filter(function (restriccion) {
-
-                    return restriccion !== "";
-
-                });
-
-
-        }
 
 
         // ===============================================
@@ -589,6 +253,10 @@
 
                 const enunciadoPlantilla =
                     enunciado.value.trim();
+
+
+                const generadorPlantilla =
+                    generador.value;
 
 
                 const respuestaPlantilla =
@@ -617,6 +285,28 @@
                 }
 
 
+                if (!generadorPlantilla) {
+
+                    alert(
+                        "Seleccione un generador matemático."
+                    );
+
+                    return;
+
+                }
+
+
+                if (!respuestaPlantilla) {
+
+                    alert(
+                        "Escriba la respuesta parametrizada."
+                    );
+
+                    return;
+
+                }
+
+
                 btnGuardar.disabled = true;
 
                 btnGuardar.textContent =
@@ -624,25 +314,6 @@
 
 
                 try {
-
-
-                    const parametros =
-                        obtenerParametros();
-
-
-                    if (
-                        Object.keys(parametros).length === 0
-                    ) {
-
-                        throw new Error(
-                            "Debe agregar al menos un parámetro."
-                        );
-
-                    }
-
-
-                    const listaRestricciones =
-                        obtenerRestricciones();
 
 
                     const plantilla = {
@@ -656,16 +327,12 @@
                             "matematica_parametrizada",
 
 
+                        generador:
+                            generadorPlantilla,
+
+
                         enunciado:
                             enunciadoPlantilla,
-
-
-                        parametros:
-                            parametros,
-
-
-                        restricciones:
-                            listaRestricciones,
 
 
                         respuesta:
@@ -706,6 +373,15 @@
                     );
 
 
+                    nombre.value = "";
+
+                    enunciado.value = "";
+
+                    generador.value = "";
+
+                    respuesta.value = "";
+
+
                 } catch (error) {
 
 
@@ -716,6 +392,7 @@
 
 
                     alert(
+                        "Error al guardar la plantilla: " +
                         error.message
                     );
 
@@ -734,14 +411,6 @@
 
             }
         );
-
-
-        // ===============================================
-        // PARÁMETRO INICIAL
-        // ===============================================
-
-        agregarParametro();
-
 
     </script>
 
