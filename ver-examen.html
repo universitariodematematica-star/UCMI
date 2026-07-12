@@ -97,15 +97,23 @@
 
         import { db } from "./firebase-config.js";
         import {
-        activarRenderMatematico
-    } from "./js/render-matematicas.js";
+    activarRenderMatematico
+} from "./js/render-matematicas.js";
+
+
+import {
+    ejecutarGenerador,
+    aplicarParametros
+} from "./js/matematicas/motor-matematico.js";
 
         import {
-            collection,
-            getDocs,
-            query,
-            where
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    query,
+    where
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 
         const selectorExamen =
@@ -187,81 +195,84 @@
         );
 
 
-        // ===============================================
-        // CARGAR PREGUNTAS
-        // ===============================================
+// ===============================================
+// CARGAR PREGUNTAS
+// ===============================================
 
-        async function cargarPreguntas(examenId) {
+async function cargarPreguntas(examenId) {
+
+    examen.innerHTML =
+        "<p>Cargando preguntas...</p>";
+
+
+    try {
+
+        const consulta = query(
+            collection(db, "preguntas_test"),
+            where("examenId", "==", examenId)
+        );
+
+
+        const snapshot =
+            await getDocs(consulta);
+
+
+        examen.innerHTML = "";
+
+
+        if (snapshot.empty) {
 
             examen.innerHTML =
-                "<p>Cargando preguntas...</p>";
+                "<p>Este examen no tiene preguntas.</p>";
+
+            return;
+
+        }
 
 
-            try {
-
-                const consulta = query(
-                    collection(db, "preguntas_test"),
-                    where("examenId", "==", examenId)
-                );
+        let numero = 1;
 
 
-                const snapshot =
-                    await getDocs(consulta);
+        for (const documento of snapshot.docs) {
 
 
-                examen.innerHTML = "";
+            const datos =
+                documento.data();
 
 
-                if (snapshot.empty) {
-
-                    examen.innerHTML =
-                        "<p>Este examen no tiene preguntas.</p>";
-
-                    return;
-
-                }
+            const bloque =
+                document.createElement("div");
 
 
-                let numero = 1;
+            bloque.className =
+                "pregunta";
 
 
-                snapshot.forEach(function (documento) {
+            // ===============================================
+            // PREGUNTA MATEMÁTICA PARAMETRIZADA
+            // ===============================================
 
-                    const datos = documento.data();
-
-
-                    const bloque =
-                        document.createElement("div");
-
-
-                    bloque.className = "pregunta";
+            if (
+                datos.tipo ===
+                "matematica_parametrizada"
+            ) {
 
 
-                    let opcionesHTML = "";
-
-
-                    datos.opciones.forEach(
-                        function (opcion, indice) {
-
-                            opcionesHTML += `
-
-                                <label class="opcion">
-
-                                    <input
-                                        type="radio"
-                                        name="pregunta_${documento.id}"
-                                        value="${indice}"
-                                    >
-
-                                    ${opcion}
-
-                                </label>
-
-                            `;
-
-                        }
+                const plantillaRef =
+                    doc(
+                        db,
+                        "plantillas_matematicas",
+                        datos.plantillaId
                     );
 
+
+                const plantillaSnapshot =
+                    await getDoc(
+                        plantillaRef
+                    );
+
+
+                if (!plantillaSnapshot.exists()) {
 
                     bloque.innerHTML = `
 
@@ -270,10 +281,8 @@
                         </div>
 
                         <div class="texto-pregunta">
-                            ${datos.pregunta}
+                            Plantilla matemática no encontrada.
                         </div>
-
-                        ${opcionesHTML}
 
                     `;
 
@@ -283,34 +292,151 @@
 
                     numero++;
 
-});
+
+                    continue;
+
+                }
 
 
-// ===============================================
-// RENDERIZAR MATEMÁTICAS
-// ===============================================
-
-activarRenderMatematico(document);
+                const plantilla =
+                    plantillaSnapshot.data();
 
 
-            } catch (error) {
+                const datosGenerados =
+                    ejecutarGenerador(
+                        plantilla.generador
+                    );
 
-                console.error(
-                    "ERROR AL CARGAR PREGUNTAS:",
-                    error
+
+                const enunciadoGenerado =
+                    aplicarParametros(
+                        plantilla.enunciado,
+                        datosGenerados
+                    );
+
+
+                const respuestaGenerada =
+                    aplicarParametros(
+                        plantilla.respuesta,
+                        datosGenerados
+                    );
+
+
+                bloque.innerHTML = `
+
+                    <div class="numero">
+                        Pregunta ${numero}
+                    </div>
+
+                    <div class="texto-pregunta">
+                        ${enunciadoGenerado}
+                    </div>
+
+                `;
+
+
+                console.log(
+                    "PREGUNTA PARAMETRIZADA:",
+                    {
+                        plantilla:
+                            plantilla.nombre,
+
+                        datos:
+                            datosGenerados,
+
+                        respuesta:
+                            respuestaGenerada
+                    }
                 );
 
 
-                examen.innerHTML = `
-                    <p>
-                        Error al cargar el examen:
-                        ${error.message}
-                    </p>
+            } else {
+
+
+                // ===============================================
+                // PREGUNTA NORMAL
+                // ===============================================
+
+                let opcionesHTML = "";
+
+
+                datos.opciones.forEach(
+                    function (opcion, indice) {
+
+                        opcionesHTML += `
+
+                            <label class="opcion">
+
+                                <input
+                                    type="radio"
+                                    name="pregunta_${documento.id}"
+                                    value="${indice}"
+                                >
+
+                                ${opcion}
+
+                            </label>
+
+                        `;
+
+                    }
+                );
+
+
+                bloque.innerHTML = `
+
+                    <div class="numero">
+                        Pregunta ${numero}
+                    </div>
+
+                    <div class="texto-pregunta">
+                        ${datos.pregunta}
+                    </div>
+
+                    ${opcionesHTML}
+
                 `;
+
 
             }
 
+
+            examen.appendChild(bloque);
+
+
+            numero++;
+
+
         }
+
+
+        // ===============================================
+        // RENDERIZAR MATEMÁTICAS
+        // ===============================================
+
+        activarRenderMatematico(document);
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR AL CARGAR PREGUNTAS:",
+            error
+        );
+
+
+        examen.innerHTML = `
+
+            <p>
+                Error al cargar el examen:
+                ${error.message}
+            </p>
+
+        `;
+
+    }
+
+}
 
 
         // ===============================================
