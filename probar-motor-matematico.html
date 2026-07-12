@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Prueba motor matemático - UCMI</title>
+
+    <style>
+
+        body {
+            margin: 0;
+            padding: 40px;
+            background: #06090f;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .contenedor {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #c5a059;
+        }
+
+        .panel {
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+        }
+
+        .bloque {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #1a2a3a;
+            border-radius: 10px;
+            line-height: 1.7;
+        }
+
+        .titulo {
+            color: #c5a059;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px 25px;
+            background: #c5a059;
+            color: #06090f;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="contenedor">
+
+        <h1>
+            Prueba del motor matemático
+        </h1>
+
+        <div class="panel">
+
+            <div class="bloque">
+
+                <div class="titulo">
+                    Datos generados
+                </div>
+
+                <div id="datos"></div>
+
+            </div>
+
+
+            <div class="bloque">
+
+                <div class="titulo">
+                    Enunciado generado
+                </div>
+
+                <div id="enunciado"></div>
+
+            </div>
+
+
+            <div class="bloque">
+
+                <div class="titulo">
+                    Respuesta generada
+                </div>
+
+                <div id="respuesta"></div>
+
+            </div>
+
+
+            <button id="btnGenerar">
+                Generar nuevo ejercicio
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <script type="module">
+
+        import {
+            ejecutarGenerador,
+            aplicarParametros
+        } from "./js/matematicas/motor-matematico.js";
+
+
+        const datos =
+            document.getElementById("datos");
+
+
+        const enunciado =
+            document.getElementById("enunciado");
+
+
+        const respuesta =
+            document.getElementById("respuesta");
+
+
+        const btnGenerar =
+            document.getElementById("btnGenerar");
+
+
+        const plantillaEnunciado =
+            "Dada la función definida por $f(x)={{A}}x^2+{{B}}x+{{C}}$, encuentre la ecuación de la recta tangente a la gráfica de la función en el punto donde $x={{t}}$.";
+
+
+        const plantillaRespuesta =
+            "$y={{m}}x+{{bRecta}}$";
+
+
+        function generarEjercicio() {
+
+
+            try {
+
+
+                const datosGenerados =
+                    ejecutarGenerador(
+                        "tangente_cuadratica"
+                    );
+
+
+                const enunciadoGenerado =
+                    aplicarParametros(
+                        plantillaEnunciado,
+                        datosGenerados
+                    );
+
+
+                const respuestaGenerada =
+                    aplicarParametros(
+                        plantillaRespuesta,
+                        datosGenerados
+                    );
+
+
+                datos.textContent =
+                    JSON.stringify(
+                        datosGenerados,
+                        null,
+                        2
+                    );
+
+
+                datos.style.whiteSpace =
+                    "pre-wrap";
+
+
+                enunciado.textContent =
+                    enunciadoGenerado;
+
+
+                respuesta.textContent =
+                    respuestaGenerada;
+
+
+                console.log(
+                    "DATOS GENERADOS:",
+                    datosGenerados
+                );
+
+
+                console.log(
+                    "ENUNCIADO:",
+                    enunciadoGenerado
+                );
+
+
+                console.log(
+                    "RESPUESTA:",
+                    respuestaGenerada
+                );
+
+
+            } catch (error) {
+
+
+                console.error(
+                    "ERROR MOTOR MATEMÁTICO:",
+                    error
+                );
+
+
+                alert(
+                    error.message
+                );
+
+
+            }
+
+
+        }
+
+
+        btnGenerar.addEventListener(
+            "click",
+            generarEjercicio
+        );
+
+
+        generarEjercicio();
+
+    </script>
+
+</body>
+
+</html>
