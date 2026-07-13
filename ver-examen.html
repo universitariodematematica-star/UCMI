@@ -122,6 +122,8 @@ import {
         const examen =
             document.getElementById("examen");
 
+        let preguntasActuales = [];
+
 
         // ===============================================
         // CARGAR EXÁMENES
@@ -203,6 +205,8 @@ async function cargarPreguntas(examenId) {
 
     examen.innerHTML =
         "<p>Cargando preguntas...</p>";
+
+    preguntasActuales = [];
 
 
     try {
@@ -354,10 +358,27 @@ async function cargarPreguntas(examenId) {
 
 
                 // ===============================================
-                // PREGUNTA NORMAL
-                // ===============================================
+// PREGUNTA NORMAL
+// ===============================================
 
-                let opcionesHTML = "";
+preguntasActuales.push({
+
+    id: documento.id,
+
+    correcta: datos.correcta,
+
+    competencia: datos.competencia,
+
+    nivel: datos.nivel,
+
+    dificultad: datos.dificultad,
+
+    tipo: datos.tipo
+
+});
+
+
+let opcionesHTML = "";
 
 
                 datos.opciones.forEach(
@@ -407,14 +428,57 @@ async function cargarPreguntas(examenId) {
             numero++;
 
 
-        }
+}
 
 
-        // ===============================================
-        // RENDERIZAR MATEMÁTICAS
-        // ===============================================
+// ===============================================
+// BOTÓN FINALIZAR EXAMEN
+// ===============================================
 
-        activarRenderMatematico(document);
+if (preguntasActuales.length > 0) {
+
+    const btnFinalizar =
+        document.createElement("button");
+
+
+    btnFinalizar.textContent =
+        "Finalizar examen";
+
+
+    btnFinalizar.style.cssText = `
+
+        width: 100%;
+        padding: 15px;
+        margin-top: 25px;
+        background: #c5a059;
+        color: #06090f;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+
+    `;
+
+
+    btnFinalizar.addEventListener(
+        "click",
+        finalizarExamen
+    );
+
+
+    examen.appendChild(
+        btnFinalizar
+    );
+
+}
+
+
+// ===============================================
+// RENDERIZAR MATEMÁTICAS
+// ===============================================
+
+activarRenderMatematico(document);
 
 
     } catch (error) {
@@ -435,6 +499,118 @@ async function cargarPreguntas(examenId) {
         `;
 
     }
+
+}
+
+        // ===============================================
+// FINALIZAR EXAMEN
+// ===============================================
+
+function finalizarExamen() {
+
+
+    const resultadosCompetencias = {};
+
+
+    const letras = [
+        "A",
+        "B",
+        "C",
+        "D"
+    ];
+
+
+    for (
+        const pregunta
+        of preguntasActuales
+    ) {
+
+
+        const respuestaSeleccionada =
+            document.querySelector(
+                `input[name="pregunta_${pregunta.id}"]:checked`
+            );
+
+
+        if (!respuestaSeleccionada) {
+
+            continue;
+
+        }
+
+
+        const indiceRespuesta =
+            Number(
+                respuestaSeleccionada.value
+            );
+
+
+        const letraRespuesta =
+            letras[indiceRespuesta];
+
+
+        const competencia =
+            pregunta.competencia ||
+            "sin_competencia";
+
+
+        if (
+            !resultadosCompetencias[
+                competencia
+            ]
+        ) {
+
+            resultadosCompetencias[
+                competencia
+            ] = {
+
+                correctas: 0,
+
+                incorrectas: 0,
+
+                respondidas: 0
+
+            };
+
+        }
+
+
+        resultadosCompetencias[
+            competencia
+        ].respondidas++;
+
+
+        if (
+            letraRespuesta ===
+            pregunta.correcta
+        ) {
+
+            resultadosCompetencias[
+                competencia
+            ].correctas++;
+
+        } else {
+
+            resultadosCompetencias[
+                competencia
+            ].incorrectas++;
+
+        }
+
+
+    }
+
+
+    console.log(
+        "DIAGNÓSTICO POR COMPETENCIAS:",
+        resultadosCompetencias
+    );
+
+
+    alert(
+        "Examen finalizado. Revise la consola."
+    );
+
 
 }
 
