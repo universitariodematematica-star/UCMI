@@ -1232,82 +1232,143 @@ B: I study mathematics.
 
 </div>
     <script>
-        // Configuración del canvas
-        const canvas = document.getElementById('drawingCanvas');
-        const ctx = canvas.getContext('2d');
-        let isDrawing = false;
-        let currentColor = 'black';
-        let erasing = false;
-        // Ajustar tamaño del canvas al tamaño de la ventana
-        function resizeCanvas() {
-            canvas.width = document.documentElement.scrollWidth;
-            canvas.height = document.documentElement.scrollHeight;
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        // Configuración del evento de dibujo
-        canvas.addEventListener('mousedown', (event) => {
-            if (currentColor !== 'black' || erasing)
-                isDrawing = true;
-                ctx.beginPath();
-                ctx.moveTo(event.pageX, event.pageY);
-                canvas.style.pointerEvents = 'auto'; // Permitir dibujar en el canvas
-            }
-        });
-        canvas.addEventListener('mousemove', (event) => {
-            if (isDrawing) {
-                if(erasing){
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.lineWidth = 20;
-}else{
-    ctx.globalCompositeOperation = "source-over";
-    ctx.strokeStyle = currentColor;
-    ctx.lineWidth = 2;
-}
+    // Configuración del canvas
+    const canvas = document.getElementById('drawingCanvas');
+    const ctx = canvas.getContext('2d');
 
-ctx.lineCap = 'round';
-ctx.lineTo(event.pageX, event.pageY);
-ctx.stroke();
-            }
-        });
-        canvas.addEventListener('mouseup', () => {
-            isDrawing = false;
-        });
-        // Cambiar color del dibujo
-        document.getElementById('redButton').addEventListener('click', () => {
-    currentColor = 'red';
-    erasing = false;
-    canvas.style.pointerEvents = 'auto';
-});
+    let isDrawing = false;
+    let currentColor = 'black';
+    let erasing = false;
 
-document.getElementById('blueButton').addEventListener('click', () => {
-    currentColor = 'blue';
-    erasing = false;
-    canvas.style.pointerEvents = 'auto';
-});
+    // Ajustar el canvas al tamaño completo del documento
+    function resizeCanvas() {
+        canvas.width = document.documentElement.scrollWidth;
+        canvas.height = document.documentElement.scrollHeight;
+    }
 
-document.getElementById('limeButton').addEventListener('click', () => {
-    currentColor = 'yellowgreen';
-    erasing = false;
-    canvas.style.pointerEvents = 'auto';
-});
-        document.getElementById('eraserButton').addEventListener('click', () => {
-            erasing = true;
+    resizeCanvas();
+
+    // Iniciar dibujo
+    canvas.addEventListener('mousedown', (event) => {
+
+        if (currentColor !== 'black' || erasing) {
+
+            isDrawing = true;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                event.pageX,
+                event.pageY
+            );
+
             canvas.style.pointerEvents = 'auto';
-        });
-        document.getElementById('clearButton').addEventListener('click', () => {
-            // Limpiar el canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            canvas.style.pointerEvents = 'none'; // Desactivar eventos del ratón en el canvas
-        });
-        // Para mantener la funcionalidad de la página cuando el canvas no está en uso
-        document.addEventListener('mousedown', () => {
-            if (currentColor === 'black') {
-                canvas.style.pointerEvents = 'none'; // Desactivar el canvas si no se está dibujando
-            }
-        });
-      
-      
-      
-    </script>
-    <!-- XXXXXXXXXXXXXXXXXXXXXX                  Fin de la funcionalidad de rayar y borrar XXXXXXXXXXXXXXXXXXXXXXXXXX -->
+        }
+
+    });
+
+    // Dibujar
+    canvas.addEventListener('mousemove', (event) => {
+
+        if (!isDrawing) return;
+
+        if (erasing) {
+
+            ctx.globalCompositeOperation = "destination-out";
+            ctx.lineWidth = 20;
+
+        } else {
+
+            ctx.globalCompositeOperation = "source-over";
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = 2;
+
+        }
+
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.lineTo(
+            event.pageX,
+            event.pageY
+        );
+
+        ctx.stroke();
+
+    });
+
+    // Detener dibujo
+    canvas.addEventListener('mouseup', () => {
+        isDrawing = false;
+        ctx.beginPath();
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+        isDrawing = false;
+        ctx.beginPath();
+    });
+
+
+    // BOTÓN ROJO
+    document.getElementById('redButton').addEventListener('click', () => {
+
+        currentColor = 'red';
+        erasing = false;
+
+        canvas.style.pointerEvents = 'auto';
+
+    });
+
+
+    // BOTÓN AZUL
+    document.getElementById('blueButton').addEventListener('click', () => {
+
+        currentColor = 'blue';
+        erasing = false;
+
+        canvas.style.pointerEvents = 'auto';
+
+    });
+
+
+    // BOTÓN AMARILLO VERDOSO
+    document.getElementById('limeButton').addEventListener('click', () => {
+
+        currentColor = 'yellowgreen';
+        erasing = false;
+
+        canvas.style.pointerEvents = 'auto';
+
+    });
+
+
+    // BORRADOR
+    document.getElementById('eraserButton').addEventListener('click', () => {
+
+        erasing = true;
+
+        canvas.style.pointerEvents = 'auto';
+
+    });
+
+
+    // LIMPIAR TODA LA PIZARRA
+    document.getElementById('clearButton').addEventListener('click', () => {
+
+        ctx.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        currentColor = 'black';
+        erasing = false;
+
+        canvas.style.pointerEvents = 'none';
+
+    });
+
+</script>
+
+<!-- XXXXXXXXXXXXXXXXXXXXXX Fin de la funcionalidad de rayar y borrar XXXXXXXXXXXXXXXXXXXXXXXXXX -->
