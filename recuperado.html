@@ -344,41 +344,29 @@
        ========================================================= */
 
     #drawingCanvas {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 1000;
-        background-color: transparent;
-    }
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    z-index: 9998;
+
+    pointer-events: none;
+}
 
     #ucmiToolbar {
-
     position: fixed;
 
-    bottom: 25px;
-    right: 25px;
+    right: 20px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    z-index: 10000;
 
     display: flex;
-
-    flex-direction: row;
-
+    flex-direction: column;
     align-items: center;
-
-    gap: 12px;
-
-    padding: 12px 18px;
-
-    background: white;
-
-    border-radius: 18px;
-
-    box-shadow: 8px 8px 20px rgba(0,0,0,0.8);
-
-    z-index: 1001;
-
+    gap: 10px;
 }
 
     .color-picker {
@@ -1207,107 +1195,235 @@ B: I study mathematics.
     <a class="boton-interactivo" href="https://drive.google.com/uc?export=download&id=1HdUHYE6FUI0TH1_IH_u4BnYqzSabtbb-" style="color: aqua; line-height: 1;">DESCARGAR PDF</a>
 
 
-    <!-- Canvas para dibujo -->
-    <canvas id="drawingCanvas"></canvas>
-    <!-- Contenedor para los botones de control -->
-    <div id="ucmiToolbar">
+    ```html
+<!-- Canvas para dibujo -->
+<canvas id="drawingCanvas"></canvas>
+
+<!-- Contenedor para los botones de control -->
+<div id="ucmiToolbar">
 
     <div class="tool-title">
         ✏️ Pizarra
     </div>
 
-    <div id="redButton" class="color-picker" style="background-color:red;"></div>
+    <div id="redButton"
+         class="color-picker"
+         style="background-color:red;">
+    </div>
 
-    <div id="blueButton" class="color-picker" style="background-color:blue;"></div>
+    <div id="blueButton"
+         class="color-picker"
+         style="background-color:blue;">
+    </div>
 
-    <div id="limeButton" class="color-picker" style="background-color:yellowgreen;"></div>
+    <div id="limeButton"
+         class="color-picker"
+         style="background-color:yellowgreen;">
+    </div>
 
-    <div id="eraserButton" class="color-picker" style="background-color:white;">
+    <div id="eraserButton"
+         class="color-picker"
+         style="background-color:white;">
+    </div>
 
-    </div>    
-
-    <div id="clearButton" class="color-picker clear-tool">
+    <div id="clearButton"
+         class="color-picker clear-tool">
         🧹
     </div>
 
 </div>
-    <script>
-        // Configuración del canvas
-        const canvas = document.getElementById('drawingCanvas');
-        const ctx = canvas.getContext('2d');
-        let isDrawing = false;
-        let currentColor = 'black';
-        let erasing = false;
-        // Ajustar tamaño del canvas al tamaño de la ventana
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        // Configuración del evento de dibujo
-        canvas.addEventListener('mousedown', (event) => {
-            if (currentColor !== 'black') {
-                isDrawing = true;
-                ctx.beginPath();
-                ctx.moveTo(event.clientX, event.clientY);
-                canvas.style.pointerEvents = 'auto'; // Permitir dibujar en el canvas
-            }
-        });
-        canvas.addEventListener('mousemove', (event) => {
-            if (isDrawing) {
-                if(erasing){
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.lineWidth = 20;
-}else{
-    ctx.globalCompositeOperation = "source-over";
-    ctx.strokeStyle = currentColor;
-    ctx.lineWidth = 2;
+
+
+<script>
+
+const canvas = document.getElementById('drawingCanvas');
+const ctx = canvas.getContext('2d');
+
+let isDrawing = false;
+let currentColor = null;
+let erasing = false;
+
+
+// ========================================
+// PREPARAR CANVAS
+// ========================================
+
+function prepararCanvas() {
+
+    canvas.width = Math.max(
+        document.body.scrollWidth,
+        document.documentElement.scrollWidth
+    );
+
+    canvas.height = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+    );
+
 }
 
-ctx.lineCap = 'round';
-ctx.lineTo(event.clientX, event.clientY);
-ctx.stroke();
-            }
-        });
-        canvas.addEventListener('mouseup', () => {
-            isDrawing = false;
-        });
-        // Cambiar color del dibujo
-        document.getElementById('redButton').addEventListener('click', () => {
-    currentColor = 'red';
-    erasing = false;
-    canvas.style.pointerEvents = 'auto';
+prepararCanvas();
+
+
+// ========================================
+// INICIAR DIBUJO
+// ========================================
+
+canvas.addEventListener('mousedown', (event) => {
+
+    if (currentColor === null && !erasing) return;
+
+    isDrawing = true;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        event.pageX,
+        event.pageY
+    );
+
 });
+
+
+// ========================================
+// DIBUJAR
+// ========================================
+
+canvas.addEventListener('mousemove', (event) => {
+
+    if (!isDrawing) return;
+
+    if (erasing) {
+
+        ctx.globalCompositeOperation = "destination-out";
+
+        ctx.lineWidth = 25;
+
+    } else {
+
+        ctx.globalCompositeOperation = "source-over";
+
+        ctx.strokeStyle = currentColor;
+
+        ctx.lineWidth = 3;
+    }
+
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    ctx.lineTo(
+        event.pageX,
+        event.pageY
+    );
+
+    ctx.stroke();
+
+});
+
+
+// ========================================
+// DETENER DIBUJO
+// ========================================
+
+canvas.addEventListener('mouseup', () => {
+
+    isDrawing = false;
+
+    ctx.beginPath();
+
+});
+
+canvas.addEventListener('mouseleave', () => {
+
+    isDrawing = false;
+
+    ctx.beginPath();
+
+});
+
+
+// ========================================
+// ROJO
+// ========================================
+
+document.getElementById('redButton').addEventListener('click', () => {
+
+    currentColor = 'red';
+
+    erasing = false;
+
+    canvas.style.pointerEvents = 'auto';
+
+});
+
+
+// ========================================
+// AZUL
+// ========================================
 
 document.getElementById('blueButton').addEventListener('click', () => {
+
     currentColor = 'blue';
+
     erasing = false;
+
     canvas.style.pointerEvents = 'auto';
+
 });
 
+
+// ========================================
+// AMARILLO VERDOSO
+// ========================================
+
 document.getElementById('limeButton').addEventListener('click', () => {
+
     currentColor = 'yellowgreen';
+
     erasing = false;
+
     canvas.style.pointerEvents = 'auto';
+
 });
-        document.getElementById('eraserButton').addEventListener('click', () => {
-            erasing = true;
-            canvas.style.pointerEvents = 'auto';
-        });
-        document.getElementById('clearButton').addEventListener('click', () => {
-            // Limpiar el canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            canvas.style.pointerEvents = 'none'; // Desactivar eventos del ratón en el canvas
-        });
-        // Para mantener la funcionalidad de la página cuando el canvas no está en uso
-        document.addEventListener('mousedown', () => {
-            if (currentColor === 'black') {
-                canvas.style.pointerEvents = 'none'; // Desactivar el canvas si no se está dibujando
-            }
-        });
-      
-      
-      
-    </script>
-    <!-- XXXXXXXXXXXXXXXXXXXXXX                  Fin de la funcionalidad de rayar y borrar XXXXXXXXXXXXXXXXXXXXXXXXXX -->
+
+
+// ========================================
+// BORRADOR
+// ========================================
+
+document.getElementById('eraserButton').addEventListener('click', () => {
+
+    currentColor = null;
+
+    erasing = true;
+
+    canvas.style.pointerEvents = 'auto';
+
+});
+
+
+// ========================================
+// LIMPIAR TODO
+// ========================================
+
+document.getElementById('clearButton').addEventListener('click', () => {
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    currentColor = null;
+
+    erasing = false;
+
+    canvas.style.pointerEvents = 'none';
+
+});
+
+</script>
+
+<!-- XXXXXXXXXXXXXXXXXXXXXX Fin de la funcionalidad de rayar y borrar XXXXXXXXXXXXXXXXXXXXXXXXXX -->
+```
