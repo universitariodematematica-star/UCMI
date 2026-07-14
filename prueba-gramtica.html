@@ -1209,141 +1209,99 @@ B: I study mathematics.
 
     ```html
 <script>
-    const canvas = document.getElementById('drawingCanvas');
-    const ctx = canvas.getContext('2d');
+const canvas = document.getElementById('drawingCanvas');
+const ctx = canvas.getContext('2d');
 
-    let isDrawing = false;
-    let currentColor = null;
-    let erasing = false;
+let isDrawing = false;
+let currentColor = null;
+let erasing = false;
 
-    function resizeCanvas() {
-        canvas.width = document.documentElement.scrollWidth;
-        canvas.height = document.documentElement.scrollHeight;
+function resizeCanvas() {
+    canvas.width = document.documentElement.scrollWidth;
+    canvas.height = document.documentElement.scrollHeight;
+}
+
+resizeCanvas();
+
+canvas.addEventListener('mousedown', function(event) {
+
+    if (currentColor === null && !erasing) return;
+
+    isDrawing = true;
+
+    const rect = canvas.getBoundingClientRect();
+
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+});
+
+canvas.addEventListener('mousemove', function(event) {
+
+    if (!isDrawing) return;
+
+    const rect = canvas.getBoundingClientRect();
+
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    if (erasing) {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.lineWidth = 20;
+    } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = 2;
     }
 
-    resizeCanvas();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-    // INICIAR DIBUJO
-    canvas.addEventListener('mousedown', (event) => {
+    ctx.lineTo(x, y);
+    ctx.stroke();
+});
 
-        if (currentColor !== null || erasing) {
+canvas.addEventListener('mouseup', function() {
+    isDrawing = false;
+    ctx.beginPath();
+});
 
-            isDrawing = true;
+canvas.addEventListener('mouseleave', function() {
+    isDrawing = false;
+});
 
-            ctx.beginPath();
+document.getElementById('redButton').addEventListener('click', function() {
+    currentColor = 'red';
+    erasing = false;
+    canvas.style.pointerEvents = 'auto';
+});
 
-            ctx.moveTo(
-                event.pageX,
-                event.pageY
-            );
-        }
+document.getElementById('blueButton').addEventListener('click', function() {
+    currentColor = 'blue';
+    erasing = false;
+    canvas.style.pointerEvents = 'auto';
+});
 
-    });
+document.getElementById('limeButton').addEventListener('click', function() {
+    currentColor = 'yellowgreen';
+    erasing = false;
+    canvas.style.pointerEvents = 'auto';
+});
 
-    // DIBUJAR
-    canvas.addEventListener('mousemove', (event) => {
+document.getElementById('eraserButton').addEventListener('click', function() {
+    erasing = true;
+    canvas.style.pointerEvents = 'auto';
+});
 
-        if (!isDrawing) return;
+document.getElementById('clearButton').addEventListener('click', function() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        if (erasing) {
+    currentColor = null;
+    erasing = false;
 
-            ctx.globalCompositeOperation = "destination-out";
-            ctx.lineWidth = 20;
-
-        } else {
-
-            ctx.globalCompositeOperation = "source-over";
-            ctx.strokeStyle = currentColor;
-            ctx.lineWidth = 2;
-
-        }
-
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-
-        ctx.lineTo(
-            event.pageX,
-            event.pageY
-        );
-
-        ctx.stroke();
-
-    });
-
-    // DETENER DIBUJO
-    canvas.addEventListener('mouseup', () => {
-        isDrawing = false;
-        ctx.beginPath();
-    });
-
-    canvas.addEventListener('mouseleave', () => {
-        isDrawing = false;
-        ctx.beginPath();
-    });
-
-
-    // ROJO
-    document.getElementById('redButton').addEventListener('click', () => {
-
-        currentColor = "red";
-        erasing = false;
-
-        canvas.style.pointerEvents = "auto";
-
-    });
-
-
-    // AZUL
-    document.getElementById('blueButton').addEventListener('click', () => {
-
-        currentColor = "blue";
-        erasing = false;
-
-        canvas.style.pointerEvents = "auto";
-
-    });
-
-
-    // AMARILLO VERDOSO
-    document.getElementById('limeButton').addEventListener('click', () => {
-
-        currentColor = "yellowgreen";
-        erasing = false;
-
-        canvas.style.pointerEvents = "auto";
-
-    });
-
-
-    // BORRADOR
-    document.getElementById('eraserButton').addEventListener('click', () => {
-
-        currentColor = null;
-        erasing = true;
-
-        canvas.style.pointerEvents = "auto";
-
-    });
-
-
-    // LIMPIAR TODO
-    document.getElementById('clearButton').addEventListener('click', () => {
-
-        ctx.clearRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-
-        currentColor = null;
-        erasing = false;
-
-        canvas.style.pointerEvents = "none";
-
-    });
-
+    canvas.style.pointerEvents = 'none';
+});
 </script>
-
-<!-- XXXXXXXXXXXXXXXXXXXXXX Fin de la funcionalidad de rayar y borrar XXXXXXXXXXXXXXXXXXXXXXXXXX -->
 ```
