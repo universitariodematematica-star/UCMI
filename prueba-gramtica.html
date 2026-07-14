@@ -1222,6 +1222,8 @@ B: I study mathematics.
 
     <div id="limeButton" class="color-picker" style="background-color:yellowgreen;"></div>
 
+    <div id="eraserButton" class="color-picker" style="background-color:white;">    
+
     <div id="clearButton" class="color-picker clear-tool">
         🧹
     </div>
@@ -1233,6 +1235,7 @@ B: I study mathematics.
         const ctx = canvas.getContext('2d');
         let isDrawing = false;
         let currentColor = 'black';
+        let erasing = false;
         // Ajustar tamaño del canvas al tamaño de la ventana
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -1251,11 +1254,18 @@ B: I study mathematics.
         });
         canvas.addEventListener('mousemove', (event) => {
             if (isDrawing) {
-                ctx.strokeStyle = currentColor;
-                ctx.lineWidth = 2;
-                ctx.lineCap = 'round';
-                ctx.lineTo(event.clientX, event.clientY);
-                ctx.stroke();
+                if(erasing){
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.lineWidth = 20;
+}else{
+    ctx.globalCompositeOperation = "source-over";
+    ctx.strokeStyle = currentColor;
+    ctx.lineWidth = 2;
+}
+
+ctx.lineCap = 'round';
+ctx.lineTo(event.clientX, event.clientY);
+ctx.stroke();
             }
         });
         canvas.addEventListener('mouseup', () => {
@@ -1273,6 +1283,10 @@ B: I study mathematics.
 
         document.getElementById('limeButton').addEventListener('click', () => {
             currentColor = 'yellowgreen';
+            canvas.style.pointerEvents = 'auto';
+        });
+        document.getElementById('eraserButton').addEventListener('click', () => {
+            erasing = true;
             canvas.style.pointerEvents = 'auto';
         });
         document.getElementById('clearButton').addEventListener('click', () => {
