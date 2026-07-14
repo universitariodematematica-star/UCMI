@@ -1266,10 +1266,25 @@ prepararCanvas();
 
 
 // ========================================
+// DETECTAR ELEMENTOS INTERACTIVOS
+// ========================================
+
+function esInteractivo(elemento) {
+
+    return elemento.closest(
+        'button, a, input, textarea, select, audio, video, [contenteditable="true"], #ucmiToolbar'
+    );
+
+}
+
+
+// ========================================
 // INICIAR DIBUJO
 // ========================================
 
-canvas.addEventListener('mousedown', (event) => {
+document.addEventListener('mousedown', (event) => {
+
+    if (esInteractivo(event.target)) return;
 
     if (currentColor === null && !erasing) return;
 
@@ -1289,23 +1304,21 @@ canvas.addEventListener('mousedown', (event) => {
 // DIBUJAR
 // ========================================
 
-canvas.addEventListener('mousemove', (event) => {
+document.addEventListener('mousemove', (event) => {
 
     if (!isDrawing) return;
 
     if (erasing) {
 
         ctx.globalCompositeOperation = "destination-out";
-
         ctx.lineWidth = 25;
 
     } else {
 
         ctx.globalCompositeOperation = "source-over";
-
         ctx.strokeStyle = currentColor;
-
         ctx.lineWidth = 3;
+
     }
 
     ctx.lineCap = "round";
@@ -1325,15 +1338,7 @@ canvas.addEventListener('mousemove', (event) => {
 // DETENER DIBUJO
 // ========================================
 
-canvas.addEventListener('mouseup', () => {
-
-    isDrawing = false;
-
-    ctx.beginPath();
-
-});
-
-canvas.addEventListener('mouseleave', () => {
+document.addEventListener('mouseup', () => {
 
     isDrawing = false;
 
@@ -1349,10 +1354,7 @@ canvas.addEventListener('mouseleave', () => {
 document.getElementById('redButton').addEventListener('click', () => {
 
     currentColor = 'red';
-
     erasing = false;
-
-    canvas.style.pointerEvents = 'auto';
 
 });
 
@@ -1364,10 +1366,7 @@ document.getElementById('redButton').addEventListener('click', () => {
 document.getElementById('blueButton').addEventListener('click', () => {
 
     currentColor = 'blue';
-
     erasing = false;
-
-    canvas.style.pointerEvents = 'auto';
 
 });
 
@@ -1379,10 +1378,7 @@ document.getElementById('blueButton').addEventListener('click', () => {
 document.getElementById('limeButton').addEventListener('click', () => {
 
     currentColor = 'yellowgreen';
-
     erasing = false;
-
-    canvas.style.pointerEvents = 'auto';
 
 });
 
@@ -1394,10 +1390,7 @@ document.getElementById('limeButton').addEventListener('click', () => {
 document.getElementById('eraserButton').addEventListener('click', () => {
 
     currentColor = null;
-
     erasing = true;
-
-    canvas.style.pointerEvents = 'auto';
 
 });
 
@@ -1416,10 +1409,7 @@ document.getElementById('clearButton').addEventListener('click', () => {
     );
 
     currentColor = null;
-
     erasing = false;
-
-    canvas.style.pointerEvents = 'none';
 
 });
 
