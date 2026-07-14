@@ -344,16 +344,13 @@
        ========================================================= */
 
     #drawingCanvas {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
 
-    width: 100vw;
-    height: 100vh;
-
     z-index: 9998;
 
-    pointer-events: auto;
+    pointer-events: none;
 }
 
     #ucmiToolbar {
@@ -1243,15 +1240,20 @@ const canvas = document.getElementById('drawingCanvas');
 const ctx = canvas.getContext('2d');
 
 let isDrawing = false;
-let currentColor = 'black';
+let currentColor = null;
 let erasing = false;
 
 
-// TAMAÑO COMPLETO DE LA PÁGINA
+// ========================================
+// PREPARAR CANVAS
+// ========================================
 
 function prepararCanvas() {
 
-    canvas.width = document.documentElement.scrollWidth;
+    canvas.width = Math.max(
+        document.body.scrollWidth,
+        document.documentElement.scrollWidth
+    );
 
     canvas.height = Math.max(
         document.body.scrollHeight,
@@ -1263,38 +1265,39 @@ function prepararCanvas() {
 prepararCanvas();
 
 
+// ========================================
 // INICIAR DIBUJO
+// ========================================
 
 canvas.addEventListener('mousedown', (event) => {
 
-    if (currentColor !== 'black' || erasing) {
+    if (currentColor === null && !erasing) return;
 
-        isDrawing = true;
+    isDrawing = true;
 
-        ctx.beginPath();
+    ctx.beginPath();
 
-        ctx.moveTo(
-            event.pageX,
-            event.pageY
-        );
-
-    }
+    ctx.moveTo(
+        event.pageX,
+        event.pageY
+    );
 
 });
 
 
+// ========================================
 // DIBUJAR
+// ========================================
 
 canvas.addEventListener('mousemove', (event) => {
 
     if (!isDrawing) return;
 
-
     if (erasing) {
 
         ctx.globalCompositeOperation = "destination-out";
 
-        ctx.lineWidth = 20;
+        ctx.lineWidth = 25;
 
     } else {
 
@@ -1302,28 +1305,26 @@ canvas.addEventListener('mousemove', (event) => {
 
         ctx.strokeStyle = currentColor;
 
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 5;
 
     }
 
-
-    ctx.lineCap = 'round';
-
-    ctx.lineJoin = 'round';
-
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
 
     ctx.lineTo(
         event.pageX,
         event.pageY
     );
 
-
     ctx.stroke();
 
 });
 
 
+// ========================================
 // DETENER DIBUJO
+// ========================================
 
 canvas.addEventListener('mouseup', () => {
 
@@ -1333,8 +1334,18 @@ canvas.addEventListener('mouseup', () => {
 
 });
 
+canvas.addEventListener('mouseleave', () => {
 
+    isDrawing = false;
+
+    ctx.beginPath();
+
+});
+
+
+// ========================================
 // ROJO
+// ========================================
 
 document.getElementById('redButton').addEventListener('click', () => {
 
@@ -1347,7 +1358,9 @@ document.getElementById('redButton').addEventListener('click', () => {
 });
 
 
+// ========================================
 // AZUL
+// ========================================
 
 document.getElementById('blueButton').addEventListener('click', () => {
 
@@ -1360,7 +1373,9 @@ document.getElementById('blueButton').addEventListener('click', () => {
 });
 
 
+// ========================================
 // AMARILLO VERDOSO
+// ========================================
 
 document.getElementById('limeButton').addEventListener('click', () => {
 
@@ -1373,9 +1388,13 @@ document.getElementById('limeButton').addEventListener('click', () => {
 });
 
 
+// ========================================
 // BORRADOR
+// ========================================
 
 document.getElementById('eraserButton').addEventListener('click', () => {
+
+    currentColor = null;
 
     erasing = true;
 
@@ -1384,7 +1403,9 @@ document.getElementById('eraserButton').addEventListener('click', () => {
 });
 
 
+// ========================================
 // LIMPIAR TODO
+// ========================================
 
 document.getElementById('clearButton').addEventListener('click', () => {
 
@@ -1395,7 +1416,7 @@ document.getElementById('clearButton').addEventListener('click', () => {
         canvas.height
     );
 
-    currentColor = 'black';
+    currentColor = null;
 
     erasing = false;
 
