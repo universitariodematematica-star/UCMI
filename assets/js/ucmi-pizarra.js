@@ -8,7 +8,8 @@
     - Dibujar sobre la página.
     - Cambiar colores.
     - Borrar trazos.
-    - Activar/desactivar modo pizarra.
+    - Limpiar la pizarra.
+    - No bloquear elementos interactivos.
 
     No incluye:
     - Firebase.
@@ -25,106 +26,101 @@
 
     let dibujando = false;
 
-    let colorActual = "#ff0000";
+    let colorActual = null;
+
+    let borrando = false;
 
     let grosor = 3;
 
-    let activa = false;
+
+    // =====================================================
+    // CREAR / PREPARAR CANVAS
+    // =====================================================
+
+    function iniciar() {
+
+        canvas = document.getElementById("drawingCanvas");
 
 
-    function crearCanvas() {
+        if (!canvas) {
 
-        canvas = document.createElement("canvas");
+            canvas = document.createElement("canvas");
 
-        canvas.id = "drawingCanvas";
+            canvas.id = "drawingCanvas";
 
-        canvas.width = document.documentElement.scrollWidth;
-        canvas.height = document.documentElement.scrollHeight;
+            document.body.appendChild(canvas);
 
-
-        document.body.appendChild(canvas);
+        }
 
 
         ctx = canvas.getContext("2d");
 
 
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-
-
-        canvas.style.pointerEvents = "none";
-
+        prepararCanvas();
 
         agregarEventos();
 
+        conectarHerramientas();
+
     }
 
 
+    function prepararCanvas() {
 
-    function agregarEventos() {
+        const ancho = Math.max(
+            document.body.scrollWidth,
+            document.documentElement.scrollWidth
+        );
 
-
-        canvas.addEventListener(
-            "mousedown",
-            iniciarDibujo
+        const alto = Math.max(
+            document.body.scrollHeight,
+            document.documentElement.scrollHeight
         );
 
 
-        canvas.addEventListener(
-            "mousemove",
-            dibujar
-        );
+        canvas.width = ancho;
+
+        canvas.height = alto;
 
 
-        canvas.addEventListener(
-            "mouseup",
-            terminarDibujo
-        );
+        ctx.lineCap = "round";
+
+        ctx.lineJoin = "round";
+
+    }
 
 
-        canvas.addEventListener(
-            "mouseleave",
-            terminarDibujo
-        );
+    // =====================================================
+    // DETECTAR ELEMENTOS INTERACTIVOS
+    // =====================================================
+
+    function esInteractivo(elemento) {
+
+        if (!elemento) return false;
 
 
+        return elemento.closest(
 
-        canvas.addEventListener(
-            "touchstart",
-            iniciarDibujo,
-            { passive:false }
-        );
+            'button, a, input, textarea, select, audio, video, iframe, [contenteditable="true"], #ucmiToolbar'
 
-
-        canvas.addEventListener(
-            "touchmove",
-            dibujar,
-            { passive:false }
-        );
-
-
-        canvas.addEventListener(
-            "touchend",
-            terminarDibujo
         );
 
     }
 
 
+    // =====================================================
+    // OBTENER POSICIÓN
+    // =====================================================
 
-    function obtenerPosicion(e) {
+    function obtenerPosicion(evento) {
 
-
-        let rect = canvas.getBoundingClientRect();
-
-
-        if (e.touches) {
+        if (evento.touches && evento.touches.length > 0) {
 
             return {
 
-                x: e.touches[0].clientX - rect.left,
+                x: evento.touches[0].pageX,
 
-                y: e.touches[0].clientY - rect.top
+                y: evento.touches[0].pageY
 
             };
 
@@ -133,63 +129,106 @@
 
         return {
 
-            x: e.clientX - rect.left,
+            x: evento.pageX,
 
-            y: e.clientY - rect.top
+            y: evento.pageY
 
         };
 
     }
 
 
+    // =====================================================
+    // INICIAR DIBUJO
+    // =====================================================
 
-    function iniciarDibujo(e) {
+    function iniciarDibujo(evento) {
+
+        if (esInteractivo(evento.target)) return;
 
 
-        if (!activa) return;
+        if (colorActual === null && !borrando) return;
 
 
-        e.preventDefault();
+        if (evento.touches) {
+
+            const touch = evento.touches[0];
+
+            const elemento = document.elementFromPoint(
+                touch.clientX,
+                touch.clientY
+            );
+
+
+            if (esInteractivo(elemento)) return;
+
+
+            evento.preventDefault();
+
+        }
 
 
         dibujando = true;
 
 
-        let pos = obtenerPosicion(e);
+        const posicion = obtenerPosicion(evento);
 
 
         ctx.beginPath();
 
+
         ctx.moveTo(
-            pos.x,
-            pos.y
+            posicion.x,
+            posicion.y
         );
 
     }
 
 
+    // =====================================================
+    // DIBUJAR
+    // =====================================================
 
-    function dibujar(e) {
+    function dibujar(evento) {
 
-
-        if (!dibujando || !activa)
-            return;
-
-
-        e.preventDefault();
+        if (!dibujando) return;
 
 
-        let pos = obtenerPosicion(e);
+        if (evento.touches) {
+
+            evento.preventDefault();
+
+        }
 
 
-        ctx.strokeStyle = colorActual;
+        const posicion = obtenerPosicion(evento);
 
-        ctx.lineWidth = grosor;
+
+        if (borrando) {
+
+            ctx.globalCompositeOperation = "destination-out";
+
+            ctx.lineWidth = 25;
+
+        } else {
+
+            ctx.globalCompositeOperation = "source-over";
+
+            ctx.strokeStyle = colorActual;
+
+            ctx.lineWidth = grosor;
+
+        }
+
+
+        ctx.lineCap = "round";
+
+        ctx.lineJoin = "round";
 
 
         ctx.lineTo(
-            pos.x,
-            pos.y
+            posicion.x,
+            posicion.y
         );
 
 
@@ -198,42 +237,68 @@
     }
 
 
+    // =====================================================
+    // TERMINAR DIBUJO
+    // =====================================================
 
     function terminarDibujo() {
 
         dibujando = false;
 
-    }
 
+        if (ctx) {
 
+            ctx.beginPath();
 
-    function activar() {
-
-
-        activa = true;
-
-
-        canvas.style.pointerEvents = "auto";
-
+        }
 
     }
 
 
+    // =====================================================
+    // CAMBIAR COLOR
+    // =====================================================
 
-    function desactivar() {
+    function cambiarColor(color) {
 
+        colorActual = color;
 
-        activa = false;
-
-
-        canvas.style.pointerEvents = "none";
-
+        borrando = false;
 
     }
 
 
+    // =====================================================
+    // ACTIVAR BORRADOR
+    // =====================================================
+
+    function activarBorrador() {
+
+        colorActual = null;
+
+        borrando = true;
+
+    }
+
+
+    // =====================================================
+    // CAMBIAR GROSOR
+    // =====================================================
+
+    function cambiarGrosor(valor) {
+
+        grosor = valor;
+
+    }
+
+
+    // =====================================================
+    // LIMPIAR PIZARRA
+    // =====================================================
 
     function limpiar() {
+
+        if (!ctx || !canvas) return;
 
 
         ctx.clearRect(
@@ -243,38 +308,127 @@
             canvas.height
         );
 
-    }
 
+        colorActual = null;
 
-
-    function cambiarColor(color) {
-
-        colorActual = color;
+        borrando = false;
 
     }
 
 
+    // =====================================================
+    // CONECTAR HERRAMIENTAS
+    // =====================================================
 
-    function cambiarGrosor(valor) {
+    function conectarHerramientas() {
 
-        grosor = valor;
+        const botonRojo = document.getElementById("redButton");
+
+        const botonAzul = document.getElementById("blueButton");
+
+        const botonLima = document.getElementById("limeButton");
+
+        const botonBorrador = document.getElementById("eraserButton");
+
+        const botonLimpiar = document.getElementById("clearButton");
+
+
+        if (botonRojo) {
+
+            botonRojo.addEventListener("click", function () {
+
+                cambiarColor("red");
+
+            });
+
+        }
+
+
+        if (botonAzul) {
+
+            botonAzul.addEventListener("click", function () {
+
+                cambiarColor("blue");
+
+            });
+
+        }
+
+
+        if (botonLima) {
+
+            botonLima.addEventListener("click", function () {
+
+                cambiarColor("yellowgreen");
+
+            });
+
+        }
+
+
+        if (botonBorrador) {
+
+            botonBorrador.addEventListener("click", function () {
+
+                activarBorrador();
+
+            });
+
+        }
+
+
+        if (botonLimpiar) {
+
+            botonLimpiar.addEventListener("click", function () {
+
+                limpiar();
+
+            });
+
+        }
 
     }
 
 
+    // =====================================================
+    // ACTUALIZAR TAMAÑO DEL CANVAS
+    // =====================================================
 
     function actualizarTamañoCanvas() {
 
-
-        let imagen = canvas.toDataURL();
-
-
-        canvas.width = document.documentElement.scrollWidth;
-
-        canvas.height = document.documentElement.scrollHeight;
+        if (!canvas || !ctx) return;
 
 
-        let img = new Image();
+        const imagen = canvas.toDataURL();
+
+
+        const nuevoAncho = Math.max(
+            document.body.scrollWidth,
+            document.documentElement.scrollWidth
+        );
+
+        const nuevoAlto = Math.max(
+            document.body.scrollHeight,
+            document.documentElement.scrollHeight
+        );
+
+
+        if (
+            canvas.width === nuevoAncho &&
+            canvas.height === nuevoAlto
+        ) {
+
+            return;
+
+        }
+
+
+        canvas.width = nuevoAncho;
+
+        canvas.height = nuevoAlto;
+
+
+        const img = new Image();
 
 
         img.onload = function () {
@@ -293,31 +447,77 @@
     }
 
 
+    // =====================================================
+    // EVENTOS GENERALES
+    // =====================================================
 
-    window.addEventListener(
-        "resize",
-        actualizarTamañoCanvas
-    );
+    function agregarEventos() {
+
+        document.addEventListener(
+            "mousedown",
+            iniciarDibujo
+        );
 
 
+        document.addEventListener(
+            "mousemove",
+            dibujar
+        );
+
+
+        document.addEventListener(
+            "mouseup",
+            terminarDibujo
+        );
+
+
+        document.addEventListener(
+            "touchstart",
+            iniciarDibujo,
+            { passive: false }
+        );
+
+
+        document.addEventListener(
+            "touchmove",
+            dibujar,
+            { passive: false }
+        );
+
+
+        document.addEventListener(
+            "touchend",
+            terminarDibujo
+        );
+
+
+        window.addEventListener(
+            "resize",
+            actualizarTamañoCanvas
+        );
+
+    }
+
+
+    // =====================================================
+    // API UCMI
+    // =====================================================
 
     window.UCMIPizarra = {
 
-
-        iniciar: crearCanvas,
-
-        activar: activar,
-
-        desactivar: desactivar,
+        iniciar: iniciar,
 
         limpiar: limpiar,
 
         color: cambiarColor,
 
-        grosor: cambiarGrosor
+        borrador: activarBorrador,
+
+        grosor: cambiarGrosor,
+
+        actualizar: actualizarTamañoCanvas
 
     };
-
 
 
 })();
