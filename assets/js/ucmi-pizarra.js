@@ -41,16 +41,69 @@
 
         canvas = document.getElementById("drawingCanvas");
 
+if (!canvas) {
 
-        if (!canvas) {
+    // ============================
+    // CREAR CANVAS
+    // ============================
 
-            canvas = document.createElement("canvas");
+    canvas = document.createElement("canvas");
+    canvas.id = "drawingCanvas";
+    document.body.appendChild(canvas);
 
-            canvas.id = "drawingCanvas";
+}
 
-            document.body.appendChild(canvas);
+// ============================
+// CREAR BARRA DE HERRAMIENTAS
+// ============================
 
-        }
+if (!document.getElementById("ucmiToolbar")) {
+
+    const toolbar = document.createElement("div");
+
+    toolbar.id = "ucmiToolbar";
+
+    toolbar.innerHTML = `
+
+        <div class="tool-title">
+            ✏️ Pizarra
+        </div>
+
+        <div
+            id="redButton"
+            class="color-picker"
+            style="background:red">
+        </div>
+
+        <div
+            id="blueButton"
+            class="color-picker"
+            style="background:blue">
+        </div>
+
+        <div
+            id="limeButton"
+            class="color-picker"
+            style="background:yellowgreen">
+        </div>
+
+        <div
+            id="eraserButton"
+            class="color-picker"
+            style="background:white">
+        </div>
+
+        <div
+            id="clearButton"
+            class="color-picker clear-tool">
+            🧹
+        </div>
+
+    `;
+
+    document.body.appendChild(toolbar);
+
+}
 
 
         ctx = canvas.getContext("2d");
