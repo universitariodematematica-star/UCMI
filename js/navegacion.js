@@ -26,7 +26,7 @@ No incluye:
 
         grammar: {
 
-            texto: "SEGUIR AL LISTENING",
+            texto: "SEGUIR A LISTENING",
 
             url: "#"
 
@@ -35,7 +35,7 @@ No incluye:
 
         listening: {
 
-            texto: "SEGUIR AL READING",
+            texto: "SEGUIR A READING",
 
             url: "#"
 
@@ -44,7 +44,7 @@ No incluye:
 
         reading: {
 
-            texto: "SEGUIR AL WRITING",
+            texto: "SEGUIR A WRITING",
 
             url: "#"
 
@@ -53,7 +53,7 @@ No incluye:
 
         writing: {
 
-            texto: "SEGUIR AL SPEAKING",
+            texto: "SEGUIR A SPEAKING",
 
             url: "#"
 
