@@ -1,221 +1,121 @@
- /*
-    =====================================================
-    UCMI - Reproductor de Audio Académico
-    Archivo común para Listening y Speaking
-    =====================================================
+/* ==========================================================
+   UCMI - Reproductor de Audio
+   ========================================================== */
 
-    Funciones:
-    - Reproducción personalizada.
-    - Barra de progreso.
-    - Control de tiempo.
+document.addEventListener("DOMContentLoaded", () => {
 
-    No incluye:
-    - Contenido de ejercicios.
-    - Firebase.
-    - Protección.
-*/
+    const audio = document.getElementById("audioUCMI");
+    const boton = document.getElementById("playAudio");
+    const barra = document.getElementById("progreso");
+    const contenedorBarra = document.getElementById("barraProgreso");
+    const tiempo = document.getElementById("tiempoAudio");
 
+    if (!audio || !boton || !barra || !contenedorBarra || !tiempo) {
+        console.warn("UCMI Audio: elementos no encontrados.");
+        return;
+    }
 
-(function () {
+    //--------------------------------------------------------
+    // Convierte segundos a MM:SS
+    //--------------------------------------------------------
 
+    function formato(segundos) {
 
-    function inicializarAudios() {
+        if (isNaN(segundos)) return "00:00";
 
+        const min = Math.floor(segundos / 60);
+        const seg = Math.floor(segundos % 60);
 
-        const reproductores = document.querySelectorAll(
-            ".audio-ucmi"
+        return (
+            String(min).padStart(2, "0") +
+            ":" +
+            String(seg).padStart(2, "0")
         );
 
+    }
 
-        reproductores.forEach(function (contenedor) {
+    //--------------------------------------------------------
+    // Actualizar barra y tiempo
+    //--------------------------------------------------------
 
+    function actualizar() {
 
-            const audio = contenedor.querySelector(
-                "audio"
-            );
+        const porcentaje =
+            (audio.currentTime / audio.duration) * 100;
 
+        barra.style.width = porcentaje + "%";
 
-            const boton = contenedor.querySelector(
-                ".audio-ucmi-boton"
-            );
-
-
-            const barra = contenedor.querySelector(
-                ".audio-ucmi-barra"
-            );
-
-
-            const progreso = contenedor.querySelector(
-                ".audio-ucmi-progreso"
-            );
-
-
-            const tiempo = contenedor.querySelector(
-                ".audio-ucmi-tiempo"
-            );
-
-
-            if (!audio || !boton)
-                return;
-
-
-
-            boton.addEventListener(
-                "click",
-                function () {
-
-
-                    if (audio.paused) {
-
-                        audio.play();
-
-                        boton.innerHTML = "⏸";
-
-
-                    } else {
-
-                        audio.pause();
-
-                        boton.innerHTML = "▶";
-
-                    }
-
-
-                }
-            );
-
-
-
-            audio.addEventListener(
-                "timeupdate",
-                function () {
-
-
-                    if (!audio.duration)
-                        return;
-
-
-                    let porcentaje =
-                        (audio.currentTime /
-                        audio.duration) * 100;
-
-
-
-                    barra.style.width =
-                        porcentaje + "%";
-
-
-
-                    tiempo.textContent =
-                        formatearTiempo(
-                            audio.currentTime
-                        )
-                        +
-                        " / "
-                        +
-                        formatearTiempo(
-                            audio.duration
-                        );
-
-
-                }
-            );
-
-
-
-            audio.addEventListener(
-                "ended",
-                function () {
-
-
-                    boton.innerHTML = "▶";
-
-                    barra.style.width = "0%";
-
-                }
-            );
-
-
-
-            progreso.addEventListener(
-                "click",
-                function (e) {
-
-
-                    const rect =
-                        progreso.getBoundingClientRect();
-
-
-                    const posicion =
-                        e.clientX - rect.left;
-
-
-                    const porcentaje =
-                        posicion / rect.width;
-
-
-
-                    audio.currentTime =
-                        porcentaje *
-                        audio.duration;
-
-
-                }
-            );
-
-
-        });
-
+        tiempo.textContent =
+            formato(audio.currentTime) +
+            " / " +
+            formato(audio.duration);
 
     }
 
+    //--------------------------------------------------------
+    // Play / Pause
+    //--------------------------------------------------------
 
+    boton.addEventListener("click", () => {
 
-    function formatearTiempo(segundos) {
+        if (audio.paused) {
 
+            audio.play();
 
-        if (isNaN(segundos))
-            return "0:00";
+        } else {
 
+            audio.pause();
 
-        let minutos =
-            Math.floor(segundos / 60);
+        }
 
+    });
 
-        let segundosRestantes =
-            Math.floor(segundos % 60);
+    //--------------------------------------------------------
+    // Cambiar icono
+    //--------------------------------------------------------
 
+    audio.addEventListener("play", () => {
 
+        boton.textContent = "⏸";
 
-        if (segundosRestantes < 10)
-            segundosRestantes =
-                "0" + segundosRestantes;
+    });
 
+    audio.addEventListener("pause", () => {
 
+        boton.textContent = "▶";
 
-        return minutos +
-            ":" +
-            segundosRestantes;
+    });
 
-    }
+    audio.addEventListener("ended", () => {
 
+        boton.textContent = "▶";
 
+        barra.style.width = "0%";
 
-    window.UCMIAudio = {
+    });
 
+    //--------------------------------------------------------
+    // Tiempo
+    //--------------------------------------------------------
 
-        iniciar: inicializarAudios
+    audio.addEventListener("timeupdate", actualizar);
 
+    audio.addEventListener("loadedmetadata", actualizar);
 
-    };
+    //--------------------------------------------------------
+    // Adelantar haciendo clic
+    //--------------------------------------------------------
 
+    contenedorBarra.addEventListener("click", e => {
 
+        const rect = contenedorBarra.getBoundingClientRect();
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        inicializarAudios
-    );
+        const x = e.clientX - rect.left;
 
+        const porcentaje = x / rect.width;
 
+        audio.currentTime = porcentaje * audio.duration;
 
-})();
+    });
+
+});
