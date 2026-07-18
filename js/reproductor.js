@@ -1,6 +1,6 @@
 /* =====================================================
    UCMI AUDIO PLAYER
-   Módulo independiente
+   Reproductor múltiple UCMI
    ===================================================== */
 
 
@@ -10,13 +10,17 @@ window.UCMIAudio = {
 iniciar:function(config){
 
 
-    const contenedor=document.getElementById("audioUCMI");
+    const reproductores = document.querySelectorAll(".audioUCMI");
+
+
+    const contenedor = reproductores[config.contenedor];
 
 
     if(!contenedor){
 
         console.error(
-        "No existe el contenedor audioUCMI"
+            "No existe el reproductor número:",
+            config.contenedor
         );
 
         return;
@@ -25,7 +29,7 @@ iniciar:function(config){
 
 
 
-    contenedor.innerHTML=`
+    contenedor.innerHTML = `
 
 
     <div class="ucmi-audio">
@@ -42,11 +46,9 @@ iniciar:function(config){
         <div class="ucmi-audio-controles">
 
 
-            <button 
-            class="ucmi-play"
-            id="ucmiPlay">
+            <button class="ucmi-play">
 
-            ▶
+                ▶
 
             </button>
 
@@ -54,27 +56,22 @@ iniciar:function(config){
 
             <div class="ucmi-progreso">
 
-
                 <input 
                 type="range"
                 class="ucmi-barra"
-                id="ucmiBarra"
                 value="0"
                 min="0"
                 max="100">
 
-
             </div>
 
 
 
-            <div class="ucmi-tiempo"
-            id="ucmiTiempo">
+            <div class="ucmi-tiempo">
 
-            0:00 / 0:00
+                0:00 / 0:00
 
             </div>
-
 
 
         </div>
@@ -87,57 +84,66 @@ iniciar:function(config){
 
 
 
-    const audio=new Audio(config.archivo);
+    const audio = new Audio(config.archivo);
 
 
 
-    const boton=document.getElementById("ucmiPlay");
+    const boton = contenedor.querySelector(".ucmi-play");
 
-    const barra=document.getElementById("ucmiBarra");
+    const barra = contenedor.querySelector(".ucmi-barra");
 
-    const tiempo=document.getElementById("ucmiTiempo");
+    const tiempo = contenedor.querySelector(".ucmi-tiempo");
 
 
 
-    function formato(segundos){
+
+    function formatoTiempo(segundos){
 
 
         if(isNaN(segundos))
             return "0:00";
 
 
-        let minutos=Math.floor(segundos/60);
+        let minutos = Math.floor(segundos / 60);
 
-        let segundosRestantes=Math.floor(segundos%60);
-
-
-        if(segundosRestantes<10)
-            segundosRestantes="0"+segundosRestantes;
+        let segundosRestantes =
+        Math.floor(segundos % 60);
 
 
-        return minutos+":"+segundosRestantes;
+        if(segundosRestantes < 10){
+
+            segundosRestantes =
+            "0" + segundosRestantes;
+
+        }
+
+
+        return minutos + ":" + segundosRestantes;
 
 
     }
 
 
 
-    boton.onclick=function(){
+
+    boton.onclick = function(){
 
 
         if(audio.paused){
+
 
             audio.play();
 
             boton.innerHTML="⏸";
 
-        }
 
-        else{
+        }else{
+
 
             audio.pause();
 
             boton.innerHTML="▶";
+
 
         }
 
@@ -148,61 +154,83 @@ iniciar:function(config){
 
 
     audio.addEventListener(
-    "loadedmetadata",
-    function(){
+        "loadedmetadata",
+        function(){
 
 
-        tiempo.innerHTML=
-        "0:00 / "+
-        formato(audio.duration);
+            tiempo.innerHTML =
+            "0:00 / " +
+            formatoTiempo(audio.duration);
 
 
-    });
+        }
+    );
+
 
 
 
     audio.addEventListener(
-    "timeupdate",
-    function(){
+        "timeupdate",
+        function(){
 
 
-        barra.value=
-        (audio.currentTime/audio.duration)*100;
+            if(audio.duration){
+
+
+                barra.value =
+                (audio.currentTime / audio.duration) * 100;
+
+
+            }
 
 
 
-        tiempo.innerHTML=
-        formato(audio.currentTime)
-        +" / "+
-        formato(audio.duration);
+            tiempo.innerHTML =
+            formatoTiempo(audio.currentTime)
+            +
+            " / "
+            +
+            formatoTiempo(audio.duration);
 
 
-    });
+
+        }
+    );
+
 
 
 
     barra.oninput=function(){
 
 
-        audio.currentTime=
-        (barra.value/100)*audio.duration;
+        if(audio.duration){
+
+
+            audio.currentTime =
+            (barra.value / 100) *
+            audio.duration;
+
+
+        }
 
 
     };
 
 
 
+
     audio.addEventListener(
-    "ended",
-    function(){
+        "ended",
+        function(){
 
 
-        boton.innerHTML="▶";
+            boton.innerHTML="▶";
 
-        barra.value=0;
+            barra.value=0;
 
 
-    });
+        }
+    );
 
 
 
