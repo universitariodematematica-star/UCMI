@@ -1,1429 +1,213 @@
-<!DOCTYPE html>
-<!--BOTÓN "VOLVER AL TEMARIO"-->
-<html>
-<head>
-    <style>
-    /* =========================================================
-       UCMI - ESTILO ACADÉMICO GENERAL
-       PRUEBA VISUAL PARA CONTENIDOS
-       ========================================================= */
+/* =====================================================
+   UCMI AUDIO PLAYER
+   Módulo independiente
+   ===================================================== */
 
-    :root {
-        --ucmi-azul-profundo: #071426;
-        --ucmi-azul: #123d73;
-        --ucmi-azul-claro: #2563a8;
-        --ucmi-dorado: #d4af37;
-        --ucmi-dorado-claro: #f0d77a;
-        --ucmi-carmesi: #a61e3c;
-        --ucmi-rosado: #f7dce5;
-        --ucmi-turquesa: #159a9c;
-        --ucmi-acero: #466b8f;
-        --ucmi-fondo: #f4f7fb;
-        --ucmi-superficie: #ffffff;
-        --ucmi-texto: #172033;
-        --ucmi-texto-suave: #536176;
-        --ucmi-borde: #dce3ec;
-        --ucmi-sombra: 0 8px 24px rgba(7, 20, 38, 0.10);
-        --ucmi-radio: 14px;
-    }
 
-    * {
-        box-sizing: border-box;
-    }
+window.UCMIAudio = {
 
-    body {
-        color: var(--ucmi-texto);
-        background: var(--ucmi-fondo);
-        font-family: "Segoe UI", Arial, sans-serif;
-        font-size: 17px;
-        line-height: 1.7;
-    }
 
-    p,
-    ul {
-        color: var(--ucmi-texto);
-    }
+iniciar:function(config){
 
-    p {
-        line-height: 1.75;
-    }
 
-    /* =========================================================
-       BOTONES
-       ========================================================= */
+    const contenedor=document.getElementById("audioUCMI");
 
-    .boton-interactivo {
-        background: linear-gradient(
-            135deg,
-            var(--ucmi-azul-profundo),
-            var(--ucmi-azul)
+
+    if(!contenedor){
+
+        console.error(
+        "No existe el contenedor audioUCMI"
         );
-        border: 1px solid rgba(212, 175, 55, 0.75);
-        color: #ffffff !important;
-        padding: 11px 20px;
-        margin: 5px 4px 5px 0;
-        text-align: center;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        font-weight: 600;
-        letter-spacing: 0.4px;
-        cursor: pointer;
-        border-radius: 9px;
-        box-shadow: 0 5px 14px rgba(7, 20, 38, 0.18);
-        transition:
-            transform 0.2s ease,
-            box-shadow 0.2s ease,
-            border-color 0.2s ease;
+
+        return;
+
     }
 
-    .boton-interactivo:hover {
-    background: linear-gradient(
-        135deg,
-        var(--ucmi-azul),
-        var(--ucmi-azul-claro)
-    );
-    border-color: var(--ucmi-dorado-claro);
-    color: #ffffff !important;
-    transform: translateY(-2px);
 
-    box-shadow: 8px 8px 20px rgba(0, 0, 0, 1);
-}
 
-    /* =========================================================
-       BARRAS ACADÉMICAS
-       ========================================================= */
+    contenedor.innerHTML=`
 
-    .barra-negra,
-.barra-azul,
-.barra-carmesi,
-.barra-rosada,
-.barra-turquesa,
-.barra-azul-acero {
-    width: 100%;
-    margin: 25px 0 15px;
-    border-collapse: separate;
-    border-spacing: 0;
-    border: none;
-    border-radius: var(--ucmi-radio);
-    overflow: hidden;
-    box-shadow: 8px 8px 20px rgba(0, 0, 0, 1);
-}
 
-    .barra-negra col,
-    .barra-azul col,
-    .barra-carmesi col,
-    .barra-rosada col,
-    .barra-turquesa col,
-    .barra-azul-acero col {
-        width: 100%;
-    }
+    <div class="ucmi-audio">
 
-    .barra-negra td,
-    .barra-azul td,
-    .barra-carmesi td,
-    .barra-rosada td,
-    .barra-turquesa td,
-    .barra-azul-acero td {
-        padding: 13px 18px;
-        border: none;
-        vertical-align: middle;
-    }
 
-    .barra-negra p,
-    .barra-azul p,
-    .barra-carmesi p,
-    .barra-rosada p,
-    .barra-turquesa p,
-    .barra-azul-acero p {
-        margin: 0;
-        line-height: 1.4;
-        text-align: left;
-        font-size: 16px;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-    }
+        <div class="ucmi-audio-titulo">
 
-    /* TÍTULO PRINCIPAL */
+            ${config.titulo}
 
-    .barra-negra td {
-        background: linear-gradient(
-            135deg,
-            #050b14,
-            var(--ucmi-azul-profundo)
-        );
-        border-left: 5px solid var(--ucmi-dorado);
-    }
-
-    .barra-negra p {
-        color: #ffffff;
-        font-size: 19px;
-    }
-
-    /* HABILIDAD */
-
-    .barra-azul td {
-        background: linear-gradient(
-            135deg,
-            var(--ucmi-azul),
-            var(--ucmi-azul-claro)
-        );
-    }
-
-    .barra-azul p {
-        color: #ffffff;
-    }
-
-    /* VOCABULARIO */
-
-    .barra-carmesi td {
-        background: linear-gradient(
-            135deg,
-            #7f1730,
-            var(--ucmi-carmesi)
-        );
-    }
-
-    .barra-carmesi p {
-        color: #ffffff;
-    }
-
-    /* SUBSECCIÓN */
-
-    .barra-rosada td {
-        background: linear-gradient(
-            135deg,
-            #f9e8ee,
-            var(--ucmi-rosado)
-        );
-        border-left: 5px solid var(--ucmi-carmesi);
-    }
-
-    .barra-rosada p {
-        color: #541628;
-    }
-
-    /* EJERCICIOS RESUELTOS */
-
-    .barra-turquesa td {
-        background: linear-gradient(
-            135deg,
-            #0f7375,
-            var(--ucmi-turquesa)
-        );
-    }
-
-    .barra-turquesa p {
-        color: #ffffff;
-    }
-
-    /* EJERCICIOS PROPUESTOS */
-
-    .barra-azul-acero td {
-        background: linear-gradient(
-            135deg,
-            #314e69,
-            var(--ucmi-acero)
-        );
-    }
-
-    .barra-azul-acero p {
-        color: #ffffff;
-    }
-
-    /* =========================================================
-       TABLAS ACADÉMICAS
-       ========================================================= */
-
-    table:not(.barra-negra):not(.barra-azul):not(.barra-carmesi):not(.barra-rosada):not(.barra-turquesa):not(.barra-azul-acero) {
-        width: 90%;
-        margin: 22px auto;
-        border-collapse: separate;
-        border-spacing: 0;
-        background: var(--ucmi-superficie);
-        border: 1px solid var(--ucmi-borde);
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 6px 18px rgba(7, 20, 38, 0.08);
-    }
-
-    table:not(.barra-negra):not(.barra-azul):not(.barra-carmesi):not(.barra-rosada):not(.barra-turquesa):not(.barra-azul-acero) th,
-    table:not(.barra-negra):not(.barra-azul):not(.barra-carmesi):not(.barra-rosada):not(.barra-turquesa):not(.barra-azul-acero) td {
-        padding: 13px 12px;
-        text-align: center;
-        border: none;
-        border-right: 1px solid var(--ucmi-borde);
-        border-bottom: 1px solid var(--ucmi-borde);
-    }
-
-    table:not(.barra-negra):not(.barra-azul):not(.barra-carmesi):not(.barra-rosada):not(.barra-turquesa):not(.barra-azul-acero) th:last-child,
-    table:not(.barra-negra):not(.barra-azul):not(.barra-carmesi):not(.barra-rosada):not(.barra-turquesa):not(.barra-azul-acero) td:last-child {
-        border-right: none;
-    }
-
-    table:not(.barra-negra):not(.barra-azul):not(.barra-carmesi):not(.barra-rosada):not(.barra-turquesa):not(.barra-azul-acero) tr:last-child td {
-        border-bottom: none;
-    }
-
-    table:not(.barra-negra):not(.barra-azul):not(.barra-carmesi):not(.barra-rosada):not(.barra-turquesa):not(.barra-azul-acero) th {
-        background: linear-gradient(
-            135deg,
-            var(--ucmi-azul-profundo),
-            var(--ucmi-azul)
-        );
-        color: #ffffff;
-        font-weight: 600;
-    }
-
-    table:not(.barra-negra):not(.barra-azul):not(.barra-carmesi):not(.barra-rosada):not(.barra-turquesa):not(.barra-azul-acero) td {
-        background: #ffffff;
-        color: var(--ucmi-texto);
-    }
-
-    table:not(.barra-negra):not(.barra-azul):not(.barra-carmesi):not(.barra-rosada):not(.barra-turquesa):not(.barra-azul-acero) tr:hover td {
-        background: #f4f8fd;
-    }
-
-    /* =========================================================
-       EJERCICIOS DE RESPUESTA
-       ========================================================= */
-
-    .container {
-        margin: 18px 0;
-        padding: 18px;
-        background: var(--ucmi-superficie);
-        border: 1px solid var(--ucmi-borde);
-        border-left: 4px solid var(--ucmi-dorado);
-        border-radius: 12px;
-        box-shadow: 0 5px 15px rgba(7, 20, 38, 0.06);
-    }
-
-    .container p {
-        margin-top: 0;
-        font-weight: 600;
-    }
-
-    .activity {
-        min-height: 55px;
-        border: 1px solid #b9c6d6;
-        padding: 12px 15px;
-        margin-top: 10px;
-        color: var(--ucmi-texto);
-        background: #f9fbfd;
-        border-radius: 8px;
-        outline: none;
-        transition:
-            border-color 0.2s ease,
-            box-shadow 0.2s ease,
-            background 0.2s ease;
-    }
-
-    .activity:focus {
-        border-color: var(--ucmi-azul-claro);
-        background: #ffffff;
-        box-shadow: 0 0 0 3px rgba(37, 99, 168, 0.14);
-    }
-
-    /* =========================================================
-       AUDIO / IFRAMES
-       ========================================================= */
-
-    iframe {
-        display: block;
-        max-width: 100%;
-        margin: 18px auto 5px;
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(7, 20, 38, 0.10);
-    }
-
-    /* =========================================================
-       PIZARRA
-       ========================================================= */
-
-    #drawingCanvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-
-    z-index: 9998;
-
-    pointer-events: none;
-}
-
-    #ucmiToolbar {
-    position: fixed;
-
-    right: 20px;
-    top: 50%;
-
-    transform: translateY(-50%);
-
-    z-index: 10000;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
-    .color-picker {
-
-    width: 22px;
-    height: 22px;
-
-    border-radius: 50%;
-
-    border: 2px solid black;
-
-    cursor:pointer;
-
-    box-shadow: 4px 4px 10px rgba(0,0,0,0.8);
-
-    transition:0.2s;
-
-}
-
-    .color-picker:hover {
-
-    transform:scale(1.2);
-
-}
-
-    /* =========================================================
-       RESPONSIVE
-       ========================================================= */
-
-    @media (max-width: 700px) {
-        body {
-            font-size: 16px;
-        }
-
-        .boton-interactivo {
-    background: linear-gradient(
-        135deg,
-        var(--ucmi-azul-profundo),
-        var(--ucmi-azul)
-    );
-    border: 1px solid rgba(212, 175, 55, 0.75);
-    color: #ffffff !important;
-    padding: 11px 20px;
-    margin: 5px 4px 5px 0;
-    text-align: center;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.4px;
-    cursor: pointer;
-    border-radius: 9px;
-
-    box-shadow: 8px 8px 20px rgba(0, 0, 0, 1);
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease,
-        border-color 0.2s ease;
-}
-
-        table:not(.barra-negra):not(.barra-azul):not(.barra-carmesi):not(.barra-rosada):not(.barra-turquesa):not(.barra-azul-acero) {
-            width: 100%;
-            font-size: 14px;
-        }
-
-        table:not(.barra-negra):not(.barra-azul):not(.barra-carmesi):not(.barra-rosada):not(.barra-turquesa):not(.barra-azul-acero) th,
-        table:not(.barra-negra):not(.barra-azul):not(.barra-carmesi):not(.barra-rosada):not(.barra-turquesa):not(.barra-azul-acero) td {
-            padding: 9px 6px;
-        }
-
-        .barra-negra p {
-            font-size: 17px;
-        }
-
-        .container {
-            padding: 14px;
-        }
-
-        #controls {
-            right: 10px;
-            bottom: 10px;
-        }
-    }
-      
-  /* =========================================================
-   REPRODUCTOR DE AUDIO UCMI
-   ========================================================= */
-
-.audio-ucmi {
-    width: 400px;
-    max-width: 100%;
-    margin: 25px auto;
-
-    display: flex;
-    align-items: center;
-    gap: 15px;
-
-    padding: 9px 14px;
-
-    background: linear-gradient(
-        135deg,
-        var(--ucmi-azul-profundo),
-        var(--ucmi-azul)
-    );
-
-    border: 1px solid rgba(212, 175, 55, 0.75);
-    border-radius: 14px;
-
-    box-shadow: 8px 8px 20px rgba(0, 0, 0, 1);
-}
-
-.audio-ucmi-boton {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-
-    border: 2px solid var(--ucmi-dorado);
-    border-radius: 50%;
-
-    background: var(--ucmi-dorado);
-    color: var(--ucmi-azul-profundo);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-size: 16px;
-    cursor: pointer;
-
-    transition:
-        transform 0.2s ease,
-        background 0.2s ease;
-}
-
-.audio-ucmi-boton:hover {
-    transform: scale(1.08);
-    background: var(--ucmi-dorado-claro);
-}
-
-.audio-ucmi-contenido {
-    flex: 1;
-}
-
-.audio-ucmi-titulo {
-    color: white;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.8px;
-    margin-bottom: 8px;
-}
-
-.audio-ucmi-progreso {
-    width: 100%;
-    height: 4px;
-
-    background: rgba(255, 255, 255, 0.25);
-    border-radius: 10px;
-
-    overflow: hidden;
-    cursor: pointer;
-}
-
-.audio-ucmi-barra {
-    width: 0%;
-    height: 100%;
-
-    background: linear-gradient(
-        90deg,
-        var(--ucmi-dorado),
-        var(--ucmi-dorado-claro)
-    );
-
-    border-radius: 10px;
-}
-
-.audio-ucmi-tiempo {
-    margin-top: 6px;
-
-    color: rgba(255, 255, 255, 0.75);
-
-    font-size: 11px;
-    text-align: right;
-}    
-      
-</style>
-  </head>
-<body>
-    <a class="boton-interactivo" href="https://universitariocmi.blogspot.com/2024/08/temario-a1.html" style="color: aqua; line-height: 1;">VOLVER AL TEMARIO</a>
-      <a class="boton-interactivo" href="https://universitariocmi.blogspot.com/2023/10/tema-11-listening-introduce-yourself.html" style="color: aqua; line-height: 1;">SEGUIR A LISTENING</a>
-    <a class="boton-interactivo" href="https://universitariocmi.blogspot.com/2023/12/skills-11.html" style="color: aqua; line-height: 1;">VOLVER A SKILLS</a>
-  
-  
-<!--Reproductor de audio nuevo-->  
-  
-<div class="audio-ucmi">
-
-    <button class="audio-ucmi-boton" id="playAudio">
-        ▶
-    </button>
-
-    <div class="audio-ucmi-contenido">
-
-        <div class="audio-ucmi-titulo">
-            AUDIO UCMI · AG.1.1.1
         </div>
 
-        <div class="audio-ucmi-progreso" id="barraProgreso">
-            <div class="audio-ucmi-barra" id="progreso"></div>
+
+
+        <div class="ucmi-audio-controles">
+
+
+            <button 
+            class="ucmi-play"
+            id="ucmiPlay">
+
+            ▶
+
+            </button>
+
+
+
+            <div class="ucmi-progreso">
+
+
+                <input 
+                type="range"
+                class="ucmi-barra"
+                id="ucmiBarra"
+                value="0"
+                min="0"
+                max="100">
+
+
+            </div>
+
+
+
+            <div class="ucmi-tiempo"
+            id="ucmiTiempo">
+
+            0:00 / 0:00
+
+            </div>
+
+
+
         </div>
 
-        <div class="audio-ucmi-tiempo" id="tiempoAudio">
-            00:00 / 00:00
-        </div>
 
     </div>
 
-    <audio id="audioUCMI">
-        <source src="AQUI_VA_EL_AUDIO.mp3" type="audio/mpeg">
-    </audio>
-
-</div>
-  
-<!--Fin de Reproductor de audio nuevo-->
-  
-<audio controls>
-    <source src="https://drive.google.com/uc?id=1ZbwKcKxRXKjxjwJSNQq3ARdT2yC8Wv0Z" type="audio/mpeg">
-    Tu navegador no soporta audio HTML5.
-</audio>  
-
-<!--BARRA DE TÍTULOS (BARRA NEGRA)-->
-
-  
-<p>  
-<table class="barra-negra">
-<colgroup>
-<col>
-</colgroup>
-<tbody>
-<tr style="height: 28.5pt;">
-<td>
-<p>
-<b>TEMA 1: INTRODUCE YOURSELF</b>
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-</p>
-  
-    <a class="boton-interactivo" href="https://drive.google.com/file/d/14PWsHHPvnRRxJjtDRt2V0P3gkOMJ1qJc/view?usp=drive_link" style="color: aqua; line-height: 1;">Video de la clase</a>  
-
-
-<!--BARRA DE HABILIDAD (BARRA AZUL)-->
-
-<p>  
-<table class="barra-azul">
-<colgroup>
-<col>
-</colgroup>
-<tbody>
-<tr style="height: 28.5pt;">
-<td>
-<p>
-<b>GRAMMAR</b>
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-</p>
-
-<p>  
-<table class="barra-carmesi">
-<colgroup>
-<col>
-</colgroup>
-<tbody>
-<tr style="height: 28.5pt;">
-<td>
-<p>
-<b>VOCABULARIO</b>
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-</p> 
-
-<iframe src="https://drive.google.com/file/d/1a4_Hygk0c1rgV6VckkXFTKfK7IxP-Y_H/preview" width="400" height="50" allow="autoplay"></iframe>
-
-<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>AG.1.1.1</b></div>
-
-
-<br><br><b style="color: black;">EXPRESIONES DE SALUDOS</b>
-
-
-        <table>
-        <tr>
-<th style="text-align: center; font-weight: bold;">Hi!</th>
-<th style="text-align: center; font-weight: bold;">Hello!</th>
-<th style="text-align: center; font-weight: bold;">Hey!</th>
-<th style="text-align: center; font-weight: bold;">What's up?</th>
-<th style="text-align: center; font-weight: bold;">Howdy!</th>
-        </tr>
-        <tr>
-<td style="text-align: center;">¡Hola!</td>
-<td style="text-align: center;">¡Hola!</td>
-<td style="text-align: center;">¡Oye!</td>
-<td style="text-align: center;">¿Qué tal?</td>
-<td style="text-align: center;">¡Hola!</td>
-        </tr>
-    </table>
-
-        <table>
-        <tr>
-<th style="text-align: center; font-weight: bold;">Good morning!</th>
-<th style="text-align: center; font-weight: bold;">Good afternoon!</th>
-<th style="text-align: center; font-weight: bold;">Good evening!</th>
-        </tr>
-        <tr>
-<td style="text-align: center;">¡Buenos días!</td>
-<td style="text-align: center;">¡Buenas tardes!</td>
-<td style="text-align: center;">¡Buenas noches!</td>
-        </tr>
-    </table>
-
-<p style="color: black; text-align: justify"><b>Nota:</b> "Howdy!" es una expresión informal usada en Texas, estilo cowboy. Es informal, por lo que debes usarla con personas con quien tengas mucha confianza. Altamente recomendado es "Hello". "What's up" es una expresión muy informal, por lo que debes usarla con personas en quien tengas absoluta confianza. "Later" es muy coloquial. "Catch you later" es muy informal también</p>
-
-
-<br><b style="color: black;">EXPRESIONES DE PRESENTACIÓN</b>
-
-<br><br>
-
-<iframe src="https://drive.google.com/file/d/1Ha9TZnxXEeHDbF1rkW_0NkPX8MZcgDxi/preview" width="400" height="50" allow="autoplay"></iframe>
-
-
-<br>
-
-<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>AG.1.1.2</B></div>
-
-
-        <table>
-        <tr>
-<th style="text-align: center; font-weight: bold;">My name is John</th>
-<th style="text-align: center; font-weight: bold;">I am John Carter</th>
-<th style="text-align: center; font-weight: bold;">Nice to meet you!</th>
-        </tr>
-        <tr>
-<td style="text-align: center;">Me llamo John</td>
-<td style="text-align: center;">Soy John Carter</td>
-<td style="text-align: center;">¡Mucho gusto!</td>
-        </tr>
-    </table>
-
-
-        <table>
-        <tr>
-<th style="text-align: center; font-weight: bold;">Nice to meet you, too!</th>
-<th style="text-align: center; font-weight: bold;">What is your name?</th>
-<th style="text-align: center; font-weight: bold;">My name is Peter</th>
-        </tr>
-        <tr>
-<td style="text-align: center;">¡Mucho gusto, también!</td>
-<td style="text-align: center;">¿Cómo te llamas?</td>
-<td style="text-align: center;">Me llamo Peter</td>
-        </tr>
-    </table>
-
-        <table>
-        <tr>
-<th style="text-align: center; font-weight: bold;">What is your first name?</th>
-<th style="text-align: center; font-weight: bold;">What's your last name?</th>
-<th style="text-align: center; font-weight: bold;">My first name is Charles</th>
-        </tr>
-        <tr>
-<td style="text-align: center;">¿Cuál es tu primer nombre?</td>
-<td style="text-align: center;">¿Cuál es tu apellido?</td>
-<td style="text-align: center;">Mi primer nombre es Charles</td>
-        </tr>
-    </table>
-
-
-        <table>
-        <tr>
-<th style="text-align: center; font-weight: bold;">My last name is Morrison</th>
-        </tr>
-        <tr>
-<td style="text-align: center;">Mi apellido es Morrison</td>
-        </tr>
-    </table>
-
-<p style="color: black; text-align: justify">Como podemos ver, podemos contraer <b>what is</b> como <b>what's</b> como en <b>What's your last name?</b></p> 
-
-<br><b style="color: black;">EXPRESIONES DE DESPEDIDA</b>
-
-<br><br>
-
-<iframe src="https://drive.google.com/file/d/18pKffQ8f4--B3z7xi0L_Q9bBS8hciiX0/preview" width="400" height="50" allow="autoplay"></iframe>
-
-<br>
-<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>AG.1.1.3</b></div>
-
-
-        <table>
-        <tr>
-<th style="text-align: center; font-weight: bold;">Good night!</th>
-<th style="text-align: center; font-weight: bold;">See you later!</th>
-        </tr>
-        <tr>
-<td style="text-align: center;">¡Buenas noches!</td>
-<td style="text-align: center;">¡Te veo más tarde!</td>
-        </tr>
-    </table>
-
-
-        <table>
-        <tr>
-<th style="text-align: center; font-weight: bold;">See you tomorrow!</th>
-<th style="text-align: center; font-weight: bold;">Goodbye!</th>
-<th style="text-align: center; font-weight: bold;">Bye!</th>
-        </tr>
-        <tr>
-<td style="text-align: center;">¡Te veo mañana!</td>
-<td style="text-align: center;">¡Adiós!</td>
-<td style="text-align: center;">¡Adiós!</td>
-        </tr>
-    </table>
-
-
-        <table>
-        <tr>
-<th style="text-align: center; font-weight: bold;">See ya!</th>
-<th style="text-align: center; font-weight: bold;">Take care!</th>
-<th style="text-align: center; font-weight: bold;">Later!</th>
-        </tr>
-        <tr>
-<td style="text-align: center;">¡Nos vemos!</td>
-<td style="text-align: center;">¡Cuídate!</td>
-<td style="text-align: center;">¡Hasta más tarde!</td>
-        </tr>
-    </table>
-
-        <table>
-        <tr>
-<th style="text-align: center; font-weight: bold;"> Catch you later!</th>
-        </tr>
-        <tr>
-<td style="text-align: center;">¡Hasta luego!</td>
-        </tr>
-    </table>
-
-<p>  
-<table class="barra-rosada">
-<colgroup>
-<col>
-</colgroup>
-<tbody>
-<tr style="height: 28.5pt;">
-<td>
-<p>
-<b>
-PRESÉNTATE A TI MISMO</b>
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-</p>
-
-<p><b>ESTRUCTURA BÁSICA PARA PRESENTARTE</b></p>
-
-<p>
-Para presentarte en inglés, puedes usar la siguiente estructura básica:
-</p>
-
-<ul>
-<li>My name is… / I am…</li>
-<li>I am from… (país o ciudad)</li>
-<li>I live in… (ciudad)</li>
-<li>I study… / I work…</li>
-</ul>
-
-<p><b>Ejemplo completo:</b></p>
-
-<p>
-My name is Juan.<br>
-I am from Ecuador.<br>
-I live in Otavalo.<br>
-I study mathematics.
-</p>
-
-<p>
-Esta estructura te permite construir una presentación clara y completa desde el nivel básico.
-</p>
-
-
-<br><b style="color: black;">"HOW ARE YOU?" Y SUS RESPUESTAS</b>
-
-<br><br><b style="color: black;">How are you?</b><p style="color: black;display: inline;"> significa ¿Cómo estás?</p>
-
-<br><br><p style="color: black;display: inline">Las posibles respuestas para </p><b style="color: black;"> "How are you?"</b><p style="color: black;display: inline"> son las siguientes:</p>
-
-<br><br>
-
-<iframe src="https://drive.google.com/file/d/1bpY7muRqxpT8jzeAW0S_EAeUCKLADPKe/preview" width="400" height="50" allow="autoplay"></iframe>
-
-<br>
-<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>AG.1.1.4</b></div>
-
-
-<p style="color: black;">
-
-<b>1. </b>How are you?
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;¿Cómo estás?
-
-<br><br><b>2. </b>I’m fine, thanks.
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Estoy bien, gracias.
-
-<br><br><b>3. </b>Very good, thanks, and you?
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Muy bien, gracias, ¿y tú?
-  
-<br><br><b>4. </b>Very well, thanks, and you?
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Muy bien, gracias, ¿y tú?
-  
-<br><br><b>5. </b>So far, so good!
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;¡Hasta ahora todo bien!
-
-</p>
-
-
-<p><b>USO DE "VERY GOOD" Y "VERY WELL"</b></p>
-
-<p>
-Es importante notar una diferencia clave entre <b>"very good"</b> y <b>"very well"</b>:
-</p>
-
-<ul>
-<li><b>Very well</b>: se usa para responder a <i>"How are you?"</i> y expresar estado de salud o bienestar.</li>
-<li><b>Very good</b>: se usa principalmente para evaluar cosas (comida, trabajo, objetos), no para hablar de cómo te sientes.</li>
-</ul>
-
-<p><b>Ejemplos:</b></p>
-
-<p>
-✔ I am very well, thank you. (Correcto)<br>
-❌ I am very good. (No natural en este contexto)
-</p>
-
-<p>
-✔ The food is very good. (Correcto)<br>
-✔ Your work is very good. (Correcto)
-</p>
-
-<p>
-Por lo tanto, para responder a <i>"How are you?"</i>, es más natural usar:
-</p>
-
-<p>
-I’m fine, thanks.<br>
-I’m very well, thank you.
-</p>
-
-<br><b style="color: black;">PREGUNTAS Y RESPUESTAS COMUNES EN UNA CONVERSACIÓN</b>
-
-<br><p style="color: black;">Existe un conjunto de preguntas y respuestas sencillas que podemos hacer y responder en una conversación. Estas preguntas y respuestas son:</p>
-
-<iframe src="https://drive.google.com/file/d/1WUgmtHmh0LOUjtiPkMnveWg5y6GUPNjx/preview" width="400" height="50" allow="autoplay"></iframe>
-
-<br>
-<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>AG.1.1.5</b></div>
-
-
-
-<div dir="ltr" style="margin-left: 0pt; text-align: left;">
-    <div dir="ltr" style="margin-left: 0pt; color: black"><br>
-a) Where are you from? - ¿De dónde eres?
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-        &nbsp; &nbsp; I am from Manta. - Soy de Manta.
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-        <br />
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-b) How old are you?-¿Qué edad tienes?
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-        &nbsp; &nbsp; I am twenty years old. - Tengo veinte años.
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-        <br />
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-c) What is your phone number? - ¿Cuál es tu número telefónico?
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-        &nbsp; &nbsp; My phone number is 0992346856. – Mi número telefónico es 0992346856.
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-    </div>
-   <div dir="ltr" style="margin-left: 0pt; color: black"><br>
-d) What is your email address? ¿Cuál es tu dirección de correo electrónico?
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-        &nbsp; &nbsp; My email address is pquito@hotmail.com. Mi dirección de correo electrónico es pquito@hotmail.com.
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-        <br />
-    </div>
-</div>
-
-<p style="color:black; text-align: justify"><b>PRONUNCIACIÓN DEL NÚMERO CERO</b></p>
-
-<p style="color:black; text-align: justify">
-En inglés, el número <b>0</b> puede pronunciarse de dos formas:
-</p>
-
-<ul style="color:black; text-align: justify">
-<li><b>Zero</b> (/ˈzɪəroʊ/): se usa en contextos formales, matemáticos o cuando se menciona el número como tal.</li>
-<li><b>Oh</b> (/oʊ/): se usa comúnmente en números telefónicos, direcciones y códigos.</li>
-</ul>
-
-<p style="color:black; text-align: justify"><b>Ejemplo:</b></p>
-<p style="color:black; text-align: justify">
-My phone number is 0992346856 → "zero nine nine two three four six eight five six"<br>
-También es común decir: "oh nine nine two three four six eight five six"
-</p>
-
-<br>
-
-<b style="color: black;">LOS VERBOS TO LIVE, TO WORK Y TO STUDY</b>
-
-<br><p style="color: black;">Los verbos to live (vivir), to work (trabajar) y to study (estudiar) se conjugan para I (yo) de la siguiente manera:</p>
-
-<p style="color: black;">I live (Yo vivo).<br>
-I work (Yo trabajo).<br>
-I study (Yo estudio).</p>
-
-<p style="color: black;">Para responder por nosotros mismos con los verbos <b>live</b>, <b>work</b> y <b>study</b> y la ciudad donde vivimos o trabajamos, usamos la siguiente sintaxis:</p>
-
-<p style="color: black;">I live in (Lugar donde vives).<br>
-I work in/at (Lugar o instancia donde trabajas).<br>
-I study in/at (Lugar o instancia donde estudias).</p>
-
-<iframe src="https://drive.google.com/file/d/1KXRIj0ffXAxW-UIjmNZvmqSHzZ0QbTac/preview" width="400" height="50" allow="autoplay"></iframe>
-
-<br>
-<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>AG.1.1.6</b></div>
-
-<p style="color: black;"><b>Ejemplos:</b></p>
-
-<p style="color: black;">  
-1. I live in El Puyo.<br>
-2. I live in Quito.<br>
-3. I work in Caracas.<br>
-4. I work in Otavalo.
-<br>5. I study in Cuenca.
-<br>6. I study at the National Open University.</p>
-
-<p><b>USO DE "IN" Y "AT"</b></p>
-
-<p>
-Es importante usar correctamente las preposiciones <b>in</b> y <b>at</b>:
-</p>
-
-<ul>
-<li><b>In</b>: se usa para ciudades, países y lugares generales.</li>
-<li><b>At</b>: se usa para lugares específicos como instituciones, empresas o edificios.</li>
-</ul>
-
-<p><b>Ejemplos:</b></p>
-
-<p>
-I live in Ecuador.<br>
-I live in Quito.<br>
-I work in Otavalo.<br>
-I work at a hospital.<br>
-I study at the National Open University.
-</p>
-
-<p style="color: black;">Con los verbos <b>live</b>, <b>work</b> y <b>study</b> podemos hacer preguntas o responder a nuestro oyente como sigue a continuación:</p>
-
-<iframe src="https://drive.google.com/file/d/1ysWphPr0b5JYRxO5Y3_h47aQlHCCd9XW/preview" width="400" height="50" allow="autoplay"></iframe>
-
-<br>
-<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>AG.1.1.7</b></div>
-
-<div dir="ltr" style="margin-left: 0pt; text-align: left;">
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-      <br>
-a) A: Where do you live?
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-        &nbsp; &nbsp; B: I live in Guayaquil.
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-        <br />
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-b) A: Do you work?
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-        &nbsp; &nbsp; B: Yes, I do. / No, I don't.
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-        <br />
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-c) A: Where do you work?
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-        &nbsp; &nbsp; B: I work in Jipijapa.
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-    </div>
-<br>
-  <div dir="ltr" style="margin-left: 0pt; color: black">
-d) A: Where do you study?
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-        &nbsp; &nbsp; B: I study at the National Open University.
-    </div>
-    <div dir="ltr" style="margin-left: 0pt; color: black">
-    </div>
-</div>
-
-<p><b>DIÁLOGO MODELO</b></p>
-
-<p>
-A: Hi! What's your name?<br>
-B: My name is Juan.
-</p>
-
-<p>
-A: Where are you from?<br>
-B: I am from Ecuador.
-</p>
-
-<p>
-A: Where do you live?<br>
-B: I live in Otavalo.
-</p>
-
-<p>
-A: What do you do?<br>
-B: I study mathematics.
-</p>
-
-<br><p style="color: black; text-align: justify"><b>Ejercicios</b></p>
-
-<p style="color: black; text-align: justify">Ayude al teacher a traducir al inglés las siguientes expresiones:</p>
-
-
-<div class="container">
-  <p style="color: black">1. ¡Hola! ¿Cómo estás?</p>
-  <div class="activity" contenteditable="true">
-  </div>
-</div>
-
-<div class="container">
-  <p style="color: black">2. Soy Julio. ¡Mucho gusto también!</p>
-  <div class="activity" contenteditable="true">
-  </div>
-</div>
-
-<div class="container">
-  <p style="color: black">3. ¡Adiós, Carla! ¡Nos vemos mañana!</p>
-  <div class="activity" contenteditable="true">
-  </div>
-</div>
-
-  <div class="container">
-  <p style="color: black">4. ¡Hola, Juan! ¿Qué tal?</p>
-  <div class="activity" contenteditable="true">
-  </div>
-</div>
-
-  <div class="container">
-  <p style="color: black">5. Yo vivo en Otavalo.</p>
-  <div class="activity" contenteditable="true">
-  </div>
-</div>
-  
-
-<p>  
-<table class="barra-turquesa">
-<colgroup>
-<col>
-</colgroup>
-<tbody>
-<tr style="height: 28.5pt;">
-<td>
-<p>
-<b>EJERCICIOS RESUELTOS ERG.1.1.1.</b>
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-</p>
-
-<p style="color:black; text-align: justify">Para realizar el ejercicio, haz clic en el botón "EJERCICIOS": <a class="boton-interactivo" href="https://universitariocmi.blogspot.com/2023/12/erg111-students-parte-1.html" style="color: aqua; line-height: 1;">EJERCICIOS</a></p>
-
-<p><br>  
-<table class="barra-azul-acero">
-<colgroup>
-<col>
-</colgroup>
-<tbody>
-<tr style="height: 28.5pt;">
-<td>
-<p>
-<b>EJERCICIOS PROPUESTOS EPG.1.1.1</b>
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-</p>
-
-<p style="color: black; text-align: justify">Descarga el PDF para consolidar el conocimiento adquirido:</p>
-
-    <a class="boton-interactivo" href="https://drive.google.com/uc?export=download&id=1HdUHYE6FUI0TH1_IH_u4BnYqzSabtbb-" style="color: aqua; line-height: 1;">DESCARGAR PDF</a>
-
-
-    ```html
-<!-- Canvas para dibujo -->
-<canvas id="drawingCanvas"></canvas>
-
-<!-- Contenedor para los botones de control -->
-<div id="ucmiToolbar">
-
-    <div class="tool-title">
-        ✏️ Pizarra
-    </div>
-
-    <div id="redButton"
-         class="color-picker"
-         style="background-color:red;">
-    </div>
-
-    <div id="blueButton"
-         class="color-picker"
-         style="background-color:blue;">
-    </div>
-
-    <div id="limeButton"
-         class="color-picker"
-         style="background-color:yellowgreen;">
-    </div>
-
-    <div id="eraserButton"
-         class="color-picker"
-         style="background-color:white;">
-    </div>
-
-    <div id="clearButton"
-         class="color-picker clear-tool">
-        🧹
-    </div>
-
-</div>
-
-
-<script>
-
-const canvas = document.getElementById('drawingCanvas');
-const ctx = canvas.getContext('2d');
-
-let isDrawing = false;
-let currentColor = null;
-let erasing = false;
-
-
-// ========================================
-// PREPARAR CANVAS
-// ========================================
-
-function prepararCanvas() {
-
-    canvas.width = Math.max(
-        document.body.scrollWidth,
-        document.documentElement.scrollWidth
-    );
-
-    canvas.height = Math.max(
-        document.body.scrollHeight,
-        document.documentElement.scrollHeight
-    );
+
+    `;
+
+
+
+    const audio=new Audio(config.archivo);
+
+
+
+    const boton=document.getElementById("ucmiPlay");
+
+    const barra=document.getElementById("ucmiBarra");
+
+    const tiempo=document.getElementById("ucmiTiempo");
+
+
+
+    function formato(segundos){
+
+
+        if(isNaN(segundos))
+            return "0:00";
+
+
+        let minutos=Math.floor(segundos/60);
+
+        let segundosRestantes=Math.floor(segundos%60);
+
+
+        if(segundosRestantes<10)
+            segundosRestantes="0"+segundosRestantes;
+
+
+        return minutos+":"+segundosRestantes;
+
+
+    }
+
+
+
+    boton.onclick=function(){
+
+
+        if(audio.paused){
+
+            audio.play();
+
+            boton.innerHTML="⏸";
+
+        }
+
+        else{
+
+            audio.pause();
+
+            boton.innerHTML="▶";
+
+        }
+
+
+    };
+
+
+
+
+    audio.addEventListener(
+    "loadedmetadata",
+    function(){
+
+
+        tiempo.innerHTML=
+        "0:00 / "+
+        formato(audio.duration);
+
+
+    });
+
+
+
+    audio.addEventListener(
+    "timeupdate",
+    function(){
+
+
+        barra.value=
+        (audio.currentTime/audio.duration)*100;
+
+
+
+        tiempo.innerHTML=
+        formato(audio.currentTime)
+        +" / "+
+        formato(audio.duration);
+
+
+    });
+
+
+
+    barra.oninput=function(){
+
+
+        audio.currentTime=
+        (barra.value/100)*audio.duration;
+
+
+    };
+
+
+
+    audio.addEventListener(
+    "ended",
+    function(){
+
+
+        boton.innerHTML="▶";
+
+        barra.value=0;
+
+
+    });
+
+
 
 }
 
-prepararCanvas();
 
 
-// ========================================
-// INICIAR DIBUJO
-// ========================================
-
-canvas.addEventListener('mousedown', (event) => {
-
-    if (currentColor === null && !erasing) return;
-
-    isDrawing = true;
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        event.pageX,
-        event.pageY
-    );
-
-});
-
-
-// ========================================
-// DIBUJAR
-// ========================================
-
-canvas.addEventListener('mousemove', (event) => {
-
-    if (!isDrawing) return;
-
-    if (erasing) {
-
-        ctx.globalCompositeOperation = "destination-out";
-
-        ctx.lineWidth = 25;
-
-    } else {
-
-        ctx.globalCompositeOperation = "source-over";
-
-        ctx.strokeStyle = currentColor;
-
-        ctx.lineWidth = 3;
-    }
-
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-
-    ctx.lineTo(
-        event.pageX,
-        event.pageY
-    );
-
-    ctx.stroke();
-
-});
-
-
-// ========================================
-// DETENER DIBUJO
-// ========================================
-
-canvas.addEventListener('mouseup', () => {
-
-    isDrawing = false;
-
-    ctx.beginPath();
-
-});
-
-canvas.addEventListener('mouseleave', () => {
-
-    isDrawing = false;
-
-    ctx.beginPath();
-
-});
-
-
-// ========================================
-// ROJO
-// ========================================
-
-document.getElementById('redButton').addEventListener('click', () => {
-
-    currentColor = 'red';
-
-    erasing = false;
-
-    canvas.style.pointerEvents = 'auto';
-
-});
-
-
-// ========================================
-// AZUL
-// ========================================
-
-document.getElementById('blueButton').addEventListener('click', () => {
-
-    currentColor = 'blue';
-
-    erasing = false;
-
-    canvas.style.pointerEvents = 'auto';
-
-});
-
-
-// ========================================
-// AMARILLO VERDOSO
-// ========================================
-
-document.getElementById('limeButton').addEventListener('click', () => {
-
-    currentColor = 'yellowgreen';
-
-    erasing = false;
-
-    canvas.style.pointerEvents = 'auto';
-
-});
-
-
-// ========================================
-// BORRADOR
-// ========================================
-
-document.getElementById('eraserButton').addEventListener('click', () => {
-
-    currentColor = null;
-
-    erasing = true;
-
-    canvas.style.pointerEvents = 'auto';
-
-});
-
-
-// ========================================
-// LIMPIAR TODO
-// ========================================
-
-document.getElementById('clearButton').addEventListener('click', () => {
-
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-    currentColor = null;
-
-    erasing = false;
-
-    canvas.style.pointerEvents = 'none';
-
-});
-
-</script>
-
-<!-- XXXXXXXXXXXXXXXXXXXXXX Fin de la funcionalidad de rayar y borrar XXXXXXXXXXXXXXXXXXXXXXXXXX -->
-```
+};
