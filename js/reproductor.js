@@ -7,46 +7,37 @@
 window.UCMIAudio = {
 
 
-iniciar:function(config){
+    iniciar:function(config){
 
 
-    const reproductores = document.querySelectorAll(".audioUCMI");
+        const reproductores =
+        document.querySelectorAll(".audioUCMI");
 
 
-    const contenedor = reproductores[config.contenedor];
-
-
-    if(!contenedor){
-
-        console.error(
-            "No existe el reproductor número:",
-            config.contenedor
-        );
-
-        return;
-
-    }
+        const contenedor =
+        reproductores[config.contenedor];
 
 
 
-    contenedor.innerHTML = `
+        if(!contenedor){
 
+            console.warn(
+                "UCMI Audio: contenedor no encontrado"
+            );
 
-    <div class="ucmi-audio">
+            return;
 
-
-        <div class="ucmi-audio-titulo">
-
-            ${config.titulo}
-
-        </div>
+        }
 
 
 
-        <div class="ucmi-audio-controles">
+        contenedor.innerHTML = `
 
 
-            <button class="ucmi-play">
+        <div class="audio-ucmi">
+
+
+            <button class="audio-ucmi-boton">
 
                 ▶
 
@@ -54,22 +45,34 @@ iniciar:function(config){
 
 
 
-            <div class="ucmi-progreso">
+            <div class="audio-ucmi-contenido">
 
-                <input 
-                type="range"
-                class="ucmi-barra"
-                value="0"
-                min="0"
-                max="100">
 
-            </div>
+                <div class="audio-ucmi-titulo">
+
+                    ${config.titulo}
+
+                </div>
 
 
 
-            <div class="ucmi-tiempo">
+                <div class="audio-ucmi-progreso">
 
-                0:00 / 0:00
+
+                    <div class="audio-ucmi-barra"></div>
+
+
+                </div>
+
+
+
+                <div class="audio-ucmi-tiempo">
+
+                    00:00 / 00:00
+
+                </div>
+
+
 
             </div>
 
@@ -77,164 +80,196 @@ iniciar:function(config){
         </div>
 
 
-    </div>
-
-
-    `;
+        `;
 
 
 
-    const audio = new Audio(config.archivo);
+        const audio =
+        new Audio(config.archivo);
 
 
 
-    const boton = contenedor.querySelector(".ucmi-play");
-
-    const barra = contenedor.querySelector(".ucmi-barra");
-
-    const tiempo = contenedor.querySelector(".ucmi-tiempo");
+        const boton =
+        contenedor.querySelector(".audio-ucmi-boton");
 
 
+        const barra =
+        contenedor.querySelector(".audio-ucmi-barra");
 
 
-    function formatoTiempo(segundos){
+        const progreso =
+        contenedor.querySelector(".audio-ucmi-progreso");
 
 
-        if(isNaN(segundos))
-            return "0:00";
-
-
-        let minutos = Math.floor(segundos / 60);
-
-        let segundosRestantes =
-        Math.floor(segundos % 60);
-
-
-        if(segundosRestantes < 10){
-
-            segundosRestantes =
-            "0" + segundosRestantes;
-
-        }
-
-
-        return minutos + ":" + segundosRestantes;
-
-
-    }
+        const tiempo =
+        contenedor.querySelector(".audio-ucmi-tiempo");
 
 
 
 
-    boton.onclick = function(){
+        function formato(segundos){
 
 
-        if(audio.paused){
+            if(isNaN(segundos))
+                return "00:00";
 
 
-            audio.play();
-
-            boton.innerHTML="⏸";
-
-
-        }else{
+            let minutos =
+            Math.floor(segundos / 60);
 
 
-            audio.pause();
+            let segundosRestantes =
+            Math.floor(segundos % 60);
 
-            boton.innerHTML="▶";
+
+
+            return String(minutos).padStart(2,"0")
+            +":"
+            +
+            String(segundosRestantes).padStart(2,"0");
 
 
         }
 
 
-    };
 
 
+        boton.onclick=function(){
 
 
-    audio.addEventListener(
-        "loadedmetadata",
-        function(){
+            if(audio.paused){
 
 
-            tiempo.innerHTML =
-            "0:00 / " +
-            formatoTiempo(audio.duration);
+                audio.play();
 
 
-        }
-    );
+            }else{
 
 
-
-
-    audio.addEventListener(
-        "timeupdate",
-        function(){
-
-
-            if(audio.duration){
-
-
-                barra.value =
-                (audio.currentTime / audio.duration) * 100;
+                audio.pause();
 
 
             }
 
 
+        };
 
-            tiempo.innerHTML =
-            formatoTiempo(audio.currentTime)
+
+
+
+
+        audio.addEventListener(
+        "play",
+        ()=>{
+
+            boton.textContent="⏸";
+
+        });
+
+
+
+        audio.addEventListener(
+        "pause",
+        ()=>{
+
+            boton.textContent="▶";
+
+        });
+
+
+
+
+        audio.addEventListener(
+        "loadedmetadata",
+        ()=>{
+
+
+            tiempo.textContent =
+            "00:00 / "
+            +
+            formato(audio.duration);
+
+
+        });
+
+
+
+
+
+        audio.addEventListener(
+        "timeupdate",
+        ()=>{
+
+
+            const porcentaje =
+            (audio.currentTime /
+            audio.duration)*100;
+
+
+
+            barra.style.width =
+            porcentaje+"%";
+
+
+
+            tiempo.textContent =
+            formato(audio.currentTime)
             +
             " / "
             +
-            formatoTiempo(audio.duration);
+            formato(audio.duration);
 
 
 
-        }
-    );
+        });
 
 
 
 
-    barra.oninput=function(){
+
+        audio.addEventListener(
+        "ended",
+        ()=>{
 
 
-        if(audio.duration){
+            boton.textContent="▶";
+
+
+            barra.style.width="0%";
+
+
+        });
+
+
+
+
+
+        progreso.onclick=function(e){
+
+
+            const rect =
+            progreso.getBoundingClientRect();
+
+
+
+            const posicion =
+            (e.clientX - rect.left)
+            /
+            rect.width;
+
 
 
             audio.currentTime =
-            (barra.value / 100) *
+            posicion *
             audio.duration;
 
 
-        }
 
-
-    };
-
+        };
 
 
 
-    audio.addEventListener(
-        "ended",
-        function(){
-
-
-            boton.innerHTML="▶";
-
-            barra.value=0;
-
-
-        }
-    );
-
-
-
-}
+    }
 
 
 
