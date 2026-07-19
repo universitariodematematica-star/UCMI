@@ -1,213 +1,221 @@
-/* =====================================================
-   UCMI AUDIO PLAYER
-   Módulo independiente
-   ===================================================== */
+<!DOCTYPE html>
+<html lang="es">
 
+<head>
 
-window.UCMIAudio = {
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>UCMI - Constructor Grammar</title>
 
-iniciar:function(config){
+<style>
 
+:root{
 
-    const contenedor=document.getElementById("audioUCMI");
-
-
-    if(!contenedor){
-
-        console.error(
-        "No existe el contenedor audioUCMI"
-        );
-
-        return;
-
-    }
-
-
-
-    contenedor.innerHTML=`
-
-
-    <div class="ucmi-audio">
-
-
-        <div class="ucmi-audio-titulo">
-
-            ${config.titulo}
-
-        </div>
-
-
-
-        <div class="ucmi-audio-controles">
-
-
-            <button 
-            class="ucmi-play"
-            id="ucmiPlay">
-
-            ▶
-
-            </button>
-
-
-
-            <div class="ucmi-progreso">
-
-
-                <input 
-                type="range"
-                class="ucmi-barra"
-                id="ucmiBarra"
-                value="0"
-                min="0"
-                max="100">
-
-
-            </div>
-
-
-
-            <div class="ucmi-tiempo"
-            id="ucmiTiempo">
-
-            0:00 / 0:00
-
-            </div>
-
-
-
-        </div>
-
-
-    </div>
-
-
-    `;
-
-
-
-    const audio=new Audio(config.archivo);
-
-
-
-    const boton=document.getElementById("ucmiPlay");
-
-    const barra=document.getElementById("ucmiBarra");
-
-    const tiempo=document.getElementById("ucmiTiempo");
-
-
-
-    function formato(segundos){
-
-
-        if(isNaN(segundos))
-            return "0:00";
-
-
-        let minutos=Math.floor(segundos/60);
-
-        let segundosRestantes=Math.floor(segundos%60);
-
-
-        if(segundosRestantes<10)
-            segundosRestantes="0"+segundosRestantes;
-
-
-        return minutos+":"+segundosRestantes;
-
-
-    }
-
-
-
-    boton.onclick=function(){
-
-
-        if(audio.paused){
-
-            audio.play();
-
-            boton.innerHTML="⏸";
-
-        }
-
-        else{
-
-            audio.pause();
-
-            boton.innerHTML="▶";
-
-        }
-
-
-    };
-
-
-
-
-    audio.addEventListener(
-    "loadedmetadata",
-    function(){
-
-
-        tiempo.innerHTML=
-        "0:00 / "+
-        formato(audio.duration);
-
-
-    });
-
-
-
-    audio.addEventListener(
-    "timeupdate",
-    function(){
-
-
-        barra.value=
-        (audio.currentTime/audio.duration)*100;
-
-
-
-        tiempo.innerHTML=
-        formato(audio.currentTime)
-        +" / "+
-        formato(audio.duration);
-
-
-    });
-
-
-
-    barra.oninput=function(){
-
-
-        audio.currentTime=
-        (barra.value/100)*audio.duration;
-
-
-    };
-
-
-
-    audio.addEventListener(
-    "ended",
-    function(){
-
-
-        boton.innerHTML="▶";
-
-        barra.value=0;
-
-
-    });
-
-
+    --azul:#071426;
+    --dorado:#FFD700;
 
 }
 
+*{
 
+    box-sizing:border-box;
 
-};
+}
+
+body{
+
+    margin:0;
+
+    font-family:Arial,sans-serif;
+
+    background-image:url("https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png");
+
+    background-size:cover;
+
+    background-position:center;
+
+}
+
+.contenedor{
+
+    display:flex;
+
+    gap:25px;
+
+    padding:25px;
+
+    min-height:100vh;
+
+}
+
+.panel{
+
+    background:white;
+
+    border-radius:18px;
+
+    padding:20px;
+
+    box-shadow:8px 8px 20px rgba(0,0,0,.45);
+
+}
+
+.izquierda{
+
+    width:22%;
+
+}
+
+.centro{
+
+    width:38%;
+
+}
+
+.derecha{
+
+    width:40%;
+
+}
+
+h2{
+
+    margin-top:0;
+
+    color:#071426;
+
+}
+
+button{
+
+    width:100%;
+
+    margin-top:15px;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#FFD700;
+
+    color:#071426;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+}
+
+button:hover{
+
+    transform:translateY(-2px);
+
+}
+
+pre{
+
+    background:#071426;
+
+    color:white;
+
+    border-radius:12px;
+
+    padding:15px;
+
+    height:650px;
+
+    overflow:auto;
+
+    white-space:pre-wrap;
+
+}
+
+iframe{
+
+    width:100%;
+
+    height:650px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:white;
+
+}
+
+input[type=file]{
+
+    width:100%;
+
+    margin-top:15px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="contenedor">
+
+    <!-- PANEL IZQUIERDO -->
+
+    <div class="panel izquierda">
+
+        <h2>Proyecto</h2>
+
+        <button>
+            Descargar plantilla Excel
+        </button>
+
+        <input type="file"
+               accept=".xlsx">
+
+        <button>
+            Generar página
+        </button>
+
+    </div>
+
+    <!-- PANEL CENTRAL -->
+
+    <div class="panel centro">
+
+        <h2>Código generado</h2>
+
+        <button>
+            Copiar código
+        </button>
+
+        <button>
+            Descargar HTML
+        </button>
+
+        <button>
+            Abrir en pestaña nueva
+        </button>
+
+        <pre id="codigo"></pre>
+
+    </div>
+
+    <!-- PANEL DERECHO -->
+
+    <div class="panel derecha">
+
+        <h2>Vista previa</h2>
+
+        <iframe id="preview"></iframe>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
