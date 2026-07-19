@@ -157,7 +157,7 @@ input[type=file]{
 
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>    
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>    
 
 </head>
 
@@ -321,39 +321,54 @@ document.getElementById("preview").srcdoc = codigo;
 
 }
 
-function descargarPlantilla(){
+async function descargarPlantilla(){
 
-    const libro = XLSX.utils.book_new();
+    const libro = new ExcelJS.Workbook();
 
-
-    const datos = [
-
-        ["Nivel"]
-
-    ];
+    const hoja = libro.addWorksheet("Grammar");
 
 
-    const hoja = XLSX.utils.aoa_to_sheet(datos);
+    hoja.getCell("A1").value = "Nivel";
 
 
-    XLSX.utils.book_append_sheet(
+    hoja.getCell("B1").dataValidation = {
 
-        libro,
+        type:"list",
 
-        hoja,
+        allowBlank:false,
 
-        "Grammar"
+        formulae:[
+            '"A1,A2,B1,B1+,B2,B2+,C1,C2"'
+        ]
 
+    };
+
+
+    hoja.getCell("A1").font = {
+        bold:true
+    };
+
+
+    const archivo = await libro.xlsx.writeBuffer();
+
+
+    const blob = new Blob(
+        [archivo],
+        {
+            type:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
     );
 
 
-    XLSX.writeFile(
+    const enlace = document.createElement("a");
 
-        libro,
+    enlace.href = URL.createObjectURL(blob);
 
-        "plantilla-grammar.xlsx"
+    enlace.download = "plantilla-grammar.xlsx";
 
-    );
+
+    enlace.click();
 
 }    
 
