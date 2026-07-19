@@ -175,8 +175,10 @@ input[type=file]{
             Descargar plantilla Excel
         </button>
 
-        <input type="file"
-               accept=".xlsx">
+        <input 
+            id="excelInput"
+            type="file"
+            accept=".xlsx">
 
         <button disabled>
             Página generada automáticamente
@@ -220,7 +222,7 @@ input[type=file]{
 
 <script>
 
-function generarCodigo(){
+function generarCodigo(tituloIngles=""){
 
 const codigo = `<!DOCTYPE html>
 <html lang="es">
@@ -301,7 +303,7 @@ UCMINavegacion.iniciar("grammar");
 
 UCMIEncabezado.iniciar({
 
-titulo:"",
+titulo:"${tituloIngles}",
 
 skill:"Grammar"
 
@@ -446,9 +448,43 @@ hoja.getColumn("E").width = 30;
 
     enlace.click();
 
+}
+
+async function leerExcel(event){
+
+    const archivo = event.target.files[0];
+
+    if(!archivo) return;
+
+
+    const buffer = await archivo.arrayBuffer();
+
+
+    const libro = new ExcelJS.Workbook();
+
+
+    await libro.xlsx.load(buffer);
+
+
+    const hoja = libro.getWorksheet("Grammar");
+
+
+    const tituloIngles =
+    hoja.getCell("D2").value || "";
+
+
+    generarCodigo(tituloIngles);
+
 }    
 
 generarCodigo();
+
+document
+.getElementById("excelInput")
+.addEventListener(
+"change",
+leerExcel
+);    
 
 </script>    
 
