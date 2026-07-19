@@ -226,7 +226,9 @@ function generarCodigo(
     tituloIngles="",
     unidad="",
     tema="",
-    video=""
+    video="",
+    audios=[],
+    nivel=""
 ){
 
 const codigo = `<!DOCTYPE html>
@@ -326,7 +328,21 @@ skill:"Grammar"
 
 });
 
-UCMIAudio.cargar([]);
+UCMIAudio.cargar(
+
+${JSON.stringify(
+audios.map(audio=>({
+
+titulo:
+`Audio ${audio.numero} - AG.${unidad}.${tema}.${audio.numero}.${nivel}`,
+
+archivo:
+audio.archivo
+
+}))
+)}
+
+);
 
 <\/script>
 
@@ -361,6 +377,13 @@ hoja.getCell("E1").value = "Título en español";
 
 hoja.getCell("F1").value = "Video";
 
+// AUDIOS
+
+for(let i = 1; i <= 11; i++){
+
+    hoja.getCell(1, 6 + i).value = "Audio " + i;
+
+}
 
 
     // ESTILO ENCABEZADOS
@@ -435,7 +458,13 @@ hoja.getColumn("D").width = 30;
 
 hoja.getColumn("E").width = 30;
 
-    hoja.getColumn("F").width = 40;
+hoja.getColumn("F").width = 40;
+
+    for(let i = 7; i <= 17; i++){
+
+    hoja.getColumn(i).width = 40;
+
+}
 
 
 
@@ -503,12 +532,40 @@ hoja.getCell("C2").value || "";
 const video =
 hoja.getCell("F2").text || "";
 
+    let audios = [];
+
+
+for(let i = 1; i <= 11; i++){
+
+    let columna = 6 + i;
+
+
+    let ruta =
+    hoja.getCell(2,columna).text || "";
+
+
+    if(ruta){
+
+        audios.push({
+
+            numero:i,
+
+            archivo:ruta
+
+        });
+
+    }
+
+}
+
 
     generarCodigo(
     tituloIngles,
     unidad,
     tema,
-    video
+    video,
+    audios,
+    hoja.getCell("A2").text || ""
 );
 
 }    
