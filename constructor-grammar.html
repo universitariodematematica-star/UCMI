@@ -804,13 +804,14 @@ for(let i=0;i<10;i++){
     if(ingles && espanol){
 
         vocabularioGlobal.push({
-            ingles:ingles,
 
-            espanol:espanol,
+    ingles: ingles,
 
-            imagen:""
+    espanol: espanol.charAt(0).toUpperCase() + espanol.slice(1).toLowerCase(),
 
-        });
+    imagen:""
+
+});
 
     }
 
@@ -878,34 +879,57 @@ function extraerImagenesBlogger(){
 
 }  
 
-    function asignarImagenes(){
+    function normalizarTexto(texto){
+
+    return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/ñ/g,"n")
+    .replace(/[^a-z0-9]/g,"");
+
+}
+
+
+
+function asignarImagenes(){
 
     vocabularioGlobal.forEach(item=>{
 
 
-        let palabra =
-        item.ingles
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g,"");
+        let palabrasBuscar = [
+
+            normalizarTexto(item.ingles),
+
+            normalizarTexto(item.espanol)
+
+        ];
 
 
-        let encontrada =
-        imagenesBlogger.find(url=>{
+
+        let encontrada = imagenesBlogger.find(url=>{
 
 
-            let nombreArchivo =
-            url
+            let nombreArchivo = url
             .split("/")
             .pop()
-            .toLowerCase()
-            .replace(/\.(png|jpg|jpeg|webp)$/,"");
+            .replace(/\.(png|jpg|jpeg|webp)$/i,"");
 
 
-            return nombreArchivo.includes(palabra);
+
+            nombreArchivo = normalizarTexto(nombreArchivo);
+
+
+
+            return palabrasBuscar.some(palabra=>
+
+                nombreArchivo.includes(palabra)
+
+            );
 
 
         });
+
 
 
         if(encontrada){
@@ -916,6 +940,7 @@ function extraerImagenesBlogger(){
 
 
     });
+
 
 
     generarCodigoActualizado();
