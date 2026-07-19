@@ -328,10 +328,31 @@ async function descargarPlantilla(){
     const hoja = libro.addWorksheet("Grammar");
 
 
+    // ENCABEZADOS
+
     hoja.getCell("A1").value = "Nivel";
 
+    hoja.getCell("B1").value = "Unidad";
 
-    hoja.getCell("B1").dataValidation = {
+    hoja.getCell("C1").value = "Tema";
+
+
+
+    // ESTILO ENCABEZADOS
+
+    ["A1","B1","C1"].forEach(celda=>{
+
+        hoja.getCell(celda).font = {
+            bold:true
+        };
+
+    });
+
+
+
+    // LISTA NIVEL
+
+    hoja.getCell("B2").dataValidation = {
 
         type:"list",
 
@@ -344,28 +365,75 @@ async function descargarPlantilla(){
     };
 
 
-    hoja.getCell("A1").font = {
-        bold:true
+
+    // UNIDAD: ENTEROS POSITIVOS
+
+    hoja.getCell("B2").dataValidation = {
+
+        type:"whole",
+
+        operator:"greaterThan",
+
+        allowBlank:true,
+
+        formulae:[0]
+
     };
+
+
+
+    // TEMA: ENTEROS POSITIVOS
+
+    hoja.getCell("C2").dataValidation = {
+
+        type:"whole",
+
+        operator:"greaterThan",
+
+        allowBlank:true,
+
+        formulae:[0]
+
+    };
+
+
+
+    // ANCHO DE COLUMNAS
+
+    hoja.getColumn("A").width = 15;
+
+    hoja.getColumn("B").width = 15;
+
+    hoja.getColumn("C").width = 15;
+
 
 
     const archivo = await libro.xlsx.writeBuffer();
 
 
+
     const blob = new Blob(
+
         [archivo],
+
         {
             type:
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         }
+
     );
+
 
 
     const enlace = document.createElement("a");
 
-    enlace.href = URL.createObjectURL(blob);
 
-    enlace.download = "plantilla-grammar.xlsx";
+    enlace.href =
+    URL.createObjectURL(blob);
+
+
+    enlace.download =
+    "plantilla-grammar.xlsx";
 
 
     enlace.click();
