@@ -228,7 +228,8 @@ function generarCodigo(
     tema="",
     video="",
     audios=[],
-    nivel=""
+    nivel="",
+    vocabulario=[]
 ){
 
 const codigo = `<!DOCTYPE html>
@@ -247,6 +248,61 @@ const codigo = `<!DOCTYPE html>
 <link rel="stylesheet" href="css/pizarra.css">
 
 <link rel="stylesheet" href="css/reproductor.css">
+
+<style>
+
+.tabla-vocabulario{
+
+width:80%;
+
+margin-top:20px;
+
+border-collapse:separate;
+
+border-spacing:0 10px;
+
+background:#3498db;
+
+border-radius:10px;
+
+overflow:hidden;
+
+}
+
+
+
+.tabla-vocabulario td{
+
+border:1px solid #000;
+
+padding:8px;
+
+background:white;
+
+color:black;
+
+text-align:center;
+
+}
+
+
+
+.tabla-vocabulario img{
+
+width:110px;
+
+height:110px;
+
+object-fit:contain;
+
+display:block;
+
+margin:auto;
+
+}
+
+
+</style>
 
 </head>
 
@@ -328,6 +384,64 @@ AG.${unidad}.${tema}.1.${nivel}
 
 
 <div id="contenidoUCMI">
+
+
+${vocabulario.length > 0 ? `
+
+<table class="tabla-vocabulario">
+
+
+<tr>
+
+${vocabulario.map(item=>`
+
+<td>
+
+<img src="${item.imagen}">
+
+</td>
+
+`).join("")}
+
+</tr>
+
+
+
+<tr>
+
+${vocabulario.map(item=>`
+
+<td>
+
+${item.ingles}
+
+</td>
+
+`).join("")}
+
+</tr>
+
+
+
+<tr>
+
+${vocabulario.map(item=>`
+
+<td>
+
+${item.espanol}
+
+</td>
+
+`).join("")}
+
+</tr>
+
+
+</table>
+
+` : ""}
+
 
 </div>
 
@@ -412,6 +526,16 @@ for(let i = 1; i <= 11; i++){
 
 }
 
+ // VOCABULARIO
+
+hoja.getCell("R1").value="Imagen 1";
+hoja.getCell("S1").value="Inglés 1";
+hoja.getCell("T1").value="Español 1";
+
+
+hoja.getCell("U1").value="Imagen 2";
+hoja.getCell("V1").value="Inglés 2";
+hoja.getCell("W1").value="Español 2";   
 
     // ESTILO ENCABEZADOS
 
@@ -591,14 +715,54 @@ if(typeof ruta === "object"){
 
 }
 
+let vocabulario=[];
 
+
+for(let i=0;i<2;i++){
+
+
+let columnaImagen = 18 + (i*3);
+
+let imagen =
+hoja.getCell(2,columnaImagen).value || "";
+
+
+let ingles =
+hoja.getCell(2,columnaImagen+1).value || "";
+
+
+let espanol =
+hoja.getCell(2,columnaImagen+2).value || "";
+
+
+
+if(imagen && ingles && espanol){
+
+
+vocabulario.push({
+
+imagen:imagen,
+
+ingles:ingles,
+
+espanol:espanol
+
+});
+
+
+}
+
+
+}
+    
     generarCodigo(
-    tituloIngles,
-    unidad,
-    tema,
-    video,
-    audios,
-    hoja.getCell("A2").text || ""
+tituloIngles,
+unidad,
+tema,
+video,
+audios,
+hoja.getCell("A2").text || "",
+vocabulario
 );
 
 }
