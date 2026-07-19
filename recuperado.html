@@ -240,7 +240,8 @@ Cargar imágenes Blogger
 
 let datosPagina = {
 
-titulo:"",
+tituloIngles:"",
+tituloEspanol:"",
 unidad:"",
 tema:"",
 video:"",
@@ -312,6 +313,7 @@ ${lista.map(item=>`
 
 function generarCodigo(
     tituloIngles="",
+    tituloEspanol="",
     unidad="",
     tema="",
     video="",
@@ -491,6 +493,24 @@ ${vocabulario.length>5 ? crearTabla(vocabulario.slice(5,10)) : ""}
 
 ` : ""}
 
+<table class="barra-rosada">
+
+<tr>
+
+<td>
+
+<p>
+
+${tituloEspanol}
+
+</p>
+
+</td>
+
+</tr>
+
+</table>
+
 
 </div>
 
@@ -552,6 +572,8 @@ async function descargarPlantilla(){
 
     const hoja = libro.addWorksheet("Grammar");
 
+    const hojaSubtitulos = libro.addWorksheet("Subtitulos");
+
 
     // ENCABEZADOS
 
@@ -566,6 +588,39 @@ hoja.getCell("D1").value = "Título en inglés";
 hoja.getCell("E1").value = "Título en español";
 
 hoja.getCell("F1").value = "Video";
+
+hoja.getCell("G1").value = "Introducción general";
+hoja.getCell("H1").value = "Audio vocabulario";
+
+// HOJA SUBTITULOS
+
+hojaSubtitulos.getCell("A1").value = "Número";
+
+hojaSubtitulos.getCell("B1").value = "Subtítulo";
+
+hojaSubtitulos.getCell("C1").value = "Introducción";
+
+hojaSubtitulos.getCell("D1").value = "Ejemplo 1";
+
+hojaSubtitulos.getCell("E1").value = "Ejemplo 2";
+
+hojaSubtitulos.getCell("F1").value = "Ejemplo 3";
+
+hojaSubtitulos.getCell("G1").value = "Comentario opcional";
+
+hojaSubtitulos.getCell("H1").value = "Audio";
+
+for(let i=1;i<=10;i++){
+
+    hojaSubtitulos.getCell(i+1,1).value = i;
+
+}
+
+for(let i=1;i<=8;i++){
+
+    hojaSubtitulos.getColumn(i).width = 30;
+
+}    
 
 // AUDIOS
 
@@ -730,9 +785,12 @@ async function leerExcel(event){
 
 
     const tituloIngles =
-    hoja.getCell("D2").value || "";
+hoja.getCell("D2").value || "";
 
-    const unidad =
+const tituloEspanol =
+hoja.getCell("E2").value || "";
+
+const unidad =
 hoja.getCell("B2").value || "";
 
 const tema =
@@ -742,11 +800,6 @@ hoja.getCell("C2").value || "";
 const video =
 hoja.getCell("F2").text || "";
 
-    datosPagina.titulo = tituloIngles;
-datosPagina.unidad = unidad;
-datosPagina.tema = tema;
-datosPagina.video = video;
-datosPagina.nivel = hoja.getCell("A2").text || "";
 
     let audios = [];
 
@@ -780,9 +833,7 @@ if(typeof ruta === "object"){
 
     }
 
-}
-
-datosPagina.audios = audios;    
+}  
 
 vocabularioGlobal = [];
 
@@ -804,21 +855,40 @@ for(let i=0;i<10;i++){
     if(ingles && espanol){
 
         vocabularioGlobal.push({
-            ingles:ingles,
 
-            espanol:espanol,
+    ingles: ingles,
 
-            imagen:""
+    espanol: espanol.charAt(0).toUpperCase() + espanol.slice(1).toLowerCase(),
 
-        });
+    imagen:""
+
+});
 
     }
 
 }
 
+    datosPagina = {
+
+    tituloIngles: tituloIngles,
+
+    tituloEspanol: tituloEspanol,
+
+    unidad: unidad,
+
+    tema: tema,
+
+    video: video,
+
+    audios: audios,
+
+    nivel: hoja.getCell("A2").text || ""
+
+};
     
     generarCodigo(
 tituloIngles,
+tituloEspanol,
 unidad,
 tema,
 video,
@@ -878,34 +948,57 @@ function extraerImagenesBlogger(){
 
 }  
 
-    function asignarImagenes(){
+    function normalizarTexto(texto){
+
+    return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/ñ/g,"n")
+    .replace(/[^a-z0-9]/g,"");
+
+}
+
+
+
+function asignarImagenes(){
 
     vocabularioGlobal.forEach(item=>{
 
 
-        let palabra =
-        item.ingles
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g,"");
+        let palabrasBuscar = [
+
+            normalizarTexto(item.ingles),
+
+            normalizarTexto(item.espanol)
+
+        ];
 
 
-        let encontrada =
-        imagenesBlogger.find(url=>{
+
+        let encontrada = imagenesBlogger.find(url=>{
 
 
-            let nombreArchivo =
-            url
+            let nombreArchivo = url
             .split("/")
             .pop()
-            .toLowerCase()
-            .replace(/\.(png|jpg|jpeg|webp)$/,"");
+            .replace(/\.(png|jpg|jpeg|webp)$/i,"");
 
 
-            return nombreArchivo.includes(palabra);
+
+            nombreArchivo = normalizarTexto(nombreArchivo);
+
+
+
+            return palabrasBuscar.some(palabra=>
+
+                nombreArchivo.includes(palabra)
+
+            );
 
 
         });
+
 
 
         if(encontrada){
@@ -918,6 +1011,7 @@ function extraerImagenesBlogger(){
     });
 
 
+
     generarCodigoActualizado();
 
 }
@@ -927,16 +1021,26 @@ console.log("Audios enviados:", datosPagina.audios);
 function generarCodigoActualizado(){
 
     generarCodigo(
-        datosPagina.titulo,
+
+        datosPagina.tituloIngles,
+
+        datosPagina.tituloEspanol,
+
         datosPagina.unidad,
+
         datosPagina.tema,
+
         datosPagina.video,
+
         datosPagina.audios,
+
         datosPagina.nivel,
+
         vocabularioGlobal
+
     );
 
-}    
+}   
 
 function abrirNuevaPestana(){
 
