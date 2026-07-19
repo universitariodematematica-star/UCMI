@@ -157,6 +157,8 @@ input[type=file]{
 
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>    
+
 </head>
 
 <body>
@@ -169,12 +171,14 @@ input[type=file]{
 
         <h2>Proyecto</h2>
 
-        <button>
+        <button onclick="descargarPlantilla()">
             Descargar plantilla Excel
         </button>
 
-        <input type="file"
-               accept=".xlsx">
+        <input 
+            id="excelInput"
+            type="file"
+            accept=".xlsx">
 
         <button disabled>
             Página generada automáticamente
@@ -196,7 +200,7 @@ input[type=file]{
             Descargar HTML
         </button>
 
-        <button>
+        <button onclick="abrirNuevaPestana()">
             Abrir en pestaña nueva
         </button>
 
@@ -218,7 +222,15 @@ input[type=file]{
 
 <script>
 
-function generarCodigo(){
+function generarCodigo(
+    tituloIngles="",
+    unidad="",
+    tema="",
+    video="",
+    audios=[],
+    nivel="",
+    vocabulario=[]
+){
 
 const codigo = `<!DOCTYPE html>
 <html lang="es">
@@ -236,6 +248,61 @@ const codigo = `<!DOCTYPE html>
 <link rel="stylesheet" href="css/pizarra.css">
 
 <link rel="stylesheet" href="css/reproductor.css">
+
+<style>
+
+.tabla-vocabulario{
+
+width:80%;
+
+margin-top:20px;
+
+border-collapse:separate;
+
+border-spacing:0 10px;
+
+background:#3498db;
+
+border-radius:10px;
+
+overflow:hidden;
+
+}
+
+
+
+.tabla-vocabulario td{
+
+border:1px solid #000;
+
+padding:8px;
+
+background:white;
+
+color:black;
+
+text-align:center;
+
+}
+
+
+
+.tabla-vocabulario img{
+
+width:110px;
+
+height:110px;
+
+object-fit:contain;
+
+display:block;
+
+margin:auto;
+
+}
+
+
+</style>
 
 </head>
 
@@ -259,6 +326,18 @@ VOLVER A SKILLS
 
 <div id="ucmiEncabezado"></div>
 
+${video ? `
+
+<a class="boton-interactivo"
+href="${video}"
+target="_blank">
+
+Video G.${unidad}.${tema}
+
+</a>
+
+` : ""}
+
 <table class="barra-carmesi">
 
 <tr>
@@ -277,7 +356,102 @@ VOCABULARY
 
 </table>
 
+
+${audios.length > 0 ? `
+
+<div class="audioUCMI">
+
+<audio controls>
+
+<source src="${audios[0].archivo}" type="audio/mpeg">
+
+Tu navegador no soporta audio.
+
+</audio>
+
+
+<p>
+
+AG.${unidad}.${tema}.1.${nivel}
+
+</p>
+
+
+</div>
+
+` : ""}
+
+
+
 <div id="contenidoUCMI">
+
+
+${vocabulario.length > 0 ? `
+
+<table class="tabla-vocabulario">
+
+
+<tr>
+
+${vocabulario.map(item=>`
+
+<td>
+
+${item.imagen ? 
+`
+<img src="${item.imagen}">
+`
+:
+`
+<div style="height:110px">
+Sin imagen
+</div>
+`
+}
+
+</td>
+
+`).join("")}
+
+</tr>
+
+
+
+<tr>
+
+${vocabulario.map(item=>`
+
+<td>
+
+${item.ingles}
+
+</td>
+
+`).join("")}
+
+</tr>
+
+
+
+<tr>
+
+${vocabulario.map(item=>`
+
+<td>
+
+${item.espanol}
+
+</td>
+
+`).join("")}
+
+</tr>
+
+
+</table>
+
+` : ""}
+
 
 </div>
 
@@ -299,13 +473,27 @@ UCMINavegacion.iniciar("grammar");
 
 UCMIEncabezado.iniciar({
 
-titulo:"",
+titulo:"${unidad}.${tema} ${tituloIngles.toUpperCase()}",
 
 skill:"Grammar"
 
 });
 
-UCMIAudio.cargar([]);
+UCMIAudio.cargar(
+
+${JSON.stringify(
+audios.map(audio=>({
+
+titulo:
+`AG.${unidad}.${tema}.${audio.numero}.${nivel}`,
+    
+archivo:
+audio.archivo
+
+}))
+)}
+
+);
 
 <\/script>
 
@@ -319,7 +507,308 @@ document.getElementById("preview").srcdoc = codigo;
 
 }
 
+async function descargarPlantilla(){
+
+    const libro = new ExcelJS.Workbook();
+
+    const hoja = libro.addWorksheet("Grammar");
+
+
+    // ENCABEZADOS
+
+hoja.getCell("A1").value = "Nivel";
+
+hoja.getCell("B1").value = "Unidad";
+
+hoja.getCell("C1").value = "Tema";
+
+hoja.getCell("D1").value = "Título en inglés";
+
+hoja.getCell("E1").value = "Título en español";
+
+hoja.getCell("F1").value = "Video";
+
+// AUDIOS
+
+for(let i = 1; i <= 11; i++){
+
+    hoja.getCell(1, 6 + i).value = "Audio " + i;
+
+}
+
+// VOCABULARIO
+
+let columnaVocabulario = 18; // Columna R
+
+for(let i = 1; i <= 10; i++){
+
+    hoja.getCell(1, columnaVocabulario).value = "Inglés " + i;
+
+    hoja.getCell(1, columnaVocabulario + 1).value = "Español " + i;
+
+    columnaVocabulario += 2;
+
+}    
+       
+
+    // ESTILO ENCABEZADOS
+
+    ["A1","B1","C1"].forEach(celda=>{
+
+        hoja.getCell(celda).font = {
+            bold:true
+        };
+
+    });
+
+
+
+   // NIVEL: LISTA DESPLEGABLE
+
+hoja.getCell("A2").dataValidation = {
+
+    type:"list",
+
+    allowBlank:false,
+
+    formulae:[
+        '"A1,A2,B1,B1+,B2,B2+,C1,C2"'
+    ]
+
+};
+
+
+
+    // UNIDAD: ENTEROS POSITIVOS
+
+    hoja.getCell("B2").dataValidation = {
+
+        type:"whole",
+
+        operator:"greaterThan",
+
+        allowBlank:true,
+
+        formulae:[0]
+
+    };
+
+
+
+    // TEMA: ENTEROS POSITIVOS
+
+    hoja.getCell("C2").dataValidation = {
+
+        type:"whole",
+
+        operator:"greaterThan",
+
+        allowBlank:true,
+
+        formulae:[0]
+
+    };
+
+
+
+    // ANCHO DE COLUMNAS
+
+hoja.getColumn("A").width = 15;
+
+hoja.getColumn("B").width = 15;
+
+hoja.getColumn("C").width = 15;
+
+hoja.getColumn("D").width = 30;
+
+hoja.getColumn("E").width = 30;
+
+hoja.getColumn("F").width = 40;
+
+    for(let i = 7; i <= 17; i++){
+
+    hoja.getColumn(i).width = 40;
+
+}   
+
+for(let i = 18; i <= 37; i++){
+
+    hoja.getColumn(i).width = 25;
+
+}    
+
+
+
+    const archivo = await libro.xlsx.writeBuffer();
+
+
+
+    const blob = new Blob(
+
+        [archivo],
+
+        {
+            type:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
+
+    );
+
+
+
+    const enlace = document.createElement("a");
+
+
+    enlace.href =
+    URL.createObjectURL(blob);
+
+
+    enlace.download =
+    "plantilla-grammar.xlsx";
+
+
+    enlace.click();
+
+}
+
+async function leerExcel(event){
+
+    const archivo = event.target.files[0];
+
+    if(!archivo) return;
+
+
+    const buffer = await archivo.arrayBuffer();
+
+
+    const libro = new ExcelJS.Workbook();
+
+
+    await libro.xlsx.load(buffer);
+
+
+    const hoja = libro.getWorksheet("Grammar");
+
+
+    const tituloIngles =
+    hoja.getCell("D2").value || "";
+
+    const unidad =
+hoja.getCell("B2").value || "";
+
+const tema =
+hoja.getCell("C2").value || "";
+
+
+const video =
+hoja.getCell("F2").text || "";
+
+    let audios = [];
+
+
+for(let i = 1; i <= 11; i++){
+
+    let columna = 6 + i;
+
+
+    let ruta =
+hoja.getCell(2,columna).value || "";
+
+if(typeof ruta === "object"){
+
+    ruta = ruta.text || "";
+
+}
+
+
+    if(ruta){
+
+        audios.push({
+
+            numero:i,
+
+            archivo:ruta
+
+        });
+
+    }
+
+}
+
+let vocabulario=[];
+
+
+for(let i=0;i<10;i++){
+
+    let columna =
+    18 + (i*2);
+
+
+    let ingles =
+    hoja.getCell(2,columna).value || "";
+
+
+    let espanol =
+    hoja.getCell(2,columna+1).value || "";
+
+
+    if(ingles && espanol){
+
+        vocabulario.push({
+
+            ingles:ingles,
+
+            espanol:espanol,
+
+            imagen:""
+
+        });
+
+    }
+
+}
+
+    
+    generarCodigo(
+tituloIngles,
+unidad,
+tema,
+video,
+audios,
+hoja.getCell("A2").text || "",
+vocabulario
+);
+
+}
+
+function abrirNuevaPestana(){
+
+    const codigo =
+    document.getElementById("codigo").textContent;
+
+
+    const nuevaVentana =
+    window.open();
+
+
+    nuevaVentana.document.open();
+
+
+    nuevaVentana.document.write(codigo);
+
+
+    nuevaVentana.document.close();
+
+}    
+
 generarCodigo();
+
+document
+.getElementById("excelInput")
+.addEventListener(
+"change",
+leerExcel
+);    
 
 </script>    
 
