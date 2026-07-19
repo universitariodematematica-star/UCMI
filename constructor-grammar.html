@@ -180,11 +180,19 @@ input[type=file]{
             type="file"
             accept=".xlsx">
 
-        <div id="panelImagenes" style="display:none; margin-top:20px;">
+        <div style="margin-top:20px;">
 
-    <h3>Imágenes del vocabulario</h3>
+<h3>Código de Blogger</h3>
 
-    <div id="listaImagenes"></div>
+<textarea
+id="codigoBlogger"
+placeholder="Pega aquí el código HTML generado por Blogger"
+style="width:100%;height:180px;">
+</textarea>
+
+<button onclick="extraerImagenesBlogger()">
+Cargar imágenes Blogger
+</button>
 
 </div>
 
@@ -246,7 +254,19 @@ Cargar imágenes Blogger
 
 <script>
 
-let imagenesBlogger = [];
+<script>
+
+let datosPagina = {
+
+titulo:"",
+unidad:"",
+tema:"",
+video:"",
+audios:[],
+nivel:""
+
+};
+
 
 function crearTabla(lista){
 
@@ -800,9 +820,6 @@ for(let i=0;i<10;i++){
 
 }
 
-    document.getElementById("panelImagenes").style.display="block";
-
-crearPanelImagenes(vocabularioGlobal);
     
     generarCodigo(
 tituloIngles,
@@ -814,45 +831,7 @@ hoja.getCell("A2").text || "",
 vocabularioGlobal
 );
 
-}
-
-function crearPanelImagenes(vocabulario){
-
-    const lista =
-    document.getElementById("listaImagenes");
-
-    lista.innerHTML="";
-
-    vocabulario.forEach((item,indice)=>{
-
-        const tarjeta =
-        document.createElement("div");
-
-        tarjeta.style.border="1px solid #ccc";
-        tarjeta.style.borderRadius="10px";
-        tarjeta.style.padding="10px";
-        tarjeta.style.marginBottom="15px";
-        tarjeta.style.background="white";
-
-        tarjeta.innerHTML=`
-
-            <b>${item.ingles}</b><br>
-            <small>${item.espanol}</small>
-
-            <br><br>
-
-            <input
-                type="file"
-                accept="image/*"
-                id="imagen${indice}">
-
-        `;
-
-        lista.appendChild(tarjeta);
-
-    });
-
-}    
+}  
 
     
 
@@ -872,16 +851,29 @@ function extraerImagenesBlogger(){
 
 
     const patron =
-    /src="([^"]+\.(?:png|jpg|jpeg|webp))"/gi;
+    /https:\/\/blogger\.googleusercontent\.com\/[^"]+/gi;
 
 
     const coincidencias =
-    [...codigo.matchAll(patron)];
+    codigo.match(patron);
+
+
+    if(!coincidencias){
+
+        console.log("No se encontraron imágenes");
+
+        alert("No se encontraron URLs de Blogger");
+
+        return;
+
+    }
 
 
     imagenesBlogger =
-    coincidencias.map(imagen=>imagen[1]);
+    coincidencias.map(url=>url);
 
+
+    console.log("URLs encontradas:");
 
     console.log(imagenesBlogger);
 
