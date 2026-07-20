@@ -60,6 +60,8 @@ crear:function(contenedor, config){
     const audio =
     new Audio(config.archivo);
 
+   console.log(config.archivo);
+console.log(audio.src);
 
 
     const boton =
