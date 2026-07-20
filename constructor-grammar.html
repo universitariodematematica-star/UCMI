@@ -632,6 +632,10 @@ hoja.getCell("H1").value = "Introducción general";
 hojaSubtitulos.getCell("A1").value = "Número";
 hojaSubtitulos.getCell("B1").value = "Subtítulo";
 hojaSubtitulos.getCell("C1").value = "Introducción";
+hojaSubtitulos.getCell("D1").value = "Oración 1";
+hojaSubtitulos.getCell("E1").value = "Oración 2";
+hojaSubtitulos.getCell("F1").value = "Oración 3";
+hojaSubtitulos.getCell("G1").value = "Audio";    
 
 for(let i=1;i<=10;i++){
 
@@ -641,7 +645,11 @@ for(let i=1;i<=10;i++){
 
 hojaSubtitulos.getColumn("A").width = 12;
 hojaSubtitulos.getColumn("B").width = 40;
-hojaSubtitulos.getColumn("C").width = 70;    
+hojaSubtitulos.getColumn("C").width = 70;
+hojaSubtitulos.getColumn("D").width = 40;
+hojaSubtitulos.getColumn("E").width = 40;
+hojaSubtitulos.getColumn("F").width = 40;
+hojaSubtitulos.getColumn("G").width = 40;    
 
 // VOCABULARIO
 
@@ -798,6 +806,7 @@ async function leerExcel(event){
     await libro.xlsx.load(buffer);
 
 
+    const hojaSubtitulos = libro.getWorksheet("Subtitulos");
     const hoja = libro.getWorksheet("Grammar");
 
 
@@ -857,6 +866,58 @@ if(typeof ruta === "object"){
 
 vocabularioGlobal = [];
 
+let subtitulosGlobal = [];
+
+
+for(let i = 2; i <= 11; i++){
+
+    let subtitulo =
+    hojaSubtitulos.getCell(i,2).value || "";
+
+
+    let introduccion =
+    hojaSubtitulos.getCell(i,3).value || "";
+
+
+    let oracion1 =
+    hojaSubtitulos.getCell(i,4).value || "";
+
+
+    let oracion2 =
+    hojaSubtitulos.getCell(i,5).value || "";
+
+
+    let oracion3 =
+    hojaSubtitulos.getCell(i,6).value || "";
+
+
+    let audio =
+    hojaSubtitulos.getCell(i,7).value || "";
+
+
+
+    if(subtitulo){
+
+        subtitulosGlobal.push({
+
+            subtitulo: subtitulo,
+
+            introduccion: introduccion,
+
+            oraciones:[
+                oracion1,
+                oracion2,
+                oracion3
+            ],
+
+            audio:audio
+
+        });
+
+    }
+
+}    
+
 
 for(let i=0;i<10;i++){
 
@@ -890,21 +951,23 @@ for(let i=0;i<10;i++){
 
     datosPagina = {
 
-    tituloIngles: tituloIngles,
+tituloIngles: tituloIngles,
 
-    tituloEspanol: tituloEspanol,
+tituloEspanol: tituloEspanol,
 
-    unidad: unidad,
+unidad: unidad,
 
-    tema: tema,
+tema: tema,
 
-    video: video,
+video: video,
 
-    audios: audios,
+audios: audios,
 
-    nivel: hoja.getCell("A2").text || "",
+nivel: hoja.getCell("A2").text || "",
 
-    introduccionGeneral: introduccionGeneral
+introduccionGeneral: introduccionGeneral,
+
+subtitulos: subtitulosGlobal
 
 };
     
