@@ -125,7 +125,7 @@ crear:function(contenedor, config){
 
     audio.addEventListener("play",()=>{
 
-        boton.textContent="⏸";
+        boton.textContent="PAUSA";
 
     });
 
