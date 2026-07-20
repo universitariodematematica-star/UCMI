@@ -252,7 +252,115 @@ nivel:""
 
 let vocabularioGlobal = [];
 
-let imagenesBlogger = [];    
+let subtitulosGlobal = [];
+
+let imagenesBlogger = [];
+
+function leerCelda(celda){
+
+    let valor = celda.value;
+
+    if(valor === null || valor === undefined){
+        return "";
+    }
+
+
+    if(typeof valor === "object"){
+
+
+        if(valor.richText){
+
+            return valor.richText
+            .map(x => x.text || "")
+            .join("");
+
+        }
+
+
+        if(valor.text){
+
+            return String(valor.text);
+
+        }
+
+
+        if(valor.hyperlink){
+
+            return String(valor.hyperlink);
+
+        }
+
+
+        if(valor.result){
+
+            return String(valor.result);
+
+        }
+
+
+        return JSON.stringify(valor);
+
+    }
+
+
+    return String(valor);
+
+}    
+
+function crearSubtitulos(lista){
+
+    if(!lista || lista.length===0){
+        return "";
+    }
+
+
+    return lista.map(item=>`
+
+<div class="bloque-subtitulo">
+
+<h3>
+${item.subtitulo}
+</h3>
+
+
+<p class="introduccion-subtitulo">
+
+${item.introduccion || ""}
+
+</p>
+
+
+${item.oraciones.some(o=>o) ? `
+
+<div class="oraciones">
+
+${item.oraciones.map(oracion=>{
+
+return oracion ? `<p>${oracion}</p>` : "";
+
+}).join("")}
+
+</div>
+
+` : ""}
+
+
+${item.audio ? `
+
+<audio controls>
+
+<source src="${item.audio}" type="audio/mpeg">
+
+</audio>
+
+` : ""}
+
+
+</div>
+
+`).join("");
+
+}    
 
 
 function crearTabla(lista){
@@ -320,7 +428,8 @@ function generarCodigo(
     audios=[],
     nivel="",
     vocabulario=[],
-    introduccionGeneral=""
+introduccionGeneral="",
+subtitulos=[]
 ){
 
 const codigo = `<!DOCTYPE html>
@@ -421,6 +530,67 @@ line-height:1.8;
 text-align:justify;
 
 color:#222;
+
+}
+
+.bloque-subtitulo{
+
+width:92%;
+margin:30px auto;
+
+}
+
+
+.bloque-subtitulo h3{
+
+font-family:Arial,sans-serif;
+
+font-size:22px;
+
+font-weight:bold;
+
+color:black;
+
+text-align:left;
+
+margin-bottom:15px;
+
+}
+
+
+.introduccion-subtitulo{
+
+font-family:Arial,sans-serif;
+
+font-size:18px;
+
+line-height:1.8;
+
+text-align:justify;
+
+color:black;
+
+font-weight:normal;
+
+}
+
+
+.oraciones{
+
+margin-top:20px;
+
+}
+
+
+.oraciones p{
+
+font-family:Arial,sans-serif;
+
+font-size:18px;
+
+color:#071426;
+
+margin:10px 0;
 
 }
 
@@ -544,6 +714,8 @@ ${introduccionGeneral}
 
 ` : ""}
 
+${subtitulos.length > 0 ? crearSubtitulos(subtitulos) : ""}
+
 </div>
 
 
@@ -630,20 +802,12 @@ hoja.getCell("H1").value = "Introducción general";
 // HOJA SUBTITULOS
 
 hojaSubtitulos.getCell("A1").value = "Número";
-
 hojaSubtitulos.getCell("B1").value = "Subtítulo";
-
 hojaSubtitulos.getCell("C1").value = "Introducción";
-
-hojaSubtitulos.getCell("D1").value = "Ejemplo 1";
-
-hojaSubtitulos.getCell("E1").value = "Ejemplo 2";
-
-hojaSubtitulos.getCell("F1").value = "Ejemplo 3";
-
-hojaSubtitulos.getCell("G1").value = "Comentario opcional";
-
-hojaSubtitulos.getCell("H1").value = "Audio";
+hojaSubtitulos.getCell("D1").value = "Oración 1";
+hojaSubtitulos.getCell("E1").value = "Oración 2";
+hojaSubtitulos.getCell("F1").value = "Oración 3";
+hojaSubtitulos.getCell("G1").value = "Audio";    
 
 for(let i=1;i<=10;i++){
 
@@ -651,11 +815,13 @@ for(let i=1;i<=10;i++){
 
 }
 
-for(let i=1;i<=8;i++){
-
-    hojaSubtitulos.getColumn(i).width = 30;
-
-}    
+hojaSubtitulos.getColumn("A").width = 12;
+hojaSubtitulos.getColumn("B").width = 40;
+hojaSubtitulos.getColumn("C").width = 70;
+hojaSubtitulos.getColumn("D").width = 40;
+hojaSubtitulos.getColumn("E").width = 40;
+hojaSubtitulos.getColumn("F").width = 40;
+hojaSubtitulos.getColumn("G").width = 40;    
 
 // VOCABULARIO
 
@@ -812,6 +978,7 @@ async function leerExcel(event){
     await libro.xlsx.load(buffer);
 
 
+    const hojaSubtitulos = libro.getWorksheet("Subtitulos");
     const hoja = libro.getWorksheet("Grammar");
 
 
@@ -838,9 +1005,9 @@ hoja.getCell(2,28).value || "";
     let audios = [];
 
 
-for(let i = 1; i <= 11; i++){
+for(let i = 1; i <= 1; i++){
 
-    let columna = 6 + i;
+    let columna = 7;
 
 
     let ruta =
@@ -870,6 +1037,73 @@ if(typeof ruta === "object"){
 }  
 
 vocabularioGlobal = [];
+
+subtitulosGlobal = [];
+
+
+for(let i = 2; i <= 11; i++){
+
+    let subtitulo =
+leerCelda(hojaSubtitulos.getCell(i,2));
+
+
+let introduccion =
+leerCelda(hojaSubtitulos.getCell(i,3));
+
+
+let oracion1 =
+leerCelda(hojaSubtitulos.getCell(i,4));
+console.log("VALOR CRUDO ORACION:", hojaSubtitulos.getCell(i,4).value);
+
+let oracion2 =
+leerCelda(hojaSubtitulos.getCell(i,5));
+
+
+let oracion3 =
+leerCelda(hojaSubtitulos.getCell(i,6));
+
+
+let audio =
+leerCelda(hojaSubtitulos.getCell(i,7));
+
+if(typeof audio === "object"){
+
+    audio = audio.text || "";
+
+}
+
+console.log(
+"SUBTITULO:",
+JSON.stringify({
+subtitulo,
+oracion1,
+oracion2,
+oracion3,
+audio
+}, null, 2)
+);
+
+    if(subtitulo){
+
+        subtitulosGlobal.push({
+
+            subtitulo: subtitulo,
+
+            introduccion: introduccion,
+
+            oraciones:[
+                oracion1,
+                oracion2,
+                oracion3
+            ],
+
+            audio:audio
+
+        });
+
+    }
+
+}    
 
 
 for(let i=0;i<10;i++){
@@ -904,43 +1138,47 @@ for(let i=0;i<10;i++){
 
     datosPagina = {
 
-    tituloIngles: tituloIngles,
+tituloIngles: tituloIngles,
 
-    tituloEspanol: tituloEspanol,
+tituloEspanol: tituloEspanol,
 
-    unidad: unidad,
+unidad: unidad,
 
-    tema: tema,
+tema: tema,
 
-    video: video,
+video: video,
 
-    audios: audios,
+audios: audios,
 
-    nivel: hoja.getCell("A2").text || "",
+nivel: hoja.getCell("A2").text || "",
 
-    introduccionGeneral: introduccionGeneral
+introduccionGeneral: introduccionGeneral,
+
+subtitulos: subtitulosGlobal
 
 };
     
     generarCodigo(
 
-        datosPagina.tituloIngles,
+datosPagina.tituloIngles,
 
-        datosPagina.tituloEspanol,
+datosPagina.tituloEspanol,
 
-        datosPagina.unidad,
+datosPagina.unidad,
 
-        datosPagina.tema,
+datosPagina.tema,
 
-        datosPagina.video,
+datosPagina.video,
 
-        datosPagina.audios,
+datosPagina.audios,
 
-        datosPagina.nivel,
+datosPagina.nivel,
 
-        vocabularioGlobal,
+vocabularioGlobal,
 
-        datosPagina.introduccionGeneral
+datosPagina.introduccionGeneral,
+
+datosPagina.subtitulos
 
 );
 
@@ -1083,7 +1321,11 @@ function generarCodigoActualizado(){
 
         datosPagina.nivel,
 
-        vocabularioGlobal
+        vocabularioGlobal,
+
+        datosPagina.introduccionGeneral,
+
+        datosPagina.subtitulos
 
     );
 
