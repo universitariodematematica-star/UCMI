@@ -252,7 +252,62 @@ nivel:""
 
 let vocabularioGlobal = [];
 
-let imagenesBlogger = [];    
+let imagenesBlogger = [];
+
+function crearSubtitulos(lista){
+
+    if(!lista || lista.length===0){
+        return "";
+    }
+
+
+    return lista.map(item=>`
+
+<div class="bloque-subtitulo">
+
+<h3>
+${item.subtitulo}
+</h3>
+
+
+<p class="introduccion-subtitulo">
+
+${item.introduccion || ""}
+
+</p>
+
+
+${item.oraciones.some(o=>o) ? `
+
+<div class="oraciones">
+
+${item.oraciones.map(oracion=>{
+
+return oracion ? `<p>${oracion}</p>` : "";
+
+}).join("")}
+
+</div>
+
+` : ""}
+
+
+${item.audio ? `
+
+<audio controls>
+
+<source src="${item.audio}" type="audio/mpeg">
+
+</audio>
+
+` : ""}
+
+
+</div>
+
+`).join("");
+
+}    
 
 
 function crearTabla(lista){
@@ -320,7 +375,8 @@ function generarCodigo(
     audios=[],
     nivel="",
     vocabulario=[],
-    introduccionGeneral=""
+introduccionGeneral="",
+subtitulos=[]
 ){
 
 const codigo = `<!DOCTYPE html>
@@ -421,6 +477,67 @@ line-height:1.8;
 text-align:justify;
 
 color:#222;
+
+}
+
+.bloque-subtitulo{
+
+width:92%;
+margin:30px auto;
+
+}
+
+
+.bloque-subtitulo h3{
+
+font-family:Arial,sans-serif;
+
+font-size:22px;
+
+font-weight:bold;
+
+color:black;
+
+text-align:left;
+
+margin-bottom:15px;
+
+}
+
+
+.introduccion-subtitulo{
+
+font-family:Arial,sans-serif;
+
+font-size:18px;
+
+line-height:1.8;
+
+text-align:justify;
+
+color:black;
+
+font-weight:normal;
+
+}
+
+
+.oraciones{
+
+margin-top:20px;
+
+}
+
+
+.oraciones p{
+
+font-family:Arial,sans-serif;
+
+font-size:18px;
+
+color:#071426;
+
+margin:10px 0;
 
 }
 
@@ -543,6 +660,8 @@ ${introduccionGeneral}
 </div>
 
 ` : ""}
+
+${subtitulos.length > 0 ? crearSubtitulos(subtitulos) : ""}
 
 </div>
 
@@ -973,23 +1092,25 @@ subtitulos: subtitulosGlobal
     
     generarCodigo(
 
-        datosPagina.tituloIngles,
+datosPagina.tituloIngles,
 
-        datosPagina.tituloEspanol,
+datosPagina.tituloEspanol,
 
-        datosPagina.unidad,
+datosPagina.unidad,
 
-        datosPagina.tema,
+datosPagina.tema,
 
-        datosPagina.video,
+datosPagina.video,
 
-        datosPagina.audios,
+datosPagina.audios,
 
-        datosPagina.nivel,
+datosPagina.nivel,
 
-        vocabularioGlobal,
+vocabularioGlobal,
 
-        datosPagina.introduccionGeneral
+datosPagina.introduccionGeneral,
+
+datosPagina.subtitulos
 
 );
 
