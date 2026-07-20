@@ -127,9 +127,9 @@ console.log(audio.src);
 
     audio.addEventListener("play",()=>{
 
-        boton.textContent="PAUSA";
+    boton.textContent = "⏸";
 
-    });
+});
 
 
 
