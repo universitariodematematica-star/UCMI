@@ -347,11 +347,15 @@ return oracion ? `<p>${oracion}</p>` : "";
 
 ${item.audio ? `
 
-<audio controls>
+<div class="audioUCMI">
 
-<source src="${item.audio}" type="audio/mpeg">
+<div class="audio-data"
+data-audio="${item.audio}"
+data-titulo="${item.subtitulo}">
 
-</audio>
+</div>
+
+</div>
 
 ` : ""}
 
@@ -653,21 +657,11 @@ ${audios.length > 0 ? `
 
 <div class="audioUCMI">
 
-<audio controls>
+<div class="audio-data"
+data-audio="${audios[0].archivo}"
+data-titulo="AG.${unidad}.${tema}.1.${nivel}">
 
-<source src="${audios[0].archivo}" type="audio/mpeg">
-
-Tu navegador no soporta audio.
-
-</audio>
-
-
-<p>
-
-AG.${unidad}.${tema}.1.${nivel}
-
-</p>
-
+</div>
 
 </div>
 
@@ -745,21 +739,26 @@ skill:"Grammar"
 
 });
 
-UCMIAudio.cargar(
+const listaAudios = [];
 
-${JSON.stringify(
-audios.map(audio=>({
 
-titulo:
-`AG.${unidad}.${tema}.${audio.numero}.${nivel}`,
-    
-archivo:
-audio.archivo
+document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
 
-}))
-)}
+    const datos = contenedor.querySelector(".audio-data");
 
-);
+    if(datos){
+
+        UCMIAudio.crear(contenedor,{
+
+            titulo:datos.dataset.titulo,
+
+            archivo:datos.dataset.audio
+
+        });
+
+    }
+
+});
 
 <\/script>
 
