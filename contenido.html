@@ -89,39 +89,55 @@ const topicoId = params.get("topicoId");
 
 const codigoContenido = params.get("codigoContenido");
 
-async function cargar(){
+const params = new URLSearchParams(window.location.search);
 
-    let q;
+const topicoId = params.get("topicoId");
 
-if(codigoContenido){
+const codigoContenido = params.get("codigoContenido");
 
-    q = query(
+// AQUÍ PEGAREMOS EL NUEVO VISOR DINÁMICO
+
+async function cargarContenido(codigo){
+
+    const q = query(
         collection(db,"contenidos"),
-        where("codigoContenido","==",codigoContenido)
+        where("codigoContenido","==",codigo)
     );
 
-}else{
-
-    q = query(
-        collection(db,"contenidos"),
-        where("topicoId","==",topicoId)
-    );
-
-}
 
     const snap = await getDocs(q);
 
+
     const iframe = document.getElementById("visorContenido");
+
 
     const docIframe = iframe.contentWindow.document;
 
+
     if(!snap.empty){
+
 
         const data = snap.docs[0].data();
 
+
         docIframe.open();
 
-docIframe.write(`
+
+        docIframe.write(`
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+</head>
+
+
+<body>
+
 
 <script>
 
@@ -131,62 +147,120 @@ window.onerror = function(
     linea
 ){
 
-    const mostrar = () => {
+    const error = document.createElement("div");
 
-        const error = document.createElement("div");
 
-        error.style.background="#5c1a1a";
-        error.style.color="white";
-        error.style.padding="20px";
-        error.style.borderRadius="15px";
-        error.style.margin="20px";
-        error.style.fontFamily="Segoe UI";
+    error.style.background="#5c1a1a";
+    error.style.color="white";
+    error.style.padding="20px";
+    error.style.borderRadius="15px";
+    error.style.margin="20px";
+    error.style.fontFamily="Segoe UI";
 
-        error.innerHTML =
-        "<h3>Error en el contenido interactivo:</h3>" +
-        "<p>" + mensaje + "</p>" +
-        "<small>Línea: " + linea + "</small>";
 
-        document.body.prepend(error);
+    error.innerHTML =
 
-    };
+    "<h3>Error en el contenido interactivo:</h3>" +
 
-    window.addEventListener(
-        "DOMContentLoaded",
-        mostrar
-    );
+    "<p>" + mensaje + "</p>" +
+
+    "<small>Línea: " + linea + "</small>";
+
+
+    document.body.prepend(error);
 
 };
 
+
 <\/script>
+
 
 ${data.html}
 
+
+</body>
+
+</html>
+
 `);
 
-docIframe.close();
 
-activarRenderMatematico(docIframe);
+        docIframe.close();
+
+
+        activarRenderMatematico(docIframe);
+
 
     }else{
 
+
         docIframe.open();
+
+
         docIframe.write(`
-            <!DOCTYPE html>
-            <html>
-            <body style="font-family:Segoe UI;padding:30px;">
-                <h2>No hay contenido aún.</h2>
-            </body>
-            </html>
-        `);
+
+<!DOCTYPE html>
+
+<html>
+
+<body style="font-family:Segoe UI;padding:30px;">
+
+
+<h2>No hay contenido aún.</h2>
+
+
+</body>
+
+</html>
+
+`);
+
+
         docIframe.close();
+
 
     }
 
+
 }
 
-cargar();
 
+
+// CARGA INICIAL
+
+if(codigoContenido){
+
+    cargarContenido(codigoContenido);
+
+}
+
+else if(topicoId){
+
+    const q = query(
+        collection(db,"contenidos"),
+        where("topicoId","==",topicoId)
+    );
+
+
+    getDocs(q).then(snap=>{
+
+
+        if(!snap.empty){
+
+
+            cargarContenido(
+                snap.docs[0].data().codigoContenido
+            );
+
+
+        }
+
+
+    });
+
+
+}
+    
 </script>
 <script type="module" src="js/alertas-globales.js"></script>
 </body>
