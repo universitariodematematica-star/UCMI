@@ -264,51 +264,45 @@ function leerCelda(celda){
 
     let valor = celda.value;
 
-    if(valor === null || valor === undefined){
+    if (valor === null || valor === undefined){
         return "";
     }
 
-
-    if(typeof valor === "object"){
-
-
-        if(valor.richText){
-
-            return valor.richText
-            .map(x => x.text || "")
-            .join("");
-
-        }
-
-
-        if(valor.text){
-
-            return String(valor.text);
-
-        }
-
-
-        if(valor.hyperlink){
-
-            return String(valor.hyperlink);
-
-        }
-
-
-        if(valor.result){
-
-            return String(valor.result);
-
-        }
-
-
-        return JSON.stringify(valor);
-
+    // Si ya es texto, número o booleano
+    if (typeof valor !== "object"){
+        return String(valor);
     }
 
+    // Fórmula con resultado calculado
+    if ("result" in valor){
+        if (valor.result === null || valor.result === undefined){
+            return "";
+        }
+        return String(valor.result);
+    }
 
-    return String(valor);
+    // Texto enriquecido
+    if (valor.richText){
+        return valor.richText.map(x => x.text || "").join("");
+    }
 
+    // Texto
+    if ("text" in valor){
+        return String(valor.text || "");
+    }
+
+    // Hipervínculo
+    if ("hyperlink" in valor){
+        return String(valor.hyperlink || "");
+    }
+
+    // Fecha
+    if (valor instanceof Date){
+        return valor.toISOString();
+    }
+
+    // Último recurso
+    return "";
 }    
 
 function crearSubtitulos(lista, unidad, tema, nivel){
@@ -1280,26 +1274,26 @@ async function leerExcel(event){
 
 
     const tituloIngles =
-hoja.getCell("D2").value || "";
+leerCelda(hoja.getCell("D2"));
 
     console.log("D2 =", hoja.getCell("D2").value);
 console.log("D2 JSON =", JSON.stringify(hoja.getCell("D2").value, null, 2));
 
 const tituloEspanol =
-hoja.getCell("E2").value || "";
+leerCelda(hoja.getCell("E2"));
 
 const unidad =
-hoja.getCell("B2").value || "";
+leerCelda(hoja.getCell("B2"));
 
 const tema =
-hoja.getCell("C2").value || "";
+leerCelda(hoja.getCell("C2"));
 
 
 const video =
-hoja.getCell("F2").text || "";
-
+leerCelda(hoja.getCell("F2"));
+    
 const introduccionGeneral =
-hoja.getCell(2,28).value || "";    
+leerCelda(hoja.getCell(2,28));    
 
 
     let audios = [];
@@ -1310,14 +1304,8 @@ for(let i = 1; i <= 1; i++){
     let columna = 7;
 
 
-    let ruta =
-hoja.getCell(2,columna).value || "";
-
-if(typeof ruta === "object"){
-
-    ruta = ruta.text || "";
-
-}
+let ruta =
+leerCelda(hoja.getCell(2,columna));
 
 
     if(ruta){
@@ -1419,11 +1407,10 @@ for(let i=0;i<10;i++){
 
 
     let ingles =
-    hoja.getCell(2,columna).value || "";
-
-
+    leerCelda(hoja.getCell(2,columna));
+    
     let espanol =
-    hoja.getCell(2,columna+1).value || "";
+    leerCelda(hoja.getCell(2,columna+1));;
 
 
     if(ingles && espanol){
@@ -1456,13 +1443,15 @@ video: video,
 
 audios: audios,
 
-nivel: hoja.getCell("A2").text || "",
+nivel: leerCelda(hoja.getCell("A2")),
 
 introduccionGeneral: introduccionGeneral,
 
 subtitulos: subtitulosGlobal
 
 };
+
+    console.log(datosPagina);
     
     generarCodigo(
 
