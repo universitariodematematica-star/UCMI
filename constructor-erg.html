@@ -1,1 +1,1784 @@
+<!DOCTYPE html>
+<html lang="es">
 
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>UCMI - Constructor Grammar</title>
+
+<style>
+
+:root{
+    --azul:#071426;
+    --dorado:#FFD700;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background-image:url("https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png");
+    background-size:cover;
+    background-position:center;
+}
+
+.contenedor{
+    display:flex;
+    gap:25px;
+    padding:25px;
+    min-height:100vh;
+}
+
+.panel{
+    background:white;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:8px 8px 20px rgba(0,0,0,.45);
+}
+
+.izquierda{
+    width:22%;
+}
+
+.centro{
+    width:38%;
+}
+
+.derecha{
+    width:40%;
+}
+
+h2{
+    margin-top:0;
+    color:#071426;
+}
+
+button{
+    width:100%;
+    margin-top:15px;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:#FFD700;
+    color:#071426;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    transform:translateY(-2px);
+}
+
+pre{
+    background:#071426;
+    color:white;
+    border-radius:12px;
+    padding:15px;
+    height:650px;
+    overflow:auto;
+    white-space:pre-wrap;
+}
+
+iframe{
+    width:100%;
+    height:650px;
+    border:none;
+    border-radius:12px;
+    background:white;
+}
+
+input[type=file]{
+    width:100%;
+    margin-top:15px;
+}
+
+/*==================================================
+ UCMI CONTENT BUILDER
+==================================================*/
+
+.cabecera-builder{
+    background:#071426;
+    color:white;
+    padding:18px 35px;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+}
+
+.builder-titulo{
+    margin:0;
+    color:#FFD700;
+    font-size:30px;
+    font-weight:bold;
+    letter-spacing:1px;
+}
+
+.builder-subtitulo{
+    margin:6px 0 0 0;
+    font-size:22px;
+    font-weight:bold;
+    color:white;
+}
+
+.builder-descripcion{
+    margin:8px 0 0 0;
+    font-size:14px;
+    color:#d8d8d8;
+}
+
+.builder-info{
+    margin-top:10px;
+    font-size:13px;
+    color:#bdbdbd;
+}
+
+.separador-builder{
+height:8px;
+background:#FFD700;
+}    
+    
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>    
+
+</head>
+
+<body>
+
+<div class="cabecera-builder">
+    <h1 class="builder-titulo">
+        UCMI CONTENT BUILDER
+    </h1>
+    <div class="builder-subtitulo">
+        Grammar Constructor
+    </div>
+    <div class="builder-descripcion">
+        Generador de páginas HTML para la plataforma UCMI
+    </div>
+    <div class="builder-info">
+        Versión 1.0 • Módulo Grammar
+    </div>
+</div>    
+
+<div class="contenedor">
+    <!-- PANEL IZQUIERDO -->
+    <div class="panel izquierda">
+        <h2>Proyecto</h2>
+        <button onclick="descargarPlantilla()">
+            Descargar plantilla Excel
+        </button>
+        <button onclick="descargarPlantillaUCMI()">
+            Descargar plantilla UCMI
+        </button>
+        <input 
+            id="excelInput"
+            type="file"
+            accept=".xlsx">
+        <div style="margin-top:20px;">
+
+<h3>Imágenes desde Blogger</h3>
+
+<textarea
+id="codigoBlogger"
+placeholder="Pega aquí el HTML exportado desde Blogger para extraer automáticamente las imágenes."
+style="width:100%;height:180px;">
+</textarea>
+
+<button onclick="extraerImagenesBlogger()">
+Extraer imágenes
+</button>
+
+</div>
+
+    </div>
+
+    <!-- PANEL CENTRAL -->
+
+    <div class="panel centro">
+
+        <h2>Editor HTML</h2>
+
+        <button onclick="copiarCodigo()">
+            Copiar HTML
+        </button>
+
+        <button onclick="descargarHTML()">
+            Exportar HTML
+        </button>
+
+        <button onclick="abrirNuevaPestana()">
+            Vista previa completa
+        </button>
+
+        <pre id="codigo"></pre>
+
+    </div>
+
+    <div class="separador-builder"></div>
+
+    <!-- PANEL DERECHO -->
+
+    <div class="panel derecha">
+
+        <h2>Vista previa</h2>
+
+        <iframe id="preview"></iframe>
+
+    </div>
+
+</div>
+
+<script>
+
+let datosPagina = {
+
+tituloIngles:"",
+tituloEspanol:"",
+unidad:"",
+tema:"",
+video:"",
+audios:[],
+nivel:""
+
+};
+
+let vocabularioGlobal = [];
+
+let subtitulosGlobal = [];
+
+let imagenesBlogger = [];
+
+const MODOS = {
+
+    LOCAL: "local",
+
+    GITHUB: "github"
+
+};
+
+// Cambia este valor cuando quieras exportar
+let modoExportacion = MODOS.GITHUB;    
+
+function leerCelda(celda){
+
+    let valor = celda.value;
+
+    if (valor === null || valor === undefined){
+        return "";
+    }
+
+    // Si ya es texto, número o booleano
+    if (typeof valor !== "object"){
+        return String(valor);
+    }
+
+    // Fórmula con resultado calculado
+    if ("result" in valor){
+        if (valor.result === null || valor.result === undefined){
+            return "";
+        }
+        return String(valor.result);
+    }
+
+    // Texto enriquecido
+    if (valor.richText){
+        return valor.richText.map(x => x.text || "").join("");
+    }
+
+    // Texto
+    if ("text" in valor){
+        return String(valor.text || "");
+    }
+
+    // Hipervínculo
+    if ("hyperlink" in valor){
+        return String(valor.hyperlink || "");
+    }
+
+    // Fecha
+    if (valor instanceof Date){
+        return valor.toISOString();
+    }
+
+    // Último recurso
+    return "";
+}    
+
+function crearSubtitulos(lista, unidad, tema, nivel){
+
+    if(!lista || lista.length===0){
+        return "";
+    }
+
+
+return lista.map((item,index)=>`
+
+<div class="bloque-subtitulo">
+
+<h3>
+${item.subtitulo}
+</h3>
+
+
+<p class="introduccion-subtitulo">
+
+${item.introduccion || ""}
+
+</p>
+
+
+
+${item.estructura ? `
+
+<p class="etiqueta-estructura">
+
+<b>Estructura:</b>
+
+</p>
+
+
+<div class="barra-indigo-contenedor">
+
+<table class="barra-indigo">
+
+<tr>
+
+<td>
+
+<p>
+${item.estructura}
+</p>
+
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+` : ""}
+
+
+
+${item.oraciones.some(o=>o) ? `
+
+
+<p class="etiqueta-ejemplo">
+
+<b>Ejemplo:</b>
+
+</p>
+
+
+<div class="ejemplos">
+
+
+${item.oraciones.map(oracion=>{
+
+return oracion ? `<p>${oracion}</p>` : "";
+
+}).join("")}
+
+
+</div>
+
+
+` : ""}
+
+
+
+${item.audio ? `
+
+<div class="audioUCMI">
+
+<div class="audio-data"
+data-audio="${item.audio}"
+data-titulo="AG.${unidad}.${tema}.${index+2}.${nivel}">
+
+</div>
+
+</div>
+
+
+` : ""}
+
+
+</div>
+
+
+`).join("");
+
+}    
+
+
+function crearTabla(lista){
+
+    return `
+
+<table class="tabla-vocabulario">
+
+<tr>
+
+${lista.map(item=>`
+
+<td>
+
+${item.imagen ?
+
+`<img src="${item.imagen}">`
+
+:
+
+`<div style="height:120px;display:flex;align-items:center;justify-content:center;color:#888;">
+Imagen pendiente
+</div>`
+
+}
+
+</td>
+
+`).join("")}
+
+</tr>
+
+<tr>
+
+${lista.map(item=>`
+
+<td>${item.ingles}</td>
+
+`).join("")}
+
+</tr>
+
+<tr>
+
+${lista.map(item=>`
+
+<td>${item.espanol}</td>
+
+`).join("")}
+
+</tr>
+
+</table>
+
+`;
+
+}    
+
+function generarCodigo(
+    tituloIngles="",
+    tituloEspanol="",
+    unidad="",
+    tema="",
+    video="",
+    audios=[],
+    nivel="",
+    vocabulario=[],
+introduccionGeneral="",
+subtitulos=[]
+){
+
+const prefijo = "G";
+
+const codigoContenido =
+`${prefijo}.${unidad}.${tema}.${nivel}`;
+
+let rutaCSS = "";
+let rutaJS = "";
+
+if(modoExportacion === MODOS.LOCAL){
+
+    rutaCSS = "css/";
+    rutaJS = "js/";
+
+}else{
+
+    rutaCSS = "https://universitariodematematica-star.github.io/UCMI/css/";
+    rutaJS = "https://universitariodematematica-star.github.io/UCMI/js/";
+
+}    
+
+const codigoEjerciciosResueltos =
+`ER${prefijo.substring(1)}.${unidad}.${tema}.${nivel}`;
+
+const codigoEjerciciosPropuestos =
+`EP${prefijo.substring(1)}.${unidad}.${tema}.${nivel}`;
+    
+const codigo = `<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>UCMI</title>
+
+<link rel="stylesheet" href="${rutaCSS}ucmi-estilos.css">
+
+<link rel="stylesheet" href="${rutaCSS}pizarra.css">
+
+<link rel="stylesheet" href="${rutaCSS}reproductor.css">
+
+<style>
+
+.tabla-vocabulario{
+
+width:95%;
+margin:30px auto;
+border-collapse:separate;
+border-spacing:18px;
+
+}
+
+.tabla-vocabulario td{
+
+background:white;
+border-radius:18px;
+padding:12px;
+text-align:center;
+box-shadow:0 8px 18px rgba(0,0,0,.18);
+transition:.25s;
+
+}
+
+.tabla-vocabulario td:hover{
+
+transform:translateY(-4px);
+box-shadow:0 12px 28px rgba(0,0,0,.28);
+
+}
+
+.tabla-vocabulario img{
+
+width:120px;
+height:120px;
+object-fit:contain;
+display:block;
+margin:auto;
+border-radius:12px;
+background:#f5f5f5;
+padding:10px;
+
+}
+
+.tabla-vocabulario tr:nth-child(2) td{
+
+background:linear-gradient(135deg,#071426,#163d6c);
+color:#FFD700;
+font-size:20px;
+font-weight:bold;
+text-transform:uppercase;
+letter-spacing:1px;
+
+}
+
+.tabla-vocabulario tr:nth-child(3) td{
+
+background:#eef3fb;
+color:#071426;
+font-size:17px;
+font-weight:600;
+
+}
+
+.introduccion-general{
+
+width:92%;
+margin:25px auto;
+padding:22px 26px;
+
+background:white;
+
+border-radius:18px;
+
+box-shadow:0 8px 18px rgba(0,0,0,.18);
+
+font-size:18px;
+
+line-height:1.8;
+
+text-align:justify;
+
+hyphens:auto;
+
+color:#222;
+
+}
+
+.introduccion-general p{
+
+margin-bottom:18px;
+
+}
+
+.bloque-subtitulo{
+
+width:92%;
+
+margin:30px auto 65px auto;
+
+padding-bottom:20px;
+
+border-bottom:1px solid rgba(7,20,38,0.15);
+
+}
+
+
+.bloque-subtitulo h3{
+
+font-family:Arial,sans-serif;
+
+font-size:22px;
+
+font-weight:bold;
+
+color:black;
+
+text-align:left;
+
+margin-bottom:15px;
+
+}
+
+
+.introduccion-subtitulo{
+
+font-family:Arial,sans-serif;
+
+font-size:18px;
+
+line-height:1.8;
+
+text-align:justify;
+
+hyphens:auto;
+
+color:black;
+
+font-weight:normal;
+
+}
+
+.introduccion-subtitulo p{
+
+margin-bottom:18px;
+
+}
+
+.etiqueta-estructura{
+
+margin:30px 0 15px 0;
+
+font-size:18px;
+
+}
+
+.etiqueta-ejemplo{
+
+margin:30px 0 15px 0;
+
+font-size:18px;
+
+}
+
+.audioUCMI{
+
+margin-top:25px;
+
+}
+
+.practice-explicacion{
+
+width:92%;
+
+margin:0 auto;
+
+text-align:justify;
+
+font-family:Arial,sans-serif;
+
+font-size:19px;
+
+line-height:1.9;
+
+color:#071426;
+
+}
+
+.practice-botones{
+
+width:92%;
+
+margin:0 auto;
+
+display:flex;
+
+justify-content:center;
+
+gap:30px;
+
+flex-wrap:wrap;
+
+}
+
+.practice-boton{
+
+display:flex;
+
+flex-direction:column;
+
+justify-content:center;
+
+align-items:center;
+
+flex:1;
+
+min-width:280px;
+
+max-width:360px;
+
+padding:20px;
+
+border-radius:18px;
+
+text-decoration:none;
+
+font-size:22px;
+
+font-weight:bold;
+
+color:white;
+
+text-align:center;
+
+transition:.30s;
+
+box-shadow:0 10px 20px rgba(0,0,0,.25);
+
+}
+
+.practice-boton:hover{
+
+transform:translateY(-4px);
+
+box-shadow:0 15px 30px rgba(0,0,0,.35);
+
+}
+
+.practice-boton span{
+
+margin-top:8px;
+
+font-size:15px;
+
+font-weight:normal;
+
+opacity:.95;
+
+}
+
+.practice-boton-erg{
+
+background:linear-gradient(
+135deg,
+#0d47a1,
+#1976d2
+);
+
+}
+
+.practice-boton-epg{
+
+background:linear-gradient(
+135deg,
+#1b5e20,
+#43a047
+);
+
+}
+
+
+.oraciones{
+
+margin-top:20px;
+
+}
+
+
+.oraciones p{
+
+font-family:Arial,sans-serif;
+
+font-size:18px;
+
+color:#071426;
+
+margin:10px 0;
+
+line-height:1.7;
+
+}
+</style>
+
+</head>
+
+<body data-codigo-contenido="${codigoContenido}">
+
+<div id="navegacionUCMI" class="navegacion-ucmi">
+
+<a 
+class="boton-interactivo"
+href="temario.html?nivel=${nivel}">
+VOLVER AL TEMARIO
+</a>
+
+
+<a 
+class="boton-interactivo"
+href="listening.html?nivel=${nivel}&unidad=${unidad}&tema=${tema}">
+SEGUIR A LISTENING
+</a>
+
+
+<a 
+class="boton-interactivo"
+href="skills.html?nivel=${nivel}&unidad=${unidad}&tema=${tema}">
+VOLVER A SKILLS
+</a>
+
+</div>
+
+<div id="ucmiEncabezado"></div>
+
+${video ? `
+
+<a class="boton-interactivo"
+href="${video}"
+target="_blank">
+
+Video G.${unidad}.${tema}
+
+</a>
+
+` : ""}
+
+<table class="barra-carmesi">
+
+<tr>
+
+<td>
+
+<p>
+
+VOCABULARY
+
+</p>
+
+</td>
+
+</tr>
+
+</table>
+
+
+${audios.length > 0 ? `
+
+<div class="audioUCMI">
+
+<div class="audio-data"
+data-audio="${audios[0].archivo}"
+data-titulo="AG.${unidad}.${tema}.1.${nivel}">
+
+</div>
+
+</div>
+
+` : ""}
+
+
+
+<div id="contenidoUCMI">
+
+
+${vocabulario.length > 0 ? `
+
+${crearTabla(vocabulario.slice(0,5))}
+
+${vocabulario.length>5 ? crearTabla(vocabulario.slice(5,10)) : ""}
+
+` : ""}
+
+<table class="barra-rosada">
+
+<tr>
+
+<td>
+
+<p>
+
+${tituloEspanol}
+
+</p>
+
+</td>
+
+</tr>
+
+</table>
+
+${introduccionGeneral ? `
+
+<div class="introduccion-general">
+
+${introduccionGeneral}
+
+</div>
+
+` : ""}
+
+${subtitulos.length > 0
+    ? crearSubtitulos(subtitulos, unidad, tema, nivel)
+    : ""}
+
+<table class="barra-gris">
+
+<tr>
+
+<td>
+
+<p>
+
+PRACTICE
+
+</p>
+
+</td>
+
+</tr>
+
+</table>
+
+<div style="height:25px;"></div>
+
+<p class="practice-explicacion">
+
+<b>Continúa tu aprendizaje.</b>
+
+<br><br>
+
+Pulsa <b>${codigoEjerciciosResueltos}</b> para realizar el ejercicio guiado por el <i>teacher</i>, o pulsa <b>${codigoEjerciciosPropuestos}</b> para resolver el ejercicio de forma autónoma y obtener una <b>calificación vinculante</b>.
+
+</p>
+
+<div style="height:20px;"></div>
+
+<div class="practice-botones">
+
+<a
+class="practice-boton practice-boton-erg"
+href="contenido.html?codigoContenido=${encodeURIComponent(codigoEjerciciosResueltos)}"
+onclick="if(window.self!==window.top){event.preventDefault(); window.top.location.href=this.href;}">
+
+${codigoEjerciciosResueltos}
+
+<br>
+
+<span>
+Con el teacher
+</span>
+
+</a>
+
+<a
+class="practice-boton practice-boton-epg"
+href="contenido.html?codigoContenido=${encodeURIComponent(codigoEjerciciosPropuestos)}"
+onclick="if(window.self!==window.top){event.preventDefault(); window.top.location.href=this.href;}">
+
+${codigoEjerciciosPropuestos}
+
+<br>
+
+<span>
+Evaluación vinculante
+</span>
+
+</a>
+
+</div>
+
+<div style="height:35px;"></div>
+
+
+</div>
+
+
+</div>
+
+<canvas id="drawingCanvas"></canvas>
+
+<script src="${rutaJS}pizarra.js"><\/script>
+
+<script src="${rutaJS}navegacion.js"><\/script>
+
+<script src="${rutaJS}encabezado.js"><\/script>
+
+<script src="${rutaJS}reproductor.js"><\/script>
+
+<script>
+
+UCMIPizarra.iniciar();
+
+UCMINavegacion.iniciar("grammar");
+
+UCMIEncabezado.iniciar({
+
+titulo:"${unidad}.${tema} ${tituloIngles.toUpperCase()}",
+
+skill:"Grammar"
+
+});
+
+const listaAudios = [];
+
+
+document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
+
+    const datos = contenedor.querySelector(".audio-data");
+
+    if(datos){
+
+        UCMIAudio.crear(contenedor,{
+
+            titulo:datos.dataset.titulo,
+
+            archivo:datos.dataset.audio
+
+        });
+
+    }
+
+});
+
+<\/script>
+
+</body>
+
+</html>`;
+
+document.getElementById("codigo").textContent = codigo;
+
+document.getElementById("preview").srcdoc = codigo;
+
+}
+
+async function descargarPlantilla(){
+
+    const libro = new ExcelJS.Workbook();
+
+    const hoja = libro.addWorksheet("Grammar");
+
+    const hojaSubtitulos = libro.addWorksheet("Subtitulos");
+
+
+    // ENCABEZADOS
+
+hoja.getCell("A1").value = "Nivel";
+
+hoja.getCell("B1").value = "Unidad";
+
+hoja.getCell("C1").value = "Tema";
+
+hoja.getCell("D1").value = "Título en inglés";
+
+hoja.getCell("E1").value = "Título en español";
+
+hoja.getCell("F1").value = "Video";
+
+hoja.getCell("G1").value = "Audio de vocabulario";
+hoja.getCell("H1").value = "Introducción general";
+
+// HOJA SUBTITULOS
+
+hojaSubtitulos.getCell("A1").value = "Número";
+hojaSubtitulos.getCell("B1").value = "Subtítulo";
+hojaSubtitulos.getCell("C1").value = "Introducción";
+hojaSubtitulos.getCell("D1").value = "Estructura";
+hojaSubtitulos.getCell("E1").value = "Ejemplo 1";
+hojaSubtitulos.getCell("F1").value = "Ejemplo 2";
+hojaSubtitulos.getCell("G1").value = "Ejemplo 3";
+hojaSubtitulos.getCell("H1").value = "Audio";    
+
+for(let i=1;i<=10;i++){
+
+    hojaSubtitulos.getCell(i+1,1).value = i;
+
+}
+
+hojaSubtitulos.getColumn("A").width = 12;
+hojaSubtitulos.getColumn("B").width = 40;
+hojaSubtitulos.getColumn("C").width = 70;
+hojaSubtitulos.getColumn("D").width = 50;
+hojaSubtitulos.getColumn("E").width = 40;
+hojaSubtitulos.getColumn("F").width = 40;
+hojaSubtitulos.getColumn("G").width = 40;
+hojaSubtitulos.getColumn("H").width = 40;    
+
+// VOCABULARIO
+
+let columnaVocabulario = 8; // Columna H
+
+for(let i = 1; i <= 10; i++){
+
+    hoja.getCell(1,columnaVocabulario).value = "Inglés " + i;
+
+    hoja.getCell(1,columnaVocabulario + 1).value = "Español " + i;
+
+    columnaVocabulario += 2;
+
+}
+
+// INTRODUCCIÓN GENERAL
+
+hoja.getCell(1,columnaVocabulario).value = "Introducción general";    
+       
+
+    // ESTILO ENCABEZADOS
+
+    ["A1","B1","C1"].forEach(celda=>{
+
+        hoja.getCell(celda).font = {
+            bold:true
+        };
+
+    });
+
+
+
+   // NIVEL: LISTA DESPLEGABLE
+
+hoja.getCell("A2").dataValidation = {
+
+    type:"list",
+
+    allowBlank:false,
+
+    formulae:[
+        '"A1,A2,B1,B1+,B2,B2+,C1,C2"'
+    ]
+
+};
+
+
+
+    // UNIDAD: ENTEROS POSITIVOS
+
+    hoja.getCell("B2").dataValidation = {
+
+        type:"whole",
+
+        operator:"greaterThan",
+
+        allowBlank:true,
+
+        formulae:[0]
+
+    };
+
+
+
+    // TEMA: ENTEROS POSITIVOS
+
+    hoja.getCell("C2").dataValidation = {
+
+        type:"whole",
+
+        operator:"greaterThan",
+
+        allowBlank:true,
+
+        formulae:[0]
+
+    };
+
+
+
+    // ANCHO DE COLUMNAS
+
+hoja.getColumn("A").width = 15;
+
+hoja.getColumn("B").width = 15;
+
+hoja.getColumn("C").width = 15;
+
+hoja.getColumn("D").width = 30;
+
+hoja.getColumn("E").width = 30;
+
+hoja.getColumn("F").width = 40;
+
+    for(let i = 7; i <= 17; i++){
+
+    hoja.getColumn(i).width = 40;
+
+}   
+
+for(let i = 18; i <= 37; i++){
+
+    hoja.getColumn(i).width = 25;
+
+}    
+
+
+
+    const archivo = await libro.xlsx.writeBuffer();
+
+
+
+    const blob = new Blob(
+
+        [archivo],
+
+        {
+            type:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
+
+    );
+
+
+
+    const enlace = document.createElement("a");
+
+
+    enlace.href =
+    URL.createObjectURL(blob);
+
+
+    enlace.download =
+    "plantilla-grammar.xlsx";
+
+
+    enlace.click();
+
+}
+
+function capitalizar(texto){
+
+    texto = String(texto).trim();
+
+    if(texto===""){
+        return "";
+    }
+
+    texto = texto.toLowerCase();
+
+    return texto.replace(
+        /^([¡¿]*)([a-záéíóúñ])/i,
+        function(_, signos, letra){
+            return signos + letra.toUpperCase();
+        }
+    );
+
+}    
+
+async function leerExcel(event){
+
+    const archivo = event.target.files[0];
+
+    if(!archivo) return;
+
+
+    const buffer = await archivo.arrayBuffer();
+
+
+    const libro = new ExcelJS.Workbook();
+
+
+    await libro.xlsx.load(buffer);
+
+
+    const hojaSubtitulos = libro.getWorksheet("Subtitulos");
+    const hoja = libro.getWorksheet("Grammar");
+
+
+    const tituloIngles =
+leerCelda(hoja.getCell("D2"));
+
+    console.log("D2 =", hoja.getCell("D2").value);
+console.log("D2 JSON =", JSON.stringify(hoja.getCell("D2").value, null, 2));
+
+const tituloEspanol =
+leerCelda(hoja.getCell("E2"));
+
+const unidad =
+leerCelda(hoja.getCell("B2"));
+
+const tema =
+leerCelda(hoja.getCell("C2"));
+
+
+const video =
+leerCelda(hoja.getCell("F2"));
+    
+const introduccionGeneral =
+leerCelda(hoja.getCell(2,28));    
+
+
+    let audios = [];
+
+
+for(let i = 1; i <= 1; i++){
+
+    let columna = 7;
+
+
+let ruta =
+leerCelda(hoja.getCell(2,columna));
+
+
+    if(ruta){
+
+        console.log("Audio encontrado:", ruta);
+
+        audios.push({
+
+            numero:i,
+
+            archivo:ruta
+
+        });
+
+    }
+
+}  
+
+vocabularioGlobal = [];
+
+subtitulosGlobal = [];
+
+
+for(let i = 2; i <= 11; i++){
+
+    let subtitulo =
+leerCelda(hojaSubtitulos.getCell(i,2));
+
+
+let introduccion =
+leerCelda(hojaSubtitulos.getCell(i,3));
+
+
+let estructura =
+leerCelda(hojaSubtitulos.getCell(i,4));
+
+
+let oracion1 =
+leerCelda(hojaSubtitulos.getCell(i,5));
+
+
+let oracion2 =
+leerCelda(hojaSubtitulos.getCell(i,6));
+
+
+let oracion3 =
+leerCelda(hojaSubtitulos.getCell(i,7));
+
+
+let audio =
+leerCelda(hojaSubtitulos.getCell(i,8));
+
+if(typeof audio === "object"){
+
+    audio = audio.text || "";
+
+}
+
+console.log(
+"SUBTITULO:",
+JSON.stringify({
+subtitulo,
+oracion1,
+oracion2,
+oracion3,
+audio
+}, null, 2)
+);
+
+    if(subtitulo){
+
+        subtitulosGlobal.push({
+
+    subtitulo: subtitulo,
+
+    introduccion: introduccion,
+
+    estructura: estructura,
+
+    oraciones:[
+        oracion1,
+        oracion2,
+        oracion3
+    ],
+
+    audio:audio
+
+});
+
+    }
+
+}    
+
+
+for(let i=0;i<10;i++){
+
+    let columna =
+    8 + (i*2);
+
+
+    let ingles =
+    leerCelda(hoja.getCell(2,columna));
+    
+    let espanol =
+    leerCelda(hoja.getCell(2,columna+1));;
+
+
+    if (ingles && espanol) {
+
+    const espanolCapitalizado = capitalizar(espanol);
+
+    console.log("ESPAÑOL:", espanol, "->", espanolCapitalizado);
+
+    const prueba = capitalizar(espanol);
+
+console.log("ANTES:", espanol);
+console.log("DESPUÉS:", prueba);
+
+vocabularioGlobal.push({
+
+    ingles: ingles,
+
+    espanol: prueba,
+
+    imagen:""
+
+});
+
+}
+
+}
+
+    datosPagina = {
+
+tituloIngles: tituloIngles,
+
+tituloEspanol: tituloEspanol,
+
+unidad: unidad,
+
+tema: tema,
+
+video: video,
+
+audios: audios,
+
+nivel: leerCelda(hoja.getCell("A2")),
+
+introduccionGeneral: introduccionGeneral,
+
+subtitulos: subtitulosGlobal
+
+};
+
+    console.log(datosPagina);
+    
+    generarCodigo(
+
+datosPagina.tituloIngles,
+
+datosPagina.tituloEspanol,
+
+datosPagina.unidad,
+
+datosPagina.tema,
+
+datosPagina.video,
+
+datosPagina.audios,
+
+datosPagina.nivel,
+
+vocabularioGlobal,
+
+datosPagina.introduccionGeneral,
+
+datosPagina.subtitulos
+
+);
+
+}  
+
+    
+
+generarCodigo();
+
+document
+.getElementById("excelInput")
+.addEventListener(
+"change",
+leerExcel
+); 
+
+function extraerImagenesBlogger(){
+
+    const codigo =
+    document.getElementById("codigoBlogger").value;
+
+
+    const patron =
+    /https:\/\/blogger\.googleusercontent\.com\/[^"]+/gi;
+
+
+    const coincidencias =
+    codigo.match(patron);
+
+
+    if(!coincidencias){
+
+        console.log("No se encontraron imágenes");
+
+        alert("No se encontraron URLs de Blogger");
+
+        return;
+
+    }
+
+
+    imagenesBlogger =
+    coincidencias.map(url=>url);
+
+
+    console.log("URLs encontradas:");
+
+    console.log(imagenesBlogger);
+
+
+    asignarImagenes();
+
+}  
+
+    function normalizarTexto(texto){
+
+    return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/ñ/g,"n")
+    .replace(/[^a-z0-9]/g,"");
+
+}
+
+
+
+function asignarImagenes(){
+
+    vocabularioGlobal.forEach(item=>{
+
+
+        let palabrasBuscar = [
+
+            normalizarTexto(item.ingles),
+
+            normalizarTexto(item.espanol)
+
+        ];
+
+
+
+        let encontrada = imagenesBlogger.find(url=>{
+
+
+            let nombreArchivo = url
+            .split("/")
+            .pop()
+            .replace(/\.(png|jpg|jpeg|webp)$/i,"");
+
+
+
+            nombreArchivo = normalizarTexto(nombreArchivo);
+
+
+
+            return palabrasBuscar.some(palabra=>
+
+                nombreArchivo.includes(palabra)
+
+            );
+
+
+        });
+
+
+
+        if(encontrada){
+
+            item.imagen = encontrada;
+
+        }
+
+
+    });
+
+
+
+    generarCodigoActualizado();
+
+}
+
+console.log("Audios enviados:", datosPagina.audios);
+    
+function generarCodigoActualizado(){
+
+    generarCodigo(
+
+        datosPagina.tituloIngles,
+
+        datosPagina.tituloEspanol,
+
+        datosPagina.unidad,
+
+        datosPagina.tema,
+
+        datosPagina.video,
+
+        datosPagina.audios,
+
+        datosPagina.nivel,
+
+        vocabularioGlobal,
+
+        datosPagina.introduccionGeneral,
+
+        datosPagina.subtitulos
+
+    );
+
+}   
+
+function abrirNuevaPestana(){
+
+    const codigo =
+    document.getElementById("codigo").textContent;
+
+    const nuevaVentana =
+    window.open();
+
+    nuevaVentana.document.open();
+
+    nuevaVentana.document.write(codigo);
+
+    nuevaVentana.document.close();
+
+}    
+
+function descargarPlantillaUCMI(){
+
+    const enlace = document.createElement("a");
+
+    enlace.href = "plantillas/plantilla-grammar.xlsx";
+
+    enlace.download = "plantilla-grammar.xlsx";
+
+    document.body.appendChild(enlace);
+
+    enlace.click();
+
+    document.body.removeChild(enlace);
+
+} 
+
+async function copiarCodigo(){
+
+    const codigo = document.getElementById("codigo").textContent;
+
+    try{
+
+        await navigator.clipboard.writeText(codigo);
+
+        alert("Código copiado al portapapeles.");
+
+    }catch(error){
+
+        // Compatibilidad con navegadores antiguos
+        const textarea = document.createElement("textarea");
+
+        textarea.value = codigo;
+
+        document.body.appendChild(textarea);
+
+        textarea.select();
+
+        document.execCommand("copy");
+
+        document.body.removeChild(textarea);
+
+        alert("Código copiado al portapapeles.");
+
+    }
+
+}
+
+
+function descargarHTML(){
+
+    const codigo = document.getElementById("codigo").textContent;
+
+    if(!codigo.trim()){
+
+        alert("No hay ningún código generado.");
+
+        return;
+
+    }
+
+    // Nombre automático del archivo
+    let nombre = "grammar";
+
+    if(datosPagina.unidad && datosPagina.tema){
+
+        nombre = `grammar-U${datosPagina.unidad}-T${datosPagina.tema}`;
+
+    }
+
+    const blob = new Blob(
+        [codigo],
+        {type:"text/html;charset=utf-8"}
+    );
+
+    const enlace = document.createElement("a");
+
+    enlace.href = URL.createObjectURL(blob);
+
+    enlace.download = nombre + ".html";
+
+    document.body.appendChild(enlace);
+
+    enlace.click();
+
+    document.body.removeChild(enlace);
+
+    URL.revokeObjectURL(enlace.href);
+
+}    
+
+</script>    
+
+</body>
+
+</html>
