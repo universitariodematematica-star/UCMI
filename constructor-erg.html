@@ -274,6 +274,7 @@ tituloEspanol:""
 let vocabularioGlobal = [];
 let subtitulosGlobal = [];
 let imagenesBlogger = [];
+let ejerciciosSelSimple = [];    
 
 
 const MODOS = {
@@ -673,6 +674,7 @@ async function leerExcel(event){
 
 
     const hoja = libro.getWorksheet("Datos");
+    const hojaSelSimple = libro.getWorksheet("Sel-simp-op");
 
 
 const nivel =
@@ -696,7 +698,7 @@ const introduccionGeneral = "";
 vocabularioGlobal = [];
 
 subtitulosGlobal = [];    
-
+ejerciciosSelSimple = [];
 
 for(let i=0;i<10;i++){
 
@@ -736,6 +738,34 @@ vocabularioGlobal.push({
 
 }
 
+//========================================
+// Leer hoja Sel-simp-op
+//========================================
+
+for(let fila = 2; fila <= hojaSelSimple.rowCount; fila++){
+
+    const pregunta = leerCelda(hojaSelSimple.getCell("A" + fila));
+
+    if(!pregunta) continue;
+
+    ejerciciosSelSimple.push({
+
+        pregunta: pregunta,
+
+        correcta: leerCelda(hojaSelSimple.getCell("B" + fila)),
+
+        incorrecta1: leerCelda(hojaSelSimple.getCell("C" + fila)),
+
+        incorrecta2: leerCelda(hojaSelSimple.getCell("D" + fila)),
+
+        incorrecta3: leerCelda(hojaSelSimple.getCell("E" + fila)),
+
+        explicacion: leerCelda(hojaSelSimple.getCell("F" + fila))
+
+    });
+
+}    
+
     datosPagina = {
 
 nivel:nivel,
@@ -751,6 +781,7 @@ tituloEspanol:tituloEspanol
 };
 
     console.log(datosPagina);
+    console.log(ejerciciosSelSimple);
 
 generarCodigo(
 datosPagina.nivel,
