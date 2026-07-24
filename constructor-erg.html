@@ -343,7 +343,8 @@ tituloIngles="",
 tituloEspanol="",
 vocabulario=[],
 introduccionGeneral="",
-subtitulos=[]
+subtitulos=[],
+ejerciciosSelSimple=[]
 
 ){
 
@@ -372,6 +373,77 @@ const codigoEjerciciosResueltos =
 
 const codigoEjerciciosPropuestos =
 `EPG${prefijo.substring(1)}.${unidad}.${tema}.${nivel}`;
+
+//========================================
+// Generar ejercicios selección simple
+//========================================
+
+let htmlSelSimple = "";
+
+ejerciciosSelSimple.forEach((ejercicio, indice)=>{
+
+
+    let opciones = [
+
+        ejercicio.correcta,
+
+        ejercicio.incorrecta1,
+
+        ejercicio.incorrecta2,
+
+        ejercicio.incorrecta3
+
+    ];
+
+
+    // Mezclar opciones aleatoriamente
+
+    opciones.sort(()=>Math.random()-0.5);
+
+
+    htmlSelSimple += `
+
+<div class="ejercicio-sel-simple">
+
+<h3>
+${indice + 1}. ${ejercicio.pregunta}
+</h3>
+
+
+<div class="opciones">
+
+${opciones.map((opcion, i)=>`
+
+<button 
+class="opcion"
+onclick="verificarRespuesta(this,'${opcion}','${ejercicio.correcta}')">
+
+${String.fromCharCode(97+i)}) ${opcion}
+
+</button>
+
+`).join("")}
+
+</div>
+
+
+<button 
+class="verificar"
+onclick="mostrarExplicacion(this,'${ejercicio.explicacion}')">
+
+Verificar
+
+</button>
+
+
+<div class="resultado"></div>
+
+
+</div>
+
+`;
+
+});    
     
 const codigo = `<!DOCTYPE html>
 <html lang="es">
@@ -466,6 +538,7 @@ Ejercicios resueltos ${codigoEjerciciosResueltos}
 
 <div style="height:20px;"></div>
 
+${htmlSelSimple}
 <div style="height:35px;"></div>
 
 
@@ -788,7 +861,11 @@ datosPagina.nivel,
 datosPagina.unidad,
 datosPagina.tema,
 datosPagina.tituloIngles,
-datosPagina.tituloEspanol
+datosPagina.tituloEspanol,
+[],
+"",
+[],
+ejerciciosSelSimple
 );
 
 }  
