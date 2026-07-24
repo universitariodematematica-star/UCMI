@@ -516,176 +516,61 @@ async function descargarPlantilla(){
 
     const libro = new ExcelJS.Workbook();
 
-    const hoja = libro.addWorksheet("Grammar");
-
-    const hojaSubtitulos = libro.addWorksheet("Subtitulos");
+    const hoja = libro.addWorksheet("Ejercicios");
 
 
     // ENCABEZADOS
 
-hoja.getCell("A1").value = "Nivel";
+    hoja.getCell("A1").value = "Nivel";
 
-hoja.getCell("B1").value = "Unidad";
+    hoja.getCell("B1").value = "Unidad";
 
-hoja.getCell("C1").value = "Tema";
+    hoja.getCell("C1").value = "Tema";
 
-hoja.getCell("D1").value = "Título en inglés";
+    hoja.getCell("D1").value = "Título en inglés";
 
-hoja.getCell("E1").value = "Título en español";
+    hoja.getCell("E1").value = "Título en español";
 
-hoja.getCell("F1").value = "Video";
 
-hoja.getCell("G1").value = "Audio de vocabulario";
-hoja.getCell("H1").value = "Introducción general";
+    // Ejemplo inicial
 
-// HOJA SUBTITULOS
+    hoja.getCell("A2").value = "A1";
+    hoja.getCell("B2").value = 1;
+    hoja.getCell("C2").value = 1;
+    hoja.getCell("D2").value = "Introduce yourself";
+    hoja.getCell("E2").value = "Preséntate";
 
-hojaSubtitulos.getCell("A1").value = "Número";
-hojaSubtitulos.getCell("B1").value = "Subtítulo";
-hojaSubtitulos.getCell("C1").value = "Introducción";
-hojaSubtitulos.getCell("D1").value = "Estructura";
-hojaSubtitulos.getCell("E1").value = "Ejemplo 1";
-hojaSubtitulos.getCell("F1").value = "Ejemplo 2";
-hojaSubtitulos.getCell("G1").value = "Ejemplo 3";
-hojaSubtitulos.getCell("H1").value = "Audio";    
 
-for(let i=1;i<=10;i++){
+    // Ancho columnas
 
-    hojaSubtitulos.getCell(i+1,1).value = i;
+    hoja.getColumn("A").width = 15;
+    hoja.getColumn("B").width = 15;
+    hoja.getColumn("C").width = 15;
+    hoja.getColumn("D").width = 35;
+    hoja.getColumn("E").width = 35;
 
-}
 
-hojaSubtitulos.getColumn("A").width = 12;
-hojaSubtitulos.getColumn("B").width = 40;
-hojaSubtitulos.getColumn("C").width = 70;
-hojaSubtitulos.getColumn("D").width = 50;
-hojaSubtitulos.getColumn("E").width = 40;
-hojaSubtitulos.getColumn("F").width = 40;
-hojaSubtitulos.getColumn("G").width = 40;
-hojaSubtitulos.getColumn("H").width = 40;    
+    // Estilo encabezados
 
-// VOCABULARIO
-
-let columnaVocabulario = 8; // Columna H
-
-for(let i = 1; i <= 10; i++){
-
-    hoja.getCell(1,columnaVocabulario).value = "Inglés " + i;
-
-    hoja.getCell(1,columnaVocabulario + 1).value = "Español " + i;
-
-    columnaVocabulario += 2;
-
-}
-
-// INTRODUCCIÓN GENERAL
-
-hoja.getCell(1,columnaVocabulario).value = "Introducción general";    
-       
-
-    // ESTILO ENCABEZADOS
-
-    ["A1","B1","C1"].forEach(celda=>{
+    for(let celda of ["A1","B1","C1","D1","E1"]){
 
         hoja.getCell(celda).font = {
             bold:true
         };
 
-    });
-
-
-
-   // NIVEL: LISTA DESPLEGABLE
-
-hoja.getCell("A2").dataValidation = {
-
-    type:"list",
-
-    allowBlank:false,
-
-    formulae:[
-        '"A1,A2,B1,B1+,B2,B2+,C1,C2"'
-    ]
-
-};
-
-
-
-    // UNIDAD: ENTEROS POSITIVOS
-
-    hoja.getCell("B2").dataValidation = {
-
-        type:"whole",
-
-        operator:"greaterThan",
-
-        allowBlank:true,
-
-        formulae:[0]
-
-    };
-
-
-
-    // TEMA: ENTEROS POSITIVOS
-
-    hoja.getCell("C2").dataValidation = {
-
-        type:"whole",
-
-        operator:"greaterThan",
-
-        allowBlank:true,
-
-        formulae:[0]
-
-    };
-
-
-
-    // ANCHO DE COLUMNAS
-
-hoja.getColumn("A").width = 15;
-
-hoja.getColumn("B").width = 15;
-
-hoja.getColumn("C").width = 15;
-
-hoja.getColumn("D").width = 30;
-
-hoja.getColumn("E").width = 30;
-
-hoja.getColumn("F").width = 40;
-
-    for(let i = 7; i <= 17; i++){
-
-    hoja.getColumn(i).width = 40;
-
-}   
-
-for(let i = 18; i <= 37; i++){
-
-    hoja.getColumn(i).width = 25;
-
-}    
-
+    }
 
 
     const archivo = await libro.xlsx.writeBuffer();
 
 
-
     const blob = new Blob(
-
         [archivo],
-
         {
             type:
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         }
-
     );
-
 
 
     const enlace = document.createElement("a");
@@ -696,7 +581,7 @@ for(let i = 18; i <= 37; i++){
 
 
     enlace.download =
-    "plantilla-erg.xlsx";
+    "plantilla-ejercicios-ucmi.xlsx";
 
 
     enlace.click();
