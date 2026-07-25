@@ -8,6 +8,10 @@ window.UCMIEjercicios = {
     cargarEjercicios
 };
 
+function crearSeleccionSimple(ejerciciosSelSimple){
+
+    let htmlSelSimple = "";
+
 //========================================
 // Generar ejercicios selección simple
 //========================================
@@ -96,3 +100,7 @@ Verificar
 `;
 
 });
+
+return htmlSelSimple;
+
+}    
