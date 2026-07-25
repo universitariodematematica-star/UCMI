@@ -109,7 +109,10 @@ function crearDragDropBlanco(ejerciciosDragDrop){
     ejerciciosDragDrop.forEach((ejercicio, indice)=>{
 
 
-        let opciones = [...ejercicio.opciones];
+        let opciones = [
+    ejercicio.correcta,
+    ...ejercicio.opciones
+                        ];
 
 
         // Mezclar botones
