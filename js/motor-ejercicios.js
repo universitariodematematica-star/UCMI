@@ -126,3 +126,57 @@ const UCMIMotorEjercicios = {
 
 
 window.UCMIMotorEjercicios = UCMIMotorEjercicios;
+
+function verificarPregunta(
+
+    boton,
+
+    correcta,
+
+    explicacion
+
+){
+
+    const bloque = boton.parentElement;
+
+    const seleccionada =
+    bloque.querySelector(
+        'input[type="radio"]:checked'
+    );
+
+
+    const resultado =
+    bloque.querySelector(".resultado");
+
+
+    if(!seleccionada){
+
+        resultado.innerHTML =
+        "⚠ Debes seleccionar una respuesta.";
+
+        resultado.style.color = "orange";
+
+        return;
+
+    }
+
+
+    if(seleccionada.value === correcta){
+
+        resultado.innerHTML =
+        "✅ Correcto.<br><br><b>Explicación:</b> "
+        + explicacion;
+
+        resultado.style.color = "green";
+
+    }else{
+
+        resultado.innerHTML =
+        "❌ Incorrecto.<br><br><b>Explicación:</b> "
+        + explicacion;
+
+        resultado.style.color = "red";
+
+    }
+
+}
