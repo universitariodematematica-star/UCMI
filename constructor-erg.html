@@ -276,8 +276,8 @@ let subtitulosGlobal = [];
 let imagenesBlogger = [];
 let ejerciciosSelSimple = [];
 let ejerciciosCompletar = [];
-let configuracionMostrar = {};    
-
+let ejerciciosDragDrop = [];    
+let configuracionMostrar = {};
 
 const MODOS = {
 
@@ -346,7 +346,8 @@ vocabulario=[],
 introduccionGeneral="",
 subtitulos=[],
 ejerciciosSelSimple=[],
-ejerciciosCompletar=[]
+ejerciciosCompletar=[],
+ejerciciosDragDrop=[]    
 
 ){
 
@@ -619,6 +620,14 @@ UCMIMotorEjercicios.generar({
     ${JSON.stringify(
         configuracionMostrar["Completar espacios"] === "Sí"
         ? ejerciciosCompletar
+        : []
+    )},
+
+
+    dragDropBlanco:
+    ${JSON.stringify(
+        configuracionMostrar["Drag and drop blanco"] === "Sí"
+        ? ejerciciosDragDrop
         : []
     )}
 
@@ -908,6 +917,7 @@ async function leerExcel(event){
     const hojaSelSimple = libro.getWorksheet("Sel-simp-op");
     const hojaCompletar = libro.getWorksheet("Completar");
     const hojaMostrar = libro.getWorksheet("Mostrar");
+    const hojaDragDrop = libro.getWorksheet("Drag-drop-blanco");
 
 const nivel =
 leerCelda(hoja.getCell("A2"));
@@ -1050,7 +1060,48 @@ for(let fila = 2; fila <= hojaCompletar.rowCount; fila++){
 
     });
 
-}  
+}
+
+    //===========================================
+// Leer ejercicios Drag and Drop - espacio en blanco
+//===========================================
+
+ejerciciosDragDrop = [];
+
+for(let fila = 2; fila <= hojaDragDrop.rowCount; fila++){
+
+    const pregunta =
+    leerCelda(hojaDragDrop.getCell("A"+fila));
+
+
+    if(!pregunta) continue;
+
+
+    ejerciciosDragDrop.push({
+
+        pregunta: pregunta,
+
+        correcta:
+        leerCelda(hojaDragDrop.getCell("B"+fila)),
+
+        opciones:[
+
+            leerCelda(hojaDragDrop.getCell("C"+fila)),
+
+            leerCelda(hojaDragDrop.getCell("D"+fila)),
+
+            leerCelda(hojaDragDrop.getCell("E"+fila)),
+
+            leerCelda(hojaDragDrop.getCell("F"+fila))
+
+        ],
+
+        explicacion:
+        leerCelda(hojaDragDrop.getCell("G"+fila))
+
+    });
+
+}
     
     datosPagina = {
 
@@ -1076,7 +1127,8 @@ datosPagina.tituloEspanol,
 "",
 [],
 ejerciciosSelSimple,
-ejerciciosCompletar
+ejerciciosCompletar,
+ejerciciosDragDrop    
 );
 
 }  
