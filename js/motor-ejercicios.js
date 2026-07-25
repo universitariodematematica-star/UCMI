@@ -259,8 +259,8 @@ const UCMIMotorEjercicios = {
         }
 
             //========================================
-// SECCIÓN: DRAG AND DROP - ESPACIO EN BLANCO
-//========================================
+        // SECCIÓN: DRAG AND DROP - ESPACIO EN BLANCO
+        //========================================
 
 if(config.dragDropBlanco){
 
