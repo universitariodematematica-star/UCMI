@@ -95,51 +95,34 @@ return htmlSelSimple;
 
 const UCMIMotorEjercicios = {
 
-    async cargar(config){
+    generar(config){
 
-        const codigo = config.codigo;
-        const contenedor = document.getElementById(config.contenedor);
+        const ejercicios =
+        config.ejercicios;
+
+
+        const contenedor =
+        document.getElementById(config.contenedor);
+
 
         if(!contenedor){
-            console.error("No existe el contenedor:", config.contenedor);
-            return;
-        }
 
-        try{
-
-            // Archivo que contiene los ejercicios
-            const respuesta = await fetch(
-                `ejercicios/${codigo}.json`
+            console.error(
+            "No existe el contenedor:",
+            config.contenedor
             );
 
-            if(!respuesta.ok){
-                throw new Error("No existe el archivo.");
-            }
-
-            const datos = await respuesta.json();
-
-            contenedor.innerHTML =
-                crearSeleccionSimple(datos);
-
-        }catch(error){
-
-            contenedor.innerHTML = `
-            <div style="
-                background:#ffecec;
-                color:#900;
-                padding:20px;
-                border-radius:12px;
-            ">
-                No fue posible cargar los ejercicios:
-                <br><br>
-                <b>${codigo}</b>
-            </div>
-            `;
-
-            console.error(error);
+            return;
 
         }
+
+
+        contenedor.innerHTML =
+        crearSeleccionSimple(ejercicios);
 
     }
 
 };
+
+
+window.UCMIMotorEjercicios = UCMIMotorEjercicios;
