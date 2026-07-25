@@ -97,6 +97,119 @@ return htmlSelSimple;
 
 } 
 
+/*====================================================
+        SECCIÓN: DRAG AND DROP - ESPACIO EN BLANCO
+====================================================*/
+
+function crearDragDropBlanco(ejerciciosDragDrop){
+
+    let htmlDragDrop = "";
+
+
+    ejerciciosDragDrop.forEach((ejercicio, indice)=>{
+
+
+        let opciones = [...ejercicio.opciones];
+
+
+        // Mezclar botones
+
+        for(let i = opciones.length - 1; i > 0; i--){
+
+            const j = Math.floor(Math.random() * (i + 1));
+
+            [opciones[i], opciones[j]] =
+            [opciones[j], opciones[i]];
+
+        }
+
+
+
+        htmlDragDrop += `
+
+
+<div class="ejercicio-drag-drop">
+
+
+<h3>
+${indice+1}. ${ejercicio.pregunta}
+</h3>
+
+
+
+<div class="zona-oracion">
+
+
+<span class="texto-arrastre">
+${ejercicio.textoAntes}
+</span>
+
+
+<span
+class="espacio-drop"
+data-correcta="${ejercicio.correcta}">
+
+________
+
+</span>
+
+
+<span class="texto-arrastre">
+${ejercicio.textoDespues}
+</span>
+
+
+</div>
+
+
+
+<div class="banco-arrastre">
+
+
+${opciones.map(opcion=>`
+
+
+<button
+
+class="boton-arrastrable"
+
+draggable="true"
+
+>
+
+${opcion}
+
+</button>
+
+
+`).join("")}
+
+
+
+</div>
+
+
+
+<div class="resultado"></div>
+
+
+
+</div>
+
+
+`;
+
+    });
+
+
+    return htmlDragDrop;
+
+}
+
+/*====================================================
+        MOTOR PRINCIPAL
+====================================================*/
+
 const UCMIMotorEjercicios = {
 
     generar(config){
@@ -144,6 +257,18 @@ const UCMIMotorEjercicios = {
             );
 
         }
+
+            //========================================
+// SECCIÓN: DRAG AND DROP - ESPACIO EN BLANCO
+//========================================
+
+if(config.dragDropBlanco){
+
+    htmlFinal += crearDragDropBlanco(
+        config.dragDropBlanco
+    );
+
+}
 
 
         contenedor.innerHTML = htmlFinal;
@@ -305,3 +430,127 @@ function verificarCompletar(boton,respuestaCorrecta,explicacion){
     }
 
 }
+
+/*====================================================
+        EVENTOS DRAG AND DROP
+====================================================*/
+
+
+document.addEventListener(
+"dragstart",
+function(event){
+
+
+    if(
+    event.target.classList.contains(
+        "boton-arrastrable"
+    )
+    ){
+
+        event.dataTransfer.setData(
+            "respuesta",
+            event.target.textContent.trim()
+        );
+
+    }
+
+
+});
+
+
+document.addEventListener(
+"dragover",
+function(event){
+
+
+    if(
+    event.target.classList.contains(
+        "espacio-drop"
+    )
+    ){
+
+        event.preventDefault();
+
+    }
+
+
+});
+
+
+document.addEventListener(
+"drop",
+function(event){
+
+
+    if(
+    event.target.classList.contains(
+        "espacio-drop"
+    )
+    ){
+
+        event.preventDefault();
+
+
+        const respuesta =
+        event.dataTransfer.getData(
+            "respuesta"
+        );
+
+
+        const correcta =
+        event.target.dataset.correcta;
+
+
+
+        const bloque =
+        event.target.closest(
+            ".ejercicio-drag-drop"
+        );
+
+
+        const resultado =
+        bloque.querySelector(
+            ".resultado"
+        );
+
+
+
+        if(respuesta === correcta){
+
+
+            event.target.innerHTML =
+            respuesta;
+
+
+            event.target.classList.add(
+                "correcto-drag"
+            );
+
+
+            resultado.innerHTML =
+            "✅ Correcto";
+
+
+            resultado.style.color =
+            "green";
+
+
+
+        }else{
+
+
+            resultado.innerHTML =
+            "❌ Incorrecto. Intenta nuevamente.";
+
+
+            resultado.style.color =
+            "red";
+
+
+        }
+
+
+    }
+
+
+});
