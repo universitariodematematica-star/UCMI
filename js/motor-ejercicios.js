@@ -132,7 +132,7 @@ function crearDragDropBlanco(ejerciciosDragDrop){
 
 
 <h3>
-${indice+1}. ${ejercicio.pregunta}
+${indice+1}. Completa la oración:
 </h3>
 
 
