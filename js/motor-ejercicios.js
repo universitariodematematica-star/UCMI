@@ -704,19 +704,40 @@ function(event){
 
 
 
-        event.target.appendChild(
-            nuevoBoton
-        );
+event.target.appendChild(
+    nuevoBoton
+);
 
 
-        if(botonOriginal){
+// Quitar texto "Arrastra aquí las palabras"
 
-            botonOriginal.remove();
+if(
+    event.target.classList.contains(
+        "zona-destino-oracion"
+    )
+){
 
-        }
+    if(
+        event.target.textContent.includes(
+            "Arrastra aquí las palabras"
+        )
+    ){
 
+        event.target.childNodes[0].remove();
 
     }
+
+}
+
+
+if(botonOriginal){
+
+    botonOriginal.remove();
+
+}
+
+
+}
 
 
 });
