@@ -572,25 +572,37 @@ function(event){
 
 
     if(
-        event.target.classList.contains(
-                "boton-arrastrable"
-            ) ||
-            event.target.classList.contains(
-                "palabra-arrastrable"
-            )
-    ){
+event.target.classList.contains(
+    "zona-destino-oracion"
+)
+){
 
-        console.log(
-            "ARRASTRANDO:",
-            event.target.textContent
-        );
+    const palabra =
+    event.dataTransfer.getData(
+        "respuesta"
+    );
 
-        event.dataTransfer.setData(
-            "respuesta",
-            event.target.textContent.trim()
-        );
 
-    }
+    const boton =
+    document.createElement("button");
+
+
+    boton.textContent = palabra;
+
+
+    boton.className =
+    "palabra-arrastrable";
+
+
+    boton.draggable = true;
+
+
+    zona.appendChild(boton);
+
+
+    return;
+
+}
 
 
 });
@@ -607,6 +619,8 @@ function(event){
         event.target.classList.contains("espacio-drop")
         ||
         event.target.classList.contains("zona-destino-oracion")
+        ||
+        event.target.classList.contains("banco-palabras-oracion")
     ){
 
         event.preventDefault();
@@ -619,10 +633,12 @@ document.addEventListener(
 function(event){
 
 
-   if(
+if(
     event.target.classList.contains("espacio-drop")
     ||
     event.target.classList.contains("zona-destino-oracion")
+    ||
+    event.target.classList.contains("banco-palabras-oracion")
 ){
 
         event.preventDefault();
@@ -636,6 +652,38 @@ function(event){
         const zona =
         event.target;
 
+    if(
+    event.target.classList.contains(
+        "banco-palabras-oracion"
+    )
+){
+
+    const palabra =
+    event.dataTransfer.getData(
+        "respuesta"
+    );
+
+
+    const boton =
+    document.createElement("button");
+
+
+    boton.textContent = palabra;
+
+
+    boton.className =
+    "palabra-arrastrable";
+
+
+    boton.draggable = true;
+
+
+    event.target.appendChild(boton);
+
+
+    return;
+
+}
 
         const correcta =
         event.target.dataset.correcta;
