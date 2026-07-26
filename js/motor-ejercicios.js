@@ -44,7 +44,13 @@ function escaparTexto(texto){
 
 function crearSeleccionSimple(ejerciciosSelSimple){
 
-    let htmlSelSimple = "";
+    let htmlSelSimple = `
+
+<div class="instruccion-ejercicio">
+Seleccione la opción que llena correctamente el espacio en blanco en cada ítem.
+</div>
+
+`;
 
 //========================================
 // Generar ejercicios selección simple
