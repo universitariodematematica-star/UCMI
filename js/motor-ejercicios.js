@@ -570,34 +570,21 @@ document.addEventListener(
 "dragstart",
 function(event){
 
-
     if(
-event.target.classList.contains(
-    "zona-destino-oracion"
-)
-){
+        event.target.classList.contains(
+            "palabra-arrastrable"
+        )
+    ){
 
-    const palabra =
-    event.dataTransfer.getData(
-        "respuesta"
-    );
+        event.dataTransfer.setData(
+            "respuesta",
+            event.target.textContent.trim()
+        );
 
+    }
 
-    const boton =
-    document.createElement("button");
+});
 
-
-    boton.textContent = palabra;
-
-
-    boton.className =
-    "palabra-arrastrable";
-
-
-    boton.draggable = true;
-
-
-    zona.appendChild(boton);
 
 
     return;
@@ -714,8 +701,18 @@ if(
         "respuesta"
     );
 
-    zona.innerHTML += 
-    palabra + " ";
+const boton =
+document.createElement("button");
+
+boton.textContent = palabra;
+
+boton.className =
+"palabra-arrastrable";
+
+boton.draggable = true;
+
+
+zona.appendChild(boton);
 
     return;
 
