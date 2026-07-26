@@ -482,11 +482,6 @@ resultado.style.color="red";
 
 function crearOrdenarOracion(ejerciciosOrdenar){
 
-        console.log(
-            "ENTRÓ A crearOrdenarOracion:",
-            ejerciciosOrdenar
-        );
-
     let htmlOrdenar = `
 
 <div class="instruccion-ejercicio">
@@ -557,8 +552,7 @@ ${palabra}
 `;
     });
     console.log(
-    "HTML ORDENAR GENERADO:",
-    htmlOrdenar
+    "HTML ORDENAR GENERADO CORRECTAMENTE"
 );
 
 return htmlOrdenar;
