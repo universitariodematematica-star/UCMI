@@ -821,10 +821,53 @@ document.addEventListener(
 function(event){
 
     if(
-        event.target.classList.contains(
-            "palabra-arrastrable"
-        )
+        event.target.classList.contains("palabra-arrastrable")
+        ||
+        event.target.classList.contains("boton-arrastrable")
     ){
+
+        let palabra =
+        event.target.textContent.trim();
+
+
+        let idBoton =
+        event.target.dataset.id;
+
+
+        if(!idBoton){
+
+            idBoton =
+            "boton-" + Date.now();
+
+
+            event.target.dataset.id =
+            idBoton;
+
+        }
+
+
+        event.dataTransfer.setData(
+            "respuesta",
+            palabra
+        );
+
+
+        event.dataTransfer.setData(
+            "boton",
+            idBoton
+        );
+
+
+        event.dataTransfer.setData(
+            "tipo",
+            event.target.classList.contains("boton-arrastrable")
+            ? "drag-blanco"
+            : "ordenar"
+        );
+
+    }
+
+});
 
         let palabra =
         event.target.textContent.trim();
@@ -979,6 +1022,8 @@ function(event){
         event.target.classList.contains(
             "banco-palabras-oracion"
         )
+        ||
+        event.target.classList.contains("espacio-drop")
     ){
 
         event.preventDefault();
