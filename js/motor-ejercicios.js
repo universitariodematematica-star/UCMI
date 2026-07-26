@@ -566,6 +566,12 @@ return htmlOrdenar;
 ====================================================*/
 
 
+/*====================================================
+        EVENTO DRAGSTART
+====================================================*/
+
+let palabraArrastrada = "";
+
 document.addEventListener(
 "dragstart",
 function(event){
@@ -576,9 +582,13 @@ function(event){
         )
     ){
 
+        palabraArrastrada =
+        event.target.textContent.trim();
+
+
         event.dataTransfer.setData(
             "respuesta",
-            event.target.textContent.trim()
+            palabraArrastrada
         );
 
     }
