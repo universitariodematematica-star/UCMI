@@ -328,10 +328,13 @@ const UCMIMotorEjercicios = {
         // SECCIÓN: DRAG AND DROP - ESPACIO EN BLANCO
         //========================================
 
-if(config.dragDropBlanco){
+if(
+config.ordenarOracion &&
+config.mostrarOrdenarOracion === "Sí"
+){
 
-    htmlFinal += crearDragDropBlanco(
-        config.dragDropBlanco
+    htmlFinal += crearOrdenarOracion(
+        config.ordenarOracion
     );
 
 }
