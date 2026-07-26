@@ -80,15 +80,11 @@ ${String.fromCharCode(97+i)}) ${opcion}
 
 <button
 class="verificar"
-onclick="verificarPregunta(
-
+onclick='verificarPregunta(
 this,
-
-"${escaparTexto(ejercicio.correcta)}",
-
-"${escaparTexto(ejercicio.explicacion)}"
-
-)">
+${JSON.stringify(ejercicio.correcta)},
+${JSON.stringify(ejercicio.explicacion)}
+)'>
 
 Verificar
 
@@ -166,7 +162,7 @@ ${ejercicio.textoAntes}
 
 <span
 class="espacio-drop"
-data-correcta="${ejercicio.correcta}"
+data-correcta='${ejercicio.correcta}'
 data-explicacion="${ejercicio.explicacion}">
 
 ________
@@ -393,13 +389,11 @@ placeholder="Escriba su respuesta">
 
 <button
 class="verificar"
-onclick="verificarCompletar(
-
+onclick='verificarCompletar(
 this,
-
-"${escaparTexto(ejercicio.respuesta)}",
-"${escaparTexto(ejercicio.explicacion)}"
-)">
+${JSON.stringify(ejercicio.respuesta)},
+${JSON.stringify(ejercicio.explicacion)}
+)'>
 
 Verificar
 
