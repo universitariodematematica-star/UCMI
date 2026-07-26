@@ -642,7 +642,6 @@ function(event){
         event.target.dataset.explicacion;    
 
         const bloque =
-        const bloque =
         event.target.closest(
             ".ejercicio-drag-drop, .ejercicio-ordenar-oracion"
         );
