@@ -484,6 +484,11 @@ resultado.style.color="red";
 
 function crearOrdenarOracion(ejerciciosOrdenar){
 
+    console.log(
+    "CREANDO ORDENAR:",
+    ejerciciosOrdenar
+                );
+
     let htmlOrdenar = `
 
 <div class="instruccion-ejercicio">
