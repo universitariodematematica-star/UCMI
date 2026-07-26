@@ -137,7 +137,7 @@ function crearDragDropBlanco(ejerciciosDragDrop){
 
 
 <h3>
-${++contadorEjercicios}. Completa la oración:
+${++contadorEjercicios}. Arrastra la palabra correcta para completar la oración.
 </h3>
 
 
@@ -358,7 +358,11 @@ function crearCompletarEspacios(ejerciciosCompletar){
 <div class="ejercicio-completar">
 
 <h3>
-${++contadorEjercicios}. ${ejercicio.pregunta}
+${++contadorEjercicios}. Escribe la expresión que hace falta para completar la oración.
+</h3>
+
+<h3>
+${ejercicio.pregunta}
 </h3>
 
 
