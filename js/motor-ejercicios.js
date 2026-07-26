@@ -601,37 +601,26 @@ document.addEventListener(
 "dragover",
 function(event){
 
-
     if(
-        event.target.classList.contains(
-            "espacio-drop"
-        )
+        event.target.classList.contains("espacio-drop")
         ||
-        event.target.classList.contains(
-            "zona-destino-oracion"
-        )
+        event.target.classList.contains("zona-destino-oracion")
     ){
 
         event.preventDefault();
 
     }
 
-
 });
-
 document.addEventListener(
 "drop",
 function(event){
 
 
-    if(
-    event.target.classList.contains(
-        "espacio-drop"
-    )
+   if(
+    event.target.classList.contains("espacio-drop")
     ||
-    event.target.classList.contains(
-        "zona-destino-oracion"
-    )
+    event.target.classList.contains("zona-destino-oracion")
 ){
 
         event.preventDefault();
@@ -653,8 +642,9 @@ function(event){
         event.target.dataset.explicacion;    
 
         const bloque =
+        const bloque =
         event.target.closest(
-            ".ejercicio-drag-drop"
+            ".ejercicio-drag-drop, .ejercicio-ordenar-oracion"
         );
 
 
@@ -684,8 +674,17 @@ if(
         if(respuesta === correcta){
 
 
-            event.target.innerHTML =
-            respuesta;
+if(
+event.target.classList.contains("zona-destino-oracion")
+){
+
+    event.target.innerHTML += respuesta + " ";
+
+}else{
+
+    event.target.innerHTML = respuesta;
+
+}
 
 
             event.target.classList.add(
