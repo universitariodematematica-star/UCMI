@@ -573,106 +573,60 @@ return htmlOrdenar;
         EVENTO DRAGSTART
 ====================================================*/
 
-let palabraArrastrada = "";
+/*====================================================
+        EVENTO DRAGSTART
+====================================================*/
 
 document.addEventListener(
 "dragstart",
 function(event){
 
-if(
-    event.target.classList.contains(
-        "zona-destino-oracion"
-    )
-){
+    if(
+        event.target.classList.contains(
+            "palabra-arrastrable"
+        )
+    ){
 
-    const botonOriginal =
-    event.dataTransfer.getData(
-        "boton"
-    );
-
-
-    const palabra =
-    event.dataTransfer.getData(
-        "respuesta"
-    );
-
-
-    const origen =
-    document.querySelector(
-        `[data-id="${botonOriginal}"]`
-    );
-
-
-    const nuevoBoton =
-    document.createElement("button");
-
-
-    nuevoBoton.textContent = palabra;
-
-
-    nuevoBoton.className =
-    "palabra-arrastrable";
-
-
-    nuevoBoton.draggable = true;
-
-
-    // Mantener identificación única
-
-    nuevoBoton.dataset.id =
-    botonOriginal;
-
-
-    zona.appendChild(nuevoBoton);
-
-
-    // eliminar el original si existe
-
-    if(origen){
-
-        origen.remove();
-
-    }
-
-
-    return;
-
-}
-
-        palabraArrastrada =
+        let palabra =
         event.target.textContent.trim();
 
 
-let idBoton =
-event.target.dataset.id;
+        let idBoton =
+        event.target.dataset.id;
 
 
-if(!idBoton){
+        if(!idBoton){
 
-    idBoton =
-    "boton-" + Date.now();
-
-    event.target.dataset.id =
-    idBoton;
-
-}
+            idBoton =
+            "boton-" + Date.now();
 
 
-event.dataTransfer.setData(
-    "respuesta",
-    palabraArrastrada
-);
+            event.target.dataset.id =
+            idBoton;
+
+        }
 
 
-event.dataTransfer.setData(
-    "boton",
-    idBoton
-);
+        event.dataTransfer.setData(
+            "respuesta",
+            palabra
+        );
+
+
+        event.dataTransfer.setData(
+            "boton",
+            idBoton
+        );
+
+
+        event.dataTransfer.setData(
+            "origen",
+            event.target.parentElement.className
+        );
 
     }
 
 });
-
 window.UCMIMotorEjercicios = UCMIMotorEjercicios;
 
 console.log("MOTOR CARGADO CORRECTAMENTE");
