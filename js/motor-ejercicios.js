@@ -75,9 +75,9 @@ onclick="verificarPregunta(
 
 this,
 
-'${ejercicio.correcta}',
+"${ejercicio.correcta}",
 
-'${ejercicio.explicacion}'
+"${ejercicio.explicacion}"
 
 )">
 
@@ -387,9 +387,8 @@ onclick="verificarCompletar(
 
 this,
 
-'${ejercicio.respuesta}',
-
-'${ejercicio.explicacion}'
+"${ejercicio.respuesta}",
+"${ejercicio.explicacion}"
 
 )">
 
