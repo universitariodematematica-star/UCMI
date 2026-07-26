@@ -298,62 +298,6 @@ if(config.dragDropBlanco){
 
 window.UCMIMotorEjercicios = UCMIMotorEjercicios;
 
-function verificarPregunta(boton){
-
-    const bloque = boton.closest(".ejercicio-sel-simple");
-
-
-    const correcta =
-    boton.dataset.correcta;
-
-
-    const explicacion =
-    boton.dataset.explicacion;
-
-
-    const seleccionada =
-    bloque.querySelector(
-        'input[type="radio"]:checked'
-    );
-
-
-    const resultado =
-    bloque.querySelector(".resultado");
-
-
-    if(!seleccionada){
-
-        resultado.innerHTML =
-        "⚠ Debes seleccionar una respuesta.";
-
-        resultado.style.color="orange";
-
-        return;
-
-    }
-
-
-    if(seleccionada.value === correcta){
-
-        resultado.innerHTML =
-        "✅ Correcto.<br><br><b>Explicación:</b> "
-        + explicacion;
-
-        resultado.style.color="green";
-
-
-    }else{
-
-        resultado.innerHTML =
-        "❌ Incorrecto.<br><br><b>Explicación:</b> "
-        + explicacion;
-
-        resultado.style.color="red";
-
-    }
-
-}
-
     function verificarPregunta(boton){
 
     const bloque = boton.closest(".ejercicio-sel-simple");
