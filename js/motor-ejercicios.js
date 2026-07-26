@@ -287,6 +287,13 @@ if(config.dragDropBlanco){
 
 }
 
+if(config.ordenarOracion){
+
+    htmlFinal += crearOrdenarOracion(
+        config.ordenarOracion
+    );
+
+}        
 
         contenedor.innerHTML = htmlFinal;
 
@@ -464,6 +471,84 @@ resultado.style.color="red";
 }
 
 
+}
+
+/*====================================================
+        ORDENAR ORACIÓN - PALABRA A PALABRA
+====================================================*/
+
+function crearOrdenarOracion(ejerciciosOrdenar){
+
+    let htmlOrdenar = `
+
+<div class="instruccion-ejercicio">
+Arrastra las palabras para formar la oración correcta.
+</div>
+
+`;
+
+
+    ejerciciosOrdenar.forEach((ejercicio, indice)=>{
+
+
+        // Separar oración en palabras
+
+        let palabras = ejercicio.oracion.split(" ");
+
+
+        // Crear copia mezclada
+
+        let palabrasMezcladas = [...palabras];
+
+
+        for(let i = palabrasMezcladas.length - 1; i > 0; i--){
+
+            const j = Math.floor(
+                Math.random() * (i + 1)
+            );
+
+
+            [
+                palabrasMezcladas[i],
+                palabrasMezcladas[j]
+            ] =
+            [
+                palabrasMezcladas[j],
+                palabrasMezcladas[i]
+            ];
+
+        }
+
+
+
+        htmlOrdenar += `
+
+
+<div class="ejercicio-ordenar-oracion">
+<h3>
+${++contadorEjercicios}. Ordena la oración:
+</h3>
+<div class="zona-destino-oracion"
+data-respuesta='${ejercicio.oracion}'
+>
+</div>
+<div class="banco-palabras-oracion">
+${
+palabrasMezcladas.map(palabra=>`
+<button
+class="palabra-arrastrable"
+draggable="true"
+>
+${palabra}
+</button>
+`).join("")
+}
+</div>
+<div class="resultado"></div>
+</div>
+`;
+    });
+    return htmlOrdenar;
 }
 
 /*====================================================
