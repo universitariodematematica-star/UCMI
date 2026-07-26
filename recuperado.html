@@ -1,725 +1,1599 @@
-let contadorEjercicios = 0;
+<!DOCTYPE html>
+<html lang="es">
 
-function escaparTexto(texto){
+<head>
 
-    return String(texto ?? "")
-    .replace(/&/g,"&amp;")
-    .replace(/'/g,"&#39;")
-    .replace(/"/g,"&quot;")
-    .replace(/\n/g," ");
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>UCMI - Constructor Grammar</title>
+
+<style>
+
+:root{
+    --azul:#071426;
+    --dorado:#FFD700;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background-image:url("https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png");
+    background-size:cover;
+    background-position:center;
+}
+
+.contenedor{
+    display:flex;
+    gap:25px;
+    padding:25px;
+    min-height:100vh;
+}
+
+.panel{
+    background:white;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:8px 8px 20px rgba(0,0,0,.45);
+}
+
+.izquierda{
+    width:22%;
+}
+
+.centro{
+    width:38%;
+}
+
+.derecha{
+    width:40%;
+}
+
+h2{
+    margin-top:0;
+    color:#071426;
+}
+
+button{
+    width:100%;
+    margin-top:15px;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:#FFD700;
+    color:#071426;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    transform:translateY(-2px);
+}
+
+pre{
+    background:#071426;
+    color:white;
+    border-radius:12px;
+    padding:15px;
+    height:650px;
+    overflow:auto;
+    white-space:pre-wrap;
+}
+
+iframe{
+    width:100%;
+    height:650px;
+    border:none;
+    border-radius:12px;
+    background:white;
+}
+
+input[type=file]{
+    width:100%;
+    margin-top:15px;
+}
+
+/*==================================================
+ UCMI CONTENT BUILDER
+==================================================*/
+
+.cabecera-builder{
+    background:#071426;
+    color:white;
+    padding:18px 35px;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+}
+
+.builder-titulo{
+    margin:0;
+    color:#FFD700;
+    font-size:30px;
+    font-weight:bold;
+    letter-spacing:1px;
+}
+
+.builder-subtitulo{
+    margin:6px 0 0 0;
+    font-size:22px;
+    font-weight:bold;
+    color:white;
+}
+
+.builder-descripcion{
+    margin:8px 0 0 0;
+    font-size:14px;
+    color:#d8d8d8;
+}
+
+.builder-info{
+    margin-top:10px;
+    font-size:13px;
+    color:#bdbdbd;
+}
+
+.separador-builder{
+height:8px;
+background:#FFD700;
+}    
+
+.barra-turquesa{
+
+width:92%;
+margin:25px auto;
+border-collapse:collapse;
+background:#00b8b8;
+border-radius:12px;
+overflow:hidden;
 
 }
 
-/*====================================================
-        SECCIÓN: SELECCIÓN SIMPLE
-====================================================*/
+.barra-turquesa td{
 
-function crearSeleccionSimple(ejerciciosSelSimple){
-
-    let htmlSelSimple = "";
-
-//========================================
-// Generar ejercicios selección simple
-//========================================
-
-ejerciciosSelSimple.forEach((ejercicio, indice)=>{
-
-
-    let opciones = [
-
-        ejercicio.correcta,
-
-        ejercicio.incorrecta1,
-
-        ejercicio.incorrecta2,
-
-        ejercicio.incorrecta3
-
-    ];
-
-
-    // Mezclar opciones aleatoriamente
-
-    for(let i = opciones.length - 1; i > 0; i--){
-
-    const j = Math.floor(Math.random() * (i + 1));
-
-    [opciones[i], opciones[j]] =
-    [opciones[j], opciones[i]];
+padding:15px;
+text-align:center;
 
 }
 
+.barra-turquesa p{
 
-    htmlSelSimple += `
+margin:0;
+font-size:22px;
+font-weight:bold;
+color:white;
+letter-spacing:1px;
 
-<div class="ejercicio-sel-simple">
+}
+    
+</style>
 
-<h3>
-${++contadorEjercicios}. ${ejercicio.pregunta}
-</h3>
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>    
 
+</head>
 
-<div class="opciones">
+<body>
 
-${opciones.map((opcion,i)=>`
-
-<label class="opcion-radio">
-
-<input
-type="radio"
-name="pregunta${indice}"
-value="${opcion}">
-
-${String.fromCharCode(97+i)}) ${opcion}
-
-</label>
-
-`).join("")}
-
+<div class="cabecera-builder">
+    <h1 class="builder-titulo">
+        UCMI CONTENT BUILDER
+    </h1>
+<div class="builder-subtitulo">
+    ERG Constructor
 </div>
+    <div class="builder-descripcion">
+        Constructor de Ejercicios Resueltos de Grammar
+    </div>
+    <div class="builder-info">
+        Versión 1.0 • Ejercicios Resueltos de Grammar
+    </div>
+</div>    
 
+<div class="contenedor">
+    <!-- PANEL IZQUIERDO -->
+    <div class="panel izquierda">
+        <h2>Proyecto ERG</h2>
+        <button onclick="descargarPlantilla()">
+            Descargar plantilla Excel ERG
+        </button>
+        <button onclick="descargarPlantillaUCMI()">
+            Descargar plantilla UCMI ERG
+        </button>
+        <input 
+            id="excelInput"
+            type="file"
+            accept=".xlsx">
+        <div style="margin-top:20px;">
 
-<button
-class="verificar"
-data-correcta='${escaparTexto(ejercicio.correcta)}'
-data-explicacion='${escaparTexto(ejercicio.explicacion)}'
-onclick="verificarPregunta(this)">
+<h3>Imágenes desde Blogger</h3>
 
-Verificar
+<textarea
+id="codigoBlogger"
+placeholder="Pega aquí el HTML exportado desde Blogger para extraer automáticamente las imágenes."
+style="width:100%;height:180px;">
+</textarea>
 
+<button onclick="extraerImagenesBlogger()">
+Extraer imágenes
 </button>
 
+</div>
 
-<div class="resultado"></div>
+    </div>
 
+    <!-- PANEL CENTRAL -->
+
+    <div class="panel centro">
+
+        <h2>Editor HTML</h2>
+
+        <button onclick="copiarCodigo()">
+            Copiar HTML
+        </button>
+
+        <button onclick="descargarHTML()">
+            Exportar HTML
+        </button>
+
+        <button onclick="abrirNuevaPestana()">
+            Vista previa completa
+        </button>
+
+        <pre id="codigo"></pre>
+
+    </div>
+
+    <div class="separador-builder"></div>
+
+    <!-- PANEL DERECHO -->
+
+    <div class="panel derecha">
+
+        <h2>Vista previa</h2>
+
+        <iframe id="preview"></iframe>
+
+    </div>
 
 </div>
 
-`;
-
-});
-
-return htmlSelSimple;
-
-} 
-
-/*====================================================
-        SECCIÓN: DRAG AND DROP - ESPACIO EN BLANCO
-====================================================*/
-
-function crearDragDropBlanco(ejerciciosDragDrop){
-
-    let htmlDragDrop = `
-
-<div class="instruccion-ejercicio">
-Arrastra la palabra correcta para completar la oración.
-</div>
-
-`;
-
-
-    ejerciciosDragDrop.forEach((ejercicio, indice)=>{
-
-
-        let opciones = [
-    ejercicio.correcta,
-    ...ejercicio.opciones
-                        ];
-
-
-        // Mezclar botones
-
-        for(let i = opciones.length - 1; i > 0; i--){
-
-            const j = Math.floor(Math.random() * (i + 1));
-
-            [opciones[i], opciones[j]] =
-            [opciones[j], opciones[i]];
-
-        }
-
-
-
-        htmlDragDrop += `
-
-
-<div class="ejercicio-drag-drop">
-
-
-<h3>
-${++contadorEjercicios}. ${ejercicio.textoAntes} ______ ${ejercicio.textoDespues}
-</h3>
-
-
-<div class="zona-oracion">
-
-
-<span class="texto-arrastre">
-${ejercicio.textoAntes}
-</span>
-
-
-<span
-class="espacio-drop"
-data-correcta='${ejercicio.correcta}'
-data-explicacion="${ejercicio.explicacion}">
-
-________
-
-</span>
-
-
-<span class="texto-arrastre">
-${ejercicio.textoDespues}
-</span>
-
-
-</div>
-
-
-
-<div class="banco-arrastre">
-
-
-${opciones.map(opcion=>`
-
-
-<button
-
-class="boton-arrastrable"
-
-draggable="true"
-
->
-
-${opcion}
-
-</button>
-
-
-`).join("")}
-
-
-
-</div>
-
-
-
-<div class="resultado"></div>
-
-
-
-</div>
-
-
-`;
-
-    });
-
-
-    return htmlDragDrop;
-
-}
-
-/*====================================================
-        MOTOR PRINCIPAL
-====================================================*/
-
-const UCMIMotorEjercicios = {
-
-    generar(config){
-
-        const contenedor =
-        document.getElementById(config.contenedor);
-
-
-        if(!contenedor){
-
-            console.error(
-            "No existe el contenedor:",
-            config.contenedor
-            );
-
-            return;
-
-        }
-
-
-        let htmlFinal = "";
-
-        console.log(
-            "MOTOR ORDENAR:",
-            config.ordenarOracion
-        );
-
-        contadorEjercicios = 0;    
-
-
-        //========================================
-        // SECCIÓN: SELECCIÓN SIMPLE
-        //========================================
-
-        if(config.seleccionSimple){
-
-            htmlFinal += crearSeleccionSimple(
-                config.seleccionSimple
-            );
-
-        }
-
-
-        //========================================
-        // SECCIÓN: COMPLETAR ESPACIOS
-        //========================================
-
-        if(config.completarEspacios){
-
-            htmlFinal += crearCompletarEspacios(
-                config.completarEspacios
-            );
-
-        }
-
-            //========================================
-        // SECCIÓN: DRAG AND DROP - ESPACIO EN BLANCO
-        //========================================
-
-if(config.dragDropBlanco){
-
-    htmlFinal += crearDragDropBlanco(
-        config.dragDropBlanco
-    );
-
-}
-
-if(config.ordenarOracion){
-
-    htmlFinal += crearOrdenarOracion(
-        config.ordenarOracion
-    );
-
-}        
-
-        contenedor.innerHTML = htmlFinal;
-
-
-    }
+<script>
+
+let datosPagina = {
+
+nivel:"",
+unidad:"",
+tema:"",
+tituloIngles:"",
+tituloEspanol:""
 
 };
 
+let vocabularioGlobal = [];
+let subtitulosGlobal = [];
+let imagenesBlogger = [];
+let ejerciciosSelSimple = [];
+let ejerciciosCompletar = [];
+let ejerciciosDragDrop = [];
+let ejerciciosOrdenarOracion = [];    
+let configuracionMostrar = {};
 
-    function verificarPregunta(boton){
+const MODOS = {
 
-    const bloque = boton.closest(".ejercicio-sel-simple");
+    LOCAL: "local",
 
-    const correcta = boton.dataset.correcta;
+    GITHUB: "github"
 
-    const explicacion = boton.dataset.explicacion;
+};
 
-    const seleccionada =
-    bloque.querySelector(
-        'input[type="radio"]:checked'
+// Cambia este valor cuando quieras exportar
+let modoExportacion = MODOS.GITHUB;    
+
+function leerCelda(celda){
+
+    let valor = celda.value;
+
+    if (valor === null || valor === undefined){
+        return "";
+    }
+
+    // Si ya es texto, número o booleano
+    if (typeof valor !== "object"){
+        return String(valor);
+    }
+
+    // Fórmula con resultado calculado
+    if ("result" in valor){
+        if (valor.result === null || valor.result === undefined){
+            return "";
+        }
+        return String(valor.result);
+    }
+
+    // Texto enriquecido
+    if (valor.richText){
+        return valor.richText.map(x => x.text || "").join("");
+    }
+
+    // Texto
+    if ("text" in valor){
+        return String(valor.text || "");
+    }
+
+    // Hipervínculo
+    if ("hyperlink" in valor){
+        return String(valor.hyperlink || "");
+    }
+
+    // Fecha
+    if (valor instanceof Date){
+        return valor.toISOString();
+    }
+
+    // Último recurso
+    return "";
+}    
+
+function generarCodigo(
+
+nivel="",
+unidad="",
+tema="",
+tituloIngles="",
+tituloEspanol="",
+vocabulario=[],
+introduccionGeneral="",
+subtitulos=[],
+ejerciciosSelSimple=[],
+ejerciciosCompletar=[],
+ejerciciosDragDrop=[],
+ejerciciosOrdenarOracion=[]
+
+){
+
+const prefijo = "ERG";
+
+const codigoContenido =
+`${prefijo}.${unidad}.${tema}.${nivel}`;
+
+let rutaCSS = "";
+let rutaJS = "";
+
+if(modoExportacion === MODOS.LOCAL){
+
+    rutaCSS = "css/";
+    rutaJS = "js/";
+
+}else{
+
+    rutaCSS = "https://universitariodematematica-star.github.io/UCMI/css/";
+    rutaJS = "https://universitariodematematica-star.github.io/UCMI/js/";
+
+}    
+
+const codigoEjerciciosResueltos =
+`ERG${prefijo.substring(1)}.${unidad}.${tema}.${nivel}`;
+
+const codigoEjerciciosPropuestos =
+`EPG${prefijo.substring(1)}.${unidad}.${tema}.${nivel}`;
+    
+    
+const codigo = `<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ERG Constructor - UCMI</title>
+
+<link rel="stylesheet" href="${rutaCSS}ucmi-estilos.css">
+
+<link rel="stylesheet" href="${rutaCSS}pizarra.css">
+
+<link rel="stylesheet" href="${rutaCSS}reproductor.css">
+
+<style>
+
+
+.audioUCMI{
+margin-top:25px;
+}
+
+.opcion-radio{
+display:block;
+margin:8px 0;
+font-size:1.1em;
+cursor:pointer;
+line-height:1.4;
+}
+
+.opcion-radio input{
+transform:scale(1.35);
+margin-right:14px;
+cursor:pointer;
+}
+
+.verificar{
+display:block;
+margin:35px 0 0 0;
+padding:14px 42px;
+background:linear-gradient(to left,#6A1B9A,#3949AB);
+color:white;
+font-size:1.1em;
+font-weight:bold;
+border:none;
+border-radius:14px;
+cursor:pointer;
+box-shadow:0 8px 18px rgba(0,0,0,.35);
+transition:.25s;
+}
+
+.verificar:hover{
+background:linear-gradient(to left,#7B1FA2,#3F51B5);
+transform:translateY(-3px);
+box-shadow:0 12px 22px rgba(0,0,0,.45);
+}
+
+.resultado{
+margin-top:25px;
+font-size:20px;
+line-height:1.6;
+}
+
+.instruccion-ejercicio{
+width:92%;
+margin:0 auto 35px auto;
+padding:18px 22px;
+background:#eef6ff;
+border-left:8px solid #3949AB;
+border-radius:14px;
+box-shadow:0 6px 14px rgba(0,0,0,.15);
+font-size:1.2em;
+line-height:1.6;
+color:#071426;
+font-weight:bold;
+}
+
+/*====================================================
+        DRAG AND DROP
+====================================================*/
+
+
+.espacio-drop{
+display:inline-block;
+min-width:100px;
+padding:8px 15px;
+border:2px dashed #3949AB;
+border-radius:10px;
+background:#eef6ff;
+text-align:center;
+margin:0 8px;
+font-weight:bold;
+}
+
+.boton-arrastrable{
+width:auto;
+margin:8px;
+padding:10px 20px;
+background:#FFD700;
+border-radius:10px;
+cursor:grab;
+font-weight:bold;
+}
+
+.correcto-drag{
+background:#c8f7c5;
+border:2px solid green;
+}
+
+.zona-destino-oracion{
+    width:90%;
+    min-height:80px;
+    margin:25px auto;
+    padding:20px;
+    border:3px dashed #071426;
+    border-radius:20px;
+    background:#f5f8ff;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+    color:#555;
+    transition:.3s;
+}
+
+.palabra-arrastrable{
+    background:#1565c0;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    margin:5px;
+    border-radius:15px;
+    font-size:17px;
+    font-weight:bold;
+    cursor:grab;
+    transition:.3s;
+    box-shadow:0 5px 12px rgba(0,0,0,.2);
+}
+
+
+.palabra-arrastrable:hover{
+    background:#ec407a;
+    transform:translateY(-3px);
+}
+
+
+.palabra-arrastrable:active{
+    cursor:grabbing;
+}
+
+.banco-palabras-oracion{
+    width:90%;
+    margin:30px auto;
+    padding:20px;
+    border-radius:20px;
+    background:white;
+    box-shadow:0 8px 20px rgba(0,0,0,.15);
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+}
+
+</style>
+
+</head>
+
+<body data-codigo-contenido="${codigoContenido}">
+
+<div id="navegacionUCMI" class="navegacion-ucmi">
+
+<a 
+class="boton-interactivo"
+href="temario.html?nivel=${escaparHTML(nivel)}">
+VOLVER AL TEMARIO
+</a>
+
+
+<a 
+class="boton-interactivo"
+href="listening.html?nivel=${escaparHTML(nivel)}&unidad=${escaparHTML(unidad)}&tema=${escaparHTML(tema)}">
+SEGUIR A LISTENING
+</a>
+
+
+<a 
+class="boton-interactivo"
+href="skills.html?nivel=${escaparHTML(nivel)}&unidad=${escaparHTML(unidad)}&tema=${escaparHTML(tema)}">
+VOLVER A SKILLS
+</a>
+
+</div>
+
+<div id="ucmiEncabezado"></div>
+
+<div id="contenidoUCMI">
+
+
+<table class="barra-rosada">
+
+<tr>
+
+<td>
+
+<p>
+${escaparHTML(tituloEspanol)}
+</p>
+
+</td>
+
+</tr>
+
+</table>
+
+<table class="barra-turquesa">
+<tr>
+<td>
+<p>
+Ejercicios resueltos ${codigoEjerciciosResueltos}
+</p>
+</td>
+</tr>
+</table>
+
+<div style="height:25px;"></div>
+
+<div style="height:20px;"></div>
+
+<p style="
+font-size:1.2em;
+margin:25px 0 35px 0;
+line-height:1.6;
+">
+Seleccione la opción que llena correctamente el espacio en blanco en cada ítem.
+</p>
+
+<div class="instruccion-ejercicio">
+Seleccione la opción que llena correctamente el espacio en blanco en cada ítem.
+</div>
+<div id="zona-ejercicios"></div>
+<div style="height:35px;"></div>
+
+
+</div>
+
+
+</div>
+
+<canvas id="drawingCanvas"></canvas>
+
+<script src="${rutaJS}pizarra.js"><\/script>
+
+<script src="${rutaJS}navegacion.js"><\/script>
+
+<script src="${rutaJS}encabezado.js"><\/script>
+
+<script src="${rutaJS}reproductor.js"><\/script>
+
+<script src="${rutaJS}motor-ejercicios.js"><\/script>
+
+<script>
+
+
+UCMIPizarra.iniciar();
+
+UCMINavegacion.iniciar("grammar");
+
+UCMIEncabezado.iniciar({
+
+titulo:"${escaparHTML(unidad)}.${escaparHTML(tema)} ${escaparHTML(tituloIngles.toUpperCase())}",
+
+skill:"Grammar"
+
+});
+
+
+UCMIMotorEjercicios.generar({
+
+    contenedor:"zona-ejercicios",
+
+    seleccionSimple:
+    ${JSON.stringify(
+        configuracionMostrar["Selección simple"] === "Sí"
+        ? ejerciciosSelSimple
+        : []
+    )},
+
+
+    completarEspacios:
+    ${JSON.stringify(
+        configuracionMostrar["Completar espacios"] === "Sí"
+        ? ejerciciosCompletar
+        : []
+    )},
+
+
+    dragDropBlanco:
+    ${JSON.stringify(
+        configuracionMostrar["Drag and drop blanco"] === "Sí"
+        ? ejerciciosDragDrop
+        : []
+    )},
+
+
+    ordenarOracion:
+    ${JSON.stringify(
+        ejerciciosOrdenarOracion
+    )}
+
+});
+<\/script>
+
+</body>
+
+</html>`;
+
+document.getElementById("codigo").textContent = codigo;  
+
+document.getElementById("preview").srcdoc = codigo;
+
+}
+
+async function descargarPlantilla(){
+
+    const libro = new ExcelJS.Workbook();
+
+    const hojaDatos = libro.addWorksheet("Datos");
+    const hojaSelSimple = libro.addWorksheet("Sel-simp-op");
+    const hojaCompletar = libro.addWorksheet("Completar");
+    const hojaDragDrop = libro.addWorksheet("Drag-drop-blanco");
+    const hojaOrdenarOracion = libro.addWorksheet("Ordenar-oracion");
+    const hojaMostrar = libro.addWorksheet("Mostrar");
+
+
+    // ENCABEZADOS
+
+   hojaDatos.getCell("A1").value = "Nivel";
+
+    hojaDatos.getCell("B1").value = "Unidad";
+
+    hojaDatos.getCell("C1").value = "Tema";
+
+    hojaDatos.getCell("D1").value = "Título en inglés";
+
+    hojaDatos.getCell("E1").value = "Título en español";
+
+
+    // Ejemplo inicial
+
+    hojaDatos.getCell("A2").value = "A1";
+hojaDatos.getCell("B2").value = 1;
+hojaDatos.getCell("C2").value = 1;
+hojaDatos.getCell("D2").value = "Introduce yourself";
+hojaDatos.getCell("E2").value = "Preséntate";
+
+
+    // Ancho columnas
+
+    hojaDatos.getColumn("A").width = 15;
+    hojaDatos.getColumn("B").width = 15;
+    hojaDatos.getColumn("C").width = 15;
+    hojaDatos.getColumn("D").width = 35;
+    hojaDatos.getColumn("E").width = 35;
+
+
+    // Estilo encabezados
+
+    for(let celda of ["A1","B1","C1","D1","E1"]){
+
+    hojaDatos.getCell(celda).font = {
+        bold:true
+    };
+
+}
+
+  //=====================================================
+// HOJA: Sel-simp-op
+//=====================================================
+
+hojaSelSimple.getCell("A1").value = "Pregunta";
+hojaSelSimple.getCell("B1").value = "Respuesta correcta";
+hojaSelSimple.getCell("C1").value = "Incorrecta 1";
+hojaSelSimple.getCell("D1").value = "Incorrecta 2";
+hojaSelSimple.getCell("E1").value = "Incorrecta 3";
+hojaSelSimple.getCell("F1").value = "Explicación";
+
+// Ejemplo
+
+hojaSelSimple.getCell("A2").value =
+"I ___ a student.";
+
+hojaSelSimple.getCell("B2").value =
+"am";
+
+hojaSelSimple.getCell("C2").value =
+"is";
+
+hojaSelSimple.getCell("D2").value =
+"are";
+
+hojaSelSimple.getCell("E2").value =
+"be";
+
+hojaSelSimple.getCell("F2").value =
+"Después del pronombre I siempre se utiliza am.";
+
+// Anchos
+
+hojaSelSimple.getColumn("A").width = 45;
+hojaSelSimple.getColumn("B").width = 20;
+hojaSelSimple.getColumn("C").width = 20;
+hojaSelSimple.getColumn("D").width = 20;
+hojaSelSimple.getColumn("E").width = 20;
+hojaSelSimple.getColumn("F").width = 60;
+
+// Encabezados en negrita
+
+for(let celda of ["A1","B1","C1","D1","E1","F1"]){
+
+    hojaSelSimple.getCell(celda).font = {
+        bold:true
+    };
+
+}  
+
+//=====================================================
+// HOJA: Completar
+//=====================================================
+
+hojaCompletar.getCell("A1").value = "Pregunta";
+
+hojaCompletar.getCell("B1").value = "Respuesta correcta";
+
+hojaCompletar.getCell("C1").value = "Explicación";
+
+
+// Ejemplo
+
+hojaCompletar.getCell("A2").value =
+"They ___ students.";
+
+
+hojaCompletar.getCell("B2").value =
+"are";
+
+
+hojaCompletar.getCell("C2").value =
+"Con el pronombre they se utiliza are.";
+
+
+// Anchos
+
+hojaCompletar.getColumn("A").width = 45;
+
+hojaCompletar.getColumn("B").width = 25;
+
+hojaCompletar.getColumn("C").width = 60;
+
+
+// Encabezados en negrita
+
+for(let celda of ["A1","B1","C1"]){
+
+    hojaCompletar.getCell(celda).font = {
+        bold:true
+    };
+
+}
+
+    //=====================================================
+// HOJA: Drag-drop-blanco
+//=====================================================
+
+hojaDragDrop.getCell("A1").value =
+"Texto antes";
+
+hojaDragDrop.getCell("B1").value =
+"Respuesta correcta";
+
+hojaDragDrop.getCell("C1").value =
+"Opción 1";
+
+hojaDragDrop.getCell("D1").value =
+"Opción 2";
+
+hojaDragDrop.getCell("E1").value =
+"Opción 3";
+
+hojaDragDrop.getCell("F1").value =
+"Opción 4";
+
+hojaDragDrop.getCell("G1").value =
+"Texto después";
+
+hojaDragDrop.getCell("H1").value =
+"Explicación";
+
+
+// Ejemplo
+
+hojaDragDrop.getCell("A2").value =
+"I ";
+
+hojaDragDrop.getCell("B2").value =
+"am";
+
+hojaDragDrop.getCell("C2").value =
+"is";
+
+hojaDragDrop.getCell("D2").value =
+"are";
+
+hojaDragDrop.getCell("E2").value =
+"be";
+
+hojaDragDrop.getCell("F2").value =
+"was";
+
+hojaDragDrop.getCell("G2").value =
+" a student.";
+
+hojaDragDrop.getCell("H2").value =
+"Con I se utiliza am.";
+
+//=====================================================
+// HOJA: Ordenar-oracion
+//=====================================================
+
+hojaOrdenarOracion.getCell("A1").value =
+"Oración";
+
+
+hojaOrdenarOracion.getCell("B1").value =
+"Explicación";
+
+
+hojaOrdenarOracion.getCell("A2").value =
+"I am a student";
+
+
+hojaOrdenarOracion.getCell("B2").value =
+"El orden correcto es sujeto + verbo + complemento.";
+
+
+hojaOrdenarOracion.getColumn("A").width = 50;
+
+hojaOrdenarOracion.getColumn("B").width = 60;
+
+
+for(let celda of ["A1","B1"]){
+
+    hojaOrdenarOracion.getCell(celda).font={
+        bold:true
+    };
+
+}    
+
+//=====================================================
+// HOJA: Mostrar
+//=====================================================
+
+hojaMostrar.getCell("A1").value = "Tipo de ejercicio";
+hojaMostrar.getCell("B1").value = "Mostrar";
+
+
+hojaMostrar.getCell("A2").value =
+"Selección simple";
+
+hojaMostrar.getCell("B2").value =
+"Sí";
+
+
+hojaMostrar.getCell("A3").value =
+"Completar espacios";
+
+hojaMostrar.getCell("B3").value =
+"No";
+
+hojaMostrar.getCell("A4").value =
+"Drag and drop blanco";
+
+hojaMostrar.getCell("B4").value =
+"Sí";
+
+hojaMostrar.getCell("A5").value =
+"Ordenar oración";
+
+hojaMostrar.getCell("B5").value =
+"Sí";    
+
+// Lista desplegable Sí / No
+
+for(let fila = 2; fila <= 5; fila++){
+
+    hojaMostrar.getCell("B"+fila).dataValidation = {
+
+        type: "list",
+
+        allowBlank: false,
+
+        formulae: [
+            '"Sí,No"'
+        ],
+
+        showErrorMessage:true,
+
+        errorTitle:"Valor incorrecto",
+
+        error:
+        "Seleccione Sí o No de la lista."
+
+    };
+
+}    
+
+
+
+hojaMostrar.getColumn("A").width = 30;
+hojaMostrar.getColumn("B").width = 20;
+
+
+
+for(let celda of ["A1","B1"]){
+
+    hojaMostrar.getCell(celda).font={
+        bold:true
+    };
+
+}
+    
+    const archivo = await libro.xlsx.writeBuffer();
+
+
+    const blob = new Blob(
+        [archivo],
+        {
+            type:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
     );
 
-    const resultado =
-    bloque.querySelector(".resultado");
+
+    const enlace = document.createElement("a");
 
 
-    if(!seleccionada){
+    enlace.href =
+    URL.createObjectURL(blob);
 
-        resultado.innerHTML =
-        "⚠ Debes seleccionar una respuesta.";
 
-        resultado.style.color="orange";
+    enlace.download =
+    "plantilla-ejercicios-ucmi.xlsx";
+
+
+    enlace.click();
+
+}
+
+function escaparHTML(texto){
+
+    if(texto === null || texto === undefined){
+        return "";
+    }
+
+    return String(texto)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}    
+
+function capitalizar(texto){
+
+    texto = String(texto).trim();
+
+    if(texto===""){
+        return "";
+    }
+
+    texto = texto.toLowerCase();
+
+    return texto.replace(
+        /^([¡¿]*)([a-záéíóúñ])/i,
+        function(_, signos, letra){
+            return signos + letra.toUpperCase();
+        }
+    );
+
+}    
+
+async function leerExcel(event){
+
+    const archivo = event.target.files[0];
+
+    if(!archivo) return;
+
+
+    const buffer = await archivo.arrayBuffer();
+
+
+    const libro = new ExcelJS.Workbook();
+
+
+    await libro.xlsx.load(buffer);
+
+    console.log(
+    libro.worksheets.map(
+        hoja => hoja.name
+    )
+);
+
+
+    const hoja = libro.getWorksheet("Datos");
+    const hojaSelSimple = libro.getWorksheet("Sel-simp-op");
+    const hojaCompletar = libro.getWorksheet("Completar");
+    const hojaMostrar = libro.getWorksheet("Mostrar");
+    const hojaDragDrop = libro.getWorksheet("Drag-drop-blanco");
+    const hojaOrdenarOracion = libro.getWorksheet("Ordenar-oracion");
+
+    console.log("HOJAS:", libro.worksheets.map(h=>h.name));
+    console.log("ORDENAR:", hojaOrdenarOracion);
+
+const nivel =
+leerCelda(hoja.getCell("A2"));
+
+const unidad =
+leerCelda(hoja.getCell("B2"));
+
+const tema =
+leerCelda(hoja.getCell("C2"));
+
+const tituloIngles =
+leerCelda(hoja.getCell("D2"));
+
+const tituloEspanol =
+leerCelda(hoja.getCell("E2"));
+    
+const introduccionGeneral = "";    
+  
+
+vocabularioGlobal = [];
+
+subtitulosGlobal = [];    
+
+for(let i=0;i<10;i++){
+
+    let columna =
+    8 + (i*2);
+
+
+    let ingles =
+    leerCelda(hoja.getCell(2,columna));
+    
+    let espanol =
+    leerCelda(hoja.getCell(2,columna+1));;
+
+
+    if (ingles && espanol) {
+
+    const espanolCapitalizado = capitalizar(espanol);
+
+    const prueba = capitalizar(espanol);
+
+vocabularioGlobal.push({
+
+    ingles: ingles,
+
+    espanol: prueba,
+
+    imagen:""
+
+});
+
+}
+
+}
+   
+ejerciciosSelSimple = [];
+
+for(let fila = 2; fila <= hojaSelSimple.rowCount; fila++){
+
+    const pregunta =
+    leerCelda(hojaSelSimple.getCell("A" + fila));
+
+
+    if(!pregunta) continue;
+
+
+    ejerciciosSelSimple.push({
+
+        pregunta: pregunta,
+
+        correcta:
+        leerCelda(hojaSelSimple.getCell("B" + fila)),
+
+        incorrecta1:
+        leerCelda(hojaSelSimple.getCell("C" + fila)),
+
+        incorrecta2:
+        leerCelda(hojaSelSimple.getCell("D" + fila)),
+
+        incorrecta3:
+        leerCelda(hojaSelSimple.getCell("E" + fila)),
+
+        explicacion:
+        leerCelda(hojaSelSimple.getCell("F" + fila))
+
+    });
+
+}
+
+//===========================================
+// Leer configuración de ejercicios a mostrar
+//===========================================
+
+configuracionMostrar = {};
+
+
+for(let fila = 2; fila <= hojaMostrar.rowCount; fila++){
+
+    const tipo =
+    leerCelda(
+        hojaMostrar.getCell("A"+fila)
+    );
+
+
+    const mostrar =
+    leerCelda(
+        hojaMostrar.getCell("B"+fila)
+    );
+
+
+    if(tipo){
+
+        configuracionMostrar[tipo] = mostrar;
+
+    }
+
+}
+
+  ejerciciosCompletar = [];
+
+for(let fila = 2; fila <= hojaCompletar.rowCount; fila++){
+
+    const pregunta =
+    leerCelda(hojaCompletar.getCell("A" + fila));
+
+
+    if(!pregunta) continue;
+
+
+    ejerciciosCompletar.push({
+
+        pregunta: pregunta,
+
+        respuesta:
+        leerCelda(hojaCompletar.getCell("B" + fila)),
+
+        explicacion:
+        leerCelda(hojaCompletar.getCell("C" + fila))
+
+    });
+
+}
+
+    //===========================================
+// Leer ejercicios Drag and Drop - espacio en blanco
+//===========================================
+
+ejerciciosDragDrop = [];
+
+for(let fila = 2; fila <= hojaDragDrop.rowCount; fila++){
+
+    const pregunta =
+    leerCelda(hojaDragDrop.getCell("A"+fila));
+
+
+    if(!pregunta) continue;
+
+
+    ejerciciosDragDrop.push({
+
+    textoAntes:
+    leerCelda(hojaDragDrop.getCell("A"+fila)),
+
+
+    correcta:
+leerCelda(hojaDragDrop.getCell("B"+fila)),
+
+opciones:[
+    leerCelda(hojaDragDrop.getCell("C"+fila)),
+    leerCelda(hojaDragDrop.getCell("D"+fila)),
+    leerCelda(hojaDragDrop.getCell("E"+fila)),
+    leerCelda(hojaDragDrop.getCell("F"+fila))
+],
+
+
+    textoDespues:
+    leerCelda(hojaDragDrop.getCell("G"+fila)),
+
+
+    explicacion:
+    leerCelda(hojaDragDrop.getCell("H"+fila))
+
+});
+
+console.log("DRAG DROP:", ejerciciosDragDrop);    
+
+//===========================================
+// Leer ejercicios Ordenar oración
+//===========================================
+
+ejerciciosOrdenarOracion = [];
+
+
+for(let fila = 2; fila <= hojaOrdenarOracion.rowCount; fila++){
+
+    const oracion =
+    leerCelda(
+        hojaOrdenarOracion.getCell("A"+fila)
+    );
+
+
+    if(!oracion) continue;
+
+
+    ejerciciosOrdenarOracion.push({
+
+        oracion: oracion,
+
+        explicacion:
+        leerCelda(
+            hojaOrdenarOracion.getCell("B"+fila)
+        )
+
+    });
+
+}
+
+
+console.log(
+"ORDENAR ORACION:",
+ejerciciosOrdenarOracion
+);
+    
+}
+    
+    datosPagina = {
+
+nivel:nivel,
+
+unidad:unidad,
+
+tema:tema,
+
+tituloIngles:tituloIngles,
+
+tituloEspanol:tituloEspanol
+
+};
+
+generarCodigo(
+datosPagina.nivel,
+datosPagina.unidad,
+datosPagina.tema,
+datosPagina.tituloIngles,
+datosPagina.tituloEspanol,
+[],
+"",
+[],
+ejerciciosSelSimple,
+ejerciciosCompletar,
+ejerciciosDragDrop,
+ejerciciosOrdenarOracion    
+);
+
+}  
+
+    
+
+//generarCodigo();
+
+document
+.getElementById("excelInput")
+.addEventListener(
+"change",
+leerExcel
+); 
+
+function extraerImagenesBlogger(){
+
+    const codigo =
+    document.getElementById("codigoBlogger").value;
+
+
+    const patron =
+    /https:\/\/blogger\.googleusercontent\.com\/[^"]+/gi;
+
+
+    const coincidencias =
+    codigo.match(patron);
+
+
+    if(!coincidencias){
+
+        alert("No se encontraron URLs de Blogger");
 
         return;
 
     }
 
 
-    if(seleccionada.value === correcta){
+    imagenesBlogger =
+    coincidencias.map(url=>url);
 
-        resultado.innerHTML =
-        "✅ Correcto.<br><br><b>Explicación:</b> "
-        + explicacion;
+    asignarImagenes();
 
-        resultado.style.color="green";
+}  
 
-    }else{
+    function normalizarTexto(texto){
 
-        resultado.innerHTML =
-        "❌ Incorrecto.<br><br><b>Explicación:</b> "
-        + explicacion;
-
-        resultado.style.color="red";
-
-    }
+    return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/ñ/g,"n")
+    .replace(/[^a-z0-9]/g,"");
 
 }
 
 
-//========================================
-// Generar ejercicios completar espacios
-//========================================
 
+function asignarImagenes(){
 
-function crearCompletarEspacios(ejerciciosCompletar){
+    vocabularioGlobal.forEach(item=>{
 
-    let htmlCompletar = `
 
-<div class="instruccion-ejercicio">
-Escribe la expresión que hace falta para completar la oración.
-</div>
+        let palabrasBuscar = [
 
-`;
+            normalizarTexto(item.ingles),
 
+            normalizarTexto(item.espanol)
 
-    ejerciciosCompletar.forEach((ejercicio, indice)=>{
+        ];
 
 
-        htmlCompletar += `
 
-<div class="ejercicio-completar">
+        let encontrada = imagenesBlogger.find(url=>{
 
 
-<h3>
-${++contadorEjercicios}. ${ejercicio.pregunta}
-</h3>
+            let nombreArchivo = url
+            .split("/")
+            .pop()
+            .replace(/\.(png|jpg|jpeg|webp)$/i,"");
 
 
-<input 
-type="text"
-class="respuesta-escrita"
-placeholder="Escriba su respuesta">
 
+            nombreArchivo = normalizarTexto(nombreArchivo);
 
-<button
-class="verificar"
-onclick="verificarCompletar(this)"
 
-data-respuesta='${escaparTexto(ejercicio.respuesta)}'
 
-data-explicacion='${escaparTexto(ejercicio.explicacion)}'>
+            return palabrasBuscar.some(palabra=>
 
-Verificar
+                nombreArchivo.includes(palabra)
 
-</button>
-
-
-<div class="resultado"></div>
-
-
-</div>
-
-`;
-
-    });
-
-    return htmlCompletar;
-
-}
-
-function verificarCompletar(boton){
-
-
-const respuestaCorrecta =
-boton.dataset.respuesta;
-
-
-const explicacion =
-boton.dataset.explicacion;
-
-
-const contenedor =
-boton.parentElement;
-
-
-const entrada =
-contenedor.querySelector(".respuesta-escrita");
-
-
-const resultado =
-contenedor.querySelector(".resultado");
-
-
-const respuestaUsuario =
-entrada.value.trim().toLowerCase();
-
-
-
-if(respuestaUsuario === respuestaCorrecta.toLowerCase()){
-
-
-resultado.innerHTML =
-"✅ Correcto<br><br><b>Explicación:</b> "
-+ explicacion;
-
-
-resultado.style.color="green";
-
-
-}else{
-
-
-resultado.innerHTML =
-"❌ Incorrecto<br><br>Respuesta correcta: "
-+ respuestaCorrecta
-+ "<br><br><b>Explicación:</b> "
-+ explicacion;
-
-
-resultado.style.color="red";
-
-
-}
-
-
-}
-
-/*====================================================
-        ORDENAR ORACIÓN - PALABRA A PALABRA
-====================================================*/
-
-function crearOrdenarOracion(ejerciciosOrdenar){
-
-    let htmlOrdenar = `
-
-<div class="instruccion-ejercicio">
-Arrastra las palabras para formar la oración correcta.
-</div>
-
-`;
-
-
-    ejerciciosOrdenar.forEach((ejercicio, indice)=>{
-
-
-        // Separar oración en palabras
-
-        let palabras = ejercicio.oracion.split(" ");
-
-
-        // Crear copia mezclada
-
-        let palabrasMezcladas = [...palabras];
-
-
-        for(let i = palabrasMezcladas.length - 1; i > 0; i--){
-
-            const j = Math.floor(
-                Math.random() * (i + 1)
             );
 
 
-            [
-                palabrasMezcladas[i],
-                palabrasMezcladas[j]
-            ] =
-            [
-                palabrasMezcladas[j],
-                palabrasMezcladas[i]
-            ];
+        });
+
+
+
+        if(encontrada){
+
+            item.imagen = encontrada;
 
         }
 
 
-
-        htmlOrdenar += `
-
-<div class="ejercicio-ordenar-oracion">
-<h3>
-${++contadorEjercicios}. Ordena la oración:
-</h3>
-
-<div class="banco-palabras-oracion">
-${
-palabrasMezcladas.map(palabra=>`
-
-<button
-class="palabra-arrastrable"
-draggable="true"
-data-id="boton-${contadorEjercicios}-${palabra}"
->
-
-${palabra}
-</button>
-`).join("")
-}
-</div>
-
-<div class="zona-destino-oracion"
-data-respuesta='${ejercicio.oracion}'
->
-Arrastra aquí las palabras
-</div>
-
-<div class="resultado"></div>
-</div>
-`;
     });
-    console.log(
-    "HTML ORDENAR GENERADO CORRECTAMENTE"
+
+
+
+    generarCodigoActualizado();
+
+}
+    
+function generarCodigoActualizado(){
+
+    generarCodigo(
+
+datosPagina.nivel,
+datosPagina.unidad,
+datosPagina.tema,
+datosPagina.tituloIngles,
+datosPagina.tituloEspanol
+
 );
 
-return htmlOrdenar;
+}   
+
+function abrirNuevaPestana(){
+
+    const codigo =
+    document.getElementById("codigo").textContent;
+
+    const nuevaVentana =
+    window.open();
+
+    nuevaVentana.document.open();
+
+    nuevaVentana.document.write(codigo);
+
+    nuevaVentana.document.close();
+
+}    
+
+function descargarPlantillaUCMI(){
+
+    const enlace = document.createElement("a");
+
+    enlace.href = "plantillas/plantilla-grammar.xlsx";
+
+    enlace.download = "plantilla-grammar.xlsx";
+
+    document.body.appendChild(enlace);
+
+    enlace.click();
+
+    document.body.removeChild(enlace);
+
+} 
+
+async function copiarCodigo(){
+
+    const codigo = document.getElementById("codigo").textContent;
+
+    try{
+
+        await navigator.clipboard.writeText(codigo);
+
+        alert("Código copiado al portapapeles.");
+
+    }catch(error){
+
+        // Compatibilidad con navegadores antiguos
+        const textarea = document.createElement("textarea");
+
+        textarea.value = codigo;
+
+        document.body.appendChild(textarea);
+
+        textarea.select();
+
+        document.execCommand("copy");
+
+        document.body.removeChild(textarea);
+
+        alert("Código copiado al portapapeles.");
+
+    }
+
 }
 
-/*====================================================
-        EVENTOS DRAG AND DROP
-====================================================*/
 
+function descargarHTML(){
 
-/*====================================================
-        EVENTO DRAGSTART
-====================================================*/
+    const codigo = document.getElementById("codigo").textContent;
 
-/*====================================================
-        EVENTO DRAGSTART
-====================================================*/
+    if(!codigo.trim()){
 
-document.addEventListener(
-"dragstart",
-function(event){
+        alert("No hay ningún código generado.");
 
-    if(
-        event.target.classList.contains(
-            "palabra-arrastrable"
-        )
-    ){
-
-        let palabra =
-        event.target.textContent.trim();
-
-
-        let idBoton =
-        event.target.dataset.id;
-
-
-        if(!idBoton){
-
-            idBoton =
-            "boton-" + Date.now();
-
-
-            event.target.dataset.id =
-            idBoton;
-
-        }
-
-
-        event.dataTransfer.setData(
-            "respuesta",
-            palabra
-        );
-
-
-        event.dataTransfer.setData(
-            "boton",
-            idBoton
-        );
-
-
-        event.dataTransfer.setData(
-            "origen",
-            event.target.parentElement.className
-        );
+        return;
 
     }
 
-});
-window.UCMIMotorEjercicios = UCMIMotorEjercicios;
+    // Nombre automático del archivo
+    let nombre = "grammar";
 
-console.log("MOTOR CARGADO CORRECTAMENTE");
+    if(datosPagina.unidad && datosPagina.tema){
 
-document.addEventListener(
-"dragover",
-function(event){
-
-    if(
-        event.target.classList.contains("espacio-drop")
-        ||
-        event.target.classList.contains("zona-destino-oracion")
-        ||
-        event.target.classList.contains("banco-palabras-oracion")
-    ){
-
-        event.preventDefault();
+        nombre = `grammar-U${datosPagina.unidad}-T${datosPagina.tema}`;
 
     }
 
-});
+    const blob = new Blob(
+        [codigo],
+        {type:"text/html;charset=utf-8"}
+    );
 
-document.addEventListener(
-"drop",
-function(event){
+    const enlace = document.createElement("a");
 
-    if(
-        event.target.classList.contains(
-            "zona-destino-oracion"
-        )
-        ||
-        event.target.classList.contains(
-            "banco-palabras-oracion"
-        )
-    ){
+    enlace.href = URL.createObjectURL(blob);
 
-        event.preventDefault();
+    enlace.download = nombre + ".html";
 
+    document.body.appendChild(enlace);
 
-        const idBoton =
-        event.dataTransfer.getData(
-            "boton"
-        );
+    enlace.click();
 
+    document.body.removeChild(enlace);
 
-        const botonArrastrado =
-        document.querySelector(
-            `[data-id="${idBoton}"]`
-        );
+    URL.revokeObjectURL(enlace.href);
 
+}    
 
-        if(!botonArrastrado){
-            return;
-        }
+</script>    
 
+</body>
 
-        const origen =
-        botonArrastrado.parentElement;
-
-
-        const destino =
-        event.target;
-
-
-        // Quitar texto inicial de la caja
-
-        if(
-            destino.classList.contains(
-                "zona-destino-oracion"
-            )
-        ){
-
-            if(
-                destino.textContent.includes(
-                    "Arrastra aquí las palabras"
-                )
-            ){
-
-                destino.textContent = "";
-
-            }
-
-        }
-
-
-
-        // Mover el mismo botón, no crear copias
-
-        destino.appendChild(
-            botonArrastrado
-        );
-
-
-    }
-
-});
+</html>
