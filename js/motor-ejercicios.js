@@ -583,6 +583,11 @@ function(event){
             )
     ){
 
+        console.log(
+            "ARRASTRANDO:",
+            event.target.textContent
+        );
+
         event.dataTransfer.setData(
             "respuesta",
             event.target.textContent.trim()
