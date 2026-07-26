@@ -247,6 +247,11 @@ const UCMIMotorEjercicios = {
 
         let htmlFinal = "";
 
+        console.log(
+            "MOTOR ORDENAR:",
+            config.ordenarOracion
+        );
+
         contadorEjercicios = 0;    
 
 
