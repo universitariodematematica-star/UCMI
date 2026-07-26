@@ -565,7 +565,6 @@ ${palabra}
 
 return htmlOrdenar;
 }
-}
 
 /*====================================================
         EVENTOS DRAG AND DROP
