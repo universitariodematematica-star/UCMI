@@ -526,16 +526,11 @@ Arrastra las palabras para formar la oración correcta.
 
         htmlOrdenar += `
 
-
 <div class="ejercicio-ordenar-oracion">
 <h3>
 ${++contadorEjercicios}. Ordena la oración:
 </h3>
-<div class="zona-destino-oracion"
-data-respuesta='${ejercicio.oracion}'
->
-Arrastra aquí las palabras
-</div>
+
 <div class="banco-palabras-oracion">
 ${
 palabrasMezcladas.map(palabra=>`
@@ -548,6 +543,13 @@ ${palabra}
 `).join("")
 }
 </div>
+
+<div class="zona-destino-oracion"
+data-respuesta='${ejercicio.oracion}'
+>
+Arrastra aquí las palabras
+</div>
+
 <div class="resultado"></div>
 </div>
 `;
