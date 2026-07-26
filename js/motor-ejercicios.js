@@ -143,9 +143,8 @@ Arrastra la palabra correcta para completar la oración.
 
 
 <h3>
-${++contadorEjercicios}. Arrastra la palabra correcta para completar la oración.
+${++contadorEjercicios}. ${ejercicio.textoAntes} ______ ${ejercicio.textoDespues}
 </h3>
-
 
 
 <div class="zona-oracion">
@@ -356,23 +355,23 @@ function crearCompletarEspacios(ejerciciosCompletar){
 
     let htmlCompletar = `
 
-<h3>
-${++contadorEjercicios}. 
-</h3>
+<div class="instruccion-ejercicio">
+Escribe la expresión que hace falta para completar la oración.
+</div>
 
 `;
+
+
+    ejerciciosCompletar.forEach((ejercicio, indice)=>{
 
 
         htmlCompletar += `
 
 <div class="ejercicio-completar">
 
-<h3>
-${++contadorEjercicios}. Escribe la expresión que hace falta para completar la oración.
-</h3>
 
 <h3>
-${ejercicio.pregunta}
+${++contadorEjercicios}. ${ejercicio.pregunta}
 </h3>
 
 
@@ -407,6 +406,11 @@ Verificar
 `;
 
     });
+
+
+    return htmlCompletar;
+
+});
 
 
     return htmlCompletar;
