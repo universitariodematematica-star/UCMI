@@ -575,9 +575,12 @@ function(event){
 
 
     if(
-    event.target.classList.contains(
-        "boton-arrastrable"
-    )
+        event.target.classList.contains(
+                "boton-arrastrable"
+            ) ||
+            event.target.classList.contains(
+                "palabra-arrastrable"
+            )
     ){
 
         event.dataTransfer.setData(
