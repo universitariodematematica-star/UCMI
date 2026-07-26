@@ -820,11 +820,11 @@ document.addEventListener(
 "dragstart",
 function(event){
 
-    if(
-        event.target.classList.contains("palabra-arrastrable")
-        ||
-        event.target.classList.contains("boton-arrastrable")
-    ){
+if(
+    event.target.classList.contains("palabra-arrastrable")
+    ||
+    event.target.classList.contains("boton-arrastrable")
+){
 
         let palabra =
         event.target.textContent.trim();
@@ -1015,15 +1015,11 @@ document.addEventListener(
 function(event){
 
     if(
-        event.target.classList.contains(
-            "zona-destino-oracion"
-        )
-        ||
-        event.target.classList.contains(
-            "banco-palabras-oracion"
-        )
-        ||
         event.target.classList.contains("espacio-drop")
+        ||
+        event.target.classList.contains("zona-destino-oracion")
+        ||
+        event.target.classList.contains("banco-palabras-oracion")
     ){
 
         event.preventDefault();
@@ -1052,6 +1048,16 @@ function(event){
 
         const destino =
         event.target;
+
+
+// Caso drag blanco
+if(
+    destino.classList.contains("espacio-drop")
+){
+
+    destino.innerHTML = "";
+
+}
 
 
         // Quitar texto inicial de la caja
