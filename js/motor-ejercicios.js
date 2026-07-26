@@ -354,13 +354,18 @@ function verificarPregunta(boton){
 
 }
 
-    const bloque = boton.parentElement;
+    function verificarPregunta(boton){
+
+    const bloque = boton.closest(".ejercicio-sel-simple");
+
+    const correcta = boton.dataset.correcta;
+
+    const explicacion = boton.dataset.explicacion;
 
     const seleccionada =
     bloque.querySelector(
         'input[type="radio"]:checked'
     );
-
 
     const resultado =
     bloque.querySelector(".resultado");
@@ -371,7 +376,7 @@ function verificarPregunta(boton){
         resultado.innerHTML =
         "⚠ Debes seleccionar una respuesta.";
 
-        resultado.style.color = "orange";
+        resultado.style.color="orange";
 
         return;
 
@@ -384,7 +389,7 @@ function verificarPregunta(boton){
         "✅ Correcto.<br><br><b>Explicación:</b> "
         + explicacion;
 
-        resultado.style.color = "green";
+        resultado.style.color="green";
 
     }else{
 
@@ -392,15 +397,17 @@ function verificarPregunta(boton){
         "❌ Incorrecto.<br><br><b>Explicación:</b> "
         + explicacion;
 
-        resultado.style.color = "red";
+        resultado.style.color="red";
 
     }
 
 }
 
+
 //========================================
 // Generar ejercicios completar espacios
 //========================================
+
 
 function crearCompletarEspacios(ejerciciosCompletar){
 
