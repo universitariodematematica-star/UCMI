@@ -702,18 +702,45 @@ if(
         "respuesta"
     );
 
-const boton =
-document.createElement("button");
 
-boton.textContent = palabra;
-
-boton.className =
-"palabra-arrastrable";
-
-boton.draggable = true;
+    const boton =
+    document.createElement("button");
 
 
-zona.appendChild(boton);
+    boton.textContent = palabra;
+
+
+    boton.className =
+    "palabra-arrastrable";
+
+
+    boton.draggable = true;
+
+
+    zona.appendChild(boton);
+
+
+    // Eliminar botón original del banco
+
+    const botonesBanco =
+    document.querySelectorAll(
+        ".banco-palabras-oracion .palabra-arrastrable"
+    );
+
+
+    botonesBanco.forEach(botonBanco=>{
+
+        if(
+            botonBanco.textContent.trim()
+            === palabra
+        ){
+
+            botonBanco.remove();
+
+        }
+
+    });
+
 
     return;
 
