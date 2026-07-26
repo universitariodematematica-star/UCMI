@@ -484,10 +484,10 @@ resultado.style.color="red";
 
 function crearOrdenarOracion(ejerciciosOrdenar){
 
-    console.log(
-    "CREANDO ORDENAR:",
-    ejerciciosOrdenar
-                );
+        console.log(
+            "ENTRÓ A crearOrdenarOracion:",
+            ejerciciosOrdenar
+        );
 
     let htmlOrdenar = `
 
@@ -558,7 +558,13 @@ ${palabra}
 </div>
 `;
     });
-    return htmlOrdenar;
+    console.log(
+    "HTML ORDENAR GENERADO:",
+    htmlOrdenar
+);
+
+return htmlOrdenar;
+}
 }
 
 /*====================================================
