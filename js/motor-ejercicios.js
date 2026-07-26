@@ -632,7 +632,8 @@ document.addEventListener(
 "drop",
 function(event){
 
-
+console.log("DROP DETECTADO", event.target);
+    
 if(
     event.target.classList.contains("espacio-drop")
     ||
