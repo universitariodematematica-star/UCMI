@@ -653,7 +653,6 @@ document.addEventListener(
 "drop",
 function(event){
 
-
     if(
         event.target.classList.contains(
             "zona-destino-oracion"
@@ -667,77 +666,60 @@ function(event){
         event.preventDefault();
 
 
-        const palabra =
-        event.dataTransfer.getData(
-            "respuesta"
-        );
-
-
         const idBoton =
         event.dataTransfer.getData(
             "boton"
         );
 
 
-        const botonOriginal =
+        const botonArrastrado =
         document.querySelector(
             `[data-id="${idBoton}"]`
         );
 
 
-        const nuevoBoton =
-        document.createElement("button");
+        if(!botonArrastrado){
+            return;
+        }
 
 
-        nuevoBoton.textContent = palabra;
+        const origen =
+        botonArrastrado.parentElement;
 
 
-        nuevoBoton.className =
-        "palabra-arrastrable";
+        const destino =
+        event.target;
 
 
-        nuevoBoton.draggable = true;
+        // Quitar texto inicial de la caja
+
+        if(
+            destino.classList.contains(
+                "zona-destino-oracion"
+            )
+        ){
+
+            if(
+                destino.textContent.includes(
+                    "Arrastra aquí las palabras"
+                )
+            ){
+
+                destino.textContent = "";
+
+            }
+
+        }
 
 
-        nuevoBoton.dataset.id =
-        idBoton;
 
+        // Mover el mismo botón, no crear copias
 
+        destino.appendChild(
+            botonArrastrado
+        );
 
-event.target.appendChild(
-    nuevoBoton
-);
-
-
-// Quitar texto "Arrastra aquí las palabras"
-
-if(
-    event.target.classList.contains(
-        "zona-destino-oracion"
-    )
-){
-
-    if(
-        event.target.textContent.includes(
-            "Arrastra aquí las palabras"
-        )
-    ){
-
-        event.target.childNodes[0].remove();
 
     }
-
-}
-
-
-if(botonOriginal){
-
-    botonOriginal.remove();
-
-}
-
-
-}
-
 
 });
