@@ -570,52 +570,18 @@ document.addEventListener(
 "dragstart",
 function(event){
 
-if(
-    event.target.classList.contains(
-        "zona-destino-oracion"
-    )
-){
+    if(
+        event.target.classList.contains(
+            "palabra-arrastrable"
+        )
+    ){
 
-    const palabra =
-    event.dataTransfer.getData(
-        "respuesta"
-    );
+        event.dataTransfer.setData(
+            "respuesta",
+            event.target.textContent.trim()
+        );
 
-    console.log(
-        "PALABRA RECIBIDA:",
-        palabra
-    );
-
-
-    const boton =
-    document.createElement("button");
-
-
-    boton.textContent = palabra;
-
-
-    boton.className =
-    "palabra-arrastrable";
-
-
-    boton.draggable = true;
-
-
-    event.target.appendChild(boton);
-
-
-    return;
-
-}
-
-});
-
-
-
-    return;
-
-}
-
+    }
 
 });
 
