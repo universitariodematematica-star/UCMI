@@ -648,178 +648,70 @@ function(event){
     }
 
 });
+
 document.addEventListener(
 "drop",
 function(event){
 
-console.log("DROP DETECTADO", event.target);
-    
-if(
-    event.target.classList.contains("espacio-drop")
-    ||
-    event.target.classList.contains("zona-destino-oracion")
-    ||
-    event.target.classList.contains("banco-palabras-oracion")
-){
+
+    if(
+        event.target.classList.contains(
+            "zona-destino-oracion"
+        )
+        ||
+        event.target.classList.contains(
+            "banco-palabras-oracion"
+        )
+    ){
 
         event.preventDefault();
 
 
-        const respuesta =
+        const palabra =
         event.dataTransfer.getData(
             "respuesta"
         );
 
-        const zona =
-        event.target;
 
-    if(
-    event.target.classList.contains(
-        "banco-palabras-oracion"
-    )
-){
-
-    const palabra =
-    event.dataTransfer.getData(
-        "respuesta"
-    );
-
-
-    const boton =
-    document.createElement("button");
-
-
-    boton.textContent = palabra;
-
-
-    boton.className =
-    "palabra-arrastrable";
-
-
-    boton.draggable = true;
-
-
-    event.target.appendChild(boton);
-
-
-    return;
-
-}
-
-        const correcta =
-        event.target.dataset.correcta;
-
-        const explicacion =
-        event.target.dataset.explicacion;    
-
-        const bloque =
-        event.target.closest(
-            ".ejercicio-drag-drop, .ejercicio-ordenar-oracion"
+        const idBoton =
+        event.dataTransfer.getData(
+            "boton"
         );
 
 
-        const resultado =
-        bloque.querySelector(
-            ".resultado"
+        const botonOriginal =
+        document.querySelector(
+            `[data-id="${idBoton}"]`
         );
 
-if(
-    event.target.classList.contains(
-        "zona-destino-oracion"
-    )
-){
 
-    const palabra =
-    event.dataTransfer.getData(
-        "respuesta"
-    );
+        const nuevoBoton =
+        document.createElement("button");
 
 
-    const boton =
-    document.createElement("button");
+        nuevoBoton.textContent = palabra;
 
 
-    boton.textContent = palabra;
+        nuevoBoton.className =
+        "palabra-arrastrable";
 
 
-    boton.className =
-    "palabra-arrastrable";
+        nuevoBoton.draggable = true;
 
 
-    boton.draggable = true;
-
-
-    zona.appendChild(boton);
-
-
-    // Eliminar botón original del banco
-
-    const botonesBanco =
-    document.querySelectorAll(
-        ".banco-palabras-oracion .palabra-arrastrable"
-    );
-
-
-    botonesBanco.forEach(botonBanco=>{
-
-        if(
-            botonBanco.textContent.trim()
-            === palabra
-        ){
-
-            botonBanco.remove();
-
-        }
-
-    });
-
-
-    return;
-
-}
-
-        if(respuesta === correcta){
-
-
-if(
-event.target.classList.contains("zona-destino-oracion")
-){
-
-    event.target.innerHTML += respuesta + " ";
-
-}else{
-
-    event.target.innerHTML = respuesta;
-
-}
-
-
-            event.target.classList.add(
-                "correcto-drag"
-            );
-
-
-            resultado.innerHTML =
-                "✅ Correcto.<br><br><b>Explicación:</b> "
-                + explicacion;
-
-
-            resultado.style.color =
-            "green";
+        nuevoBoton.dataset.id =
+        idBoton;
 
 
 
-        }else{
+        event.target.appendChild(
+            nuevoBoton
+        );
 
 
-            resultado.innerHTML =
-        "❌ Incorrecto.<br><br><b>Explicación:</b> "
-        + explicacion;
+        if(botonOriginal){
 
-
-            resultado.style.color =
-            "red";
-
+            botonOriginal.remove();
 
         }
 
