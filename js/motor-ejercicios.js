@@ -105,7 +105,13 @@ return htmlSelSimple;
 
 function crearDragDropBlanco(ejerciciosDragDrop){
 
-    let htmlDragDrop = "";
+    let htmlDragDrop = `
+
+<div class="instruccion-ejercicio">
+Arrastra la palabra correcta para completar la oración.
+</div>
+
+`;
 
 
     ejerciciosDragDrop.forEach((ejercicio, indice)=>{
@@ -348,9 +354,13 @@ function verificarPregunta(
 
 function crearCompletarEspacios(ejerciciosCompletar){
 
-    let htmlCompletar = "";
+    let htmlCompletar = `
 
-    ejerciciosCompletar.forEach((ejercicio, indice)=>{
+<h3>
+${++contadorEjercicios}. 
+</h3>
+
+`;
 
 
         htmlCompletar += `
