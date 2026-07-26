@@ -2,9 +2,10 @@ let contadorEjercicios = 0;
 
 function escaparTexto(texto){
 
-    return String(texto)
-    .replace(/\\/g,"\\\\")
-    .replace(/"/g,'\\"')
+    return String(texto ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/'/g,"&#39;")
+    .replace(/"/g,"&quot;")
     .replace(/\n/g," ");
 
 }
@@ -80,11 +81,9 @@ ${String.fromCharCode(97+i)}) ${opcion}
 
 <button
 class="verificar"
-onclick='verificarPregunta(
-this,
-${JSON.stringify(ejercicio.correcta)},
-${JSON.stringify(ejercicio.explicacion)}
-)'>
+data-correcta='${escaparTexto(ejercicio.correcta)}'
+data-explicacion='${escaparTexto(ejercicio.explicacion)}'
+onclick="verificarPregunta(this)">
 
 Verificar
 
@@ -299,15 +298,61 @@ if(config.dragDropBlanco){
 
 window.UCMIMotorEjercicios = UCMIMotorEjercicios;
 
-function verificarPregunta(
+function verificarPregunta(boton){
 
-    boton,
+    const bloque = boton.closest(".ejercicio-sel-simple");
 
-    correcta,
 
-    explicacion
+    const correcta =
+    boton.dataset.correcta;
 
-){
+
+    const explicacion =
+    boton.dataset.explicacion;
+
+
+    const seleccionada =
+    bloque.querySelector(
+        'input[type="radio"]:checked'
+    );
+
+
+    const resultado =
+    bloque.querySelector(".resultado");
+
+
+    if(!seleccionada){
+
+        resultado.innerHTML =
+        "⚠ Debes seleccionar una respuesta.";
+
+        resultado.style.color="orange";
+
+        return;
+
+    }
+
+
+    if(seleccionada.value === correcta){
+
+        resultado.innerHTML =
+        "✅ Correcto.<br><br><b>Explicación:</b> "
+        + explicacion;
+
+        resultado.style.color="green";
+
+
+    }else{
+
+        resultado.innerHTML =
+        "❌ Incorrecto.<br><br><b>Explicación:</b> "
+        + explicacion;
+
+        resultado.style.color="red";
+
+    }
+
+}
 
     const bloque = boton.parentElement;
 
@@ -389,11 +434,11 @@ placeholder="Escriba su respuesta">
 
 <button
 class="verificar"
-onclick='verificarCompletar(
-this,
-${JSON.stringify(ejercicio.respuesta)},
-${JSON.stringify(ejercicio.explicacion)}
-)'>
+onclick="verificarCompletar(this)"
+
+data-respuesta='${escaparTexto(ejercicio.respuesta)}'
+
+data-explicacion='${escaparTexto(ejercicio.explicacion)}'>
 
 Verificar
 
@@ -413,42 +458,60 @@ Verificar
 
 }
 
-function verificarCompletar(boton,respuestaCorrecta,explicacion){
-
-    const contenedor =
-    boton.parentElement;
+function verificarCompletar(boton){
 
 
-    const entrada =
-    contenedor.querySelector(".respuesta-escrita");
+const respuestaCorrecta =
+boton.dataset.respuesta;
 
 
-    const resultado =
-    contenedor.querySelector(".resultado");
+const explicacion =
+boton.dataset.explicacion;
 
 
-    const respuestaUsuario =
-    entrada.value.trim().toLowerCase();
+const contenedor =
+boton.parentElement;
 
 
-    if(respuestaUsuario === respuestaCorrecta.toLowerCase()){
+const entrada =
+contenedor.querySelector(".respuesta-escrita");
 
-        resultado.innerHTML =
-        "✅ Correcto<br>" + explicacion;
 
-        resultado.style.color="green";
+const resultado =
+contenedor.querySelector(".resultado");
 
-    }else{
 
-        resultado.innerHTML =
-        "❌ Incorrecto<br>Respuesta correcta: "
-        + respuestaCorrecta
-        + "<br>"
-        + explicacion;
+const respuestaUsuario =
+entrada.value.trim().toLowerCase();
 
-        resultado.style.color="red";
 
-    }
+
+if(respuestaUsuario === respuestaCorrecta.toLowerCase()){
+
+
+resultado.innerHTML =
+"✅ Correcto<br><br><b>Explicación:</b> "
++ explicacion;
+
+
+resultado.style.color="green";
+
+
+}else{
+
+
+resultado.innerHTML =
+"❌ Incorrecto<br><br>Respuesta correcta: "
++ respuestaCorrecta
++ "<br><br><b>Explicación:</b> "
++ explicacion;
+
+
+resultado.style.color="red";
+
+
+}
+
 
 }
 
