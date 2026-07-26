@@ -308,8 +308,6 @@ if(config.ordenarOracion){
 };
 
 
-window.UCMIMotorEjercicios = UCMIMotorEjercicios;
-
     function verificarPregunta(boton){
 
     const bloque = boton.closest(".ejercicio-sel-simple");
@@ -592,6 +590,9 @@ function(event){
 
 });
 
+window.UCMIMotorEjercicios = UCMIMotorEjercicios;
+
+console.log("MOTOR CARGADO CORRECTAMENTE");
 
 document.addEventListener(
 "dragover",
