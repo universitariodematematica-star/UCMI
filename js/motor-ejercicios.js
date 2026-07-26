@@ -587,21 +587,41 @@ function(event){
         )
     ){
 
+        let palabra =
+        event.target.textContent.trim();
+
+
+        let idBoton =
+        event.target.dataset.id;
+
+
+        if(!idBoton){
+
+            idBoton =
+            "boton-" + Date.now();
+
+
+            event.target.dataset.id =
+            idBoton;
+
+        }
+
+
         event.dataTransfer.setData(
             "respuesta",
-            event.target.textContent.trim()
+            palabra
+        );
+
+
+        event.dataTransfer.setData(
+            "boton",
+            idBoton
         );
 
 
         event.dataTransfer.setData(
             "origen",
             event.target.parentElement.className
-        );
-
-
-        event.dataTransfer.setData(
-            "id",
-            event.target.dataset.id
         );
 
     }
