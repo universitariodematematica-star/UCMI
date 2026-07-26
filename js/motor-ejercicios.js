@@ -303,43 +303,51 @@ const UCMIMotorEjercicios = {
         // SECCIÓN: SELECCIÓN SIMPLE
         //========================================
 
-        if(config.seleccionSimple){
+if(
+    config.seleccionSimple &&
+    config.mostrarSeleccionSimple !== "No"
+){
 
-            htmlFinal += crearSeleccionSimple(
-                config.seleccionSimple
-            );
+    htmlFinal += crearSeleccionSimple(
+        config.seleccionSimple
+    );
 
-        }
+}
 
 
         //========================================
         // SECCIÓN: COMPLETAR ESPACIOS
         //========================================
 
-        if(config.completarEspacios){
-
-            htmlFinal += crearCompletarEspacios(
-                config.completarEspacios
-            );
-
-        }
-
-            //========================================
-        // SECCIÓN: DRAG AND DROP - ESPACIO EN BLANCO
-        //========================================
-
 if(
-config.ordenarOracion &&
-config.mostrarOrdenarOracion === "Sí"
+    config.completarEspacios &&
+    config.mostrarCompletar !== "No"
 ){
 
-    htmlFinal += crearOrdenarOracion(
-        config.ordenarOracion
+    htmlFinal += crearCompletarEspacios(
+        config.completarEspacios
+    );
+
+}
+//========================================
+// SECCIÓN: DRAG AND DROP - ESPACIO EN BLANCO
+//========================================
+
+if(
+    config.dragDropBlanco &&
+    config.mostrarDragDrop !== "No"
+){
+
+    htmlFinal += crearDragDropBlanco(
+        config.dragDropBlanco
     );
 
 }
 
-if(config.ordenarOracion){
+if(
+    config.ordenarOracion &&
+    config.mostrarOrdenarOracion !== "No"
+){
 
     htmlFinal += crearOrdenarOracion(
         config.ordenarOracion
