@@ -1,5 +1,14 @@
 let contadorEjercicios = 0;
 
+function escaparTexto(texto){
+
+    return String(texto)
+    .replace(/\\/g,"\\\\")
+    .replace(/"/g,'\\"')
+    .replace(/\n/g," ");
+
+}
+
 /*====================================================
         SECCIÓN: SELECCIÓN SIMPLE
 ====================================================*/
@@ -75,9 +84,9 @@ onclick="verificarPregunta(
 
 this,
 
-"${ejercicio.correcta}",
+"${escaparTexto(ejercicio.correcta)}",
 
-"${ejercicio.explicacion}"
+"${escaparTexto(ejercicio.explicacion)}"
 
 )">
 
@@ -157,7 +166,8 @@ ${ejercicio.textoAntes}
 
 <span
 class="espacio-drop"
-data-correcta="${ejercicio.correcta}">
+data-correcta="${ejercicio.correcta}"
+data-explicacion="${ejercicio.explicacion}">
 
 ________
 
@@ -387,9 +397,8 @@ onclick="verificarCompletar(
 
 this,
 
-"${ejercicio.respuesta}",
-"${ejercicio.explicacion}"
-
+"${escaparTexto(ejercicio.respuesta)}",
+"${escaparTexto(ejercicio.explicacion)}"
 )">
 
 Verificar
@@ -518,7 +527,8 @@ function(event){
         const correcta =
         event.target.dataset.correcta;
 
-
+        const explicacion =
+        event.target.dataset.explicacion;    
 
         const bloque =
         event.target.closest(
@@ -546,7 +556,8 @@ function(event){
 
 
             resultado.innerHTML =
-            "✅ Correcto";
+                "✅ Correcto.<br><br><b>Explicación:</b> "
+                + explicacion;
 
 
             resultado.style.color =
@@ -558,7 +569,8 @@ function(event){
 
 
             resultado.innerHTML =
-            "❌ Incorrecto. Intenta nuevamente.";
+        "❌ Incorrecto.<br><br><b>Explicación:</b> "
+        + explicacion;
 
 
             resultado.style.color =
