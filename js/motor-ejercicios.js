@@ -603,9 +603,13 @@ function(event){
 
 
     if(
-    event.target.classList.contains(
-        "espacio-drop"
-    )
+        event.target.classList.contains(
+            "espacio-drop"
+        )
+        ||
+        event.target.classList.contains(
+            "zona-destino-oracion"
+        )
     ){
 
         event.preventDefault();
@@ -614,7 +618,6 @@ function(event){
 
 
 });
-
 
 document.addEventListener(
 "drop",
@@ -625,7 +628,11 @@ function(event){
     event.target.classList.contains(
         "espacio-drop"
     )
-    ){
+    ||
+    event.target.classList.contains(
+        "zona-destino-oracion"
+    )
+){
 
         event.preventDefault();
 
@@ -634,6 +641,9 @@ function(event){
         event.dataTransfer.getData(
             "respuesta"
         );
+
+        const zona =
+        event.target;
 
 
         const correcta =
@@ -653,7 +663,23 @@ function(event){
             ".resultado"
         );
 
+if(
+    event.target.classList.contains(
+        "zona-destino-oracion"
+    )
+){
 
+    const palabra =
+    event.dataTransfer.getData(
+        "respuesta"
+    );
+
+    zona.innerHTML += 
+    palabra + " ";
+
+    return;
+
+}
 
         if(respuesta === correcta){
 
