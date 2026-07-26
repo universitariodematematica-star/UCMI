@@ -218,11 +218,9 @@ ${opciones.map(opcion=>`
 
 
 <button
-
 class="boton-arrastrable"
-
 draggable="true"
-
+data-id="dragboton-${indice}-${opcion}"
 >
 
 ${opcion}
@@ -643,9 +641,15 @@ espacio.dataset.correcta;
 
 
 
+const botonColocado =
+espacio.querySelector(
+    ".boton-arrastrable"
+);
+
+
 const respuestaUsuario =
-espacio.querySelector(".boton-arrastrable")
-? espacio.querySelector(".boton-arrastrable").textContent.trim()
+botonColocado
+? botonColocado.textContent.trim()
 : "";
 
 if(respuestaUsuario === respuestaCorrecta){
@@ -1017,6 +1021,16 @@ if(
 ){
 
     destino.innerHTML = "";
+
+    destino.appendChild(
+        botonArrastrado
+    );
+
+    botonArrastrado.classList.add(
+        "colocado-drop"
+    );
+
+    return;
 
 }
 
