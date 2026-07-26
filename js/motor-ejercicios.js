@@ -1,5 +1,33 @@
 let contadorEjercicios = 0;
 
+const UCMIResultados = {
+
+    guardar(id, datos){
+
+        localStorage.setItem(
+            "ucmi_resultado_" + id,
+            JSON.stringify(datos)
+        );
+
+    },
+
+
+    obtener(id){
+
+        const resultado =
+        localStorage.getItem(
+            "ucmi_resultado_" + id
+        );
+
+
+        return resultado
+        ? JSON.parse(resultado)
+        : null;
+
+    }
+
+};
+
 function escaparTexto(texto){
 
     return String(texto ?? "")
@@ -52,7 +80,10 @@ ejerciciosSelSimple.forEach((ejercicio, indice)=>{
 
     htmlSelSimple += `
 
-<div class="ejercicio-sel-simple">
+<div 
+class="ejercicio-sel-simple"
+data-id="sel-${indice}"
+>
 
 <h3>
 ${++contadorEjercicios}. ${ejercicio.pregunta}
@@ -98,6 +129,49 @@ Verificar
 `;
 
 });
+
+setTimeout(()=>{
+
+document.querySelectorAll(".resultado[data-pregunta]")
+.forEach(resultado=>{
+
+    const pregunta =
+    resultado.dataset.pregunta;
+
+
+    const guardado =
+    localStorage.getItem(
+        "resultado-" + pregunta
+    );
+
+
+    if(guardado){
+
+        const datos =
+        JSON.parse(guardado);
+
+
+        resultado.innerHTML =
+        (datos.estado==="correcto"
+        ? "✅ Correcto"
+        : "❌ Incorrecto")
+        +
+        "<br><br><b>Explicación:</b> "
+        +
+        datos.explicacion;
+
+
+        resultado.style.color =
+        datos.estado==="correcto"
+        ? "green"
+        : "red";
+
+    }
+
+
+});
+
+},100);    
 
 return htmlSelSimple;
 
@@ -337,23 +411,56 @@ if(config.ordenarOracion){
     }
 
 
-    if(seleccionada.value === correcta){
+if(seleccionada.value === correcta){
 
-        resultado.innerHTML =
-        "✅ Correcto.<br><br><b>Explicación:</b> "
-        + explicacion;
+    resultado.innerHTML =
+    "✅ Correcto.<br><br><b>Explicación:</b> "
+    + explicacion;
 
-        resultado.style.color="green";
+    resultado.style.color="green";
 
-    }else{
 
-        resultado.innerHTML =
-        "❌ Incorrecto.<br><br><b>Explicación:</b> "
-        + explicacion;
+    localStorage.setItem(
+        "resultado-" + bloque.querySelector("h3").textContent,
+        JSON.stringify({
+            estado:"correcto",
+            explicacion:explicacion
+        })
+    );
 
-        resultado.style.color="red";
 
+}else{
+
+
+    resultado.innerHTML =
+    "❌ Incorrecto.<br><br><b>Explicación:</b> "
+    + explicacion;
+
+    resultado.style.color="red";
+
+
+    localStorage.setItem(
+        "resultado-" + bloque.querySelector("h3").textContent,
+        JSON.stringify({
+            estado:"incorrecto",
+            explicacion:explicacion
+        })
+    );
+
+
+}
+
+
+// GUARDAR RESULTADO DEL EJERCICIO
+
+UCMIResultados.guardar(
+    bloque.dataset.id,
+    {
+        resultado: resultado.innerHTML,
+        color: resultado.style.color
     }
+);
+
 
 }
 
@@ -379,7 +486,10 @@ Escribe la expresión que hace falta para completar la oración.
 
         htmlCompletar += `
 
-<div class="ejercicio-completar">
+<div 
+class="ejercicio-completar"
+data-id="completar-${indice}"
+>
 
 
 <h3>
@@ -406,7 +516,7 @@ Verificar
 </button>
 
 
-<div class="resultado"></div>
+<div class="resultado" data-pregunta="${escaparTexto(ejercicio.pregunta)}"></div>
 
 
 </div>
@@ -526,7 +636,11 @@ Arrastra las palabras para formar la oración correcta.
 
         htmlOrdenar += `
 
-<div class="ejercicio-ordenar-oracion">
+<div 
+class="ejercicio-ordenar-oracion"
+data-id="ordenar-${indice}"
+>
+
 <h3>
 ${++contadorEjercicios}. Ordena la oración:
 </h3>
