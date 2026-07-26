@@ -407,12 +407,6 @@ Verificar
 
     });
 
-
-    return htmlCompletar;
-
-});
-
-
     return htmlCompletar;
 
 }
