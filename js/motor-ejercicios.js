@@ -1,3 +1,5 @@
+let contadorEjercicios = 0;
+
 /*====================================================
         SECCIÓN: SELECCIÓN SIMPLE
 ====================================================*/
@@ -43,7 +45,7 @@ ejerciciosSelSimple.forEach((ejercicio, indice)=>{
 <div class="ejercicio-sel-simple">
 
 <h3>
-${indice + 1}. ${ejercicio.pregunta}
+${++contadorEjercicios}. ${ejercicio.pregunta}
 </h3>
 
 
@@ -135,7 +137,7 @@ function crearDragDropBlanco(ejerciciosDragDrop){
 
 
 <h3>
-${indice+1}. Completa la oración:
+${++contadorEjercicios}. Completa la oración:
 </h3>
 
 
@@ -234,6 +236,8 @@ const UCMIMotorEjercicios = {
 
 
         let htmlFinal = "";
+
+        contadorEjercicios = 0;    
 
 
         //========================================
@@ -354,7 +358,7 @@ function crearCompletarEspacios(ejerciciosCompletar){
 <div class="ejercicio-completar">
 
 <h3>
-${indice + 1}. ${ejercicio.pregunta}
+${++contadorEjercicios}. ${ejercicio.pregunta}
 </h3>
 
 
