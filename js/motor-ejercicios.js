@@ -534,10 +534,13 @@ ${++contadorEjercicios}. Ordena la oración:
 <div class="banco-palabras-oracion">
 ${
 palabrasMezcladas.map(palabra=>`
+
 <button
 class="palabra-arrastrable"
 draggable="true"
+data-id="boton-${contadorEjercicios}-${palabra}"
 >
+
 ${palabra}
 </button>
 `).join("")
@@ -576,20 +579,95 @@ document.addEventListener(
 "dragstart",
 function(event){
 
-    if(
-        event.target.classList.contains(
-            "palabra-arrastrable"
-        )
-    ){
+if(
+    event.target.classList.contains(
+        "zona-destino-oracion"
+    )
+){
+
+    const botonOriginal =
+    event.dataTransfer.getData(
+        "boton"
+    );
+
+
+    const palabra =
+    event.dataTransfer.getData(
+        "respuesta"
+    );
+
+
+    const origen =
+    document.querySelector(
+        `[data-id="${botonOriginal}"]`
+    );
+
+
+    const nuevoBoton =
+    document.createElement("button");
+
+
+    nuevoBoton.textContent = palabra;
+
+
+    nuevoBoton.className =
+    "palabra-arrastrable";
+
+
+    nuevoBoton.draggable = true;
+
+
+    // Mantener identificación única
+
+    nuevoBoton.dataset.id =
+    botonOriginal;
+
+
+    zona.appendChild(nuevoBoton);
+
+
+    // eliminar el original si existe
+
+    if(origen){
+
+        origen.remove();
+
+    }
+
+
+    return;
+
+}
 
         palabraArrastrada =
         event.target.textContent.trim();
 
 
-        event.dataTransfer.setData(
-            "respuesta",
-            palabraArrastrada
-        );
+let idBoton =
+event.target.dataset.id;
+
+
+if(!idBoton){
+
+    idBoton =
+    "boton-" + Date.now();
+
+    event.target.dataset.id =
+    idBoton;
+
+}
+
+
+event.dataTransfer.setData(
+    "respuesta",
+    palabraArrastrada
+);
+
+
+event.dataTransfer.setData(
+    "boton",
+    idBoton
+);
 
     }
 
