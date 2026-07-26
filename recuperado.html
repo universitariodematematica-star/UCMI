@@ -121,7 +121,10 @@ Verificar
 </button>
 
 
-<div class="resultado"></div>
+<div 
+class="resultado"
+data-id="sel-${indice}"
+></div>
 
 
 </div>
@@ -129,49 +132,7 @@ Verificar
 `;
 
 });
-
-setTimeout(()=>{
-
-document.querySelectorAll(".resultado[data-pregunta]")
-.forEach(resultado=>{
-
-    const pregunta =
-    resultado.dataset.pregunta;
-
-
-    const guardado =
-    localStorage.getItem(
-        "resultado-" + pregunta
-    );
-
-
-    if(guardado){
-
-        const datos =
-        JSON.parse(guardado);
-
-
-        resultado.innerHTML =
-        (datos.estado==="correcto"
-        ? "✅ Correcto"
-        : "❌ Incorrecto")
-        +
-        "<br><br><b>Explicación:</b> "
-        +
-        datos.explicacion;
-
-
-        resultado.style.color =
-        datos.estado==="correcto"
-        ? "green"
-        : "red";
-
-    }
-
-
-});
-
-},100);    
+    
 
 return htmlSelSimple;
 
@@ -217,13 +178,14 @@ Arrastra la palabra correcta para completar la oración.
         htmlDragDrop += `
 
 
-<div class="ejercicio-drag-drop">
-
+<div 
+class="ejercicio-drag-drop"
+data-id="drag-${indice}"
+>
 
 <h3>
 ${++contadorEjercicios}. ${ejercicio.textoAntes} ______ ${ejercicio.textoDespues}
 </h3>
-
 
 <div class="zona-oracion">
 
@@ -250,20 +212,15 @@ ${ejercicio.textoDespues}
 
 </div>
 
-
-
 <div class="banco-arrastre">
-
 
 ${opciones.map(opcion=>`
 
 
 <button
-
 class="boton-arrastrable"
-
 draggable="true"
-
+data-id="dragboton-${indice}-${opcion}"
 >
 
 ${opcion}
@@ -279,9 +236,16 @@ ${opcion}
 
 
 
-<div class="resultado"></div>
+<button
+class="evaluar-drag"
+onclick="evaluarDrag(this)">
+Evaluar
+</button>
 
-
+<div 
+class="resultado"
+data-id="drag-${indice}"
+></div>
 
 </div>
 
@@ -374,10 +338,79 @@ if(config.ordenarOracion){
 
 }        
 
-        contenedor.innerHTML = htmlFinal;
+
+contenedor.innerHTML = htmlFinal;
 
 
-    }
+//========================================
+// RECUPERAR RESULTADOS GUARDADOS
+//========================================
+
+setTimeout(()=>{
+
+
+    document.querySelectorAll(
+        ".resultado[data-id]"
+    )
+    .forEach(resultado=>{
+
+
+        const id =
+        resultado.dataset.id;
+
+
+        const guardado =
+        UCMIResultados.obtener(id);
+
+
+        if(guardado){
+
+
+            resultado.innerHTML =
+            guardado.resultado;
+
+
+            resultado.style.color =
+            guardado.color;
+
+
+const bloque =
+resultado.closest(
+    ".ejercicio-sel-simple, .ejercicio-completar, .ejercicio-drag-drop, .ejercicio-ordenar-oracion"
+);
+
+
+            if(bloque){
+
+        const boton =
+        bloque.querySelector(
+            ".verificar, .evaluar-drag, .evaluar-ordenar"
+        );
+
+
+                if(boton){
+
+                    boton.disabled = true;
+
+                    boton.style.opacity="0.5";
+
+                    boton.style.cursor="not-allowed";
+
+                }
+
+            }
+
+
+        }
+
+
+    });
+
+
+},100);
+
+
+}
 
 };
 
@@ -420,15 +453,6 @@ if(seleccionada.value === correcta){
     resultado.style.color="green";
 
 
-    localStorage.setItem(
-        "resultado-" + bloque.querySelector("h3").textContent,
-        JSON.stringify({
-            estado:"correcto",
-            explicacion:explicacion
-        })
-    );
-
-
 }else{
 
 
@@ -437,16 +461,6 @@ if(seleccionada.value === correcta){
     + explicacion;
 
     resultado.style.color="red";
-
-
-    localStorage.setItem(
-        "resultado-" + bloque.querySelector("h3").textContent,
-        JSON.stringify({
-            estado:"incorrecto",
-            explicacion:explicacion
-        })
-    );
-
 
 }
 
@@ -516,7 +530,10 @@ Verificar
 </button>
 
 
-<div class="resultado" data-pregunta="${escaparTexto(ejercicio.pregunta)}"></div>
+<div 
+class="resultado"
+data-id="completar-${indice}"
+></div>
 
 
 </div>
@@ -582,6 +599,105 @@ resultado.style.color="red";
 
 
 }
+
+
+// GUARDAR RESULTADO DEL EJERCICIO
+
+UCMIResultados.guardar(
+    contenedor.dataset.id,
+    {
+        resultado: resultado.innerHTML,
+        color: resultado.style.color
+    }
+);
+
+
+}
+
+function evaluarDrag(boton){
+
+
+const bloque =
+boton.closest(
+".ejercicio-drag-drop"
+);
+
+
+const espacio =
+bloque.querySelector(
+".espacio-drop"
+);
+
+
+const resultado =
+bloque.querySelector(
+".resultado"
+);
+
+
+
+const respuestaCorrecta =
+espacio.dataset.correcta;
+
+
+
+const botonColocado =
+espacio.querySelector(
+    ".boton-arrastrable"
+);
+
+
+const respuestaUsuario =
+botonColocado
+? botonColocado.textContent.trim()
+: "";
+
+if(respuestaUsuario === respuestaCorrecta){
+
+
+resultado.innerHTML =
+"✅ Correcto";
+
+
+resultado.style.color =
+"green";
+
+
+}else{
+
+
+resultado.innerHTML =
+"❌ Incorrecto.<br><br>"
++
+"<b>Respuesta correcta:</b> "
++
+respuestaCorrecta;
+
+
+resultado.style.color =
+"red";
+
+}
+
+
+
+// Guardar resultado
+
+UCMIResultados.guardar(
+
+bloque.dataset.id,
+
+{
+
+resultado:
+resultado.innerHTML,
+
+color:
+resultado.style.color
+
+}
+
+);
 
 
 }
@@ -672,15 +788,16 @@ Arrastra aquí las palabras
 class="evaluar-ordenar"
 onclick="evaluarOrdenar(this)"
 >
-
 Evaluar
-
 </button>
 
 
-<div class="resultado"></div>
-    
-</div>
+<div 
+class="resultado"
+data-id="ordenar-${indice}"
+></div>
+
+
 `;
     });
     console.log(
@@ -707,11 +824,11 @@ document.addEventListener(
 "dragstart",
 function(event){
 
-    if(
-        event.target.classList.contains(
-            "palabra-arrastrable"
-        )
-    ){
+if(
+    event.target.classList.contains("palabra-arrastrable")
+    ||
+    event.target.classList.contains("boton-arrastrable")
+){
 
         let palabra =
         event.target.textContent.trim();
@@ -746,14 +863,97 @@ function(event){
 
 
         event.dataTransfer.setData(
-            "origen",
-            event.target.parentElement.className
+            "tipo",
+            event.target.classList.contains("boton-arrastrable")
+            ? "drag-blanco"
+            : "ordenar"
         );
 
     }
 
 });
+
+        
 window.UCMIMotorEjercicios = UCMIMotorEjercicios;
+
+function evaluarOrdenar(boton){
+
+
+const bloque =
+boton.closest(
+".ejercicio-ordenar-oracion"
+);
+
+
+const zona =
+bloque.querySelector(
+".zona-destino-oracion"
+);
+
+
+const respuestaCorrecta =
+zona.dataset.respuesta.trim();
+
+
+const palabrasUsuario =
+[...zona.querySelectorAll(
+".palabra-arrastrable"
+)]
+.map(boton =>
+boton.textContent.trim()
+)
+.join(" ");
+
+
+
+const resultado =
+bloque.querySelector(
+".resultado"
+);
+
+
+
+if(
+palabrasUsuario === respuestaCorrecta
+){
+
+
+resultado.innerHTML =
+"✅ Correcto";
+
+
+resultado.style.color =
+"green";
+
+
+}else{
+
+
+resultado.innerHTML =
+"❌ Incorrecto.<br><br>"
++
+"<b>Respuesta correcta:</b> "
++
+respuestaCorrecta;
+
+
+resultado.style.color =
+"red";
+
+
+}
+
+// GUARDAR RESULTADO
+
+UCMIResultados.guardar(
+    bloque.dataset.id,
+    {
+        resultado: resultado.innerHTML,
+        color: resultado.style.color
+    }
+);
+
+}
 
 console.log("MOTOR CARGADO CORRECTAMENTE");
 
@@ -780,13 +980,11 @@ document.addEventListener(
 function(event){
 
     if(
-        event.target.classList.contains(
-            "zona-destino-oracion"
-        )
+        event.target.classList.contains("espacio-drop")
         ||
-        event.target.classList.contains(
-            "banco-palabras-oracion"
-        )
+        event.target.classList.contains("zona-destino-oracion")
+        ||
+        event.target.classList.contains("banco-palabras-oracion")
     ){
 
         event.preventDefault();
@@ -815,6 +1013,26 @@ function(event){
 
         const destino =
         event.target;
+
+
+// Caso drag blanco
+if(
+    destino.classList.contains("espacio-drop")
+){
+
+    destino.innerHTML = "";
+
+    destino.appendChild(
+        botonArrastrado
+    );
+
+    botonArrastrado.classList.add(
+        "colocado-drop"
+    );
+
+    return;
+
+}
 
 
         // Quitar texto inicial de la caja
