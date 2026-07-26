@@ -534,6 +534,7 @@ ${++contadorEjercicios}. Ordena la oración:
 <div class="zona-destino-oracion"
 data-respuesta='${ejercicio.oracion}'
 >
+Arrastra aquí las palabras
 </div>
 <div class="banco-palabras-oracion">
 ${
