@@ -743,6 +743,76 @@ function(event){
 });
 window.UCMIMotorEjercicios = UCMIMotorEjercicios;
 
+function evaluarOrdenar(boton){
+
+
+const bloque =
+boton.closest(
+".ejercicio-ordenar-oracion"
+);
+
+
+const zona =
+bloque.querySelector(
+".zona-destino-oracion"
+);
+
+
+const respuestaCorrecta =
+zona.dataset.respuesta.trim();
+
+
+const palabrasUsuario =
+[...zona.querySelectorAll(
+".palabra-arrastrable"
+)]
+.map(boton =>
+boton.textContent.trim()
+)
+.join(" ");
+
+
+
+const resultado =
+bloque.querySelector(
+".resultado"
+);
+
+
+
+if(
+palabrasUsuario === respuestaCorrecta
+){
+
+
+resultado.innerHTML =
+"✅ Correcto";
+
+
+resultado.style.color =
+"green";
+
+
+}else{
+
+
+resultado.innerHTML =
+"❌ Incorrecto.<br><br>"
++
+"<b>Respuesta correcta:</b> "
++
+respuestaCorrecta;
+
+
+resultado.style.color =
+"red";
+
+
+}
+
+
+}
+
 console.log("MOTOR CARGADO CORRECTAMENTE");
 
 document.addEventListener(
