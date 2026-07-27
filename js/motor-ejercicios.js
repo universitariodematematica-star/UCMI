@@ -44,7 +44,7 @@ const UCMIRestaurarEjercicios = {
         });
 
 
-        location.reload();
+        window.top.location.reload();
 
     }
 
