@@ -35,7 +35,8 @@ function escaparTexto(texto){
     .replace(/'/g,"&#39;")
     .replace(/"/g,"&quot;")
     .replace(/\n/g," ");
-
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
 }
 
 /*====================================================
@@ -226,7 +227,7 @@ ${opciones.map(opcion=>`
 <button
 class="boton-arrastrable"
 draggable="true"
-data-id="dragboton-${indice}-${opcion}"
+data-id="dragboton-${indice}-${escaparTexto(opcion)}"
 >
 
 ${opcion}
@@ -795,7 +796,7 @@ ${palabra}
 </div>
 
 <div class="zona-destino-oracion"
-data-respuesta='${ejercicio.oracion}'
+data-respuesta='${escaparTexto(ejercicio.oracion)}'
 >
 Arrastra aquí las palabras
 </div>
@@ -930,7 +931,15 @@ bloque.querySelector(
 
 
 if(
-palabrasUsuario.normalize() === respuestaCorrecta.normalize()
+palabrasUsuario
+.trim()
+.replace(/\s+/g," ")
+.normalize()
+===
+respuestaCorrecta
+.trim()
+.replace(/\s+/g," ")
+.normalize()
 ){
 
 
