@@ -12,25 +12,24 @@ import {
 
 
 // ==========================================
-// SIDEBAR ESTUDIANTE UCMI
+// INICIAR PLANTILLA ESTUDIANTE
 // ==========================================
 
-
-export function iniciarSidebarEstudiante(){
+export function iniciarPlantillaEstudiante(){
 
 
 
 // ==========================================
-// VERIFICAR USUARIO Y CARGAR LOGO
+// CARGAR LOGO DEL ESTUDIANTE / ACADEMIA
 // ==========================================
-
 
 onAuthStateChanged(auth, async (user)=>{
 
 
     if(!user){
 
-        window.location.href = CONFIG.URL_INDEX;
+        window.location.href =
+        CONFIG.URL_INDEX;
 
         return;
 
@@ -41,17 +40,21 @@ onAuthStateChanged(auth, async (user)=>{
     try{
 
 
-        const snap = await getDoc(
-            doc(
-                db,
-                "usuarios",
-                user.uid
-            )
+        const usuarioRef =
+        doc(
+            db,
+            "usuarios",
+            user.uid
         );
 
 
 
-        if(!snap.exists()){
+        const usuarioSnap =
+        await getDoc(usuarioRef);
+
+
+
+        if(!usuarioSnap.exists()){
 
             return;
 
@@ -59,7 +62,8 @@ onAuthStateChanged(auth, async (user)=>{
 
 
 
-        const datos = snap.data();
+        const datos =
+        usuarioSnap.data();
 
 
 
@@ -85,16 +89,16 @@ onAuthStateChanged(auth, async (user)=>{
 
 
 
-    }catch(error){
-
+    }
+    catch(error){
 
         console.error(
-            "Error cargando datos estudiante:",
+            "Error cargando estudiante:",
             error
         );
 
-
     }
+
 
 
 });
