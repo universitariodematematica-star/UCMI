@@ -28,6 +28,28 @@ const UCMIResultados = {
 
 };
 
+const UCMIRestaurarEjercicios = {
+
+    reiniciar(){
+
+        Object.keys(localStorage)
+        .forEach(key=>{
+
+            if(key.startsWith("ucmi_resultado_")){
+
+                localStorage.removeItem(key);
+
+            }
+
+        });
+
+
+        location.reload();
+
+    }
+
+};
+
 function escaparTexto(texto){
 
     return String(texto ?? "")
@@ -894,6 +916,7 @@ if(
 
         
 window.UCMIMotorEjercicios = UCMIMotorEjercicios;
+window.UCMIRestaurarEjercicios = UCMIRestaurarEjercicios;
 
 function evaluarOrdenar(boton){
 
