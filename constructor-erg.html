@@ -205,21 +205,6 @@ letter-spacing:1px;
             id="excelInput"
             type="file"
             accept=".xlsx">
-        <div style="margin-top:20px;">
-
-<h3>Imágenes desde Blogger</h3>
-
-<textarea
-id="codigoBlogger"
-placeholder="Pega aquí el HTML exportado desde Blogger para extraer automáticamente las imágenes."
-style="width:100%;height:180px;">
-</textarea>
-
-<button onclick="extraerImagenesBlogger()">
-Extraer imágenes
-</button>
-
-</div>
 
     </div>
 
@@ -273,7 +258,6 @@ tituloEspanol:""
 
 let vocabularioGlobal = [];
 let subtitulosGlobal = [];
-let imagenesBlogger = [];
 let ejerciciosSelSimple = [];
 let ejerciciosCompletar = [];
 let ejerciciosDragDrop = [];
@@ -1465,37 +1449,7 @@ document
 .addEventListener(
 "change",
 leerExcel
-); 
-
-function extraerImagenesBlogger(){
-
-    const codigo =
-    document.getElementById("codigoBlogger").value;
-
-
-    const patron =
-    /https:\/\/blogger\.googleusercontent\.com\/[^"]+/gi;
-
-
-    const coincidencias =
-    codigo.match(patron);
-
-
-    if(!coincidencias){
-
-        alert("No se encontraron URLs de Blogger");
-
-        return;
-
-    }
-
-
-    imagenesBlogger =
-    coincidencias.map(url=>url);
-
-    asignarImagenes();
-
-}  
+);   
 
     function normalizarTexto(texto){
 
@@ -1505,63 +1459,6 @@ function extraerImagenesBlogger(){
     .replace(/[\u0300-\u036f]/g,"")
     .replace(/ñ/g,"n")
     .replace(/[^a-z0-9]/g,"");
-
-}
-
-
-
-function asignarImagenes(){
-
-    vocabularioGlobal.forEach(item=>{
-
-
-        let palabrasBuscar = [
-
-            normalizarTexto(item.ingles),
-
-            normalizarTexto(item.espanol)
-
-        ];
-
-
-
-        let encontrada = imagenesBlogger.find(url=>{
-
-
-            let nombreArchivo = url
-            .split("/")
-            .pop()
-            .replace(/\.(png|jpg|jpeg|webp)$/i,"");
-
-
-
-            nombreArchivo = normalizarTexto(nombreArchivo);
-
-
-
-            return palabrasBuscar.some(palabra=>
-
-                nombreArchivo.includes(palabra)
-
-            );
-
-
-        });
-
-
-
-        if(encontrada){
-
-            item.imagen = encontrada;
-
-        }
-
-
-    });
-
-
-
-    generarCodigoActualizado();
 
 }
     
