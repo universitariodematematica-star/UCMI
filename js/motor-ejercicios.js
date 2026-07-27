@@ -32,11 +32,12 @@ function escaparTexto(texto){
 
     return String(texto ?? "")
     .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
     .replace(/'/g,"&#39;")
     .replace(/"/g,"&quot;")
     .replace(/\n/g," ");
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
+
 }
 
 /*====================================================
