@@ -739,7 +739,7 @@ Arrastra las palabras para formar la oración correcta.
 
         // Separar oración en palabras
 
-        let palabras = ejercicio.oracion.split(" ");
+        let palabras = ejercicio.oracion.match(/\S+/g);
 
 
         // Crear copia mezclada
@@ -785,7 +785,7 @@ palabrasMezcladas.map(palabra=>`
 <button
 class="palabra-arrastrable"
 draggable="true"
-data-id="boton-${contadorEjercicios}-${palabra}"
+data-id="boton-${contadorEjercicios}-${escaparTexto(palabra)}"
 >
 
 ${palabra}
@@ -919,9 +919,8 @@ const palabrasUsuario =
 .map(boton =>
 boton.textContent.trim()
 )
-.join(" ");
-
-
+.join(" ")
+.trim();
 
 const resultado =
 bloque.querySelector(
@@ -931,7 +930,7 @@ bloque.querySelector(
 
 
 if(
-palabrasUsuario === respuestaCorrecta
+palabrasUsuario.normalize() === respuestaCorrecta.normalize()
 ){
 
 
