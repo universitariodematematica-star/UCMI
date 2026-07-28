@@ -140,18 +140,10 @@ aulaSnap.data();
             );
 
 
-try{
-
     const asignacionSnap =
     await getDocs(qAsignacion);
 
     console.log("✔ Se pudo leer aula_docente_asignacion");
-
-}catch(e){
-
-    console.error("❌ Error leyendo aula_docente_asignacion", e);
-
-}
 
 
             let profesor =
