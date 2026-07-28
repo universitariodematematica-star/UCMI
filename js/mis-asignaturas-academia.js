@@ -121,15 +121,6 @@ if(!aulaSnap.exists()) continue;
 const aula =
 aulaSnap.data();
 
-
-            if(!aulaSnap.exists()) continue;
-
-
-            const aula =
-            aulaSnap.data();
-
-
-
             // ==========================================
             // BUSCAR DOCENTE Y ASIGNATURA
             // ==========================================
