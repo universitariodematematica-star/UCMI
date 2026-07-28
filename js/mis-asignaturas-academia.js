@@ -63,6 +63,12 @@ async function cargarAsignaturas(){
         const integrantesSnap =
         await getDocs(qIntegrantes);
 
+        console.log("UID autenticado:", user.uid);
+console.log("Cantidad de registros en aula_integrantes:", integrantesSnap.size);
+
+integrantesSnap.forEach(doc=>{
+    console.log("Documento aula_integrantes:", doc.id, doc.data());
+});
 
 
         contenedor.innerHTML = "";
