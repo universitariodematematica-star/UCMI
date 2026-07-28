@@ -62,31 +62,52 @@ onAuthStateChanged(auth, async (user)=>{
 
 
 
-        const datos =
-        usuarioSnap.data();
+       const datos =
+usuarioSnap.data();
 
+const logo =
+document.getElementById(
+    "logoEstudiante"
+);
 
+if(logo){
 
-        const logo =
-        document.getElementById(
-            "logoEstudiante"
+    if(datos.academiaUID){
+
+        const academiaSnap =
+        await getDoc(
+            doc(
+                db,
+                "usuarios",
+                datos.academiaUID
+            )
         );
 
-
-
-        if(logo){
-
+        if(
+            academiaSnap.exists() &&
+            academiaSnap.data().logoCustom
+        ){
 
             logo.src =
-            datos.logoCustom ||
+            academiaSnap.data().logoCustom;
+
+        }else{
+
+            logo.src =
             "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-
-
-            logo.style.opacity="1";
-
 
         }
 
+    }else{
+
+        logo.src =
+        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+
+    }
+
+    logo.style.opacity="1";
+
+}
 
 
     }
