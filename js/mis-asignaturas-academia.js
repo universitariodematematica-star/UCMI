@@ -107,14 +107,24 @@ integrantesSnap.forEach(doc=>{
             // ==========================================
 
 
-            const aulaSnap =
-            await getDoc(
-                doc(
-                    db,
-                    "aulas",
-                    aulaId
-                )
-            );
+try{
+
+    const aulaSnap =
+    await getDoc(
+        doc(
+            db,
+            "aulas",
+            aulaId
+        )
+    );
+
+    console.log("✔ Se pudo leer aulas");
+
+}catch(e){
+
+    console.error("❌ Error leyendo aulas", e);
+
+}
 
 
             if(!aulaSnap.exists()) continue;
@@ -144,9 +154,18 @@ integrantesSnap.forEach(doc=>{
             );
 
 
-            const asignacionSnap =
-            await getDocs(qAsignacion);
+try{
 
+    const asignacionSnap =
+    await getDocs(qAsignacion);
+
+    console.log("✔ Se pudo leer aula_docente_asignacion");
+
+}catch(e){
+
+    console.error("❌ Error leyendo aula_docente_asignacion", e);
+
+}
 
 
             let profesor =
