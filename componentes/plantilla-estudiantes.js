@@ -1,78 +1,135 @@
-import { auth } from "../firebase-config.js";
+import { auth, db, CONFIG } from "../firebase-config.js";
+
+import {
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+import {
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 
 // ==========================================
-// INICIAR PANEL ESTUDIANTE
+// INICIAR PLANTILLA ESTUDIANTE
 // ==========================================
 
-export function iniciarPanelEstudiante(){
+export function iniciarPlantillaEstudiante(){
 
+    // ==========================================
+    // CARGAR LOGO DE LA ACADEMIA
+    // ==========================================
 
-    const contenido =
-    document.getElementById("contenido");
+    onAuthStateChanged(auth, async(user)=>{
 
+        if(!user){
 
+            window.location.href =
+            CONFIG.URL_INDEX;
 
-    async function cargarPagina(archivo){
+            return;
 
+        }
 
         try{
 
-            const respuesta =
-            await fetch(archivo);
+            // Usuario estudiante
+            const usuarioSnap =
+            await getDoc(
+                doc(
+                    db,
+                    "usuarios",
+                    user.uid
+                )
+            );
 
+            if(!usuarioSnap.exists()) return;
 
-            const html =
-            await respuesta.text();
+            const datos =
+            usuarioSnap.data();
 
+            const logo =
+            document.getElementById(
+                "logoEstudiante"
+            );
 
-            contenido.innerHTML = html;
+            if(!logo) return;
 
+            // Buscar la academia del estudiante
+            if(datos.academiaUID){
+
+                const academiaSnap =
+                await getDoc(
+                    doc(
+                        db,
+                        "usuarios",
+                        datos.academiaUID
+                    )
+                );
+
+                if(
+                    academiaSnap.exists() &&
+                    academiaSnap.data().logoCustom
+                ){
+
+                    logo.src =
+                    academiaSnap.data().logoCustom;
+
+                }else{
+
+                    logo.src =
+                    "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+
+                }
+
+            }else{
+
+                logo.src =
+                "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+
+            }
+
+            logo.style.opacity = "1";
 
         }
         catch(error){
 
             console.error(
-                "Error cargando página:",
+                "Error cargando logo:",
                 error
             );
 
         }
 
-    }
-
+    });
 
 
     // ==========================================
-    // MIS ASIGNATURAS
+    // CERRAR SESIÓN
     // ==========================================
 
-    const btnAsignaturas =
-    document.getElementById("btnAsignaturas");
+    const btnLogout =
+    document.getElementById(
+        "btnLogout"
+    );
 
+    if(btnLogout){
 
-    if(btnAsignaturas){
-
-
-        btnAsignaturas.addEventListener(
+        btnLogout.addEventListener(
             "click",
-            (e)=>{
-
+            async(e)=>{
 
                 e.preventDefault();
 
+                await signOut(auth);
 
-                cargarPagina(
-                    "mis-asignaturas-academia.html"
-                );
-
+                window.location.href =
+                CONFIG.URL_INDEX;
 
             }
         );
 
-
     }
-
-
 
 }
