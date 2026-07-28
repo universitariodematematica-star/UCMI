@@ -26,6 +26,11 @@ async function cargarAsignaturas(){
     const user =
     auth.currentUser;
 
+    console.log(
+    "Usuario autenticado:",
+    user.uid
+);
+
 
     if(!user){
 
