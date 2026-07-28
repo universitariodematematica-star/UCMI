@@ -1,166 +1,77 @@
-import { auth, db, CONFIG } from "../firebase-config.js";
-
-import {
-    doc,
-    getDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-import {
-    onAuthStateChanged,
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { auth } from "../firebase-config.js";
 
 
 // ==========================================
-// INICIAR PLANTILLA ESTUDIANTE
+// INICIAR PANEL ESTUDIANTE
 // ==========================================
 
-export function iniciarPlantillaEstudiante(){
+export function iniciarPanelEstudiante(){
+
+
+    const contenido =
+    document.getElementById("contenido");
 
 
 
-// ==========================================
-// CARGAR LOGO DEL ESTUDIANTE / ACADEMIA
-// ==========================================
-
-onAuthStateChanged(auth, async (user)=>{
+    async function cargarPagina(archivo){
 
 
-    if(!user){
+        try{
 
-        window.location.href =
-        CONFIG.URL_INDEX;
-
-        return;
-
-    }
+            const respuesta =
+            await fetch(archivo);
 
 
-
-    try{
-
-
-        const usuarioRef =
-        doc(
-            db,
-            "usuarios",
-            user.uid
-        );
+            const html =
+            await respuesta.text();
 
 
-
-        const usuarioSnap =
-        await getDoc(usuarioRef);
-
-
-
-        if(!usuarioSnap.exists()){
-
-            return;
-
-        }
-
-
-
-       const datos =
-usuarioSnap.data();
-
-const logo =
-document.getElementById(
-    "logoEstudiante"
-);
-
-if(logo){
-
-    if(datos.academiaUID){
-
-        const academiaSnap =
-        await getDoc(
-            doc(
-                db,
-                "usuarios",
-                datos.academiaUID
-            )
-        );
-
-        if(
-            academiaSnap.exists() &&
-            academiaSnap.data().logoCustom
-        ){
-
-            logo.src =
-            academiaSnap.data().logoCustom;
-
-        }else{
-
-            logo.src =
-            "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-
-        }
-
-    }else{
-
-        logo.src =
-        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
-
-    }
-
-    logo.style.opacity="1";
-
-}
-
-
-    }
-    catch(error){
-
-        console.error(
-            "Error cargando estudiante:",
-            error
-        );
-
-    }
-
-
-
-});
-
-
-
-// ==========================================
-// CERRAR SESIÓN
-// ==========================================
-
-
-const btnLogout =
-document.getElementById(
-    "btnLogout"
-);
-
-
-
-if(btnLogout){
-
-
-    btnLogout.addEventListener(
-        "click",
-        async(e)=>{
-
-
-            e.preventDefault();
-
-
-            await signOut(auth);
-
-
-            window.location.href =
-            CONFIG.URL_INDEX;
+            contenido.innerHTML = html;
 
 
         }
-    );
+        catch(error){
+
+            console.error(
+                "Error cargando página:",
+                error
+            );
+
+        }
+
+    }
 
 
-}
+
+    // ==========================================
+    // MIS ASIGNATURAS
+    // ==========================================
+
+    const btnAsignaturas =
+    document.getElementById("btnAsignaturas");
+
+
+    if(btnAsignaturas){
+
+
+        btnAsignaturas.addEventListener(
+            "click",
+            (e)=>{
+
+
+                e.preventDefault();
+
+
+                cargarPagina(
+                    "mis-asignaturas-academia.html"
+                );
+
+
+            }
+        );
+
+
+    }
 
 
 
