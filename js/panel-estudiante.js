@@ -1,52 +1,54 @@
-export function iniciarPanelEstudiante(){
+export function iniciarPanelEstudiante() {
 
-    const contenido =
-    document.getElementById("contenido");
+    const contenido = document.getElementById("contenido");
 
+    async function cargarPagina(archivo) {
 
-    async function cargarPagina(archivo){
+        try {
 
-        const respuesta =
-        await fetch(archivo);
+            const respuesta = await fetch(archivo);
 
-const html =
-await respuesta.text();
+            if (!respuesta.ok) {
+                throw new Error(`No se pudo cargar ${archivo}`);
+            }
 
-console.log("Página cargada:", archivo);
+            const html = await respuesta.text();
 
-contenido.innerHTML = html;
+            console.log("Página cargada:", archivo);
+
+            contenido.innerHTML = html;
+
+        } catch (error) {
+
+            console.error("Error cargando página:", error);
+
+            contenido.innerHTML = `
+                <div style="color:white;padding:30px;">
+                    <h3>Error al cargar la página</h3>
+                    <p>${error.message}</p>
+                </div>
+            `;
+
+        }
 
     }
 
+    // ===============================
+    // BOTÓN MIS ASIGNATURAS
+    // ===============================
 
-const btnAsignaturas =
-document.getElementById("btnAsignaturas");
+    const btnAsignaturas = document.getElementById("btnAsignaturas");
 
+    if (btnAsignaturas) {
 
-if(btnAsignaturas){
-
-    btnAsignaturas.addEventListener(
-        "click",
-        (e)=>{
+        btnAsignaturas.addEventListener("click", (e) => {
 
             e.preventDefault();
 
-            cargarPagina(
-                "mis-asignaturas-academia.html"
-            );
+            cargarPagina("mis-asignaturas-academia.html");
 
-        }
-    );
+        });
 
-}
-
-        e.preventDefault();
-
-        cargarPagina(
-            "mis-asignaturas-academia.html"
-        );
-
-    });
-
+    }
 
 }
