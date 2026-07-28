@@ -689,14 +689,59 @@ document.getElementById('btnConfirmarAcceso').onclick = async () => {
         );
 
         // Guardar en Firestore
-        await setDoc(doc(db, "usuarios", cred.user.uid), {
-            ...currentData,
-            asignaturas: currentData.asignaturas || [],
-            estado: "activo",
-            rol: esDocente ? "docente" : "estudiante",
-            claveInicial: password,
-            fechaRegistro: new Date().toISOString()
-        });
+await setDoc(doc(db, "usuarios", cred.user.uid), {
+    ...currentData,
+
+    //==========================
+    // RELACIÓN CON LA ACADEMIA
+    //==========================
+
+    academiaUID: auth.currentUser.uid,
+    academiaNombre: academiaNombreGlobal,
+
+    //==========================
+    // CURSO
+    //==========================
+
+    cursoUID: "",
+    cursoNombre: "",
+
+    //==========================
+    // AULA
+    //==========================
+
+    aulaUID: "",
+    aulaNombre: "",
+
+    //==========================
+    // FECHAS
+    //==========================
+
+    fechaIngresoAcademia: new Date().toISOString(),
+    fechaRegistro: new Date().toISOString(),
+
+    //==========================
+    // ESTADO ACADÉMICO
+    //==========================
+
+    estatusAcademico: "activo",
+
+    //==========================
+    // ASIGNATURAS
+    //==========================
+
+    asignaturas: currentData.asignaturas || [],
+
+    //==========================
+    // DATOS DEL SISTEMA
+    //==========================
+
+    estado: "activo",
+
+    rol: esDocente ? "docente" : "estudiante",
+
+    claveInicial: password
+});
 
         // Guardar en historial
         await addDoc(collection(db, "historial_postulaciones"), {
