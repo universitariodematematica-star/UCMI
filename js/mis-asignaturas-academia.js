@@ -107,24 +107,19 @@ integrantesSnap.forEach(doc=>{
             // ==========================================
 
 
-try{
+const aulaSnap =
+await getDoc(
+    doc(
+        db,
+        "aulas",
+        aulaId
+    )
+);
 
-    const aulaSnap =
-    await getDoc(
-        doc(
-            db,
-            "aulas",
-            aulaId
-        )
-    );
+if(!aulaSnap.exists()) continue;
 
-    console.log("✔ Se pudo leer aulas");
-
-}catch(e){
-
-    console.error("❌ Error leyendo aulas", e);
-
-}
+const aula =
+aulaSnap.data();
 
 
             if(!aulaSnap.exists()) continue;
