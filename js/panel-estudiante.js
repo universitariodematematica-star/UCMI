@@ -9,17 +9,36 @@ export function iniciarPanelEstudiante(){
         const respuesta =
         await fetch(archivo);
 
-        const html =
-        await respuesta.text();
+const html =
+await respuesta.text();
 
-        contenido.innerHTML = html;
+console.log("Página cargada:", archivo);
+
+contenido.innerHTML = html;
 
     }
 
 
-    document
-    .getElementById("btnAsignaturas")
-    .addEventListener("click",(e)=>{
+const btnAsignaturas =
+document.getElementById("btnAsignaturas");
+
+
+if(btnAsignaturas){
+
+    btnAsignaturas.addEventListener(
+        "click",
+        (e)=>{
+
+            e.preventDefault();
+
+            cargarPagina(
+                "mis-asignaturas-academia.html"
+            );
+
+        }
+    );
+
+}
 
         e.preventDefault();
 
