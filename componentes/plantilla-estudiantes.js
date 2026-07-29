@@ -79,7 +79,10 @@ if(academiaSnap.exists()){
     const datosAcademia =
     academiaSnap.data();
 
-
+console.log(
+    "DATOS DE LA ACADEMIA:",
+    datosAcademia
+);
 
     // LOGO DE LA ACADEMIA
 
