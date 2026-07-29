@@ -228,7 +228,8 @@ if(!profesorSnap.empty){
         asignacion
     );
 
-
+console.log("usuarioId docente:", asignacion.usuarioId);
+    
     if(asignacion.usuarioId){
 
 
