@@ -54,6 +54,11 @@ export function iniciarPlantillaEstudiante(){
                 "logoEstudiante"
             );
 
+            const nombreAcademiaSidebar =
+document.getElementById(
+    "nombreAcademiaSidebar"
+);
+
             if(!logo) return;
 
             // Buscar la academia del estudiante
@@ -68,20 +73,59 @@ export function iniciarPlantillaEstudiante(){
                     )
                 );
 
-                if(
-                    academiaSnap.exists() &&
-                    academiaSnap.data().logoCustom
-                ){
+if(academiaSnap.exists()){
 
-                    logo.src =
-                    academiaSnap.data().logoCustom;
 
-                }else{
+    const datosAcademia =
+    academiaSnap.data();
 
-                    logo.src =
-                    "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
 
-                }
+
+    // LOGO DE LA ACADEMIA
+
+    if(datosAcademia.logoCustom){
+
+        logo.src =
+        datosAcademia.logoCustom;
+
+    }else{
+
+        logo.src =
+        "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+
+    }
+
+
+
+    // NOMBRE DE LA ACADEMIA
+
+    if(nombreAcademiaSidebar){
+
+        nombreAcademiaSidebar.textContent =
+        datosAcademia.nombre
+        ||
+        datosAcademia.entidad
+        ||
+        "Academia";
+
+    }
+
+
+}
+else{
+
+    logo.src =
+    "https://universitariodematematica-star.github.io/UCMI/logo-ucmi.png";
+
+
+    if(nombreAcademiaSidebar){
+
+        nombreAcademiaSidebar.textContent =
+        "Academia";
+
+    }
+
+}
 
             }else{
 
