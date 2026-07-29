@@ -132,6 +132,11 @@ let asignaturas = [];
 
 if(aula.cursoId){
 
+        console.log("Intentando leer curso_asignaturas con:");
+    console.log("cursoId:", aula.cursoId);
+    console.log("entidad:", aula.entidad);
+
+
 
     const asignaturasSnap =
     await getDocs(
