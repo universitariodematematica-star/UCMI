@@ -182,12 +182,20 @@ if(asignaturas.length === 0){
 
 }            
 
-let profesor = "Pendiente";
 
 
 // ==========================================
-// BUSCAR PROFESOR DEL AULA
-// DESDE aula_docente_asignacion
+// CREAR UNA TARJETA POR CADA ASIGNATURA
+// ==========================================
+
+
+for(const asignatura of asignaturas){
+
+    let profesor = "Pendiente";
+
+
+// ==========================================
+// BUSCAR PROFESOR DE ESTA ASIGNATURA
 // ==========================================
 
 const qProfesor =
@@ -197,13 +205,12 @@ query(
         "aulaId",
         "==",
         aulaId
+    ),
+    where(
+        "asignatura",
+        "==",
+        asignatura
     )
-);
-
-
-console.log(
-    "Buscando asignaciones docentes del aula:",
-    aulaId
 );
 
 
@@ -212,20 +219,17 @@ await getDocs(qProfesor);
 
 
 console.log(
-    "Asignaciones docentes encontradas:",
+    "Asignaciones docentes encontradas para:",
+    asignatura,
     profesorSnap.size
 );
 
 
 if(!profesorSnap.empty){
 
-const asignacion =
-profesorSnap.docs
-.find(
-    doc =>
-    doc.data().asignatura === asignatura
-)
-?.data();
+
+    const asignacion =
+    profesorSnap.docs[0].data();
 
 
     console.log(
@@ -233,49 +237,14 @@ profesorSnap.docs
         asignacion
     );
 
-console.log("usuarioId docente:", asignacion.usuarioId);
-    
-if(asignacion.docenteId){
 
+    profesor =
+    asignacion.nombreResponsable
+    ||
+    "Pendiente";
 
-    const docenteSnap =
-    await getDoc(
-        doc(
-            db,
-            "usuarios",
-            asignacion.docenteId
-        )
-    );
-
-
-    if(docenteSnap.exists()){
-
-        profesor =
-        docenteSnap.data().nombreResponsable
-        ||
-        "Pendiente";
-
-    } else {
-
-        profesor =
-        asignacion.nombreResponsable
-        ||
-        "Pendiente";
-
-    }
 
 }
-
-}
-
-
-
-// ==========================================
-// CREAR UNA TARJETA POR CADA ASIGNATURA
-// ==========================================
-
-
-asignaturas.forEach(asignatura => {
 
 
     contenedor.innerHTML += `
@@ -341,7 +310,7 @@ asignaturas.forEach(asignatura => {
     `;
 
 
-});
+}
 
         } // cierre del for(const integrante of integrantesSnap.docs)
 
