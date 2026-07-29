@@ -23,18 +23,33 @@ async function cargarPagina(archivo) {
         // INICIALIZAR JS DE CADA PÁGINA
         // ===============================
 
-        if(archivo === "mis-asignaturas-academia.html"){
+if(archivo === "mis-asignaturas-academia.html"){
 
-            const modulo =
-            await import("./mis-asignaturas-academia.js");
+    console.log("➡ Intentando importar mis-asignaturas-academia.js");
 
-            if(modulo.cargarAsignaturas){
+    const modulo =
+    await import("./mis-asignaturas-academia.js");
 
-                modulo.cargarAsignaturas();
+    console.log("✔ Módulo importado:", modulo);
 
-            }
+    console.log(
+        "✔ cargarAsignaturas:",
+        modulo.cargarAsignaturas
+    );
 
-        }
+    if(modulo.cargarAsignaturas){
+
+        console.log("🚀 Ejecutando cargarAsignaturas()");
+
+        await modulo.cargarAsignaturas();
+
+    } else {
+
+        console.error("❌ No existe cargarAsignaturas()");
+
+    }
+
+}
 
     } catch (error) {
 
