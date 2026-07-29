@@ -121,6 +121,8 @@ if(!aulaSnap.exists()) continue;
 const aula =
 aulaSnap.data();
 
+console.log("✔ Aula leída:", aula);
+            
 // ==========================================
 // BUSCAR ASIGNATURAS DEL CURSO DEL AULA
 // ==========================================
@@ -148,6 +150,10 @@ if(aula.cursoId){
         )
     );
 
+    console.log(
+    "✔ Asignaturas encontradas:",
+    asignaturasSnap.size
+);
 
     asignaturasSnap.forEach(doc => {
 
@@ -193,7 +199,8 @@ query(
     )
 );
 
-
+console.log("Buscando profesores del aula:", aulaId);
+            
 const profesorSnap =
 await getDocs(qProfesor);
 
