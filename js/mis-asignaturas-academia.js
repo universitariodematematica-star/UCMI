@@ -217,9 +217,6 @@ console.log(
 );
 
 
-let profesor = "Pendiente";
-
-
 if(!profesorSnap.empty){
 
     const asignacion =
