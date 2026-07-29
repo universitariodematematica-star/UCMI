@@ -187,36 +187,74 @@ let profesor = "Pendiente";
 
 // ==========================================
 // BUSCAR PROFESOR DEL AULA
+// DESDE aula_docente_asignacion
 // ==========================================
 
 const qProfesor =
 query(
-    collection(db,"aula_integrantes"),
+    collection(db,"aula_docente_asignacion"),
     where(
         "aulaId",
         "==",
         aulaId
-    ),
-    where(
-        "perfil",
-        "==",
-        "Docente Academia"
     )
 );
 
-console.log("Buscando profesores del aula:", aulaId);
-            
+
+console.log(
+    "Buscando asignaciones docentes del aula:",
+    aulaId
+);
+
+
 const profesorSnap =
 await getDocs(qProfesor);
 
 
+console.log(
+    "Asignaciones docentes encontradas:",
+    profesorSnap.size
+);
+
+
+let profesor = "Pendiente";
+
 
 if(!profesorSnap.empty){
 
-    profesor =
-    profesorSnap.docs[0].data().nombreResponsable
-    ||
-    "Pendiente";
+    const asignacion =
+    profesorSnap.docs[0].data();
+
+
+    console.log(
+        "Asignación docente:",
+        asignacion
+    );
+
+
+    if(asignacion.usuarioId){
+
+
+        const docenteSnap =
+        await getDoc(
+            doc(
+                db,
+                "usuarios",
+                asignacion.usuarioId
+            )
+        );
+
+
+        if(docenteSnap.exists()){
+
+            profesor =
+            docenteSnap.data().nombreResponsable
+            ||
+            "Pendiente";
+
+        }
+
+    }
 
 }
 
