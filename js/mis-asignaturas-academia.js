@@ -14,7 +14,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 
-async function cargarAsignaturas(){
+export async function cargarAsignaturas(){
 
     const contenedor =
     document.getElementById("listaAsignaturas");
@@ -327,20 +327,3 @@ if(!profesorSnap.empty){
 
 
 } // cierre de cargarAsignaturas            
-
-
-
-// Esperar Firebase Auth
-
-onAuthStateChanged(
-    auth,
-    (user)=>{
-
-        if(user){
-
-            cargarAsignaturas();
-
-        }
-
-    }
-);
