@@ -121,38 +121,46 @@ if(!aulaSnap.exists()) continue;
 const aula =
 aulaSnap.data();
 
-            // ==========================================
-            // BUSCAR DOCENTE Y ASIGNATURA
-            // ==========================================
+// ==========================================
+// BUSCAR ASIGNATURAS DEL CURSO DEL AULA
+// ==========================================
+
+let asignaturas = [];
 
 
-            const qAsignacion =
-            query(
-                collection(
-                    db,
-                    "aula_docente_asignacion"
-                ),
-                where(
-                    "aulaId",
-                    "==",
-                    aulaId
-                )
-            );
+if(aula.cursoId){
 
 
-    const asignacionSnap =
-    await getDocs(qAsignacion);
+    const asignaturasSnap =
+    await getDocs(
+        query(
+            collection(db,"curso_asignaturas"),
+            where(
+                "cursoId",
+                "==",
+                aula.cursoId
+            ),
+            where(
+                "entidad",
+                "==",
+                aula.entidad
+            )
+        )
+    );
 
-    console.log("✔ Se pudo leer aula_docente_asignacion");
+
+    asignaturasSnap.forEach(doc => {
+
+        asignaturas.push(
+            doc.data().asignatura
+        );
+
+    });
 
 
-            let profesor =
-            "Pendiente";
+}
 
-
-            let asignatura =
-            "Sin asignatura";
-
+let profesor = "Pendiente";
 
 
             if(!asignacionSnap.empty){
@@ -189,9 +197,13 @@ aulaSnap.data();
                 <div class="tarjeta-asignatura">
 
 
-                    <div class="nombre-asignatura">
-                        📚 ${asignatura}
-                    </div>
+<div class="nombre-asignatura">
+
+${asignaturas.map(a=>`
+    📚 ${a}<br>
+`).join("")}
+
+</div>
 
 
                     <hr>
