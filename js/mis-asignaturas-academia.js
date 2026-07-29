@@ -160,101 +160,130 @@ if(aula.cursoId){
 
 }
 
+if(asignaturas.length === 0){
+
+    console.log(
+        "El aula no tiene asignaturas:",
+        aulaId
+    );
+
+    continue;
+
+}            
+
 let profesor = "Pendiente";
 
 
-            if(!asignacionSnap.empty){
+// ==========================================
+// BUSCAR PROFESOR DEL AULA
+// ==========================================
+
+const qProfesor =
+query(
+    collection(db,"aula_integrantes"),
+    where(
+        "aulaId",
+        "==",
+        aulaId
+    ),
+    where(
+        "perfil",
+        "==",
+        "Docente Academia"
+    )
+);
 
 
-                const asignacion =
-                asignacionSnap.docs[0].data();
-
-
-                profesor =
-                asignacion.nombreResponsable ||
-                "Pendiente";
-
-
-                asignatura =
-                asignacion.asignatura ||
-                "Sin asignatura";
-
-
-            }
+const profesorSnap =
+await getDocs(qProfesor);
 
 
 
-            // ==========================================
-            // CREAR TARJETA
-            // ==========================================
+if(!profesorSnap.empty){
+
+    profesor =
+    profesorSnap.docs[0].data().nombreResponsable
+    ||
+    "Pendiente";
+
+}
 
 
-            contenedor.innerHTML += `
 
-            <div class="col-md-6 col-lg-4 mb-4">
-
-
-                <div class="tarjeta-asignatura">
+// ==========================================
+// CREAR UNA TARJETA POR CADA ASIGNATURA
+// ==========================================
 
 
-<div class="nombre-asignatura">
-
-${asignaturas.map(a=>`
-    📚 ${a}<br>
-`).join("")}
-
-</div>
+asignaturas.forEach(asignatura => {
 
 
-                    <hr>
+    contenedor.innerHTML += `
+
+    <div class="col-md-6 col-lg-3 mb-4">
 
 
-                    <div class="dato">
-                        <b>Academia:</b><br>
-                        ${aula.entidad || "Sin academia"}
-                    </div>
+        <div class="tarjeta-asignatura">
 
 
-                    <div class="dato">
-                        <b>Profesor:</b><br>
-                        ${profesor}
-                    </div>
+            <div class="nombre-asignatura">
 
-
-                    <div class="dato">
-                        <b>Aula:</b><br>
-                        ${aula.nombre_aula || "Sin aula"}
-                    </div>
-
-
-                    <div class="dato">
-
-                        <b>Estado:</b>
-
-                        <span class="badge bg-success">
-                            Activa
-                        </span>
-
-                    </div>
-
-
-                    <button 
-                    class="btn btn-ucmi w-100 mt-3">
-
-                        CONTENIDO
-
-                    </button>
-
-
-                </div>
-
+                📚 ${asignatura}
 
             </div>
 
-            `;
+
+            <hr>
 
 
-        }
+            <div class="dato">
+                <b>Academia:</b><br>
+                ${aula.entidad || "Sin academia"}
+            </div>
+
+
+            <div class="dato">
+                <b>Profesor:</b><br>
+                ${profesor}
+            </div>
+
+
+            <div class="dato">
+                <b>Aula:</b><br>
+                ${aula.nombre_aula || "Sin aula"}
+            </div>
+
+
+            <div class="dato">
+
+                <b>Estado:</b>
+
+                <span class="badge bg-success">
+                    Activa
+                </span>
+
+            </div>
+
+
+            <button 
+            class="btn btn-ucmi w-100 mt-3">
+
+                CONTENIDO
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+    `;
+
+
+});
+
+        } // cierre del for(const integrante of integrantesSnap.docs)
 
 
     }
@@ -268,7 +297,7 @@ ${asignaturas.map(a=>`
     }
 
 
-}
+} // cierre de cargarAsignaturas            
 
 
 
