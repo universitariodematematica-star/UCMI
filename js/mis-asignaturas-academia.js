@@ -219,8 +219,13 @@ console.log(
 
 if(!profesorSnap.empty){
 
-    const asignacion =
-    profesorSnap.docs[0].data();
+const asignacion =
+profesorSnap.docs
+.find(
+    doc =>
+    doc.data().asignatura === asignatura
+)
+?.data();
 
 
     console.log(
@@ -230,29 +235,36 @@ if(!profesorSnap.empty){
 
 console.log("usuarioId docente:", asignacion.usuarioId);
     
-    if(asignacion.usuarioId){
+if(asignacion.docenteId){
 
 
-        const docenteSnap =
-        await getDoc(
-            doc(
-                db,
-                "usuarios",
-                asignacion.usuarioId
-            )
-        );
+    const docenteSnap =
+    await getDoc(
+        doc(
+            db,
+            "usuarios",
+            asignacion.docenteId
+        )
+    );
 
 
-        if(docenteSnap.exists()){
+    if(docenteSnap.exists()){
 
-            profesor =
-            docenteSnap.data().nombreResponsable
-            ||
-            "Pendiente";
+        profesor =
+        docenteSnap.data().nombreResponsable
+        ||
+        "Pendiente";
 
-        }
+    } else {
+
+        profesor =
+        asignacion.nombreResponsable
+        ||
+        "Pendiente";
 
     }
+
+}
 
 }
 
