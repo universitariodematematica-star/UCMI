@@ -64,6 +64,52 @@ document.addEventListener("DOMContentLoaded", () => {
             contenedor.innerHTML = html;
 
             // ==========================================================
+// MENÚ CONSTRUCTORES
+// ==========================================================
+
+const btnConstructores = document.getElementById("btnConstructores");
+const submenuConstructores = document.getElementById("submenuConstructores");
+
+if (btnConstructores && submenuConstructores) {
+
+    btnConstructores.addEventListener("click", (e) => {
+
+        e.preventDefault();
+
+        submenuConstructores.style.display =
+            submenuConstructores.style.display === "none"
+            ? "block"
+            : "none";
+
+    });
+
+}
+
+
+// ==========================================================
+// SUBMENÚ IDIOMAS
+// ==========================================================
+
+const btnIdiomas = document.getElementById("btnIdiomas");
+const submenuIdiomas = document.getElementById("submenuIdiomas");
+
+
+if (btnIdiomas && submenuIdiomas) {
+
+    btnIdiomas.addEventListener("click", (e) => {
+
+        e.preventDefault();
+
+        submenuIdiomas.style.display =
+            submenuIdiomas.style.display === "none"
+            ? "block"
+            : "none";
+
+    });
+
+}
+
+            // ==========================================================
 // CERRAR SESIÓN GLOBAL
 // ==========================================================
 
