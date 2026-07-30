@@ -12,3 +12,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
 });
+
+const paginaActual = window.location.pathname.split("/").pop();
+
+document.querySelectorAll(".nav-item-ucmi").forEach(enlace => {
+
+    if(enlace.dataset.pagina === paginaActual){
+        enlace.classList.add("active");
+    }
+
+});
