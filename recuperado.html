@@ -1,1069 +1,268 @@
-let contadorEjercicios = 0;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCMI - Historial de Solicitudes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-const UCMIResultados = {
+    <style>
+:root { 
+    --dorado-ucmi: #c5a059; 
+    --sidebar-width: 260px;
+    --rojo-peligro: #e74c3c;
+    --cian-tech: #00f2ff;
+}
 
-    guardar(id, datos){
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    color: white;
+    background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha-pig9aN462AKJSlSnHrqcseuCYM6l9W6-N57xQaB53nmVFnuXEWdVN4KSaYZSR7S9Fm0BIL2MjAZeZFngTHSIgeGDJNdrApWfqwOF1ZcJgrQbWF6sdjaMDcpnVgen1_5o-kKXdRo46Q_Ly3xjyS-oJbOYRjmoA9-t82SgBcvHEmXsC0_tQhExYyoBvRV/s1408/Gemini_Generated_Image_x1m01x1m01x1m01x.png') no-repeat center center fixed;
+    background-size: cover;
+    overflow: hidden;
+    height: 100vh;
+}
 
-        localStorage.setItem(
-            "ucmi_resultado_" + id,
-            JSON.stringify(datos)
-        );
+.wrapper { 
+    display: flex; 
+    height: 100vh; 
+    width: 100vw; 
+    overflow: hidden;
+}
+
+/* --- ESTILOS OFICIALES DEL SIDEBAR --- */
+.sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    height: 100vh;
+    background: rgba(10, 15, 25, 0.75);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 12px 12px; /* Reducimos ligeramente el padding vertical */
+    box-sizing: border-box;
+    z-index: 1000;
+    overflow: hidden; /* Evita cualquier desbordamiento general */
+}
+
+.logo-sidebar {
+    max-width: 70px; /* Reducimos un poco el tamaño del logo para ganar espacio */
+    height: auto;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* Espaciado más compacto entre botones */
+    flex-grow: 1;
+    overflow-y: hidden; /* Oculta la barra de scroll completamente */
+    margin-top: 5px;
+}
+
+.nav-item-ucmi {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px; /* Altura de botones más compacta */
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+        
+.nav-item-ucmi i {
+    font-size: 1.1rem;
+}
+
+.nav-item-ucmi:hover, 
+.nav-item-ucmi.active {
+    background: linear-gradient(90deg, rgba(197, 160, 89, 0.15), transparent);
+    color: var(--dorado-ucmi);
+    border-left: 3px solid var(--dorado-ucmi);
+}
+
+/* Botones inferiores del sidebar */
+.btn-sidebar-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-sidebar-action:hover {
+    background: rgba(197, 160, 89, 0.15);
+    border-color: var(--dorado-ucmi);
+    color: var(--dorado-ucmi);
+}
+
+.btn-logout:hover {
+    background: rgba(231, 76, 60, 0.15);
+    border-color: var(--rojo-peligro);
+    color: var(--rojo-peligro);
+}
+
+/* --- CONTENIDO PRINCIPAL --- */
+.main-content {
+    flex-grow: 1;
+    width: calc(100vw - var(--sidebar-width));
+    padding: 40px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.glass-panel {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(25px);
+    border-radius: 30px;
+    padding: 35px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.45);
+}
+
+.table-historial { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+.table-historial tr { background: rgba(255, 255, 255, 0.03); border-radius: 15px; }
+.table-historial td { padding: 15px 20px; vertical-align: middle; border: none; }
+
+.badge-status { padding: 6px 14px; border-radius: 100px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
+.status-aprobado { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid #00ff8844; }
+.status-rechazado { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d44; }
+.status-pendiente { background: rgba(255, 204, 0, 0.1); color: #ffcc00; border: 1px solid #ffcc0044; }
+.neon-gold { color: var(--dorado-ucmi); font-weight: bold; }
+.date-chip { font-family: 'Courier New', monospace; background: rgba(0, 242, 255, 0.05); color: var(--cian-tech); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(0, 242, 255, 0.2); }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+    <div id="sidebar-ucmi"></div>
+
+    <main class="main-content">
+        <h2 class="neon-gold text-uppercase mb-4">Historial de Solicitudes</h2>
+        <div class="glass-panel">
+            <div class="table-responsive">
+                <table class="table-historial text-white">
+                    <thead>
+                        <tr class="text-white-50 small text-uppercase">
+                            <th class="ps-4">Solicitante</th>
+                            <th>Fecha</th>
+                            <th>Perfil</th>
+                            <th>Estado</th>
+                            <th>WhatsApp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCuerpo"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+    authDomain: "ucmi-13796634.firebaseapp.com",
+    projectId: "ucmi-13796634",
+    storageBucket: "ucmi-13796634.firebasestorage.app",
+    messagingSenderId: "1090719609536",
+    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, (user) => {
+    console.log("Usuario actual:", user?.uid);
+});
+    const tablaCuerpo = document.getElementById('tablaCuerpo');
+
+onSnapshot(
+    collection(db, "historial_postulaciones"),
+    (snapshot) => {
+
+        console.log("LECTURA EXITOSA");
+        console.log("DEBUG: Documentos detectados:", snapshot.size);
+
+        tablaCuerpo.innerHTML = '';
+
+        if (snapshot.empty) {
+            console.warn("DEBUG: La colección está vacía.");
+            tablaCuerpo.innerHTML =
+                '<tr><td colspan="5" class="text-center">No hay registros en el historial.</td></tr>';
+            return;
+        }
+
+        snapshot.forEach(doc => {
+            const p = doc.data();
+
+            const perfil = p.perfil || p.tipoSolicitante || 'ACADEMIA';
+            const esDocente = String(perfil).toLowerCase().includes("docente");
+            const decision = String(p.decisionFinal || "").toUpperCase().trim();
+            const whatsapp = p.whatsapp || '';
+
+            let statusClass = 'status-pendiente';
+            let estadoTexto = 'PENDIENTE';
+
+            if (decision === 'ACEPTADO') {
+                statusClass = 'status-aprobado';
+                estadoTexto = 'ACEPTADO';
+            } else if (decision === 'RECHAZADO') {
+                statusClass = 'status-rechazado';
+                estadoTexto = 'RECHAZADO';
+            }
+
+            tablaCuerpo.innerHTML += `
+                <tr>
+                    <td>
+                        <div class="fw-bold">${p.entidad || 'N/A'}</div>
+                        <div class="small text-white-50">${p.nombreResponsable || p.nombreEstudiante || '---'}</div>
+                    </td>
+                    <td><span class="date-chip">${p.fechaProceso || '---'}</span></td>
+                    <td><div class="fw-bold ${esDocente ? 'text-info' : 'text-warning'}">${String(perfil).toUpperCase()}</div></td>
+                    <td><span class="badge-status ${statusClass}">${estadoTexto}</span></td>
+                    <td>
+                        ${whatsapp
+                            ? `<a href="https://wa.me/${whatsapp}" target="_blank" class="text-decoration-none text-info"><i class="bi bi-whatsapp"></i> ${whatsapp}</a>`
+                            : '---'}
+                    </td>
+                </tr>
+            `;
+        });
 
     },
-
-
-    obtener(id){
-
-        const resultado =
-        localStorage.getItem(
-            "ucmi_resultado_" + id
-        );
-
-
-        return resultado
-        ? JSON.parse(resultado)
-        : null;
-
-    }
-
-};
-
-function escaparTexto(texto){
-
-    return String(texto ?? "")
-    .replace(/&/g,"&amp;")
-    .replace(/'/g,"&#39;")
-    .replace(/"/g,"&quot;")
-    .replace(/\n/g," ");
-
-}
-
-/*====================================================
-        SECCIÓN: SELECCIÓN SIMPLE
-====================================================*/
-
-function crearSeleccionSimple(ejerciciosSelSimple){
-
-    let htmlSelSimple = "";
-
-//========================================
-// Generar ejercicios selección simple
-//========================================
-
-ejerciciosSelSimple.forEach((ejercicio, indice)=>{
-
-
-    let opciones = [
-
-        ejercicio.correcta,
-
-        ejercicio.incorrecta1,
-
-        ejercicio.incorrecta2,
-
-        ejercicio.incorrecta3
-
-    ];
-
-
-    // Mezclar opciones aleatoriamente
-
-    for(let i = opciones.length - 1; i > 0; i--){
-
-    const j = Math.floor(Math.random() * (i + 1));
-
-    [opciones[i], opciones[j]] =
-    [opciones[j], opciones[i]];
-
-}
-
-
-    htmlSelSimple += `
-
-<div 
-class="ejercicio-sel-simple"
-data-id="sel-${indice}"
->
-
-<h3>
-${++contadorEjercicios}. ${ejercicio.pregunta}
-</h3>
-
-
-<div class="opciones">
-
-${opciones.map((opcion,i)=>`
-
-<label class="opcion-radio">
-
-<input
-type="radio"
-name="pregunta${indice}"
-value="${opcion}">
-
-${String.fromCharCode(97+i)}) ${opcion}
-
-</label>
-
-`).join("")}
-
-</div>
-
-
-<button
-class="verificar"
-data-correcta='${escaparTexto(ejercicio.correcta)}'
-data-explicacion='${escaparTexto(ejercicio.explicacion)}'
-onclick="verificarPregunta(this)">
-
-Verificar
-
-</button>
-
-
-<div 
-class="resultado"
-data-id="sel-${indice}"
-></div>
-
-
-</div>
-
-`;
-
-});
-    
-
-return htmlSelSimple;
-
-} 
-
-/*====================================================
-        SECCIÓN: DRAG AND DROP - ESPACIO EN BLANCO
-====================================================*/
-
-function crearDragDropBlanco(ejerciciosDragDrop){
-
-    let htmlDragDrop = `
-
-<div class="instruccion-ejercicio">
-Arrastra la palabra correcta para completar la oración.
-</div>
-
-`;
-
-
-    ejerciciosDragDrop.forEach((ejercicio, indice)=>{
-
-
-        let opciones = [
-    ejercicio.correcta,
-    ...ejercicio.opciones
-                        ];
-
-
-        // Mezclar botones
-
-        for(let i = opciones.length - 1; i > 0; i--){
-
-            const j = Math.floor(Math.random() * (i + 1));
-
-            [opciones[i], opciones[j]] =
-            [opciones[j], opciones[i]];
-
-        }
-
-
-
-        htmlDragDrop += `
-
-
-<div 
-class="ejercicio-drag-drop"
-data-id="drag-${indice}"
->
-
-<h3>
-${++contadorEjercicios}. ${ejercicio.textoAntes} ______ ${ejercicio.textoDespues}
-</h3>
-
-<div class="zona-oracion">
-
-
-<span class="texto-arrastre">
-${ejercicio.textoAntes}
-</span>
-
-
-<span
-class="espacio-drop"
-data-correcta='${ejercicio.correcta}'
-data-explicacion="${ejercicio.explicacion}">
-
-________
-
-</span>
-
-
-<span class="texto-arrastre">
-${ejercicio.textoDespues}
-</span>
-
-
-</div>
-
-<div class="banco-arrastre">
-
-${opciones.map(opcion=>`
-
-
-<button
-class="boton-arrastrable"
-draggable="true"
-data-id="dragboton-${indice}-${opcion}"
->
-
-${opcion}
-
-</button>
-
-
-`).join("")}
-
-
-
-</div>
-
-
-
-<button
-class="evaluar-drag"
-onclick="evaluarDrag(this)">
-Evaluar
-</button>
-
-<div 
-class="resultado"
-data-id="drag-${indice}"
-></div>
-
-</div>
-
-
-`;
-
-    });
-
-
-    return htmlDragDrop;
-
-}
-
-/*====================================================
-        MOTOR PRINCIPAL
-====================================================*/
-
-const UCMIMotorEjercicios = {
-
-    generar(config){
-
-        const contenedor =
-        document.getElementById(config.contenedor);
-
-
-        if(!contenedor){
-
-            console.error(
-            "No existe el contenedor:",
-            config.contenedor
-            );
-
-            return;
-
-        }
-
-
-        let htmlFinal = "";
-
-        console.log(
-            "MOTOR ORDENAR:",
-            config.ordenarOracion
-        );
-
-        contadorEjercicios = 0;    
-
-
-        //========================================
-        // SECCIÓN: SELECCIÓN SIMPLE
-        //========================================
-
-        if(config.seleccionSimple){
-
-            htmlFinal += crearSeleccionSimple(
-                config.seleccionSimple
-            );
-
-        }
-
-
-        //========================================
-        // SECCIÓN: COMPLETAR ESPACIOS
-        //========================================
-
-        if(config.completarEspacios){
-
-            htmlFinal += crearCompletarEspacios(
-                config.completarEspacios
-            );
-
-        }
-
-            //========================================
-        // SECCIÓN: DRAG AND DROP - ESPACIO EN BLANCO
-        //========================================
-
-if(config.dragDropBlanco){
-
-    htmlFinal += crearDragDropBlanco(
-        config.dragDropBlanco
-    );
-
-}
-
-if(config.ordenarOracion){
-
-    htmlFinal += crearOrdenarOracion(
-        config.ordenarOracion
-    );
-
-}        
-
-
-contenedor.innerHTML = htmlFinal;
-
-
-//========================================
-// RECUPERAR RESULTADOS GUARDADOS
-//========================================
-
-setTimeout(()=>{
-
-
-    document.querySelectorAll(
-        ".resultado[data-id]"
-    )
-    .forEach(resultado=>{
-
-
-        const id =
-        resultado.dataset.id;
-
-
-        const guardado =
-        UCMIResultados.obtener(id);
-
-
-        if(guardado){
-
-
-            resultado.innerHTML =
-            guardado.resultado;
-
-
-            resultado.style.color =
-            guardado.color;
-
-
-const bloque =
-resultado.closest(
-    ".ejercicio-sel-simple, .ejercicio-completar, .ejercicio-drag-drop, .ejercicio-ordenar-oracion"
-);
-
-
-            if(bloque){
-
-        const boton =
-        bloque.querySelector(
-            ".verificar, .evaluar-drag, .evaluar-ordenar"
-        );
-
-
-                if(boton){
-
-                    boton.disabled = true;
-
-                    boton.style.opacity="0.5";
-
-                    boton.style.cursor="not-allowed";
-
-                }
-
-            }
-
-
-        }
-
-
-    });
-
-
-},100);
-
-
-}
-
-};
-
-
-    function verificarPregunta(boton){
-
-    const bloque = boton.closest(".ejercicio-sel-simple");
-
-    const correcta = boton.dataset.correcta;
-
-    const explicacion = boton.dataset.explicacion;
-
-    const seleccionada =
-    bloque.querySelector(
-        'input[type="radio"]:checked'
-    );
-
-    const resultado =
-    bloque.querySelector(".resultado");
-
-
-    if(!seleccionada){
-
-        resultado.innerHTML =
-        "⚠ Debes seleccionar una respuesta.";
-
-        resultado.style.color="orange";
-
-        return;
-
-    }
-
-
-if(seleccionada.value === correcta){
-
-    resultado.innerHTML =
-    "✅ Correcto.<br><br><b>Explicación:</b> "
-    + explicacion;
-
-    resultado.style.color="green";
-
-
-}else{
-
-
-    resultado.innerHTML =
-    "❌ Incorrecto.<br><br><b>Explicación:</b> "
-    + explicacion;
-
-    resultado.style.color="red";
-
-}
-
-
-// GUARDAR RESULTADO DEL EJERCICIO
-
-UCMIResultados.guardar(
-    bloque.dataset.id,
-    {
-        resultado: resultado.innerHTML,
-        color: resultado.style.color
+    (error) => {
+        console.error("ERROR FIRESTORE:", error);
     }
 );
 
-
-}
-
-
-//========================================
-// Generar ejercicios completar espacios
-//========================================
-
-
-function crearCompletarEspacios(ejerciciosCompletar){
-
-    let htmlCompletar = `
-
-<div class="instruccion-ejercicio">
-Escribe la expresión que hace falta para completar la oración.
-</div>
-
-`;
-
-
-    ejerciciosCompletar.forEach((ejercicio, indice)=>{
-
-
-        htmlCompletar += `
-
-<div 
-class="ejercicio-completar"
-data-id="completar-${indice}"
->
-
-
-<h3>
-${++contadorEjercicios}. ${ejercicio.pregunta}
-</h3>
-
-
-<input 
-type="text"
-class="respuesta-escrita"
-placeholder="Escriba su respuesta">
-
-
-<button
-class="verificar"
-onclick="verificarCompletar(this)"
-
-data-respuesta='${escaparTexto(ejercicio.respuesta)}'
-
-data-explicacion='${escaparTexto(ejercicio.explicacion)}'>
-
-Verificar
-
-</button>
-
-
-<div 
-class="resultado"
-data-id="completar-${indice}"
-></div>
-
-
-</div>
-
-`;
-
-    });
-
-    return htmlCompletar;
-
-}
-
-function verificarCompletar(boton){
-
-
-const respuestaCorrecta =
-boton.dataset.respuesta;
-
-
-const explicacion =
-boton.dataset.explicacion;
-
-
-const contenedor =
-boton.parentElement;
-
-
-const entrada =
-contenedor.querySelector(".respuesta-escrita");
-
-
-const resultado =
-contenedor.querySelector(".resultado");
-
-
-const respuestaUsuario =
-entrada.value.trim().toLowerCase();
-
-
-
-if(respuestaUsuario === respuestaCorrecta.toLowerCase()){
-
-
-resultado.innerHTML =
-"✅ Correcto<br><br><b>Explicación:</b> "
-+ explicacion;
-
-
-resultado.style.color="green";
-
-
-}else{
-
-
-resultado.innerHTML =
-"❌ Incorrecto<br><br>Respuesta correcta: "
-+ respuestaCorrecta
-+ "<br><br><b>Explicación:</b> "
-+ explicacion;
-
-
-resultado.style.color="red";
-
-
-}
-
-
-// GUARDAR RESULTADO DEL EJERCICIO
-
-UCMIResultados.guardar(
-    contenedor.dataset.id,
-    {
-        resultado: resultado.innerHTML,
-        color: resultado.style.color
-    }
-);
-
-
-}
-
-function evaluarDrag(boton){
-
-
-const bloque =
-boton.closest(
-".ejercicio-drag-drop"
-);
-
-
-const espacio =
-bloque.querySelector(
-".espacio-drop"
-);
-
-
-const resultado =
-bloque.querySelector(
-".resultado"
-);
-
-
-
-const respuestaCorrecta =
-espacio.dataset.correcta;
-
-
-
-const botonColocado =
-espacio.querySelector(
-    ".boton-arrastrable"
-);
-
-
-const respuestaUsuario =
-botonColocado
-? botonColocado.textContent.trim()
-: "";
-
-if(respuestaUsuario === respuestaCorrecta){
-
-
-resultado.innerHTML =
-"✅ Correcto";
-
-
-resultado.style.color =
-"green";
-
-
-}else{
-
-
-resultado.innerHTML =
-"❌ Incorrecto.<br><br>"
-+
-"<b>Respuesta correcta:</b> "
-+
-respuestaCorrecta;
-
-
-resultado.style.color =
-"red";
-
-}
-
-
-
-// Guardar resultado
-
-UCMIResultados.guardar(
-
-bloque.dataset.id,
-
-{
-
-resultado:
-resultado.innerHTML,
-
-color:
-resultado.style.color
-
-}
-
-);
-
-
-}
-
-/*====================================================
-        ORDENAR ORACIÓN - PALABRA A PALABRA
-====================================================*/
-
-function crearOrdenarOracion(ejerciciosOrdenar){
-
-    let htmlOrdenar = `
-
-<div class="instruccion-ejercicio">
-Arrastra las palabras para formar la oración correcta.
-</div>
-
-`;
-
-
-    ejerciciosOrdenar.forEach((ejercicio, indice)=>{
-
-
-        // Separar oración en palabras
-
-        let palabras = ejercicio.oracion.split(" ");
-
-
-        // Crear copia mezclada
-
-        let palabrasMezcladas = [...palabras];
-
-
-        for(let i = palabrasMezcladas.length - 1; i > 0; i--){
-
-            const j = Math.floor(
-                Math.random() * (i + 1)
-            );
-
-
-            [
-                palabrasMezcladas[i],
-                palabrasMezcladas[j]
-            ] =
-            [
-                palabrasMezcladas[j],
-                palabrasMezcladas[i]
-            ];
-
-        }
-
-
-
-        htmlOrdenar += `
-
-<div 
-class="ejercicio-ordenar-oracion"
-data-id="ordenar-${indice}"
->
-
-<h3>
-${++contadorEjercicios}. Ordena la oración:
-</h3>
-
-<div class="banco-palabras-oracion">
-${
-palabrasMezcladas.map(palabra=>`
-
-<button
-class="palabra-arrastrable"
-draggable="true"
-data-id="boton-${contadorEjercicios}-${palabra}"
->
-
-${palabra}
-</button>
-`).join("")
-}
-</div>
-
-<div class="zona-destino-oracion"
-data-respuesta='${ejercicio.oracion}'
->
-Arrastra aquí las palabras
-</div>
-
-
-<button 
-class="evaluar-ordenar"
-onclick="evaluarOrdenar(this)"
->
-Evaluar
-</button>
-
-
-<div 
-class="resultado"
-data-id="ordenar-${indice}"
-></div>
-
-
-`;
-    });
-    console.log(
-    "HTML ORDENAR GENERADO CORRECTAMENTE"
-);
-
-return htmlOrdenar;
-}
-
-/*====================================================
-        EVENTOS DRAG AND DROP
-====================================================*/
-
-
-/*====================================================
-        EVENTO DRAGSTART
-====================================================*/
-
-/*====================================================
-        EVENTO DRAGSTART
-====================================================*/
-
-document.addEventListener(
-"dragstart",
-function(event){
-
-if(
-    event.target.classList.contains("palabra-arrastrable")
-    ||
-    event.target.classList.contains("boton-arrastrable")
-){
-
-        let palabra =
-        event.target.textContent.trim();
-
-
-        let idBoton =
-        event.target.dataset.id;
-
-
-        if(!idBoton){
-
-            idBoton =
-            "boton-" + Date.now();
-
-
-            event.target.dataset.id =
-            idBoton;
-
-        }
-
-
-        event.dataTransfer.setData(
-            "respuesta",
-            palabra
-        );
-
-
-        event.dataTransfer.setData(
-            "boton",
-            idBoton
-        );
-
-
-        event.dataTransfer.setData(
-            "tipo",
-            event.target.classList.contains("boton-arrastrable")
-            ? "drag-blanco"
-            : "ordenar"
-        );
-
-    }
-
-});
-
-        
-window.UCMIMotorEjercicios = UCMIMotorEjercicios;
-
-function evaluarOrdenar(boton){
-
-
-const bloque =
-boton.closest(
-".ejercicio-ordenar-oracion"
-);
-
-
-const zona =
-bloque.querySelector(
-".zona-destino-oracion"
-);
-
-
-const respuestaCorrecta =
-zona.dataset.respuesta.trim();
-
-
-const palabrasUsuario =
-[...zona.querySelectorAll(
-".palabra-arrastrable"
-)]
-.map(boton =>
-boton.textContent.trim()
-)
-.join(" ");
-
-
-
-const resultado =
-bloque.querySelector(
-".resultado"
-);
-
-
-
-if(
-palabrasUsuario === respuestaCorrecta
-){
-
-
-resultado.innerHTML =
-"✅ Correcto";
-
-
-resultado.style.color =
-"green";
-
-
-}else{
-
-
-resultado.innerHTML =
-"❌ Incorrecto.<br><br>"
-+
-"<b>Respuesta correcta:</b> "
-+
-respuestaCorrecta;
-
-
-resultado.style.color =
-"red";
-
-
-}
-
-// GUARDAR RESULTADO
-
-UCMIResultados.guardar(
-    bloque.dataset.id,
-    {
-        resultado: resultado.innerHTML,
-        color: resultado.style.color
-    }
-);
-
-}
-
-console.log("MOTOR CARGADO CORRECTAMENTE");
-
-document.addEventListener(
-"dragover",
-function(event){
-
-    if(
-        event.target.classList.contains("espacio-drop")
-        ||
-        event.target.classList.contains("zona-destino-oracion")
-        ||
-        event.target.classList.contains("banco-palabras-oracion")
-    ){
-
-        event.preventDefault();
-
-    }
-
-});
-
-document.addEventListener(
-"drop",
-function(event){
-
-    if(
-        event.target.classList.contains("espacio-drop")
-        ||
-        event.target.classList.contains("zona-destino-oracion")
-        ||
-        event.target.classList.contains("banco-palabras-oracion")
-    ){
-
-        event.preventDefault();
-
-
-        const idBoton =
-        event.dataTransfer.getData(
-            "boton"
-        );
-
-
-        const botonArrastrado =
-        document.querySelector(
-            `[data-id="${idBoton}"]`
-        );
-
-
-        if(!botonArrastrado){
-            return;
-        }
-
-
-        const origen =
-        botonArrastrado.parentElement;
-
-
-        const destino =
-        event.target;
-
-
-// Caso drag blanco
-if(
-    destino.classList.contains("espacio-drop")
-){
-
-    destino.innerHTML = "";
-
-    destino.appendChild(
-        botonArrastrado
-    );
-
-    botonArrastrado.classList.add(
-        "colocado-drop"
-    );
-
-    return;
-
-}
-
-
-        // Quitar texto inicial de la caja
-
-        if(
-            destino.classList.contains(
-                "zona-destino-oracion"
-            )
-        ){
-
-            if(
-                destino.textContent.includes(
-                    "Arrastra aquí las palabras"
-                )
-            ){
-
-                destino.textContent = "";
-
-            }
-
-        }
-
-
-
-        // Mover el mismo botón, no crear copias
-
-        destino.appendChild(
-            botonArrastrado
-        );
-
-
-    }
-
-});
+</script>
+<script type="module" src="js/alertas-globales.js"></script> 
+<script src="js/sidebar-ucmi.js"></script>    
+</body>
+</html>
