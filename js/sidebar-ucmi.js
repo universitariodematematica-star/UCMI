@@ -63,6 +63,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
             contenedor.innerHTML = html;
 
+            // ==========================================================
+// CERRAR SESIÓN GLOBAL
+// ==========================================================
+
+const btnLogout = document.getElementById("btnLogout");
+
+if (btnLogout) {
+
+    btnLogout.addEventListener("click", async (e) => {
+
+        e.preventDefault();
+
+        try {
+
+            const { getAuth, signOut } = await import(
+                "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
+            );
+
+            const auth = getAuth();
+
+            await signOut(auth);
+
+            window.location.href = "index.html";
+
+        } catch (error) {
+
+            console.error("Error al cerrar sesión:", error);
+
+        }
+
+    });
+
+}
+            
             // Activar automáticamente la página actual
             const paginaActual = window.location.pathname.split("/").pop();
 
