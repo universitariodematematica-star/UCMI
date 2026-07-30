@@ -1,22 +1,78 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    // ==========================================================
+    // CAPA GLOBAL DE VIDRIO AHUMADO
+    // ==========================================================
+    if (!document.querySelector(".ucmi-overlay")) {
+
+        const overlay = document.createElement("div");
+        overlay.className = "ucmi-overlay";
+
+        document.body.prepend(overlay);
+
+    }
+
+    // ==========================================================
+    // ESTILOS GLOBALES (se agregan una sola vez)
+    // ==========================================================
+    if (!document.getElementById("ucmi-sidebar-style")) {
+
+        const style = document.createElement("style");
+        style.id = "ucmi-sidebar-style";
+
+        style.textContent = `
+            .ucmi-overlay{
+                position:fixed;
+                inset:0;
+                z-index:0;
+                pointer-events:none;
+
+                background:
+                    radial-gradient(
+                        circle,
+                        rgba(6,9,15,.45) 0%,
+                        rgba(6,9,15,.82) 100%
+                    );
+            }
+
+            .wrapper,
+            .app-wrapper,
+            .main-content{
+                position:relative;
+                z-index:1;
+            }
+        `;
+
+        document.head.appendChild(style);
+
+    }
+
+    // ==========================================================
+    // CARGAR SIDEBAR
+    // ==========================================================
     fetch("componentes/sidebar-ucmi.html")
         .then(respuesta => respuesta.text())
         .then(html => {
 
-            document.getElementById("sidebar-ucmi").innerHTML = html;
+            const contenedor = document.getElementById("sidebar-ucmi");
 
+            if (!contenedor) {
+                console.warn("No existe el contenedor #sidebar-ucmi");
+                return;
+            }
 
+            contenedor.innerHTML = html;
+
+            // Activar automáticamente la página actual
             const paginaActual = window.location.pathname.split("/").pop();
 
             document.querySelectorAll(".nav-item-ucmi").forEach(enlace => {
 
-                if(enlace.dataset.pagina === paginaActual){
+                if (enlace.dataset.pagina === paginaActual) {
                     enlace.classList.add("active");
                 }
 
             });
-
 
         })
         .catch(error => {
