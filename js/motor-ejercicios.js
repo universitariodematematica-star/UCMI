@@ -298,29 +298,45 @@ function crearEmparejarColumnas(ejerciciosRelacionar){
 let htmlRelacionar = `
 
 <div class="instruccion-ejercicio">
-Arrastra cada palabra de la izquierda hasta su pareja correcta en la derecha.
+Arrastra cada palabra de la izquierda hasta su significado correcto.
 </div>
+
+
+<div class="ejercicio-relacionar"
+data-id="relacionar-0"
+>
+
+
+<h3>
+${++contadorEjercicios}. Relaciona:
+</h3>
+
 
 <div class="contenedor-relacionar">
 
+
 <div class="columna-relacionar">
 
-<h3>Palabras</h3>
+
+<h3>
+Palabras
+</h3>
 
 `;
 
 
-// Columna izquierda
+// COLUMNA IZQUIERDA
 
 ejerciciosRelacionar.forEach((ejercicio, indice)=>{
 
 
 htmlRelacionar += `
 
-<div 
+
+<div
 class="elemento-relacionar izquierda-relacionar"
 draggable="true"
-data-id-relacion="${indice}"
+data-id="relacion-${indice}"
 data-respuesta="${escaparTexto(ejercicio.derecha)}"
 >
 
@@ -328,7 +344,9 @@ ${escaparTexto(ejercicio.izquierda)}
 
 </div>
 
+
 `;
+
 
 });
 
@@ -339,26 +357,45 @@ htmlRelacionar += `
 </div>
 
 
+
 <div class="columna-relacionar">
 
-<h3>Significados</h3>
+
+<h3>
+Significados
+</h3>
+
 
 `;
 
 
-// Crear derecha mezclada
+// COLUMNA DERECHA MEZCLADA
 
-let derecha = ejerciciosRelacionar.map(e=>e.derecha);
+let derecha =
+ejerciciosRelacionar.map(
+e=>e.derecha
+);
 
 
-for(let i=derecha.length-1;i>0;i--){
 
-let j=Math.floor(Math.random()*(i+1));
+for(
+let i=derecha.length-1;
+i>0;
+i--
+){
 
-[derecha[i],derecha[j]]=
+let j =
+Math.floor(
+Math.random()*(i+1)
+);
+
+
+[derecha[i],derecha[j]]
+=
 [derecha[j],derecha[i]];
 
 }
+
 
 
 derecha.forEach((texto)=>{
@@ -379,9 +416,7 @@ ${escaparTexto(texto)}
 
 `;
 
-
 });
-
 
 
 htmlRelacionar += `
@@ -390,7 +425,11 @@ htmlRelacionar += `
 
 </div>
 
+</div>
+
 `;
+
+
 
 return htmlRelacionar;
 
@@ -1213,6 +1252,26 @@ destino.classList.contains("derecha-relacionar")
     destino.appendChild(
         botonArrastrado
     );
+
+    let correcta =
+botonArrastrado.dataset.respuesta;
+
+
+let colocada =
+destino.dataset.valor;
+
+
+if(correcta === colocada){
+
+    destino.style.background="lightgreen";
+    destino.style.border="2px solid green";
+
+}else{
+
+    destino.style.background="#ffcccc";
+    destino.style.border="2px solid red";
+
+}
 
 
     let correcta =
