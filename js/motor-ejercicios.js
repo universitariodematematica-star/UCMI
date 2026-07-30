@@ -987,6 +987,8 @@ if(
     event.target.classList.contains("palabra-arrastrable")
     ||
     event.target.classList.contains("boton-arrastrable")
+    ||
+    event.target.classList.contains("izquierda-relacionar")
 ){
 
         let palabra =
@@ -1021,13 +1023,27 @@ if(
         );
 
 
-        event.dataTransfer.setData(
-            "tipo",
-            event.target.classList.contains("boton-arrastrable")
-            ? "drag-blanco"
-            : "ordenar"
-        );
+        let tipo = "ordenar";
 
+
+if(
+event.target.classList.contains("boton-arrastrable")
+){
+    tipo = "drag-blanco";
+}
+
+
+if(
+event.target.classList.contains("izquierda-relacionar")
+){
+    tipo = "relacionar";
+}
+
+
+event.dataTransfer.setData(
+    "tipo",
+    tipo
+);
     }
 
 });
@@ -1134,6 +1150,10 @@ function(event){
         event.target.classList.contains("zona-destino-oracion")
         ||
         event.target.classList.contains("banco-palabras-oracion")
+        ||
+        event.target.classList.contains("derecha-relacionar")
+        ||
+        event.target.classList.contains("derecha-relacionar")
     ){
 
         event.preventDefault();
@@ -1182,6 +1202,42 @@ function(event){
         event.target;
 
 
+// Caso relacionar columnas
+
+if(
+destino.classList.contains("derecha-relacionar")
+){
+
+    destino.innerHTML = "";
+
+    destino.appendChild(
+        botonArrastrado
+    );
+
+
+    let correcta =
+    botonArrastrado.dataset.respuesta;
+
+
+    let colocada =
+    destino.dataset.valor;
+
+
+    if(correcta === colocada){
+
+        destino.style.background="lightgreen";
+
+    }else{
+
+        destino.style.background="#ffcccc";
+
+    }
+
+
+    return;
+
+}
+        
 // Caso drag blanco
 if(
     destino.classList.contains("espacio-drop")
