@@ -295,141 +295,104 @@ data-id="drag-${indice}"
 
 function crearEmparejarColumnas(ejerciciosRelacionar){
 
-    let htmlRelacionar = `
+let htmlRelacionar = `
 
 <div class="instruccion-ejercicio">
-Relaciona cada elemento de la columna izquierda con su correspondiente elemento de la columna derecha.
+Arrastra cada palabra de la izquierda hasta su pareja correcta en la derecha.
 </div>
+
+<div class="contenedor-relacionar">
+
+<div class="columna-relacionar">
+
+<h3>Palabras</h3>
 
 `;
 
 
+// Columna izquierda
 
 ejerciciosRelacionar.forEach((ejercicio, indice)=>{
 
 
-    let opcionesDerecha = [];
-
-
-    ejerciciosRelacionar.forEach(item=>{
-
-        opcionesDerecha.push(item.derecha);
-
-    });
-
-
-
-    // Mezclar columna derecha
-
-    for(let i = opcionesDerecha.length - 1; i > 0; i--){
-
-        const j = Math.floor(
-            Math.random() * (i + 1)
-        );
-
-
-        [
-            opcionesDerecha[i],
-            opcionesDerecha[j]
-        ] =
-        [
-            opcionesDerecha[j],
-            opcionesDerecha[i]
-        ];
-
-    }
-
-
-
 htmlRelacionar += `
 
-<div
-class="ejercicio-relacionar"
-data-id="relacionar-${indice}"
+<div 
+class="elemento-relacionar izquierda-relacionar"
+draggable="true"
+data-id-relacion="${indice}"
+data-respuesta="${escaparTexto(ejercicio.derecha)}"
 >
 
-
-<h3>
-${++contadorEjercicios}. Relaciona:
-</h3>
-
-
-<div class="relacionar-contenedor">
-
-
-<div class="columna-izquierda">
-
-<div class="relacion-item">
-
-${ejercicio.izquierda}
+${escaparTexto(ejercicio.izquierda)}
 
 </div>
-
-</div>
-
-
-
-<div class="columna-derecha">
-
-
-<select class="select-relacionar"
-data-correcta="${escaparTexto(ejercicio.derecha)}"
-data-explicacion="${escaparTexto(ejercicio.explicacion)}"
->
-
-
-<option value="">
-Seleccione
-</option>
-
-
-${
-opcionesDerecha.map(opcion=>`
-
-<option value="${escaparTexto(opcion)}">
-${opcion}
-</option>
-
-`).join("")
-}
-
-
-</select>
-
-
-</div>
-
-
-</div>
-
-
-
-<button
-class="verificar"
-onclick="verificarRelacionar(this)"
->
-
-Verificar
-
-</button>
-
-
-<div
-class="resultado"
-data-id="relacionar-${indice}"
-></div>
-
-
-</div>
-
 
 `;
 
 });
 
 
-return htmlRelacionar;
 
+htmlRelacionar += `
+
+</div>
+
+
+<div class="columna-relacionar">
+
+<h3>Significados</h3>
+
+`;
+
+
+// Crear derecha mezclada
+
+let derecha = ejerciciosRelacionar.map(e=>e.derecha);
+
+
+for(let i=derecha.length-1;i>0;i--){
+
+let j=Math.floor(Math.random()*(i+1));
+
+[derecha[i],derecha[j]]=
+[derecha[j],derecha[i]];
+
+}
+
+
+derecha.forEach((texto)=>{
+
+
+htmlRelacionar += `
+
+
+<div
+class="elemento-relacionar derecha-relacionar"
+data-valor="${escaparTexto(texto)}"
+>
+
+${escaparTexto(texto)}
+
+</div>
+
+
+`;
+
+
+});
+
+
+
+htmlRelacionar += `
+
+</div>
+
+</div>
+
+`;
+
+return htmlRelacionar;
 
 }
 
