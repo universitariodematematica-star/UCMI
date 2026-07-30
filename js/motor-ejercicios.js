@@ -290,6 +290,150 @@ data-id="drag-${indice}"
 }
 
 /*====================================================
+        RELACIONAR COLUMNAS
+====================================================*/
+
+function crearEmparejarColumnas(ejerciciosRelacionar){
+
+    let htmlRelacionar = `
+
+<div class="instruccion-ejercicio">
+Relaciona cada elemento de la columna izquierda con su correspondiente elemento de la columna derecha.
+</div>
+
+`;
+
+
+
+ejerciciosRelacionar.forEach((ejercicio, indice)=>{
+
+
+    let opcionesDerecha = [];
+
+
+    ejerciciosRelacionar.forEach(item=>{
+
+        opcionesDerecha.push(item.derecha);
+
+    });
+
+
+
+    // Mezclar columna derecha
+
+    for(let i = opcionesDerecha.length - 1; i > 0; i--){
+
+        const j = Math.floor(
+            Math.random() * (i + 1)
+        );
+
+
+        [
+            opcionesDerecha[i],
+            opcionesDerecha[j]
+        ] =
+        [
+            opcionesDerecha[j],
+            opcionesDerecha[i]
+        ];
+
+    }
+
+
+
+htmlRelacionar += `
+
+<div
+class="ejercicio-relacionar"
+data-id="relacionar-${indice}"
+>
+
+
+<h3>
+${++contadorEjercicios}. Relaciona:
+</h3>
+
+
+<div class="relacionar-contenedor">
+
+
+<div class="columna-izquierda">
+
+<div class="relacion-item">
+
+${ejercicio.izquierda}
+
+</div>
+
+</div>
+
+
+
+<div class="columna-derecha">
+
+
+<select class="select-relacionar"
+data-correcta="${escaparTexto(ejercicio.derecha)}"
+data-explicacion="${escaparTexto(ejercicio.explicacion)}"
+>
+
+
+<option value="">
+Seleccione
+</option>
+
+
+${
+opcionesDerecha.map(opcion=>`
+
+<option value="${escaparTexto(opcion)}">
+${opcion}
+</option>
+
+`).join("")
+}
+
+
+</select>
+
+
+</div>
+
+
+</div>
+
+
+
+<button
+class="verificar"
+onclick="verificarRelacionar(this)"
+>
+
+Verificar
+
+</button>
+
+
+<div
+class="resultado"
+data-id="relacionar-${indice}"
+></div>
+
+
+</div>
+
+
+`;
+
+});
+
+
+return htmlRelacionar;
+
+
+}
+
+/*====================================================
         MOTOR PRINCIPAL
 ====================================================*/
 
@@ -375,6 +519,17 @@ if(
 
     htmlFinal += crearOrdenarOracion(
         config.ordenarOracion
+    );
+
+}   
+
+if(
+    config.emparejarColumnas &&
+    config.mostrarRelacionar !== "No"
+){
+
+    htmlFinal += crearEmparejarColumnas(
+        config.emparejarColumnas
     );
 
 }        
