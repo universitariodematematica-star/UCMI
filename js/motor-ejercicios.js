@@ -1245,14 +1245,39 @@ function(event){
 
 // Caso relacionar columnas
 
+// Caso relacionar columnas
+
 if(
 destino.classList.contains("derecha-relacionar")
 ){
 
+    // Si ya había una respuesta colocada, eliminarla
     destino.innerHTML = "";
 
+
+    // Crear copia de la palabra seleccionada
+    let copia =
+    botonArrastrado.cloneNode(true);
+
+
+    // La copia ya no debe poder arrastrarse
+    copia.draggable = false;
+
+
+    // Identificarla como respuesta colocada
+    copia.classList.remove(
+        "izquierda-relacionar"
+    );
+
+
+    copia.classList.add(
+        "respuesta-relacionada"
+    );
+
+
+    // Insertar copia en la derecha
     destino.appendChild(
-        botonArrastrado
+        copia
     );
 
 
