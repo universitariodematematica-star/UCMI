@@ -1206,12 +1206,14 @@ document.addEventListener(
 function(event){
 
     if(
-        event.target.classList.contains("espacio-drop")
-        ||
-        event.target.classList.contains("zona-destino-oracion")
-        ||
-        event.target.classList.contains("banco-palabras-oracion")
-    ){
+    event.target.classList.contains("espacio-drop")
+    ||
+    event.target.classList.contains("zona-destino-oracion")
+    ||
+    event.target.classList.contains("banco-palabras-oracion")
+    ||
+    event.target.classList.contains("derecha-relacionar")
+){
 
         event.preventDefault();
 
@@ -1253,42 +1255,24 @@ destino.classList.contains("derecha-relacionar")
         botonArrastrado
     );
 
-    let correcta =
-botonArrastrado.dataset.respuesta;
 
-
-let colocada =
-destino.dataset.valor;
-
-
-if(correcta === colocada){
-
-    destino.style.background="lightgreen";
-    destino.style.border="2px solid green";
-
-}else{
-
-    destino.style.background="#ffcccc";
-    destino.style.border="2px solid red";
-
-}
-
-
-    let correcta =
+    let correctaRelacion =
     botonArrastrado.dataset.respuesta;
 
 
-    let colocada =
+    let colocadaRelacion =
     destino.dataset.valor;
 
 
-    if(correcta === colocada){
+    if(correctaRelacion === colocadaRelacion){
 
         destino.style.background="lightgreen";
+        destino.style.border="2px solid green";
 
     }else{
 
         destino.style.background="#ffcccc";
+        destino.style.border="2px solid red";
 
     }
 
