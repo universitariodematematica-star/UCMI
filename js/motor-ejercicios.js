@@ -407,6 +407,7 @@ htmlRelacionar += `
 <div
 class="elemento-relacionar derecha-relacionar"
 data-valor="${escaparTexto(texto)}"
+data-original="${escaparTexto(texto)}"
 >
 
 ${escaparTexto(texto)}
@@ -1028,6 +1029,8 @@ if(
     event.target.classList.contains("boton-arrastrable")
     ||
     event.target.classList.contains("izquierda-relacionar")
+    ||
+    event.target.classList.contains("relacion-ocupada")
 ){
 
         let palabra =
@@ -1073,7 +1076,9 @@ event.target.classList.contains("boton-arrastrable")
 
 
 if(
-event.target.classList.contains("izquierda-relacionar")
+    event.target.classList.contains("izquierda-relacionar")
+    ||
+    event.target.classList.contains("relacion-ocupada")
 ){
     tipo = "relacionar";
 }
@@ -1245,8 +1250,6 @@ function(event){
 
 // Caso relacionar columnas
 
-// Caso relacionar columnas
-
 if(
 destino.classList.contains("derecha-relacionar")
 ){
@@ -1316,6 +1319,8 @@ if(
     destino.appendChild(
         botonArrastrado
     );
+
+    botonArrastrado.classList.add("relacion-ocupada");
 
     botonArrastrado.classList.add(
         "colocado-drop"
