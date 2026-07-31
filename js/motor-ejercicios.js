@@ -1250,49 +1250,63 @@ function(event){
 
 // Caso relacionar columnas
 
-if(
-destino.classList.contains("derecha-relacionar")
-){
+if(destino.classList.contains("derecha-relacionar")){
 
-    // Si ya había una respuesta colocada, eliminarla
-    destino.innerHTML = "";
+    // Si la casilla ya tiene una palabra, devolverla a su casilla original
+    const palabraExistente =
+    destino.querySelector(".relacion-ocupada");
 
+    if(palabraExistente){
 
-    // Crear copia de la palabra seleccionada
-    let copia =
-    botonArrastrado.cloneNode(true);
+        const significadoOriginal =
+        palabraExistente.dataset.respuesta;
 
+        const casillaOriginal =
+        [...document.querySelectorAll(".derecha-relacionar")]
+        .find(c=>c.dataset.valor===significadoOriginal);
 
-    // La copia ya no debe poder arrastrarse
-    copia.draggable = false;
+        if(casillaOriginal){
 
+            casillaOriginal.innerHTML =
+            casillaOriginal.dataset.original;
 
-    // Identificarla como respuesta colocada
-    copia.classList.remove(
-        "izquierda-relacionar"
-    );
+            casillaOriginal.style.background="";
+            casillaOriginal.style.border="";
 
+        }
 
-    copia.classList.add(
-        "respuesta-relacionada"
-    );
+    }
 
+    // Restaurar el texto del lugar desde donde salió la palabra
+    const casillaAnterior =
+    botonArrastrado.parentElement;
 
-    // Insertar copia en la derecha
-    destino.appendChild(
-        copia
-    );
+    if(
+        casillaAnterior &&
+        casillaAnterior.classList.contains("derecha-relacionar")
+    ){
 
+        casillaAnterior.innerHTML =
+        casillaAnterior.dataset.original;
 
-    let correctaRelacion =
+        casillaAnterior.style.background="";
+        casillaAnterior.style.border="";
+    }
+
+    // Colocar la nueva palabra
+    destino.innerHTML="";
+
+    destino.appendChild(botonArrastrado);
+
+    botonArrastrado.classList.add("relacion-ocupada");
+
+    const correctaRelacion =
     botonArrastrado.dataset.respuesta;
 
-
-    let colocadaRelacion =
+    const colocadaRelacion =
     destino.dataset.valor;
 
-
-    if(correctaRelacion === colocadaRelacion){
+    if(correctaRelacion===colocadaRelacion){
 
         destino.style.background="lightgreen";
         destino.style.border="2px solid green";
@@ -1303,7 +1317,6 @@ destino.classList.contains("derecha-relacionar")
         destino.style.border="2px solid red";
 
     }
-
 
     return;
 
