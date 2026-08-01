@@ -1087,25 +1087,32 @@ palabrasCorrectaOriginal[i] || "";
         }
 
 
-        htmlUsuario += `
+if(
+    palabraUsuarioMostrar ||
+    palabraCorrectaMostrar
+){
+
+htmlUsuario += `
 
 <tr>
 
 <td>
 
-${estadoUsuario} ${palabraUsuarioMostrar || "⬜"}
+${palabraUsuarioMostrar ? estadoUsuario + " " + palabraUsuarioMostrar : ""}
 
 </td>
 
 <td>
 
-${estadoCorrecta} ${palabraCorrectaMostrar || "⬜"}
+${palabraCorrectaMostrar ? estadoCorrecta + " " + palabraCorrectaMostrar : ""}
 
 </td>
 
 </tr>
 
 `;
+
+}
 
     }
 
