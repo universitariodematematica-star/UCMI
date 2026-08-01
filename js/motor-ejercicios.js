@@ -872,12 +872,6 @@ palabrasUsuarioOriginal[i] || "";
 const palabraCorrectaMostrar =
 palabrasCorrectaOriginal[i] || "";
 
-const palabraUsuarioMostrar =
-palabrasUsuarioOriginal[i] || "";
-
-const palabraCorrectaMostrar =
-palabrasCorrectaOriginal[i] || "";
-
 
         const coincide =
         palabraUsuario === palabraCorrecta;
