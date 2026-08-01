@@ -1035,7 +1035,9 @@ function compararTraduccionPalabraPorPalabra(
     }
 
 
-return `
+return {
+
+usuario: `
 
 <table class="tabla-comparacion-traduccion">
 
@@ -1049,6 +1051,13 @@ ${filaUsuario}
 
 </tr>
 
+</table>
+
+`,
+
+correcta: `
+
+<table class="tabla-comparacion-traduccion">
 
 <tr>
 
@@ -1060,10 +1069,11 @@ ${filaCorrecta}
 
 </tr>
 
-
 </table>
 
-`;
+`
+
+};
 
 }
 
