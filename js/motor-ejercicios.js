@@ -982,12 +982,7 @@ function compararTraduccionPalabraPorPalabra(
     respuestaCorrecta.split(" ");
 
 
-    let htmlUsuario =
-    "<b>Tu respuesta:</b><br><br>";
-
-
-    let htmlCorrecta =
-    "<b>Respuesta correcta:</b><br><br>";
+    let filas = "";
 
 
     const longitud =
@@ -1007,34 +1002,75 @@ function compararTraduccionPalabraPorPalabra(
         palabrasCorrecta[i] || "";
 
 
+        let claseUsuario;
+        let claseCorrecta;
+
+
         if(usuario === correcta){
 
-            htmlUsuario +=
-            "🟩 " + usuario + "<br>";
-
-            htmlCorrecta +=
-            "🟩 " + correcta + "<br>";
+            claseUsuario = "correcto-comparacion";
+            claseCorrecta = "correcto-comparacion";
 
         }else{
 
-            htmlUsuario +=
-            "❌ " + usuario + "<br>";
-
-            htmlCorrecta +=
-            "✅ " + correcta + "<br>";
+            claseUsuario = "error-comparacion";
+            claseCorrecta = "correcto-comparacion";
 
         }
+
+
+        filas += `
+
+<tr>
+
+<td class="${claseUsuario}">
+${usuario ? "🟩 " + usuario : ""}
+</td>
+
+
+<td class="${claseCorrecta}">
+${correcta ? (usuario===correcta ? "🟩 " : "✅ ") + correcta : ""}
+</td>
+
+
+</tr>
+
+`;
 
     }
 
 
-    return {
+    return `
 
-        usuario: htmlUsuario,
+<table class="tabla-comparacion-traduccion">
 
-        correcta: htmlCorrecta
+<thead>
 
-    };
+<tr>
+
+<th>
+Tu respuesta
+</th>
+
+<th>
+Respuesta correcta
+</th>
+
+</tr>
+
+</thead>
+
+
+<tbody>
+
+${filas}
+
+</tbody>
+
+
+</table>
+
+`;
 
 }
 
