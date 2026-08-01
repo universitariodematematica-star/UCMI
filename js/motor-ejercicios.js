@@ -860,12 +860,17 @@ function generarComparacionTraduccion(
     for(let i = 0; i < cantidad; i++){
 
 
-        const palabraUsuario =
-        palabrasUsuario[i] || "";
+const palabraUsuario =
+palabrasUsuario[i] || "";
 
+const palabraCorrecta =
+palabrasCorrecta[i] || "";
 
-        const palabraCorrecta =
-        palabrasCorrecta[i] || "";
+const palabraUsuarioMostrar =
+palabrasUsuarioOriginal[i] || "";
+
+const palabraCorrectaMostrar =
+palabrasCorrectaOriginal[i] || "";
 
 
         const coincide =
@@ -962,15 +967,27 @@ ${filas}
 ====================================================*/
 
 function compararTraduccionPalabraPorPalabra(
-    usuario,
-    correcta
+    usuarioOriginal,
+    correctaOriginal
 ){
 
-    const palabrasUsuario =
-    usuario.split(" ").filter(Boolean);
+// Palabras originales (para mostrar en pantalla)
+const palabrasUsuarioOriginal =
+usuarioOriginal.split(/\s+/).filter(Boolean);
 
-    const palabrasCorrecta =
-    correcta.split(" ").filter(Boolean);
+const palabrasCorrectaOriginal =
+correctaOriginal.split(/\s+/).filter(Boolean);
+
+// Palabras normalizadas (para comparar)
+const palabrasUsuario =
+normalizarRespuestaTraduccion(usuarioOriginal)
+.split(/\s+/)
+.filter(Boolean);
+
+const palabrasCorrecta =
+normalizarRespuestaTraduccion(correctaOriginal)
+.split(/\s+/)
+.filter(Boolean);
 
 
     // Marca qué palabras correctas ya fueron utilizadas
@@ -1064,13 +1081,13 @@ function compararTraduccionPalabraPorPalabra(
 
 <td>
 
-${estadoUsuario} ${palabraUsuario || "⬜"}
+${estadoUsuario} ${palabraUsuarioMostrar || "⬜"}
 
 </td>
 
 <td>
 
-${estadoCorrecta} ${palabraCorrecta || "⬜"}
+${estadoCorrecta} ${palabraCorrectaMostrar || "⬜"}
 
 </td>
 
@@ -1163,12 +1180,8 @@ respuestasValidas
 
 const comparacion =
 compararTraduccionPalabraPorPalabra(
-    normalizarRespuestaTraduccion(
-        entrada.value
-    ),
-    normalizarRespuestaTraduccion(
-        respuestaCorrecta
-    )
+    entrada.value,
+    respuestaCorrecta
 );
 
 
