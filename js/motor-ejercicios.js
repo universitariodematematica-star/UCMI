@@ -917,7 +917,8 @@ UCMIResultados.guardar(
 ====================================================*/
 
 function verificarTraduccion(boton){
-
+console.log("ENTRÓ A verificarTraduccion");
+    
     const respuestaCorrecta =
     boton.dataset.respuesta;
 
