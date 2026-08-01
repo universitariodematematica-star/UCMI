@@ -316,6 +316,7 @@ let ejerciciosCompletar = [];
 let ejerciciosDragDrop = [];
 let ejerciciosOrdenarOracion = [];
 let ejerciciosEmparejarColumnas = [];
+let ejerciciosTraduccion = [];    
 let configuracionMostrar = {};
 
 const MODOS = {
@@ -401,6 +402,7 @@ ejerciciosCompletar=[],
 ejerciciosDragDrop=[],
 ejerciciosOrdenarOracion=[],
 ejerciciosEmparejarColumnas=[],
+ejerciciosTraduccion=[],
 configuracionMostrar={}    
 ){
 
@@ -880,7 +882,7 @@ console.log(
 ${JSON.stringify(configuracionMostrar)}
 );
 
-UCMIMotorEjercicios.generar({
+
 
     contenedor:"zona-ejercicios",
 
@@ -902,6 +904,8 @@ UCMIMotorEjercicios.generar({
     emparejarColumnas:
     ${JSON.stringify(ejerciciosEmparejarColumnas)},
 
+    traduccion:
+    ${JSON.stringify(ejerciciosTraduccion)},
 
     mostrarSeleccionSimple:
     "${configuracionMostrar["Selección simple"] || "Sí"}",
@@ -920,6 +924,9 @@ UCMIMotorEjercicios.generar({
 
     mostrarRelacionar:
     "${configuracionMostrar["Relacionar"] || "Sí"}"
+
+    mostrarTraduccion:
+    "${configuracionMostrar["Traducción"] || "Sí"}",
 
 });
 
@@ -1340,11 +1347,17 @@ hojaMostrar.getCell("A6").value =
 "Relacionar";
 
 hojaMostrar.getCell("B6").value =
+"Sí";
+
+hojaMostrar.getCell("A7").value =
+"Traducción";
+
+hojaMostrar.getCell("B7").value =
 "Sí";    
 
 // Lista desplegable Sí / No
 
-for(let fila = 2; fila <= 6; fila++){
+for(let fila = 2; fila <= 7; fila++){
 
     hojaMostrar.getCell("B"+fila).dataValidation = {
 
@@ -1488,6 +1501,7 @@ async function leerExcel(event){
     const hojaDragDrop = libro.getWorksheet("Drag-drop-blanco");
     const hojaOrdenarOracion = libro.getWorksheet("Ordenar-oracion");
     const hojaRelacionar = libro.getWorksheet("Relacionar");
+    const hojaTraduccion = libro.getWorksheet("Traducción");
 
     console.log("HOJAS:", libro.worksheets.map(h=>h.name));
     console.log("ORDENAR:", hojaOrdenarOracion);
@@ -1755,6 +1769,67 @@ for(let fila = 2; fila <= hojaRelacionar.rowCount; fila++){
 console.log(
 "RELACIONAR COLUMNAS:",
 ejerciciosEmparejarColumnas
+);   
+
+//===========================================
+// Leer ejercicios Traducción
+//===========================================
+
+ejerciciosTraduccion = [];
+
+
+for(let fila = 2; fila <= hojaTraduccion.rowCount; fila++){
+
+    const oracion =
+    leerCelda(
+        hojaTraduccion.getCell("A"+fila)
+    );
+
+
+    if(!oracion) continue;
+
+
+    ejerciciosTraduccion.push({
+
+        oracion: oracion,
+
+        respuestas:[
+            leerCelda(
+                hojaTraduccion.getCell("B"+fila)
+            ),
+
+            leerCelda(
+                hojaTraduccion.getCell("C"+fila)
+            ),
+
+            leerCelda(
+                hojaTraduccion.getCell("D"+fila)
+            ),
+
+            leerCelda(
+                hojaTraduccion.getCell("E"+fila)
+            ),
+
+            leerCelda(
+                hojaTraduccion.getCell("F"+fila)
+            )
+        ].filter(
+            respuesta => respuesta !== ""
+        ),
+
+        explicacion:
+        leerCelda(
+            hojaTraduccion.getCell("G"+fila)
+        )
+
+    });
+
+}
+
+
+console.log(
+"TRADUCCIÓN:",
+ejerciciosTraduccion
 );    
     
 }
@@ -1787,6 +1862,7 @@ ejerciciosCompletar,
 ejerciciosDragDrop,
 ejerciciosOrdenarOracion,
 ejerciciosEmparejarColumnas,
+ejerciciosTraduccion,
 configuracionMostrar
 );
 
@@ -1831,6 +1907,7 @@ ejerciciosCompletar,
 ejerciciosDragDrop,
 ejerciciosOrdenarOracion,
 ejerciciosEmparejarColumnas,
+ejerciciosTraduccion,
 configuracionMostrar
 );
 
