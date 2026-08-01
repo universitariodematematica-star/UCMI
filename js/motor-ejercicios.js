@@ -872,6 +872,12 @@ palabrasUsuarioOriginal[i] || "";
 const palabraCorrectaMostrar =
 palabrasCorrectaOriginal[i] || "";
 
+const palabraUsuarioMostrar =
+palabrasUsuarioOriginal[i] || "";
+
+const palabraCorrectaMostrar =
+palabrasCorrectaOriginal[i] || "";
+
 
         const coincide =
         palabraUsuario === palabraCorrecta;
@@ -1012,11 +1018,17 @@ normalizarRespuestaTraduccion(correctaOriginal)
 
     for(let i=0;i<max;i++){
 
-        const palabraUsuario =
-        palabrasUsuario[i] || "";
+const palabraUsuario =
+palabrasUsuario[i] || "";
 
-        const palabraCorrecta =
-        palabrasCorrecta[i] || "";
+const palabraCorrecta =
+palabrasCorrecta[i] || "";
+
+const palabraUsuarioMostrar =
+palabrasUsuarioOriginal[i] || "";
+
+const palabraCorrectaMostrar =
+palabrasCorrectaOriginal[i] || "";
 
 
         let estadoUsuario = "❌";
