@@ -1110,24 +1110,29 @@ function compararTraduccionInteligente(
     const usuarioMostrar =
     usuarioOriginal
     .trim()
-    .split(/\s+/);
+    .split(/\s+/)
+    .filter(Boolean);
 
 
     const correctaMostrar =
     correctaOriginal
     .trim()
-    .split(/\s+/);
+    .split(/\s+/)
+    .filter(Boolean);
 
 
 
     const usuario =
     normalizarRespuestaTraduccion(usuarioOriginal)
-    .split(/\s+/);
+    .split(/\s+/)
+    .filter(Boolean);
+
 
 
     const correcta =
     normalizarRespuestaTraduccion(correctaOriginal)
-    .split(/\s+/);
+    .split(/\s+/)
+    .filter(Boolean);
 
 
 
@@ -1137,52 +1142,153 @@ function compararTraduccionInteligente(
 
 
 
-    let posicionAnterior = -1;
+    // Guardar posiciones de cada palabra correcta
+
+    const posicionesCorrectas = {};
+
+
+    correcta.forEach((palabra, indice)=>{
+
+        if(!posicionesCorrectas[palabra]){
+
+            posicionesCorrectas[palabra]=[];
+
+        }
+
+        posicionesCorrectas[palabra].push(indice);
+
+    });
 
 
 
-    usuario.forEach((palabra,index)=>{
+    // Guardar posiciones de palabras escritas por usuario
+
+    const posicionesUsuario = {};
 
 
-        let encontrada = -1;
+    usuario.forEach((palabra, indice)=>{
+
+        if(!posicionesUsuario[palabra]){
+
+            posicionesUsuario[palabra]=[];
+
+        }
+
+        posicionesUsuario[palabra].push(indice);
+
+    });
 
 
-        for(let i=0;i<correcta.length;i++){
+
+    // Evaluar relación de orden
+
+    usuario.forEach((palabra, indiceUsuario)=>{
 
 
-            if(
-                correcta[i] === palabra &&
-                i > posicionAnterior
-            ){
+        if(!posicionesCorrectas[palabra]){
 
-                encontrada = i;
-                break;
+            estados[indiceUsuario]="❌";
 
-            }
+            return;
 
         }
 
 
 
-        if(encontrada !== -1){
+        let mantieneOrden=false;
 
 
-            estados[index]="🟩";
 
-            posicionAnterior = encontrada;
-
-
-        }else{
+        posicionesCorrectas[palabra]
+        .forEach(posicionCorrecta=>{
 
 
-            // palabra correcta pero fuera de orden
+            const anteriores =
+            correcta.slice(
+                0,
+                posicionCorrecta
+            );
 
-            if(correcta.includes(palabra)){
 
-                estados[index]="🟨";
+            const posteriores =
+            correcta.slice(
+                posicionCorrecta+1
+            );
+
+
+
+            let anteriorOK=true;
+
+
+            anteriores.forEach(p=>{
+
+
+                if(posicionesUsuario[p]){
+
+
+                    if(
+                        posicionesUsuario[p][0]
+                        >
+                        indiceUsuario
+                    ){
+
+                        anteriorOK=false;
+
+                    }
+
+                }
+
+            });
+
+
+
+            let posteriorOK=true;
+
+
+            posteriores.forEach(p=>{
+
+
+                if(posicionesUsuario[p]){
+
+
+                    if(
+                        posicionesUsuario[p][0]
+                        <
+                        indiceUsuario
+                    ){
+
+                        posteriorOK=false;
+
+                    }
+
+                }
+
+            });
+
+
+
+            if(
+                anteriorOK &&
+                posteriorOK
+            ){
+
+                mantieneOrden=true;
 
             }
 
+
+
+        });
+
+
+
+        if(mantieneOrden){
+
+            estados[indiceUsuario]="🟩";
+
+        }else{
+
+            estados[indiceUsuario]="🟨";
 
         }
 
@@ -1190,6 +1296,8 @@ function compararTraduccionInteligente(
     });
 
 
+
+    // Crear tabla visual
 
     let html = `
 
@@ -1211,28 +1319,31 @@ Respuesta correcta
 
 
 
-const filas =
-Math.max(
-usuarioMostrar.length,
-correctaMostrar.length
-);
+    const filas =
+    Math.max(
+        usuarioMostrar.length,
+        correctaMostrar.length
+    );
 
 
 
-for(let i=0;i<filas;i++){
+    for(let i=0;i<filas;i++){
 
 
-html += `
+        html += `
 
 <tr>
-
 
 <td>
 
 ${
 usuarioMostrar[i]
 ?
-estados[i]+" "+usuarioMostrar[i]
+(estados[i] || "❌")
++
+" "
++
+usuarioMostrar[i]
 :
 ""
 }
@@ -1245,7 +1356,9 @@ estados[i]+" "+usuarioMostrar[i]
 ${
 correctaMostrar[i]
 ?
-"🟩 "+correctaMostrar[i]
+"🟩 "
++
+correctaMostrar[i]
 :
 ""
 }
@@ -1257,20 +1370,21 @@ correctaMostrar[i]
 
 `;
 
-}
-
-
-html += "</table>";
+    }
 
 
 
-return {
+    html += "</table>";
 
-usuario:html,
 
-correcta:""
 
-};
+    return {
+
+        usuario:html,
+
+        correcta:""
+
+    };
 
 
 }
