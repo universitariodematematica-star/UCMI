@@ -959,6 +959,11 @@ function verificarTraduccion(boton){
         normalizarRespuestaTraduccion(r)
     );
 
+    console.log("Respuesta usuario:", respuestaUsuario);
+console.log("Respuesta correcta:", respuestaCorrecta);
+console.log("Alternativas:", respuestasAlternativas);
+console.log("Respuestas válidas:", respuestasValidas);
+
     if(respuestasValidas.includes(respuestaUsuario)){
 
         resultado.innerHTML =
