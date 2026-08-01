@@ -1107,270 +1107,172 @@ function compararTraduccionInteligente(
     correctaOriginal
 ){
 
-    // Texto original (para mostrar)
     const usuarioMostrar =
     usuarioOriginal
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean);
+    .trim()
+    .split(/\s+/);
+
 
     const correctaMostrar =
     correctaOriginal
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean);
+    .trim()
+    .split(/\s+/);
 
-    // Texto normalizado (para comparar)
+
+
     const usuario =
     normalizarRespuestaTraduccion(usuarioOriginal)
-        .split(/\s+/)
-        .filter(Boolean);
+    .split(/\s+/);
+
 
     const correcta =
     normalizarRespuestaTraduccion(correctaOriginal)
-        .split(/\s+/)
-        .filter(Boolean);
+    .split(/\s+/);
+
+
+
+    const estados =
+    new Array(usuario.length)
+    .fill("❌");
+
+
+
+    let posicionAnterior = -1;
+
+
+
+    usuario.forEach((palabra,index)=>{
+
+
+        let encontrada = -1;
+
+
+        for(let i=0;i<correcta.length;i++){
+
+
+            if(
+                correcta[i] === palabra &&
+                i > posicionAnterior
+            ){
+
+                encontrada = i;
+                break;
+
+            }
+
+        }
+
+
+
+        if(encontrada !== -1){
+
+
+            estados[index]="🟩";
+
+            posicionAnterior = encontrada;
+
+
+        }else{
+
+
+            // palabra correcta pero fuera de orden
+
+            if(correcta.includes(palabra)){
+
+                estados[index]="🟨";
+
+            }
+
+
+        }
+
+
+    });
+
+
 
     let html = `
-<table class="tabla-comparacion-traduccion">
-<tr>
-<th>Tu respuesta</th>
-<th>Respuesta correcta</th>
-</tr>
-`;
-
-//=========================================
-// MATRIZ LCS (Longest Common Subsequence)
-//=========================================
-
-const filas = usuario.length;
-const columnas = correcta.length;
-
-const lcs = Array.from(
-    {length: filas + 1},
-    ()=>Array(columnas + 1).fill(0)
-);
-
-for(let i = filas - 1; i >= 0; i--){
-
-    for(let j = columnas - 1; j >= 0; j--){
-
-        if(usuario[i] === correcta[j]){
-
-            lcs[i][j] =
-            1 + lcs[i+1][j+1];
-
-        }else{
-
-            lcs[i][j] = Math.max(
-
-                lcs[i+1][j],
-
-                lcs[i][j+1]
-
-            );
-
-        }
-
-    }
-
-}
-
-//=========================================
-// RECUPERAR LA SUBSECUENCIA COMÚN
-//=========================================
-
-const usuarioVerde =
-new Array(usuario.length).fill(false);
-
-const correctaVerde =
-new Array(correcta.length).fill(false);
-
-let i = 0;
-let j = 0;
-
-while(
-    i < usuario.length &&
-    j < correcta.length
-){
-
-    if(usuario[i] === correcta[j]){
-
-        usuarioVerde[i] = true;
-        correctaVerde[j] = true;
-
-        i++;
-        j++;
-
-    }else if(
-        lcs[i+1][j] >= lcs[i][j+1]
-    ){
-
-        i++;
-
-    }else{
-
-        j++;
-
-    }
-
-}    
-
-function compararTraduccionPalabraPorPalabra(
-    usuarioOriginal,
-    correctaOriginal
-){
-
-// Palabras originales (para mostrar en pantalla)
-const palabrasUsuarioOriginal =
-obtenerPalabrasOriginales(usuarioOriginal);
-
-const palabrasCorrectaOriginal =
-obtenerPalabrasOriginales(correctaOriginal);
-
-const palabrasUsuario =
-obtenerPalabrasNormalizadas(usuarioOriginal);
-
-const palabrasCorrecta =
-obtenerPalabrasNormalizadas(correctaOriginal);
-
-
-const estados =
-evaluarOrdenRelativo(
-    palabrasUsuario,
-    palabrasCorrecta
-);
-
-const cantidad =
-Math.max(
-    palabrasUsuario.length,
-    palabrasCorrecta.length
-);
-
-for(let i = 0; i < cantidad; i++){
-
-    const palabraUsuarioMostrar =
-    palabrasUsuarioOriginal[i] || "";
-
-    const palabraCorrectaMostrar =
-    palabrasCorrectaOriginal[i] || "";
-
-    const estadoUsuario =
-    estados[i] || "";
-
-    htmlUsuario += `
-
-<tr>
-
-<td>
-
-${palabraUsuarioMostrar
-? estadoUsuario + " " + palabraUsuarioMostrar
-: ""}
-
-</td>
-
-<td>
-
-${palabraCorrectaMostrar
-? "🟩 " + palabraCorrectaMostrar
-: ""}
-
-</td>
-
-</tr>
-
-`;
-
-}
-
-htmlUsuario += "</table>";
-
-
-let html = `
 
 <table class="tabla-comparacion-traduccion">
 
 <tr>
 
-<th>Tu respuesta</th>
+<th>
+Tu respuesta
+</th>
 
-<th>Respuesta correcta</th>
+<th>
+Respuesta correcta
+</th>
 
 </tr>
 
 `;
 
-const total =
+
+
+const filas =
 Math.max(
-    usuario.length,
-    correcta.length
+usuarioMostrar.length,
+correctaMostrar.length
 );
 
-for(let k=0;k<total;k++){
 
-    const palabraUsuario =
-    usuarioOriginal[k] || "";
 
-    const palabraCorrecta =
-    correctaOriginal[k] || "";
+for(let i=0;i<filas;i++){
 
-    let iconoUsuario = "";
 
-    if(k < usuario.length){
-
-        if(usuarioVerde[k]){
-
-            iconoUsuario = "🟩";
-
-        }else if(
-            correcta.includes(usuario[k])
-        ){
-
-            iconoUsuario = "🟨";
-
-        }else{
-
-            iconoUsuario = "❌";
-
-        }
-
-    }
-
-    let iconoCorrecta = "";
-
-    if(k < correcta.length){
-
-        iconoCorrecta =
-        correctaVerde[k]
-        ? "🟩"
-        : "🟨";
-
-    }
-
-    html += `
+html += `
 
 <tr>
 
-<td>${iconoUsuario} ${palabraUsuario}</td>
 
-<td>${iconoCorrecta} ${palabraCorrecta}</td>
+<td>
+
+${
+usuarioMostrar[i]
+?
+estados[i]+" "+usuarioMostrar[i]
+:
+""
+}
+
+</td>
+
+
+<td>
+
+${
+correctaMostrar[i]
+?
+"🟩 "+correctaMostrar[i]
+:
+""
+}
+
+</td>
+
 
 </tr>
 
 `;
 
 }
+
 
 html += "</table>";
 
-return{
 
-    usuario:html,
 
-    correcta:""
+return {
+
+usuario:html,
+
+correcta:""
 
 };
+
+
 }
 
 function verificarTraduccion(boton){
