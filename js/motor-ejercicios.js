@@ -834,202 +834,83 @@ UCMIResultados.guardar(
 // Generar ejercicios completar espacios
 //========================================
 
-
-function crearCompletarEspacios(ejerciciosCompletar){
-
-    let htmlCompletar = `
-
-<div class="instruccion-ejercicio">
-Escribe la expresión que hace falta para completar la oración.
-</div>
-
-`;
-
-
-    ejerciciosCompletar.forEach((ejercicio, indice)=>{
-
-
-        htmlCompletar += `
-
-<div 
-class="ejercicio-completar"
-data-id="completar-${indice}"
->
-
-
-<h3>
-${++contadorEjercicios}. ${ejercicio.pregunta}
-</h3>
-
-
-<input 
-type="text"
-class="respuesta-escrita"
-placeholder="Escriba su respuesta">
-
-
-<button
-class="verificar"
-onclick="verificarCompletar(this)"
-
-data-respuesta='${escaparTexto(ejercicio.respuesta)}'
-
-data-explicacion='${escaparTexto(ejercicio.explicacion)}'>
-
-Verificar
-
-</button>
-
-
-<div 
-class="resultado"
-data-id="completar-${indice}"
-></div>
-
-
-</div>
-
-`;
-
-    });
-
-    return htmlCompletar;
-
-}
-
-function verificarCompletar(boton){
-
-
-const respuestaCorrecta =
-boton.dataset.respuesta;
-
-
-const explicacion =
-boton.dataset.explicacion;
-
-
-const contenedor =
-boton.parentElement;
-
-
-const entrada =
-contenedor.querySelector(".respuesta-escrita");
-
-
-const resultado =
-contenedor.querySelector(".resultado");
-
-
-const respuestaUsuario =
-entrada.value.trim().toLowerCase();
-
-
-
-if(respuestaUsuario === respuestaCorrecta.toLowerCase()){
-
-
-resultado.innerHTML =
-"✅ Correcto<br><br><b>Explicación:</b> "
-+ explicacion;
-
-
-resultado.style.color="green";
-
-
-}else{
-
-
-resultado.innerHTML =
-"❌ Incorrecto<br><br>Respuesta correcta: "
-+ respuestaCorrecta
-+ "<br><br><b>Explicación:</b> "
-+ explicacion;
-
-
-resultado.style.color="red";
-
-
-}
-
-
-// GUARDAR RESULTADO DEL EJERCICIO
-
-UCMIResultados.guardar(
-    contenedor.dataset.id,
-    {
-        resultado: resultado.innerHTML,
-        color: resultado.style.color
-    }
-);
-
-
-}
-
-/*====================================================
-        VERIFICAR TRADUCCIÓN
-====================================================*/
-
-function compararTraduccionPalabraPorPalabra(
-    respuestaUsuario,
-    respuestaCorrecta
+function generarComparacionTraduccion(
+    usuario,
+    correcta
 ){
 
     const palabrasUsuario =
-    respuestaUsuario.split(" ");
+    usuario.split(" ");
 
 
     const palabrasCorrecta =
-    respuestaCorrecta.split(" ");
+    correcta.split(" ");
 
 
     let filas = "";
 
 
-    const longitud =
+    const cantidad =
     Math.max(
         palabrasUsuario.length,
         palabrasCorrecta.length
     );
 
 
-    for(let i=0;i<longitud;i++){
+    for(let i = 0; i < cantidad; i++){
 
-        const usuario =
+
+        const palabraUsuario =
         palabrasUsuario[i] || "";
 
 
-        const correcta =
+        const palabraCorrecta =
         palabrasCorrecta[i] || "";
 
 
-        let claseUsuario;
-        let claseCorrecta;
-
-
-        if(usuario === correcta){
-
-            claseUsuario = "correcto-comparacion";
-            claseCorrecta = "correcto-comparacion";
-
-        }else{
-
-            claseUsuario = "error-comparacion";
-            claseCorrecta = "correcto-comparacion";
-
-        }
+        const coincide =
+        palabraUsuario === palabraCorrecta;
 
 
         filas += `
 
 <tr>
 
-<td class="${claseUsuario}">
-${usuario ? "🟩 " + usuario : ""}
+<td class="${coincide ? "palabra-correcta" : "palabra-error"}">
+
+${
+
+palabraUsuario
+
+?
+
+(coincide ? "🟩 " : "❌ ") + palabraUsuario
+
+:
+
+""
+
+}
+
 </td>
 
 
-<td class="${claseCorrecta}">
-${correcta ? (usuario===correcta ? "🟩 " : "✅ ") + correcta : ""}
+<td class="palabra-correcta">
+
+${
+
+palabraCorrecta
+
+?
+
+(coincide ? "🟩 " : "✅ ") + palabraCorrecta
+
+:
+
+""
+
+}
+
 </td>
 
 
@@ -1044,6 +925,7 @@ ${correcta ? (usuario===correcta ? "🟩 " : "✅ ") + correcta : ""}
 
 <table class="tabla-comparacion-traduccion">
 
+
 <thead>
 
 <tr>
@@ -1051,6 +933,7 @@ ${correcta ? (usuario===correcta ? "🟩 " : "✅ ") + correcta : ""}
 <th>
 Tu respuesta
 </th>
+
 
 <th>
 Respuesta correcta
@@ -1066,6 +949,116 @@ Respuesta correcta
 ${filas}
 
 </tbody>
+
+
+</table>
+
+`;
+
+}
+
+/*====================================================
+ COMPARACIÓN PALABRA POR PALABRA - TRADUCCIÓN
+====================================================*/
+
+function compararTraduccionPalabraPorPalabra(
+    usuario,
+    correcta
+){
+
+    const palabrasUsuario =
+    usuario.split(" ");
+
+    const palabrasCorrecta =
+    correcta.split(" ");
+
+
+    let max =
+    Math.max(
+        palabrasUsuario.length,
+        palabrasCorrecta.length
+    );
+
+
+    let filaUsuario = "";
+    let filaCorrecta = "";
+
+
+    for(let i = 0; i < max; i++){
+
+        const palabraUsuario =
+        palabrasUsuario[i] || "";
+
+
+        const palabraCorrecta =
+        palabrasCorrecta[i] || "";
+
+
+        if(
+            palabraUsuario === palabraCorrecta
+        ){
+
+            filaUsuario +=
+            `
+            <td class="comparacion-ok">
+            ${palabraUsuario}
+            </td>
+            `;
+
+
+            filaCorrecta +=
+            `
+            <td class="comparacion-ok">
+            ${palabraCorrecta}
+            </td>
+            `;
+
+        }else{
+
+            filaUsuario +=
+            `
+            <td class="comparacion-error">
+            ❌ ${palabraUsuario}
+            </td>
+            `;
+
+
+            filaCorrecta +=
+            `
+            <td class="comparacion-correcta">
+            ✅ ${palabraCorrecta}
+            </td>
+            `;
+
+        }
+
+    }
+
+
+return `
+
+<table class="tabla-comparacion-traduccion">
+
+<tr>
+
+<th>
+Tu respuesta
+</th>
+
+${filaUsuario}
+
+</tr>
+
+
+<tr>
+
+<th>
+Respuesta correcta
+</th>
+
+${filaCorrecta}
+
+</tr>
 
 
 </table>
