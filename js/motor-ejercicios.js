@@ -593,6 +593,17 @@ if(
         config.emparejarColumnas
     );
 
+}
+
+if(
+    config.traduccion &&
+    config.mostrarTraduccion !== "No"
+){
+
+    htmlFinal += crearTraduccion(
+        config.traduccion
+    );
+
 }        
 
 //========================================
