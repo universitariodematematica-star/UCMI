@@ -64,10 +64,13 @@ function escaparTexto(texto){
 
 function normalizarRespuestaTraduccion(texto){
 
-    return String(texto ?? "")
+    texto = String(texto ?? "")
 
     // minúsculas
     .toLowerCase()
+
+    // convierte apóstrofes tipográficos
+    .replace(/[’`´]/g,"'")
 
     // elimina espacios repetidos
     .replace(/\s+/g," ")
@@ -75,17 +78,67 @@ function normalizarRespuestaTraduccion(texto){
     // elimina espacios al inicio y final
     .trim()
 
-    // convierte apóstrofes tipográficos
-    .replace(/[’`´]/g,"'")
+    // elimina signos finales
+    .replace(/[.,!?;:]+$/,"");
 
-    // elimina punto final
-    .replace(/\.$/,"")
 
-    // elimina coma final
-    .replace(/,$/,"")
+    const contracciones = {
 
-    // elimina signos de exclamación e interrogación finales
-    .replace(/[!?]+$/,"");
+        "i'm":"i am",
+        "you're":"you are",
+        "he's":"he is",
+        "she's":"she is",
+        "it's":"it is",
+        "we're":"we are",
+        "they're":"they are",
+
+        "i've":"i have",
+        "you've":"you have",
+        "we've":"we have",
+        "they've":"they have",
+
+        "i'll":"i will",
+        "you'll":"you will",
+        "he'll":"he will",
+        "she'll":"she will",
+        "we'll":"we will",
+        "they'll":"they will",
+
+        "don't":"do not",
+        "doesn't":"does not",
+        "didn't":"did not",
+
+        "can't":"cannot",
+        "won't":"will not",
+
+        "isn't":"is not",
+        "aren't":"are not",
+
+        "wasn't":"was not",
+        "weren't":"were not",
+
+        "hasn't":"has not",
+        "haven't":"have not",
+
+        "shouldn't":"should not",
+        "wouldn't":"would not",
+        "couldn't":"could not"
+
+    };
+
+
+    Object.entries(contracciones)
+    .forEach(([contraccion, expansion])=>{
+
+        texto = texto.replaceAll(
+            contraccion,
+            expansion
+        );
+
+    });
+
+
+    return texto;
 
 }
 
