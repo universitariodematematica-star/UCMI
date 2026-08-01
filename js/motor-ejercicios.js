@@ -437,6 +437,64 @@ return htmlRelacionar;
 }
 
 /*====================================================
+        TRADUCCIÓN
+====================================================*/
+
+function crearTraduccion(ejerciciosTraduccion){
+
+    let htmlTraduccion = `
+
+<div class="instruccion-ejercicio">
+Traduce cada oración del español al inglés.
+</div>
+
+`;
+
+    ejerciciosTraduccion.forEach((ejercicio, indice)=>{
+
+        htmlTraduccion += `
+
+<div
+class="ejercicio-traduccion"
+data-id="traduccion-${indice}"
+>
+
+<h3>
+${++contadorEjercicios}. ${ejercicio.oracion}
+</h3>
+
+<input
+type="text"
+class="respuesta-traduccion"
+placeholder="Escribe la traducción en inglés">
+
+<button
+class="verificar"
+onclick="verificarTraduccion(this)"
+data-respuesta='${escaparTexto(ejercicio.respuesta)}'
+data-respuestas='${escaparTexto(JSON.stringify(ejercicio.respuestasAlternativas || []))}'
+data-explicacion='${escaparTexto(ejercicio.explicacion)}'>
+
+Verificar
+
+</button>
+
+<div
+class="resultado"
+data-id="traduccion-${indice}"
+></div>
+
+</div>
+
+`;
+
+    });
+
+    return htmlTraduccion;
+
+}
+
+/*====================================================
         MOTOR PRINCIPAL
 ====================================================*/
 
@@ -537,6 +595,20 @@ if(
 
 }        
 
+//========================================
+// SECCIÓN: TRADUCCIÓN
+//========================================
+
+if(
+    config.traduccion &&
+    config.mostrarTraduccion !== "No"
+){
+
+    htmlFinal += crearTraduccion(
+        config.traduccion
+    );
+
+}        
 
 contenedor.innerHTML = htmlFinal;
 
@@ -810,6 +882,89 @@ UCMIResultados.guardar(
     }
 );
 
+
+}
+
+/*====================================================
+        VERIFICAR TRADUCCIÓN
+====================================================*/
+
+function verificarTraduccion(boton){
+
+    const respuestaCorrecta =
+    boton.dataset.respuesta;
+
+    const respuestasAlternativas =
+    JSON.parse(
+        boton.dataset.respuestas || "[]"
+    );
+
+    const explicacion =
+    boton.dataset.explicacion;
+
+    const contenedor =
+    boton.parentElement;
+
+    const entrada =
+    contenedor.querySelector(
+        ".respuesta-traduccion"
+    );
+
+    const resultado =
+    contenedor.querySelector(
+        ".resultado"
+    );
+
+    const respuestaUsuario =
+    normalizarRespuestaTraduccion(
+        entrada.value
+    );
+
+    const respuestasValidas = [
+
+        respuestaCorrecta,
+
+        ...respuestasAlternativas
+
+    ]
+    .filter(r => r && r.trim() !== "")
+    .map(r =>
+        normalizarRespuestaTraduccion(r)
+    );
+
+    if(respuestasValidas.includes(respuestaUsuario)){
+
+        resultado.innerHTML =
+        "✅ Correcto.<br><br><b>Explicación:</b> "
+        + explicacion;
+
+        resultado.style.color = "green";
+
+    }else{
+
+        resultado.innerHTML =
+        "❌ Incorrecto.<br><br><b>Respuesta correcta:</b> "
+        + respuestaCorrecta
+        + "<br><br><b>Explicación:</b> "
+        + explicacion;
+
+        resultado.style.color = "red";
+
+    }
+
+    UCMIResultados.guardar(
+
+        contenedor.dataset.id,
+
+        {
+
+            resultado: resultado.innerHTML,
+
+            color: resultado.style.color
+
+        }
+
+    );
 
 }
 
