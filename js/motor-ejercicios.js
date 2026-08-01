@@ -62,6 +62,33 @@ function escaparTexto(texto){
 
 }
 
+function normalizarRespuestaTraduccion(texto){
+
+    return String(texto ?? "")
+
+    // minúsculas
+    .toLowerCase()
+
+    // elimina espacios repetidos
+    .replace(/\s+/g," ")
+
+    // elimina espacios al inicio y final
+    .trim()
+
+    // convierte apóstrofes tipográficos
+    .replace(/[’`´]/g,"'")
+
+    // elimina punto final
+    .replace(/\.$/,"")
+
+    // elimina coma final
+    .replace(/,$/,"")
+
+    // elimina signos de exclamación e interrogación finales
+    .replace(/[!?]+$/,"");
+
+}
+
 /*====================================================
         SECCIÓN: SELECCIÓN SIMPLE
 ====================================================*/
