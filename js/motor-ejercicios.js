@@ -966,124 +966,131 @@ function compararTraduccionPalabraPorPalabra(
     correcta
 ){
 
-usuario =
-normalizarRespuestaTraduccion(usuario);
+    const palabrasUsuario =
+    usuario.split(" ").filter(Boolean);
+
+    const palabrasCorrecta =
+    correcta.split(" ").filter(Boolean);
 
 
-correcta =
-normalizarRespuestaTraduccion(correcta);    
-
-const palabrasUsuario =
-usuario.split(" ")
-.filter(p => p !== "");
+    // Marca qué palabras correctas ya fueron utilizadas
+    const usadas =
+    new Array(palabrasCorrecta.length).fill(false);
 
 
-const palabrasCorrecta =
-correcta.split(" ")
-.filter(p => p !== "");
+    let htmlUsuario =
+    `<table class="tabla-comparacion-traduccion">
+        <tr>
+            <th>Tu respuesta</th>
+            <th>Respuesta correcta</th>
+        </tr>`;
 
 
-    let max =
+    const max =
     Math.max(
         palabrasUsuario.length,
         palabrasCorrecta.length
     );
 
 
-    let filaUsuario = "";
-    let filaCorrecta = "";
-
-
-    for(let i = 0; i < max; i++){
+    for(let i=0;i<max;i++){
 
         const palabraUsuario =
         palabrasUsuario[i] || "";
-
 
         const palabraCorrecta =
         palabrasCorrecta[i] || "";
 
 
+        let estadoUsuario = "❌";
+
+        //====================================
+        // VERDE
+        //====================================
+
         if(
+            palabraUsuario &&
             palabraUsuario === palabraCorrecta
         ){
 
-            filaUsuario +=
-            `
-            <td class="comparacion-ok">
-            ${palabraUsuario}
-            </td>
-            `;
+            estadoUsuario = "🟩";
 
-
-            filaCorrecta +=
-            `
-            <td class="comparacion-ok">
-            ${palabraCorrecta}
-            </td>
-            `;
-
-        }else{
-
-            filaUsuario +=
-            `
-            <td class="comparacion-error">
-            ❌ ${palabraUsuario}
-            </td>
-            `;
-
-
-            filaCorrecta +=
-            `
-            <td class="comparacion-correcta">
-            ✅ ${palabraCorrecta}
-            </td>
-            `;
+            usadas[i]=true;
 
         }
+
+        //====================================
+        // AMARILLO
+        //====================================
+
+        else if(palabraUsuario){
+
+            const indiceEncontrado =
+            palabrasCorrecta.findIndex(
+
+                (p,j)=>
+
+                    !usadas[j]
+
+                    &&
+
+                    p===palabraUsuario
+
+            );
+
+            if(indiceEncontrado>=0){
+
+                estadoUsuario="🟨";
+
+                usadas[indiceEncontrado]=true;
+
+            }
+
+        }
+
+
+        let estadoCorrecta="";
+
+        if(palabraCorrecta){
+
+            estadoCorrecta="🟩";
+
+        }
+
+
+        htmlUsuario += `
+
+<tr>
+
+<td>
+
+${estadoUsuario} ${palabraUsuario || "⬜"}
+
+</td>
+
+<td>
+
+${estadoCorrecta} ${palabraCorrecta || "⬜"}
+
+</td>
+
+</tr>
+
+`;
 
     }
 
 
-return {
+    htmlUsuario += "</table>";
 
-usuario: `
 
-<table class="tabla-comparacion-traduccion">
+    return{
 
-<tr>
+        usuario:htmlUsuario,
 
-<th>
-Tu respuesta
-</th>
+        correcta:""
 
-${filaUsuario}
-
-</tr>
-
-</table>
-
-`,
-
-correcta: `
-
-<table class="tabla-comparacion-traduccion">
-
-<tr>
-
-<th>
-Respuesta correcta
-</th>
-
-${filaCorrecta}
-
-</tr>
-
-</table>
-
-`
-
-};
+    };
 
 }
 
