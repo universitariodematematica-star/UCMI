@@ -966,11 +966,21 @@ function compararTraduccionPalabraPorPalabra(
     correcta
 ){
 
-    const palabrasUsuario =
-    usuario.split(" ");
+usuario =
+normalizarRespuestaTraduccion(usuario);
 
-    const palabrasCorrecta =
-    correcta.split(" ");
+
+correcta =
+normalizarRespuestaTraduccion(correcta);    
+
+const palabrasUsuario =
+usuario.split(" ")
+.filter(p => p !== "");
+
+
+const palabrasCorrecta =
+correcta.split(" ")
+.filter(p => p !== "");
 
 
     let max =
@@ -1146,8 +1156,12 @@ respuestasValidas
 
 const comparacion =
 compararTraduccionPalabraPorPalabra(
-    respuestaUsuario,
-    normalizarRespuestaTraduccion(respuestaCorrecta)
+    normalizarRespuestaTraduccion(
+        entrada.value
+    ),
+    normalizarRespuestaTraduccion(
+        respuestaCorrecta
+    )
 );
 
 
