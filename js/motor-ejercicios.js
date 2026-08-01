@@ -969,8 +969,252 @@ ${filas}
 }
 
 /*====================================================
- COMPARACIÓN PALABRA POR PALABRA - TRADUCCIÓN
+ UTILIDADES PARA COMPARACIÓN DE TRADUCCIONES
 ====================================================*/
+
+function obtenerPalabrasOriginales(texto){
+
+    return String(texto ?? "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+}
+
+function obtenerPalabrasNormalizadas(texto){
+
+    return normalizarRespuestaTraduccion(texto)
+    .split(/\s+/)
+    .filter(Boolean);
+
+}
+
+function expandirPalabrasConOrigen(texto){
+
+    const originales =
+    obtenerPalabrasOriginales(texto);
+
+    const resultado = [];
+
+    originales.forEach(original=>{
+
+        const normalizadas =
+        obtenerPalabrasNormalizadas(original);
+
+        resultado.push({
+
+            original,
+
+            normalizadas
+
+        });
+
+    });
+
+    return resultado;
+
+}
+
+function construirMapaOrden(palabras){
+
+    const mapa = new Map();
+
+    palabras.forEach((palabra, indice)=>{
+
+        if(!mapa.has(palabra)){
+
+            mapa.set(palabra, []);
+
+        }
+
+        mapa.get(palabra).push(indice);
+
+    });
+
+    return mapa;
+
+}
+
+function evaluarOrdenRelativo(
+    palabrasUsuario,
+    palabrasCorrectas
+){
+
+    const mapa =
+    construirMapaOrden(palabrasCorrectas);
+
+    const usadas =
+    new Map();
+
+    let ultimoIndice = -1;
+
+    const resultado = [];
+
+    palabrasUsuario.forEach(palabra=>{
+
+        // La palabra no existe en la respuesta correcta
+        if(!mapa.has(palabra)){
+
+            resultado.push("❌");
+
+            return;
+
+        }
+
+        const posiciones =
+        mapa.get(palabra);
+
+        const usadasDeEsta =
+        usadas.get(palabra) || 0;
+
+        // Ya se usaron todas las ocurrencias
+        if(usadasDeEsta >= posiciones.length){
+
+            resultado.push("❌");
+
+            return;
+
+        }
+
+        const indiceEsperado =
+        posiciones[usadasDeEsta];
+
+        usadas.set(
+            palabra,
+            usadasDeEsta + 1
+        );
+
+        if(indiceEsperado > ultimoIndice){
+
+            resultado.push("🟩");
+
+            ultimoIndice = indiceEsperado;
+
+        }else{
+
+            resultado.push("🟨");
+
+        }
+
+    });
+
+    return resultado;
+
+}
+
+function compararTraduccionInteligente(
+    usuarioOriginal,
+    correctaOriginal
+){
+
+    // Texto original (para mostrar)
+    const usuarioMostrar =
+    usuarioOriginal
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+
+    const correctaMostrar =
+    correctaOriginal
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+
+    // Texto normalizado (para comparar)
+    const usuario =
+    normalizarRespuestaTraduccion(usuarioOriginal)
+        .split(/\s+/)
+        .filter(Boolean);
+
+    const correcta =
+    normalizarRespuestaTraduccion(correctaOriginal)
+        .split(/\s+/)
+        .filter(Boolean);
+
+    let html = `
+<table class="tabla-comparacion-traduccion">
+<tr>
+<th>Tu respuesta</th>
+<th>Respuesta correcta</th>
+</tr>
+`;
+
+//=========================================
+// MATRIZ LCS (Longest Common Subsequence)
+//=========================================
+
+const filas = usuario.length;
+const columnas = correcta.length;
+
+const lcs = Array.from(
+    {length: filas + 1},
+    ()=>Array(columnas + 1).fill(0)
+);
+
+for(let i = filas - 1; i >= 0; i--){
+
+    for(let j = columnas - 1; j >= 0; j--){
+
+        if(usuario[i] === correcta[j]){
+
+            lcs[i][j] =
+            1 + lcs[i+1][j+1];
+
+        }else{
+
+            lcs[i][j] = Math.max(
+
+                lcs[i+1][j],
+
+                lcs[i][j+1]
+
+            );
+
+        }
+
+    }
+
+}
+
+//=========================================
+// RECUPERAR LA SUBSECUENCIA COMÚN
+//=========================================
+
+const usuarioVerde =
+new Array(usuario.length).fill(false);
+
+const correctaVerde =
+new Array(correcta.length).fill(false);
+
+let i = 0;
+let j = 0;
+
+while(
+    i < usuario.length &&
+    j < correcta.length
+){
+
+    if(usuario[i] === correcta[j]){
+
+        usuarioVerde[i] = true;
+        correctaVerde[j] = true;
+
+        i++;
+        j++;
+
+    }else if(
+        lcs[i+1][j] >= lcs[i][j+1]
+    ){
+
+        i++;
+
+    }else{
+
+        j++;
+
+    }
+
+}    
 
 function compararTraduccionPalabraPorPalabra(
     usuarioOriginal,
@@ -979,132 +1223,58 @@ function compararTraduccionPalabraPorPalabra(
 
 // Palabras originales (para mostrar en pantalla)
 const palabrasUsuarioOriginal =
-usuarioOriginal.split(/\s+/).filter(Boolean);
+obtenerPalabrasOriginales(usuarioOriginal);
 
 const palabrasCorrectaOriginal =
-correctaOriginal.split(/\s+/).filter(Boolean);
+obtenerPalabrasOriginales(correctaOriginal);
 
-// Palabras normalizadas (para comparar)
 const palabrasUsuario =
-normalizarRespuestaTraduccion(usuarioOriginal)
-.split(/\s+/)
-.filter(Boolean);
+obtenerPalabrasNormalizadas(usuarioOriginal);
 
 const palabrasCorrecta =
-normalizarRespuestaTraduccion(correctaOriginal)
-.split(/\s+/)
-.filter(Boolean);
+obtenerPalabrasNormalizadas(correctaOriginal);
 
 
-    // Marca qué palabras correctas ya fueron utilizadas
-    const usadas =
-    new Array(palabrasCorrecta.length).fill(false);
+const estados =
+evaluarOrdenRelativo(
+    palabrasUsuario,
+    palabrasCorrecta
+);
 
+const cantidad =
+Math.max(
+    palabrasUsuario.length,
+    palabrasCorrecta.length
+);
 
-    let htmlUsuario =
-    `<table class="tabla-comparacion-traduccion">
-        <tr>
-            <th>Tu respuesta</th>
-            <th>Respuesta correcta</th>
-        </tr>`;
+for(let i = 0; i < cantidad; i++){
 
+    const palabraUsuarioMostrar =
+    palabrasUsuarioOriginal[i] || "";
 
-    const max =
-    Math.max(
-        palabrasUsuario.length,
-        palabrasCorrecta.length
-    );
+    const palabraCorrectaMostrar =
+    palabrasCorrectaOriginal[i] || "";
 
+    const estadoUsuario =
+    estados[i] || "";
 
-    for(let i=0;i<max;i++){
-
-const palabraUsuario =
-palabrasUsuario[i] || "";
-
-const palabraCorrecta =
-palabrasCorrecta[i] || "";
-
-const palabraUsuarioMostrar =
-palabrasUsuarioOriginal[i] || "";
-
-const palabraCorrectaMostrar =
-palabrasCorrectaOriginal[i] || "";
-
-
-        let estadoUsuario = "❌";
-
-        //====================================
-        // VERDE
-        //====================================
-
-        if(
-            palabraUsuario &&
-            palabraUsuario === palabraCorrecta
-        ){
-
-            estadoUsuario = "🟩";
-
-            usadas[i]=true;
-
-        }
-
-        //====================================
-        // AMARILLO
-        //====================================
-
-        else if(palabraUsuario){
-
-            const indiceEncontrado =
-            palabrasCorrecta.findIndex(
-
-                (p,j)=>
-
-                    !usadas[j]
-
-                    &&
-
-                    p===palabraUsuario
-
-            );
-
-            if(indiceEncontrado>=0){
-
-                estadoUsuario="🟨";
-
-                usadas[indiceEncontrado]=true;
-
-            }
-
-        }
-
-
-        let estadoCorrecta="";
-
-        if(palabraCorrecta){
-
-            estadoCorrecta="🟩";
-
-        }
-
-
-if(
-    palabraUsuarioMostrar ||
-    palabraCorrectaMostrar
-){
-
-htmlUsuario += `
+    htmlUsuario += `
 
 <tr>
 
 <td>
 
-${palabraUsuarioMostrar ? estadoUsuario + " " + palabraUsuarioMostrar : ""}
+${palabraUsuarioMostrar
+? estadoUsuario + " " + palabraUsuarioMostrar
+: ""}
 
 </td>
 
 <td>
 
-${palabraCorrectaMostrar ? estadoCorrecta + " " + palabraCorrectaMostrar : ""}
+${palabraCorrectaMostrar
+? "🟩 " + palabraCorrectaMostrar
+: ""}
 
 </td>
 
@@ -1114,20 +1284,93 @@ ${palabraCorrectaMostrar ? estadoCorrecta + " " + palabraCorrectaMostrar : ""}
 
 }
 
+htmlUsuario += "</table>";
+
+
+let html = `
+
+<table class="tabla-comparacion-traduccion">
+
+<tr>
+
+<th>Tu respuesta</th>
+
+<th>Respuesta correcta</th>
+
+</tr>
+
+`;
+
+const total =
+Math.max(
+    usuario.length,
+    correcta.length
+);
+
+for(let k=0;k<total;k++){
+
+    const palabraUsuario =
+    usuarioOriginal[k] || "";
+
+    const palabraCorrecta =
+    correctaOriginal[k] || "";
+
+    let iconoUsuario = "";
+
+    if(k < usuario.length){
+
+        if(usuarioVerde[k]){
+
+            iconoUsuario = "🟩";
+
+        }else if(
+            correcta.includes(usuario[k])
+        ){
+
+            iconoUsuario = "🟨";
+
+        }else{
+
+            iconoUsuario = "❌";
+
+        }
+
     }
 
+    let iconoCorrecta = "";
 
-    htmlUsuario += "</table>";
+    if(k < correcta.length){
 
+        iconoCorrecta =
+        correctaVerde[k]
+        ? "🟩"
+        : "🟨";
 
-    return{
+    }
 
-        usuario:htmlUsuario,
+    html += `
 
-        correcta:""
+<tr>
 
-    };
+<td>${iconoUsuario} ${palabraUsuario}</td>
 
+<td>${iconoCorrecta} ${palabraCorrecta}</td>
+
+</tr>
+
+`;
+
+}
+
+html += "</table>";
+
+return{
+
+    usuario:html,
+
+    correcta:""
+
+};
 }
 
 function verificarTraduccion(boton){
@@ -1198,7 +1441,7 @@ respuestasValidas
 
 
 const comparacion =
-compararTraduccionPalabraPorPalabra(
+compararTraduccionInteligente(
     entrada.value,
     respuestaCorrecta
 );
