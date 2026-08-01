@@ -969,6 +969,75 @@ UCMIResultados.guardar(
         VERIFICAR TRADUCCIÓN
 ====================================================*/
 
+function compararTraduccionPalabraPorPalabra(
+    respuestaUsuario,
+    respuestaCorrecta
+){
+
+    const palabrasUsuario =
+    respuestaUsuario.split(" ");
+
+
+    const palabrasCorrecta =
+    respuestaCorrecta.split(" ");
+
+
+    let htmlUsuario =
+    "<b>Tu respuesta:</b><br><br>";
+
+
+    let htmlCorrecta =
+    "<b>Respuesta correcta:</b><br><br>";
+
+
+    const longitud =
+    Math.max(
+        palabrasUsuario.length,
+        palabrasCorrecta.length
+    );
+
+
+    for(let i=0;i<longitud;i++){
+
+        const usuario =
+        palabrasUsuario[i] || "";
+
+
+        const correcta =
+        palabrasCorrecta[i] || "";
+
+
+        if(usuario === correcta){
+
+            htmlUsuario +=
+            "🟩 " + usuario + "<br>";
+
+            htmlCorrecta +=
+            "🟩 " + correcta + "<br>";
+
+        }else{
+
+            htmlUsuario +=
+            "❌ " + usuario + "<br>";
+
+            htmlCorrecta +=
+            "✅ " + correcta + "<br>";
+
+        }
+
+    }
+
+
+    return {
+
+        usuario: htmlUsuario,
+
+        correcta: htmlCorrecta
+
+    };
+
+}
+
 function verificarTraduccion(boton){
 console.log("ENTRÓ A verificarTraduccion");
     
@@ -1033,17 +1102,35 @@ respuestasValidas
 
         resultado.style.color = "green";
 
-    }else{
+}else{
 
-        resultado.innerHTML =
-        "❌ Incorrecto.<br><br><b>Respuesta correcta:</b> "
-        + respuestaCorrecta
-        + "<br><br><b>Explicación:</b> "
-        + explicacion;
 
-        resultado.style.color = "red";
+const comparacion =
+compararTraduccionPalabraPorPalabra(
+    respuestaUsuario,
+    normalizarRespuestaTraduccion(respuestaCorrecta)
+);
 
-    }
+
+resultado.innerHTML =
+
+"❌ Incorrecto.<br><br>" +
+
+comparacion.usuario +
+
+"<br>" +
+
+comparacion.correcta +
+
+"<br><b>Explicación:</b> " +
+
+explicacion;
+
+
+resultado.style.color = "red";
+
+
+}
 
     UCMIResultados.guardar(
 
