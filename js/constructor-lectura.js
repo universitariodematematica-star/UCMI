@@ -458,12 +458,18 @@ FIN - LECTOR PRINCIPAL DEL EXCEL
 INICIO - EVENTOS DEL CONSTRUCTOR
 =====================================================*/
 
-document
-.getElementById("excelInput")
-.addEventListener(
-"change",
-leerExcel
-);
+document.addEventListener(
+"DOMContentLoaded",
+function(){
+
+    document
+    .getElementById("excelInput")
+    .addEventListener(
+        "change",
+        leerExcel
+    );
+
+});
 
 
 /*=====================================================
