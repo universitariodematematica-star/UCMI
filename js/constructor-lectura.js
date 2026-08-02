@@ -462,9 +462,21 @@ document.addEventListener(
 "DOMContentLoaded",
 function(){
 
-    document
-    .getElementById("excelInput")
-    .addEventListener(
+    const inputExcel = document.getElementById("excelInput");
+
+    console.log(
+        "INPUT EXCEL:",
+        inputExcel
+    );
+
+    if(!inputExcel){
+        console.error(
+            "NO EXISTE #excelInput"
+        );
+        return;
+    }
+
+    inputExcel.addEventListener(
         "change",
         leerExcel
     );
