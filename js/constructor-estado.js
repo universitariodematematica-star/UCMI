@@ -23,3 +23,14 @@ let ejerciciosEmparejarColumnas = [];
 let ejerciciosTraduccion = [];
 
 let configuracionMostrar = {};
+
+const MODOS = {
+
+    LOCAL: "local",
+
+    GITHUB: "github"
+
+};
+
+// Cambia este valor cuando quieras exportar
+let modoExportacion = MODOS.GITHUB;
