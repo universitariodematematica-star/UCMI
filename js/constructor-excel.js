@@ -370,10 +370,19 @@ for(let celda of [
 hojaTranscripcion.getCell("A1").value =
 "URL del audio";
 
-hojaTranscripcion.getCell("A2").value =
-"Oración 1";
+hojaTranscripcion.getCell("B1").value =
+"https://ejemplo.mp3";
 
-for(let i=2;i<=50;i++){
+hojaTranscripcion.getCell("B2").value =
+"Hello. My name is John.";
+
+hojaTranscripcion.getCell("B3").value =
+"I am from Ecuador.";
+
+hojaTranscripcion.getCell("B4").value =
+"I study English every day.";    
+
+for(let i=1;i<=50;i++){
 
     hojaTranscripcion.getCell(i+1,1).value =
     "Oración " + i;
@@ -384,6 +393,10 @@ hojaTranscripcion.getColumn("A").width = 25;
 hojaTranscripcion.getColumn("B").width = 120;
 
 hojaTranscripcion.getCell("A1").font = {
+    bold:true
+};
+
+hojaTranscripcion.getCell("B1").font = {
     bold:true
 };    
 
