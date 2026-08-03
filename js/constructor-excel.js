@@ -364,6 +364,30 @@ for(let celda of [
 }    
 
 //=====================================================
+// HOJA: Transcripción
+//=====================================================
+
+hojaTranscripcion.getCell("A1").value =
+"URL del audio";
+
+hojaTranscripcion.getCell("A2").value =
+"Oración 1";
+
+for(let i=2;i<=50;i++){
+
+    hojaTranscripcion.getCell(i+1,1).value =
+    "Oración " + i;
+
+}
+
+hojaTranscripcion.getColumn("A").width = 25;
+hojaTranscripcion.getColumn("B").width = 120;
+
+hojaTranscripcion.getCell("A1").font = {
+    bold:true
+};    
+
+//=====================================================
 // HOJA: Mostrar
 //=====================================================
 
@@ -406,11 +430,17 @@ hojaMostrar.getCell("A7").value =
 "Traducción";
 
 hojaMostrar.getCell("B7").value =
+"Sí";
+
+hojaMostrar.getCell("A8").value =
+"Transcripción";
+
+hojaMostrar.getCell("B8").value =
 "Sí";    
 
 // Lista desplegable Sí / No
 
-for(let fila = 2; fila <= 7; fila++){
+for(let fila = 2; fila <= 8; fila++){
 
     hojaMostrar.getCell("B"+fila).dataValidation = {
 
