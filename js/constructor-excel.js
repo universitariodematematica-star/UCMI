@@ -13,6 +13,7 @@ async function descargarPlantilla(){
     const hojaOrdenarOracion = libro.addWorksheet("Ordenar-oracion");
     const hojaRelacionar = libro.addWorksheet("Relacionar");
     const hojaTraduccion = libro.addWorksheet("Traducción");
+    const hojaTranscripcion = libro.addWorksheet("Transcripción");
     const hojaMostrar = libro.addWorksheet("Mostrar");
 
 
