@@ -2,7 +2,15 @@
 ESTADO GLOBAL DEL CONSTRUCTOR
 =====================================================*/
 
-let datosPagina = {};
+let datosPagina = {
+
+    nivel:"",
+    unidad:"",
+    tema:"",
+    tituloIngles:"",
+    tituloEspanol:""
+
+};
 
 let vocabularioGlobal = [];
 let subtitulosGlobal = [];
