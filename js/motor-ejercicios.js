@@ -851,7 +851,7 @@ setTimeout(()=>{
 
 const bloque =
 resultado.closest(
-    ".ejercicio-sel-simple, .ejercicio-completar, .ejercicio-drag-drop, .ejercicio-ordenar-oracion"
+    ".ejercicio-sel-simple, .ejercicio-completar, .ejercicio-drag-drop, .ejercicio-ordenar-oracion, .ejercicio-transcripcion"
 );
 
 
