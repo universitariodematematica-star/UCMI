@@ -672,7 +672,7 @@ return html;
         MOTOR PRINCIPAL
 ====================================================*/
 
-
+const UCMIMotorEjercicios = {
 
     generar(config){
 
@@ -2042,6 +2042,10 @@ UCMIResultados.guardar(
 );
 
 }
+
+
+// CIERRE DEL OBJETO UCMIMotorEjercicios
+};
 
 console.log("MOTOR CARGADO CORRECTAMENTE");
 
