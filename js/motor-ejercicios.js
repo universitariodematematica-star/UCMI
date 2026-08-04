@@ -646,7 +646,7 @@ ${oracion}
         MOTOR PRINCIPAL
 ====================================================*/
 
-const UCMIMotorEjercicios = {
+
 
     generar(config){
 
@@ -754,6 +754,21 @@ if(
 
     htmlFinal += crearTraduccion(
         config.traduccion
+    );
+
+}
+
+//========================================
+// SECCIÓN: TRANSCRIPCIÓN
+//========================================
+
+if(
+    config.transcripcion &&
+    config.mostrarTranscripcion !== "No"
+){
+
+    htmlFinal += crearTranscripcion(
+        config.transcripcion
     );
 
 }        
