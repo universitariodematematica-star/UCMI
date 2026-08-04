@@ -628,7 +628,7 @@ data-id="transcripcion-${indice}"
 
 
 <h3>
-Transcribe lo que escuchas:
+${++contadorEjercicios}. Transcribe lo que escuchas:
 </h3>
 
 
@@ -782,22 +782,7 @@ if(
         config.traduccion
     );
 
-}
-
-//========================================
-// SECCIÓN: TRANSCRIPCIÓN
-//========================================
-
-if(
-    config.transcripcion &&
-    config.mostrarTranscripcion !== "No"
-){
-
-    htmlFinal += crearTranscripcion(
-        config.transcripcion
-    );
-
-}        
+}       
 
 //========================================
 // SECCIÓN: TRANSCRIPCIÓN
@@ -851,7 +836,7 @@ setTimeout(()=>{
 
 const bloque =
 resultado.closest(
-    ".ejercicio-sel-simple, .ejercicio-completar, .ejercicio-drag-drop, .ejercicio-ordenar-oracion, .ejercicio-transcripcion"
+".ejercicio-sel-simple, .ejercicio-completar, .ejercicio-drag-drop, .ejercicio-ordenar-oracion, .ejercicio-transcripcion, .ejercicio-traduccion"
 );
 
 
