@@ -586,9 +586,9 @@ function crearTranscripcion(lista){
         return "";
     }
 
+
     let html = "";
 
-    contadorEjercicios++;
 
     html += `
 
@@ -602,7 +602,6 @@ TRANSCRIPCIÓN
 </tr>
 </table>
 
-<div style="height:25px;"></div>
 
 <div class="audioUCMI">
 
@@ -614,31 +613,58 @@ data-audio="${lista.audio}">
 
 </div>
 
-<div class="transcripcion-ucmi">
-
 `;
 
-    lista.oraciones.forEach(oracion=>{
 
-        html += `
+lista.oraciones.forEach((oracion, indice)=>{
 
-<p class="oracion-transcripcion">
 
-${oracion}
+html += `
 
-</p>
+<div 
+class="ejercicio-transcripcion"
+data-id="transcripcion-${indice}"
+>
 
-`;
 
-    });
+<h3>
+Transcribe lo que escuchas:
+</h3>
 
-    html += `
+
+<textarea
+class="respuesta-transcripcion"
+rows="3"
+placeholder="Escribe la oración escuchada..."
+></textarea>
+
+
+<button
+class="verificar"
+onclick="verificarTranscripcion(this)"
+data-respuesta="${escaparTexto(oracion)}"
+>
+
+Verificar
+
+</button>
+
+
+<div 
+class="resultado"
+data-id="transcripcion-${indice}"
+></div>
+
 
 </div>
 
 `;
 
-    return html;
+
+});
+
+
+return html;
 
 }
 
@@ -1594,6 +1620,72 @@ resultado.style.color = "red";
         }
 
     );
+
+}
+
+function verificarTranscripcion(boton){
+
+const bloque =
+boton.closest(
+".ejercicio-transcripcion"
+);
+
+
+const respuestaUsuario =
+bloque.querySelector(
+".respuesta-transcripcion"
+)
+.value
+.trim();
+
+
+const respuestaCorrecta =
+boton.dataset.respuesta
+.trim();
+
+
+const resultado =
+bloque.querySelector(
+".resultado"
+);
+
+
+if(
+respuestaUsuario
+.replace(/\s+/g," ")
+.toLowerCase()
+===
+respuestaCorrecta
+.replace(/\s+/g," ")
+.toLowerCase()
+){
+
+resultado.innerHTML =
+"✅ Correcto";
+
+resultado.style.color="green";
+
+
+}else{
+
+resultado.innerHTML =
+"❌ Incorrecto.<br><br>"+
+"<b>Respuesta correcta:</b> "+
+respuestaCorrecta;
+
+resultado.style.color="red";
+
+}
+
+
+UCMIResultados.guardar(
+bloque.dataset.id,
+{
+resultado:resultado.innerHTML,
+color:resultado.style.color
+}
+);
+
 
 }
 
