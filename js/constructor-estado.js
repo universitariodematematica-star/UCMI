@@ -21,6 +21,7 @@ let ejerciciosDragDrop = [];
 let ejerciciosOrdenarOracion = [];
 let ejerciciosEmparejarColumnas = [];
 let ejerciciosTraduccion = [];
+let ejerciciosTranscripcion = [];
 
 let configuracionMostrar = {};
 
