@@ -2043,10 +2043,6 @@ UCMIResultados.guardar(
 
 }
 
-
-// CIERRE DEL OBJETO UCMIMotorEjercicios
-};
-
 console.log("MOTOR CARGADO CORRECTAMENTE");
 
 document.addEventListener(
