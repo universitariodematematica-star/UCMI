@@ -575,6 +575,72 @@ data-id="traduccion-${indice}"
 }
 
 /*====================================================
+        TRANSCRIPCIÓN
+====================================================*/
+
+function crearTranscripcion(lista){
+
+    if(!lista || !lista.audio){
+        return "";
+    }
+
+    let html = "";
+
+    contadorEjercicios++;
+
+    html += `
+
+<table class="barra-gris">
+<tr>
+<td>
+<p>
+TRANSCRIPCIÓN
+</p>
+</td>
+</tr>
+</table>
+
+<div style="height:25px;"></div>
+
+<div class="audioUCMI">
+
+<div
+class="audio-data"
+data-titulo="Transcripción"
+data-audio="${lista.audio}">
+</div>
+
+</div>
+
+<div class="transcripcion-ucmi">
+
+`;
+
+    lista.oraciones.forEach(oracion=>{
+
+        html += `
+
+<p class="oracion-transcripcion">
+
+${oracion}
+
+</p>
+
+`;
+
+    });
+
+    html += `
+
+</div>
+
+`;
+
+    return html;
+
+}
+
+/*====================================================
         MOTOR PRINCIPAL
 ====================================================*/
 
@@ -686,6 +752,21 @@ if(
 
     htmlFinal += crearTraduccion(
         config.traduccion
+    );
+
+}        
+
+//========================================
+// SECCIÓN: TRANSCRIPCIÓN
+//========================================
+
+if(
+    config.transcripcion &&
+    config.mostrarTranscripcion !== "No"
+){
+
+    htmlFinal += crearTranscripcion(
+        config.transcripcion
     );
 
 }        
