@@ -676,14 +676,15 @@ mostrarTraduccion:
 "${configuracionMostrar["Traducción"] || "Sí"}",
 
 mostrarTranscripcion:
-"${configuracionMostrar["Transcripción"] || "Sí"}",
+"${configuracionMostrar["Transcripción"] || "Sí"}"
+
+});
+
 
 console.log(
 "TRANSCRIPCIÓN GENERADA:",
 ${JSON.stringify(ejerciciosTranscripcion)}
 );
-
-});
 
 document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
 
