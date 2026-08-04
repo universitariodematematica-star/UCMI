@@ -453,13 +453,13 @@ ejerciciosTranscripcion = [];
 
 if(audioTranscripcion || oracionesTranscripcion.length){
 
-    ejerciciosTranscripcion.push({
+ejerciciosTranscripcion = {
 
-        audio:audioTranscripcion,
+    audio: audioTranscripcion,
 
-        oraciones:oracionesTranscripcion
+    oraciones: oracionesTranscripcion
 
-    });
+};
 
 }
 
