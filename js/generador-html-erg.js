@@ -19,6 +19,7 @@ ejerciciosDragDrop=[],
 ejerciciosOrdenarOracion=[],
 ejerciciosEmparejarColumnas=[],
 ejerciciosTraduccion=[],
+ejerciciosTranscripcion=[],
 configuracionMostrar={}    
 ){
 
@@ -649,7 +650,10 @@ UCMIMotorEjercicios.generar({
 
     traduccion:
     ${JSON.stringify(ejerciciosTraduccion)},
-
+    
+    transcripcion:
+    ${JSON.stringify(ejerciciosTranscripcion)},
+    
     mostrarSeleccionSimple:
     "${configuracionMostrar["Selección simple"] || "Sí"}",
 
@@ -670,6 +674,9 @@ mostrarRelacionar:
 
 mostrarTraduccion:
 "${configuracionMostrar["Traducción"] || "Sí"}",
+
+mostrarTranscripcion:
+"${configuracionMostrar["Transcripción"] || "Sí"}",
 
 });
 
