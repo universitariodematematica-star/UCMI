@@ -680,6 +680,24 @@ mostrarTranscripcion:
 
 });
 
+document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
+
+    const datos = contenedor.querySelector(".audio-data");
+
+    if(datos){
+
+        UCMIAudio.crear(contenedor,{
+
+            titulo: datos.dataset.titulo,
+
+            archivo: datos.dataset.audio
+
+        });
+
+    }
+
+});
+
 <\/script>
 
 </body>
