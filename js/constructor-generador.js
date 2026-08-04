@@ -20,6 +20,7 @@ function generarCodigoActualizado(){
         ejerciciosOrdenarOracion,
         ejerciciosEmparejarColumnas,
         ejerciciosTraduccion,
+        ejerciciosTranscripcion,
         configuracionMostrar
 
     );
