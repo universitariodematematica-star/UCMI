@@ -79,6 +79,7 @@ async function leerExcel(event){
     const hojaOrdenarOracion = libro.getWorksheet("Ordenar-oracion");
     const hojaRelacionar = libro.getWorksheet("Relacionar");
     const hojaTraduccion = libro.getWorksheet("Traducción");
+    const hojaTranscripcion = libro.getWorksheet("Transcripción");
 
     console.log("HOJAS:", libro.worksheets.map(h=>h.name));
     console.log("ORDENAR:", hojaOrdenarOracion);
@@ -410,7 +411,62 @@ ejerciciosTraduccion.push({
 console.log(
 "TRADUCCIÓN:",
 ejerciciosTraduccion
-); 
+);
+
+/*=====================================================
+TRANSCRIPCIÓN
+=====================================================*/
+
+let audioTranscripcion = "";
+
+if(hojaTranscripcion){
+
+    audioTranscripcion =
+    leerCelda(
+        hojaTranscripcion.getCell("B1")
+    );
+
+}
+
+let oracionesTranscripcion = [];
+
+if(hojaTranscripcion){
+
+    for(let fila=2;fila<=51;fila++){
+
+        let texto =
+        leerCelda(
+            hojaTranscripcion.getCell(fila,2)
+        );
+
+        if(texto){
+
+            oracionesTranscripcion.push(texto);
+
+        }
+
+    }
+
+}
+
+ejerciciosTranscripcion = [];
+
+if(audioTranscripcion || oracionesTranscripcion.length){
+
+    ejerciciosTranscripcion.push({
+
+        audio:audioTranscripcion,
+
+        oraciones:oracionesTranscripcion
+
+    });
+
+}
+
+console.log(
+"TRANSCRIPCIÓN:",
+ejerciciosTranscripcion
+);    
 
 //=====================================================
 // TRANSCRIPCIÓN
