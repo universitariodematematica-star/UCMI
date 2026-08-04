@@ -678,6 +678,11 @@ mostrarTraduccion:
 mostrarTranscripcion:
 "${configuracionMostrar["Transcripción"] || "Sí"}",
 
+console.log(
+"TRANSCRIPCIÓN GENERADA:",
+${JSON.stringify(ejerciciosTranscripcion)}
+);
+
 });
 
 document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
