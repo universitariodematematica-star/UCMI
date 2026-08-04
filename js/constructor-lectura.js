@@ -466,56 +466,7 @@ if(audioTranscripcion || oracionesTranscripcion.length){
 console.log(
 "TRANSCRIPCIÓN:",
 ejerciciosTranscripcion
-);    
-
-//=====================================================
-// TRANSCRIPCIÓN
-//=====================================================
-
-const hojaTranscripcion =
-libro.getWorksheet("Transcripción");
-
-let ejercicioTranscripcion = {
-
-    audio:"",
-    oraciones:[]
-
-};
-
-if(hojaTranscripcion){
-
-    ejercicioTranscripcion.audio =
-    leerCelda(
-        hojaTranscripcion.getCell("B1")
-    );
-
-    let fila = 2;
-
-    while(true){
-
-        let oracion =
-        leerCelda(
-            hojaTranscripcion.getCell(fila,2)
-        );
-
-        if(oracion===""){
-
-            break;
-
-        }
-
-        ejercicioTranscripcion.oraciones.push(oracion);
-
-        fila++;
-
-    }
-
-}
-
-console.log(
-"TRANSCRIPCIÓN:",
-ejercicioTranscripcion
-);    
+);        
     
 }
     
@@ -548,6 +499,7 @@ ejerciciosDragDrop,
 ejerciciosOrdenarOracion,
 ejerciciosEmparejarColumnas,
 ejerciciosTraduccion,
+ejerciciosTranscripcion,
 configuracionMostrar
 );
 
