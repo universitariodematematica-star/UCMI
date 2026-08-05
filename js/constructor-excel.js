@@ -14,19 +14,102 @@ async function descargarPlantilla(){
     const hojaRelacionar = libro.addWorksheet("Relacionar");
     const hojaTraduccion = libro.addWorksheet("Traducción");
     const hojaTranscripcion = libro.addWorksheet("Transcripción");
+    const hojaIdentificarImagenes = libro.addWorksheet("Identificar-imagenes");
+    const hojaIdentificarImagenes = libro.addWorksheet("Identificar-imagenes");
     const hojaMostrar = libro.addWorksheet("Mostrar");
 
 
+    /*=====================================================
+HOJA IDENTIFICAR-IMAGENES
+=====================================================*/
+
+// CONFIGURACIÓN
+
+hojaIdentificarImagenes.getCell("A1").value = "URL del audio";
+hojaIdentificarImagenes.getCell("B1").value = "";
+
+hojaIdentificarImagenes.getCell("A2").value = "Código Blogger";
+hojaIdentificarImagenes.getCell("B2").value = "";
+
+// TABLA
+
+hojaIdentificarImagenes.getCell("A3").value = "Oración";
+hojaIdentificarImagenes.getCell("B3").value = "Código de la imagen";
+
+// EJEMPLOS
+
+hojaIdentificarImagenes.getCell("A4").value =
+"The dog is chasing the cat.";
+hojaIdentificarImagenes.getCell("B4").value =
+"A1-U1-T1-I01";
+
+hojaIdentificarImagenes.getCell("A5").value =
+"The girl is reading a book.";
+hojaIdentificarImagenes.getCell("B5").value =
+"A1-U1-T1-I02";
+
+hojaIdentificarImagenes.getCell("A6").value =
+"The boy is drinking water.";
+hojaIdentificarImagenes.getCell("B6").value =
+"A1-U1-T1-I03";
+
+    /*=====================================================
+HOJA IDENTIFICAR IMÁGENES
+=====================================================*/
+
+// Configuración
+
+hojaIdentificarImagenes.getCell("A1").value = "URL del audio";
+hojaIdentificarImagenes.getCell("B1").value = "";
+
+hojaIdentificarImagenes.getCell("A2").value = "Código Blogger";
+hojaIdentificarImagenes.getCell("B2").value = "";
+
+// Encabezados de la tabla
+
+hojaIdentificarImagenes.getCell("A3").value = "Oración";
+hojaIdentificarImagenes.getCell("B3").value = "Código de la imagen";
+
+// Ejemplos guía
+
+hojaIdentificarImagenes.getCell("A4").value =
+"The dog is chasing the cat.";
+hojaIdentificarImagenes.getCell("B4").value =
+"A1-U1-T1-I01";
+
+hojaIdentificarImagenes.getCell("A5").value =
+"The girl is reading a book.";
+hojaIdentificarImagenes.getCell("B5").value =
+"A1-U1-T1-I02";
+
+hojaIdentificarImagenes.getCell("A6").value =
+"The boy is drinking water.";
+hojaIdentificarImagenes.getCell("B6").value =
+"A1-U1-T1-I03";
+
+    // Encabezados en negrita
+
+["A1","A2","A3","B3"].forEach(celda=>{
+
+    hojaIdentificarImagenes.getCell(celda).font={
+
+        bold:true
+
+    };
+
+});
+
+// Ancho de columnas
+
+hojaIdentificarImagenes.getColumn("A").width = 70;
+hojaIdentificarImagenes.getColumn("B").width = 30;
+
     // ENCABEZADOS
 
-   hojaDatos.getCell("A1").value = "Nivel";
-
+    hojaDatos.getCell("A1").value = "Nivel";
     hojaDatos.getCell("B1").value = "Unidad";
-
     hojaDatos.getCell("C1").value = "Tema";
-
     hojaDatos.getCell("D1").value = "Título en inglés";
-
     hojaDatos.getCell("E1").value = "Título en español";
 
 
@@ -449,7 +532,13 @@ hojaMostrar.getCell("A8").value =
 "Transcripción";
 
 hojaMostrar.getCell("B8").value =
-"Sí";    
+"Sí";
+
+hojaMostrar.getCell("A9").value =
+"Identificar imágenes";
+
+hojaMostrar.getCell("B9").value =
+"No";    
 
 // Lista desplegable Sí / No
 
