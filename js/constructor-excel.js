@@ -52,40 +52,6 @@ hojaIdentificarImagenes.getCell("A6").value =
 hojaIdentificarImagenes.getCell("B6").value =
 "A1-U1-T1-I03";
 
-    /*=====================================================
-HOJA IDENTIFICAR IMÁGENES
-=====================================================*/
-
-// Configuración
-
-hojaIdentificarImagenes.getCell("A1").value = "URL del audio";
-hojaIdentificarImagenes.getCell("B1").value = "";
-
-hojaIdentificarImagenes.getCell("A2").value = "Código Blogger";
-hojaIdentificarImagenes.getCell("B2").value = "";
-
-// Encabezados de la tabla
-
-hojaIdentificarImagenes.getCell("A3").value = "Oración";
-hojaIdentificarImagenes.getCell("B3").value = "Código de la imagen";
-
-// Ejemplos guía
-
-hojaIdentificarImagenes.getCell("A4").value =
-"The dog is chasing the cat.";
-hojaIdentificarImagenes.getCell("B4").value =
-"A1-U1-T1-I01";
-
-hojaIdentificarImagenes.getCell("A5").value =
-"The girl is reading a book.";
-hojaIdentificarImagenes.getCell("B5").value =
-"A1-U1-T1-I02";
-
-hojaIdentificarImagenes.getCell("A6").value =
-"The boy is drinking water.";
-hojaIdentificarImagenes.getCell("B6").value =
-"A1-U1-T1-I03";
-
     // Encabezados en negrita
 
 ["A1","A2","A3","B3"].forEach(celda=>{
