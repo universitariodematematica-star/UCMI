@@ -669,6 +669,70 @@ return html;
 }
 
 /*====================================================
+        COMPLETAR ESPACIOS
+====================================================*/
+
+function crearCompletarEspacios(ejerciciosCompletar){
+
+    let htmlCompletar = `
+
+<div class="instruccion-ejercicio">
+Completa cada oración con la palabra correcta.
+</div>
+
+`;
+
+
+    ejerciciosCompletar.forEach((ejercicio, indice)=>{
+
+
+        htmlCompletar += `
+
+<div
+class="ejercicio-completar"
+data-id="completar-${indice}"
+>
+
+<h3>
+${++contadorEjercicios}. ${ejercicio.pregunta}
+</h3>
+
+
+<input
+type="text"
+class="respuesta-completar"
+placeholder="Escribe tu respuesta"
+>
+
+
+<button
+class="verificar"
+onclick="verificarCompletar(this)"
+data-correcta="${escaparTexto(ejercicio.respuesta)}"
+data-explicacion="${escaparTexto(ejercicio.explicacion)}"
+>
+Verificar
+</button>
+
+
+<div
+class="resultado"
+data-id="completar-${indice}"
+></div>
+
+
+</div>
+
+`;
+
+    });
+
+
+return htmlCompletar;
+
+}
+
+/*====================================================
         MOTOR PRINCIPAL
 ====================================================*/
 
@@ -873,6 +937,81 @@ resultado.closest(
 }
 
 };
+
+function verificarCompletar(boton){
+
+const bloque =
+boton.closest(
+".ejercicio-completar"
+);
+
+
+const entrada =
+bloque.querySelector(
+".respuesta-completar"
+);
+
+
+const resultado =
+bloque.querySelector(
+".resultado"
+);
+
+
+const correcta =
+normalizarRespuestaTraduccion(
+boton.dataset.correcta
+);
+
+
+const usuario =
+normalizarRespuestaTraduccion(
+entrada.value
+);
+
+
+if(usuario === correcta){
+
+resultado.innerHTML =
+"✅ Correcto.<br><br><b>Explicación:</b> "
++
+boton.dataset.explicacion;
+
+resultado.style.color="green";
+
+
+}else{
+
+resultado.innerHTML =
+"❌ Incorrecto.<br><br><b>Respuesta correcta:</b> "
++
+boton.dataset.correcta
++
+"<br><br><b>Explicación:</b> "
++
+boton.dataset.explicacion;
+
+resultado.style.color="red";
+
+}
+
+
+UCMIResultados.guardar(
+
+bloque.dataset.id,
+
+{
+
+resultado:resultado.innerHTML,
+
+color:resultado.style.color
+
+}
+
+);
+
+
+}
 
 
     function verificarPregunta(boton){
