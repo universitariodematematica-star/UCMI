@@ -13,5 +13,11 @@ document.addEventListener(
             leerExcel
         );
 
+
+        UCMIBlogger.iniciar({
+            contenedor:"#panelBlogger"
+        });
+
+
     }
 );
