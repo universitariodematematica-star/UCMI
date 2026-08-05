@@ -565,11 +565,7 @@ if(oracion.trim() !== ""){
     );
 
 }
-```
-    
-    
-}
-    
+
     datosPagina = {
 
 nivel:nivel,
