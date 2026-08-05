@@ -2,6 +2,7 @@ const UCMIBlogger = {
 
     panel:null,
 
+    imagenes:[],
 
     iniciar(config={}){
 
@@ -55,6 +56,20 @@ id="estadoBlogger">
             this.panel
         );
 
+        const campo =
+this.panel.querySelector(
+    "#codigoBlogger"
+);
+
+
+campo.addEventListener(
+"input",
+()=>{
+
+    this.extraerImagenes();
+
+});
+
 
         // Oculto inicialmente
 
@@ -101,7 +116,57 @@ id="estadoBlogger">
             this.panel.style.display !== "none"
         );
 
+    },
+
+   extraerImagenes(){
+
+    const codigo =
+    document.getElementById(
+        "codigoBlogger"
+    ).value;
+
+
+    const patron =
+    /https:\/\/blogger\.googleusercontent\.com\/[^"]+/gi;
+
+
+    const encontrados =
+    codigo.match(patron);
+
+
+    if(!encontrados){
+
+        this.imagenes=[];
+
+        document.getElementById(
+            "estadoBlogger"
+        ).innerHTML =
+        "No se encontraron imágenes";
+
+        return;
+
     }
+
+
+    this.imagenes =
+    [...new Set(encontrados)];
+
+
+    document.getElementById(
+        "estadoBlogger"
+    ).innerHTML =
+
+    "✅ Imágenes encontradas: "
+    +
+    this.imagenes.length;
+
+
+    console.log(
+        "Imágenes Blogger:",
+        this.imagenes
+    );
+
+} 
 
 };
 
