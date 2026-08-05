@@ -103,6 +103,7 @@ if(hojaImagenes){
     const hojaRelacionar = libro.getWorksheet("Relacionar");
     const hojaTraduccion = libro.getWorksheet("Traducción");
     const hojaTranscripcion = libro.getWorksheet("Transcripción");
+    const hojaIdentificarImagenes = libro.getWorksheet("Identificar-imagenes");
 
     console.log("HOJAS:", libro.worksheets.map(h=>h.name));
     console.log("ORDENAR:", hojaOrdenarOracion);
