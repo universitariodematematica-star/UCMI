@@ -16,6 +16,8 @@ async function descargarPlantilla(){
     const hojaTranscripcion = libro.addWorksheet("Transcripción");
     const hojaIdentificarImagenes = libro.addWorksheet("Identificar-imagenes");
     const hojaMostrar = libro.addWorksheet("Mostrar");
+    
+    console.log("CREANDO HOJA MOSTRAR");
 
 
     /*=====================================================
@@ -561,6 +563,11 @@ console.log(
     libro.worksheets.map(
         hoja => hoja.name
     )
+);
+
+console.log(
+    "TOTAL HOJAS ANTES DE EXPORTAR:",
+    libro.worksheets.map(h=>h.name)
 );
     
     const archivo = await libro.xlsx.writeBuffer();
