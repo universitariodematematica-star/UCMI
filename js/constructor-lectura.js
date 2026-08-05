@@ -492,7 +492,6 @@ console.log(
 ejerciciosTranscripcion
 );
 
-```javascript
 /*=====================================================
 IDENTIFICAR IMÁGENES
 =====================================================*/
