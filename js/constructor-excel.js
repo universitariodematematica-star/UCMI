@@ -569,6 +569,19 @@ console.log(
     "TOTAL HOJAS ANTES DE EXPORTAR:",
     libro.worksheets.map(h=>h.name)
 );
+
+    console.log(
+    "NUMERO DE HOJAS:",
+    libro.worksheets.length
+);
+
+libro.worksheets.forEach((h,i)=>{
+    console.log(
+        i,
+        h.name,
+        h.state
+    );
+});
     
     const archivo = await libro.xlsx.writeBuffer();
 
