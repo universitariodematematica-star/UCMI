@@ -763,7 +763,20 @@ const UCMIMotorEjercicios = {
             config.ordenarOracion
         );
 
-        contadorEjercicios = 0;    
+        contadorEjercicios = 0; 
+
+        console.log("mostrarSeleccionSimple =", config.mostrarSeleccionSimple);
+console.log("mostrarCompletar =", config.mostrarCompletar);
+console.log("mostrarDragDrop =", config.mostrarDragDrop);
+console.log("mostrarOrdenarOracion =", config.mostrarOrdenarOracion);
+console.log("mostrarRelacionar =", config.mostrarRelacionar);
+console.log("mostrarTraduccion =", config.mostrarTraduccion);
+console.log("mostrarTranscripcion =", config.mostrarTranscripcion);
+
+console.log(
+"JSON mostrarSeleccionSimple =",
+JSON.stringify(config.mostrarSeleccionSimple)
+);
 
 
         //========================================
