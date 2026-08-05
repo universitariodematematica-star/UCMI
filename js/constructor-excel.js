@@ -562,9 +562,6 @@ console.log(
         hoja => hoja.name
     )
 );
-
-
-const archivo = await libro.xlsx.writeBuffer();
     
     const archivo = await libro.xlsx.writeBuffer();
 
