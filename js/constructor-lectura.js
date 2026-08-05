@@ -596,6 +596,7 @@ ejerciciosOrdenarOracion,
 ejerciciosEmparejarColumnas,
 ejerciciosTraduccion,
 ejerciciosTranscripcion,
+ejercicioIdentificarImagenes,
 configuracionMostrar
 );
 
