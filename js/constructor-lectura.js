@@ -288,9 +288,11 @@ opciones:[
 
 
     explicacion:
-    leerCelda(hojaDragDrop.getCell("H"+fila))
+    leerCelda(hojaDragDrop.getCell("H"+fila)) 
 
 });
+
+}    
 
 console.log("DRAG DROP:", ejerciciosDragDrop);    
 
