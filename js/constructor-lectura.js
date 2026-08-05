@@ -61,8 +61,31 @@ async function leerExcel(event){
 
     const libro = new ExcelJS.Workbook();
 
-
     await libro.xlsx.load(buffer);
+
+    // Detectar si el ejercicio utiliza imágenes
+
+const hojaImagenes =
+libro.getWorksheet("Identificar-imagenes");
+
+
+if(hojaImagenes){
+
+    console.log(
+        "Ejercicio con imágenes detectado"
+    );
+
+    UCMIBlogger.mostrar();
+
+}else{
+
+    console.log(
+        "Ejercicio sin imágenes"
+    );
+
+    UCMIBlogger.ocultar();
+
+}
 
     console.log(
     libro.worksheets.map(
