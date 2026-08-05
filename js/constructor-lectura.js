@@ -490,7 +490,74 @@ ejerciciosTranscripcion = {
 console.log(
 "TRANSCRIPCIÓN:",
 ejerciciosTranscripcion
-);        
+);
+
+/*=====================================================
+IDENTIFICAR IMÁGENES
+=====================================================*/
+
+ejercicioIdentificarImagenes = [];
+
+if(hojaIdentificarImagenes){
+
+    const urlAudio =
+    leerCelda(
+        hojaIdentificarImagenes.getCell("B1")
+    );
+
+    const codigoBlogger =
+    leerCelda(
+        hojaIdentificarImagenes.getCell("B2")
+    );
+
+    for(
+        let fila = 3;
+        fila <= hojaIdentificarImagenes.rowCount;
+        fila++
+    ){
+
+        const numero =
+        leerCelda(
+            hojaIdentificarImagenes.getCell("A"+fila)
+        );
+
+        const oracion =
+        leerCelda(
+            hojaIdentificarImagenes.getCell("B"+fila)
+        );
+
+        if(oracion){
+
+            ejercicioIdentificarImagenes.push({
+
+                numero: numero,
+
+                oracion: oracion,
+
+                imagen: ""
+
+            });
+
+        }
+
+    }
+
+    console.log(
+        "IDENTIFICAR IMÁGENES:",
+        ejercicioIdentificarImagenes
+    );
+
+    console.log(
+        "AUDIO:",
+        urlAudio
+    );
+
+    console.log(
+        "CÓDIGO BLOGGER:",
+        codigoBlogger
+    );
+
+}    
     
 }
     
