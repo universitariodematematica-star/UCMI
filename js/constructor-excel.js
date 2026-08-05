@@ -507,7 +507,7 @@ hojaMostrar.getCell("B9").value =
 
 // Lista desplegable Sí / No
 
-for(let fila = 2; fila <= 8; fila++){
+for(let fila = 2; fila <= 9; fila++){
 
     hojaMostrar.getCell("B"+fila).dataValidation = {
 
