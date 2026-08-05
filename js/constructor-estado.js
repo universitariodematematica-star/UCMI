@@ -22,6 +22,7 @@ let ejerciciosOrdenarOracion = [];
 let ejerciciosEmparejarColumnas = [];
 let ejerciciosTraduccion = [];
 let ejerciciosTranscripcion = [];
+let ejercicioIdentificarImagenes = [];
 
 let configuracionMostrar = {};
 
