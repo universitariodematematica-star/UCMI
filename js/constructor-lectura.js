@@ -492,6 +492,7 @@ console.log(
 ejerciciosTranscripcion
 );
 
+```javascript
 /*=====================================================
 IDENTIFICAR IMÁGENES
 =====================================================*/
@@ -505,36 +506,38 @@ if(hojaIdentificarImagenes){
         hojaIdentificarImagenes.getCell("B1")
     );
 
+
     const codigoBlogger =
     leerCelda(
         hojaIdentificarImagenes.getCell("B2")
     );
 
+
     for(
-        let fila = 3;
+        let fila = 4;
         fila <= hojaIdentificarImagenes.rowCount;
         fila++
     ){
 
-        const numero =
+        const oracion =
         leerCelda(
             hojaIdentificarImagenes.getCell("A"+fila)
         );
 
-        const oracion =
+
+        const codigoImagen =
         leerCelda(
             hojaIdentificarImagenes.getCell("B"+fila)
         );
+
 
         if(oracion){
 
             ejercicioIdentificarImagenes.push({
 
-                numero: numero,
-
                 oracion: oracion,
 
-                imagen: ""
+                imagen: codigoImagen
 
             });
 
@@ -542,22 +545,27 @@ if(hojaIdentificarImagenes){
 
     }
 
+
     console.log(
         "IDENTIFICAR IMÁGENES:",
         ejercicioIdentificarImagenes
     );
+
 
     console.log(
         "AUDIO:",
         urlAudio
     );
 
+
     console.log(
         "CÓDIGO BLOGGER:",
         codigoBlogger
     );
 
-}    
+}
+```
+    
     
 }
     
