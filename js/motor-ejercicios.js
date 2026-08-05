@@ -782,20 +782,21 @@ if(
 }
 
 
-        //========================================
-        // SECCIÓN: COMPLETAR ESPACIOS
-        //========================================
+//========================================
+// SECCIÓN: COMPLETAR ESPACIOS
+//========================================
 
-if(
-    config.completarEspacios &&
-    config.mostrarCompletar !== "No"
-){
+// if(
+//     config.completarEspacios &&
+//     config.mostrarCompletar !== "No"
+// ){
 
-    htmlFinal += crearCompletarEspacios(
-        config.completarEspacios
-    );
+//     htmlFinal += crearCompletarEspacios(
+//         config.completarEspacios
+//     );
 
-}
+// }
+        
 //========================================
 // SECCIÓN: DRAG AND DROP - ESPACIO EN BLANCO
 //========================================
