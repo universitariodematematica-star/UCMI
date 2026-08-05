@@ -531,17 +531,17 @@ if(hojaIdentificarImagenes){
         );
 
 
-        if(oracion){
+if(oracion.trim() !== ""){
 
-            ejercicioIdentificarImagenes.push({
+    ejercicioIdentificarImagenes.push({
 
-                oracion: oracion,
+        oracion: oracion,
 
-                imagen: codigoImagen
+        imagen: codigoImagen
 
-            });
+    });
 
-        }
+}
 
     }
 
