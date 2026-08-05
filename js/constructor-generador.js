@@ -21,6 +21,7 @@ function generarCodigoActualizado(){
         ejerciciosEmparejarColumnas,
         ejerciciosTraduccion,
         ejerciciosTranscripcion,
+        ejercicioIdentificarImagenes,
         configuracionMostrar
 
     );
