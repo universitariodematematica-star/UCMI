@@ -544,6 +544,27 @@ for(let celda of ["A1","B1"]){
     };
 
 }
+
+    for(let celda of ["A1","B1"]){
+
+    hojaMostrar.getCell(celda).font={
+        bold:true
+    };
+
+}
+
+
+// PRUEBA TEMPORAL
+
+console.log(
+    "HOJAS GENERADAS:",
+    libro.worksheets.map(
+        hoja => hoja.name
+    )
+);
+
+
+const archivo = await libro.xlsx.writeBuffer();
     
     const archivo = await libro.xlsx.writeBuffer();
 
