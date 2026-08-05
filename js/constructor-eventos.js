@@ -14,9 +14,13 @@ document.addEventListener(
         );
 
 
-        UCMIBlogger.iniciar({
-            contenedor:"#panelBlogger"
-        });
+if(window.UCMIBlogger){
+
+    UCMIBlogger.iniciar({
+        contenedor:"#panelBlogger"
+    });
+
+}
 
 
     }
