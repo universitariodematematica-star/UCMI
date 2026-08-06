@@ -774,7 +774,7 @@ console.log(
 
 config.imagenes.forEach((imagen, indice)=>{
 
-let urlImagen = imagen.url;
+let urlImagen = imagen.url || "";
 
 console.log(
     "IMAGEN FINAL:",
