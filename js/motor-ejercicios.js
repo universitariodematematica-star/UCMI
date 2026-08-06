@@ -736,7 +736,10 @@ function crearIdentificarImagenes(lista){
 
     alert("ENTRÓ A CREAR IDENTIFICAR IMÁGENES");
 
-    console.log("LISTA IDENTIFICAR:", lista);
+    console.log(
+    "LISTA IDENTIFICAR JSON:",
+    JSON.stringify(lista, null, 2)
+);
 
     let html = `
 
