@@ -819,6 +819,16 @@ console.log(
 JSON.stringify(config.mostrarSeleccionSimple)
 );
 
+console.log(
+"mostrarIdentificarImagenes =",
+config.mostrarIdentificarImagenes
+);
+
+console.log(
+"identificarImagenes =",
+config.identificarImagenes
+);        
+
 
         //========================================
         // SECCIÓN: SELECCIÓN SIMPLE
@@ -922,10 +932,15 @@ if(
 // SECCIÓN: IDENTIFICAR IMÁGENES
 //========================================
 
-if(
-    config.identificarImagenes &&
-    config.mostrarIdentificarImagenes !== "No"
-){
+if(config.identificarImagenes){
+
+    console.log("FORZADO IDENTIFICAR");
+
+    htmlFinal += crearIdentificarImagenes(
+        config.identificarImagenes
+    );
+
+}{
 
     console.log(">>> GENERANDO IDENTIFICAR IMÁGENES <<<");
 
