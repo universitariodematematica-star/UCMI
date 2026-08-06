@@ -523,6 +523,16 @@ if(hojaIdentificarImagenes){
         hojaIdentificarImagenes.getCell("B2")
     );
 
+    console.log(
+    "B2 (valor original):",
+    hojaIdentificarImagenes.getCell("B2").value
+);
+
+console.log(
+    "B2 (leerCelda):",
+    ejercicioIdentificarImagenes.codigoBlogger
+);
+
 
     for(
         let fila = 4;
