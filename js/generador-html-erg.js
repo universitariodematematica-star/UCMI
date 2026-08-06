@@ -655,9 +655,12 @@ UCMIMotorEjercicios.generar({
     transcripcion:
     ${JSON.stringify(ejerciciosTranscripcion)},
     
+    identificarImagenes:
+    ${JSON.stringify(ejercicioIdentificarImagenes)},
+    
     mostrarSeleccionSimple:
     "${configuracionMostrar["Selección simple"] || "Sí"}",
-
+    
 
     mostrarCompletar:
     "${configuracionMostrar["Completar espacios"] || "Sí"}",
@@ -677,7 +680,10 @@ mostrarTraduccion:
 "${configuracionMostrar["Traducción"] || "Sí"}",
 
 mostrarTranscripcion:
-"${configuracionMostrar["Transcripción"] || "Sí"}"
+"${configuracionMostrar["Transcripción"] || "Sí"}",
+
+mostrarIdentificarImagenes:
+"${configuracionMostrar["Identificar imágenes"] || "Sí"}"
 
 });
 
