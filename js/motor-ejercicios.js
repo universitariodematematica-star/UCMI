@@ -735,35 +735,59 @@ return htmlCompletar;
 function crearIdentificarImagenes(lista){
 
     console.log(
-    "LISTA IDENTIFICAR JSON:",
-    JSON.stringify(lista, null, 2)
-);
+        "IDENTIFICAR RECIBIDO:",
+        lista
+    );
+
 
     let html = `
 
 <div class="instruccion-ejercicio">
-Identifica la imagen correcta.
+Escucha el audio y selecciona la imagen correcta.
 </div>
 
-`;
-
-    lista.forEach((ejercicio, indice)=>{
-
-        html += `
 
 <div class="ejercicio-identificar-imagen">
 
+`;
+
+
+
+    lista.forEach((ejercicio, indice)=>{
+
+
+        html += `
+
+<div>
+
 <h3>
-${++contadorEjercicios}. ${ejercicio.pregunta}
+Imagen ${indice + 1}
 </h3>
 
+<p>
+${ejercicio.oracion}
+</p>
+
+<p>
+Código imagen:
+${ejercicio.imagen}
+</p>
+
 </div>
+
+<hr>
 
 `;
 
     });
 
-    return html;
+    html += `
+
+</div>
+
+`;
+
+return html;
 
 }
 
