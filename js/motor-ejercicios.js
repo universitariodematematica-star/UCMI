@@ -734,60 +734,66 @@ return htmlCompletar;
 
 function crearIdentificarImagenes(lista){
 
-    console.log(
-        "IDENTIFICAR RECIBIDO:",
-        lista
-    );
+console.log(
+"IDENTIFICAR RECIBIDO:",
+lista
+);
 
 
-    let html = `
+let html = `
 
 <div class="instruccion-ejercicio">
-Escucha el audio y selecciona la imagen correcta.
+Escucha el audio y selecciona las imágenes en el orden correcto.
 </div>
 
 
-<div class="ejercicio-identificar-imagen">
+<div class="contenedor-identificar-imagenes">
 
 `;
 
 
 
-    lista.forEach((ejercicio, indice)=>{
+lista.forEach((ejercicio, indice)=>{
 
 
-        html += `
+html += `
 
-<div>
 
-<h3>
-Imagen ${indice + 1}
-</h3>
+<div 
+class="tarjeta-imagen-identificar"
+data-codigo="${ejercicio.imagen}"
+onclick="seleccionarImagenIdentificar(this)"
+>
 
-<p>
-${ejercicio.oracion}
-</p>
 
-<p>
-Código imagen:
-${ejercicio.imagen}
-</p>
+<div class="circulo-seleccion">
+</div>
+
+
+<img 
+src=""
+data-codigo="${ejercicio.imagen}"
+class="imagen-identificar"
+>
+
 
 </div>
 
-<hr>
 
 `;
 
-    });
+});
 
-    html += `
+
+html += `
 
 </div>
 
 `;
+
 
 return html;
+
 
 }
 
@@ -2279,6 +2285,42 @@ UCMIResultados.guardar(
         color: resultado.style.color
     }
 );
+
+}
+
+let ordenSeleccionImagenes = 1;
+
+
+function seleccionarImagenIdentificar(elemento){
+
+
+const circulo =
+elemento.querySelector(
+".circulo-seleccion"
+);
+
+
+
+if(circulo.textContent !== ""){
+
+return;
+
+}
+
+
+
+circulo.textContent =
+ordenSeleccionImagenes;
+
+
+
+ordenSeleccionImagenes++;
+
+
+elemento.classList.add(
+"imagen-seleccionada"
+);
+
 
 }
 
