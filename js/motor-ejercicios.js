@@ -765,7 +765,15 @@ data-audio="${config.audio}">
 
 `;
 
+console.log(
+    "IMAGENES ANTES DE ASIGNAR URL:",
+    config.imagenes
+);
 
+console.log(
+    "IMAGENES BLOGGER:",
+    UCMIBlogger.imagenes
+);
 
 config.imagenes.forEach((imagen, indice)=>{
 
