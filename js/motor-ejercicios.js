@@ -772,35 +772,15 @@ console.log(
     config.imagenes
 );
 
-console.log(
-    "IMAGENES BLOGGER:",
-    UCMIBlogger.imagenes
-);
-
 config.imagenes.forEach((imagen, indice)=>{
-
 
 let urlImagen = imagen.url;
 
-
-// Si todavía no tiene URL,
-// buscarla en Blogger
-
-if(!urlImagen){
-
-    const encontrada =
-    UCMIBlogger.imagenes.find(
-        url => url.includes(imagen.codigo)
-    );
-
-
-    if(encontrada){
-
-        urlImagen = encontrada;
-
-    }
-
-}
+console.log(
+    "IMAGEN FINAL:",
+    imagen.codigo,
+    urlImagen
+);
 
 
 
