@@ -739,6 +739,14 @@ console.log(
 config
 );
 
+console.log(
+"URL IMÁGENES:",
+config.imagenes.map(img=>({
+    codigo:img.codigo,
+    url:img.url
+}))
+);    
+
 
 let html = `
 
@@ -801,8 +809,6 @@ if(!urlImagen){
 }
 
 
-
-html += `
 
 html += `
 
