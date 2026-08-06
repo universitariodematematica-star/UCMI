@@ -732,37 +732,55 @@ return htmlCompletar;
 
 }
 
-function crearIdentificarImagenes(lista){
+function crearIdentificarImagenes(config){
 
 console.log(
-"IDENTIFICAR RECIBIDO:",
-lista
+"IDENTIFICAR CONFIG:",
+config
 );
 
 
 let html = `
+
+<div class="ejercicio-identificar-imagenes">
 
 <div class="instruccion-ejercicio">
 Escucha el audio y selecciona las imágenes en el orden correcto.
 </div>
 
 
-<div class="contenedor-identificar-imagenes">
+<div class="audioUCMI">
+
+<div
+class="audio-data"
+data-titulo="Identificar imágenes"
+data-audio="${config.audio}">
+</div>
+
+</div>
+
+
+
+<div class="galeria-imagenes">
 
 `;
 
 
 
-lista.forEach((ejercicio, indice)=>{
+config.imagenes.forEach((imagen, indice)=>{
 
 
 html += `
 
-
 <div 
-class="tarjeta-imagen-identificar"
-data-codigo="${ejercicio.imagen}"
+class="imagen-seleccionable"
+data-codigo="${imagen.codigo}"
 onclick="seleccionarImagenIdentificar(this)"
+>
+
+
+<img 
+src="${imagen.url}"
 >
 
 
@@ -770,11 +788,8 @@ onclick="seleccionarImagenIdentificar(this)"
 </div>
 
 
-<img 
-src=""
-data-codigo="${ejercicio.imagen}"
-class="imagen-identificar"
->
+<div class="numero-seleccion">
+</div>
 
 
 </div>
@@ -785,11 +800,16 @@ class="imagen-identificar"
 });
 
 
+
 html += `
 
 </div>
 
+</div>
+
+
 `;
+
 
 
 return html;
