@@ -719,7 +719,10 @@ document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
 
 document.getElementById("codigo").textContent = codigo;  
 
-document.getElementById("preview").srcdoc = codigo;
+document.getElementById("preview").srcdoc = "";
+setTimeout(()=>{
+    document.getElementById("preview").srcdoc = codigo;
+},100);
 
 }
 
