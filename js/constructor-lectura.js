@@ -515,6 +515,10 @@ if(hojaIdentificarImagenes){
         hojaIdentificarImagenes.getCell("B1")
     );
 
+    console.log(
+    "VALOR BRUTO B1:",
+    hojaIdentificarImagenes.getCell("B1").value
+);
 
     const codigoBlogger =
     leerCelda(
@@ -557,6 +561,16 @@ if(hojaIdentificarImagenes){
         }
 
     }
+
+    ejercicioIdentificarImagenes = {
+
+    audio: urlAudio,
+
+    codigoBlogger: codigoBlogger,
+
+    imagenes: ejercicioIdentificarImagenes
+
+};
 
 
     console.log(
