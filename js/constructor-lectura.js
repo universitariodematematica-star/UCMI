@@ -502,6 +502,8 @@ ejercicioIdentificarImagenes = {
 
     audio:"",
 
+    codigoBlogger:"",
+
     imagenes:[]
 
 };
@@ -515,12 +517,8 @@ if(hojaIdentificarImagenes){
         hojaIdentificarImagenes.getCell("B1")
     );
 
-    console.log(
-    "VALOR BRUTO B1:",
-    hojaIdentificarImagenes.getCell("B1").value
-);
 
-    const codigoBlogger =
+    ejercicioIdentificarImagenes.codigoBlogger =
     leerCelda(
         hojaIdentificarImagenes.getCell("B2")
     );
@@ -561,20 +559,6 @@ if(hojaIdentificarImagenes){
         }
 
     }
-
-ejercicioIdentificarImagenes = {
-
-    audio: leerCelda(
-        hojaIdentificarImagenes.getCell("B1")
-    ),
-
-    codigoBlogger: leerCelda(
-        hojaIdentificarImagenes.getCell("B2")
-    ),
-
-    imagenes: ejercicioIdentificarImagenes
-
-};
 
 
     console.log(
