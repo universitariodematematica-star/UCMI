@@ -166,34 +166,6 @@ campo.addEventListener(
         this.imagenes
     );
 
-       //======================================
-// Actualizar URLs de las imágenes
-//======================================
-
-if (typeof ejercicioIdentificarImagenes !== "undefined") {
-
-    ejercicioIdentificarImagenes.imagenes.forEach(imagen => {
-
-        const encontrada =
-        this.imagenes.find(url =>
-            url.includes(imagen.codigo)
-        );
-
-        if (encontrada) {
-
-            imagen.url = encontrada;
-
-        }
-
-    });
-
-    console.log(
-        "IMÁGENES ACTUALIZADAS:",
-        ejercicioIdentificarImagenes.imagenes
-    );
-
-}
-
 } 
 
 };
