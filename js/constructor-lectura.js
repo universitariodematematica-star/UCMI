@@ -560,7 +560,22 @@ if(hojaIdentificarImagenes){
 
     }
 
+ejercicioIdentificarImagenes.imagenes.forEach(imagen=>{
 
+    const encontrada =
+    UCMIBlogger.imagenes.find(url =>
+        url.includes(imagen.codigo)
+    );
+
+
+    if(encontrada){
+
+        imagen.url = encontrada;
+
+    }
+
+});
+    
     console.log(
         "IDENTIFICAR IMÁGENES:",
         ejercicioIdentificarImagenes
