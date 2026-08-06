@@ -500,103 +500,73 @@ IDENTIFICAR IMÁGENES
 
 ejercicioIdentificarImagenes = {
 
-    audio:"",
+    audio: "",
 
-    codigoBlogger:"",
+    codigoBlogger: "",
 
-    imagenes:[]
+    imagenes: []
 
 };
 
-
-if(hojaIdentificarImagenes){
-
+if (hojaIdentificarImagenes) {
 
     ejercicioIdentificarImagenes.audio =
     leerCelda(
         hojaIdentificarImagenes.getCell("B1")
     );
 
-
     ejercicioIdentificarImagenes.codigoBlogger =
     leerCelda(
         hojaIdentificarImagenes.getCell("B2")
     );
 
-    console.log(
-    "B2 (valor original):",
-    hojaIdentificarImagenes.getCell("B2").value
-);
+    // Enviar el código Blogger al módulo
+    document.getElementById("codigoBlogger").value =
+    ejercicioIdentificarImagenes.codigoBlogger;
 
-console.log(
-    "B2 (leerCelda):",
-    ejercicioIdentificarImagenes.codigoBlogger
-);
+    // Extraer todas las URLs
+    UCMIBlogger.extraerImagenes();
 
-
-    for(
+    for (
         let fila = 4;
         fila <= hojaIdentificarImagenes.rowCount;
         fila++
-    ){
+    ) {
 
         const oracion =
         leerCelda(
-            hojaIdentificarImagenes.getCell("A"+fila)
+            hojaIdentificarImagenes.getCell("A" + fila)
         );
 
-
-        const codigoImagen =
+        const codigo =
         leerCelda(
-            hojaIdentificarImagenes.getCell("B"+fila)
+            hojaIdentificarImagenes.getCell("B" + fila)
         );
 
+        if (!oracion.trim()) continue;
 
-        if(oracion.trim() !== ""){
+        // Buscar la URL correspondiente
+        const url =
+        UCMIBlogger.imagenes.find(
+            x => x.includes(codigo)
+        ) || "";
 
+        ejercicioIdentificarImagenes.imagenes.push({
 
-            ejercicioIdentificarImagenes.imagenes.push({
+            codigo: codigo,
 
-                codigo: codigoImagen,
+            oracion: oracion,
 
-                oracion: oracion,
+            url: url
 
-                url:""
-
-            });
-
-
-        }
-
-    }
-
-ejercicioIdentificarImagenes.imagenes.forEach(imagen=>{
-
-    const encontrada =
-    UCMIBlogger.imagenes.find(url =>
-        url.includes(imagen.codigo)
-    );
-
-
-    if(encontrada){
-
-        imagen.url = encontrada;
+        });
 
     }
 
-});
-    
     console.log(
         "IDENTIFICAR IMÁGENES:",
         ejercicioIdentificarImagenes
     );
-
-
-    console.log(
-        "AUDIO IDENTIFICAR:",
-        ejercicioIdentificarImagenes.audio
-    );
-
 
 }
 
