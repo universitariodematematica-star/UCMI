@@ -515,6 +515,18 @@ if (hojaIdentificarImagenes) {
         hojaIdentificarImagenes.getCell("B1")
     );
 
+    console.log(
+    "B2 RAW:",
+    hojaIdentificarImagenes.getCell("B2").value
+);
+
+    console.log(
+    "B2 LEÍDO:",
+    leerCelda(
+        hojaIdentificarImagenes.getCell("B2")
+    )
+);
+
     ejercicioIdentificarImagenes.codigoBlogger =
     leerCelda(
         hojaIdentificarImagenes.getCell("B2")
