@@ -694,7 +694,7 @@ data-id="completar-${indice}"
 >
 
 <h3>
-${++contadorEjercicios}. ${ejercicio.pregunta}
+${++contadorEjercicios}. ${ejercicio.oracion}
 </h3>
 
 
