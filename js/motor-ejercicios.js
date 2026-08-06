@@ -196,7 +196,7 @@ data-id="sel-${indice}"
 >
 
 <h3>
-${++contadorEjercicios}. ${ejercicio.pregunta}
+${++contadorEjercicios}. ${ejercicio.oracion}
 </h3>
 
 
@@ -734,8 +734,6 @@ return htmlCompletar;
 
 function crearIdentificarImagenes(lista){
 
-    alert("ENTRÓ A CREAR IDENTIFICAR IMÁGENES");
-
     console.log(
     "LISTA IDENTIFICAR JSON:",
     JSON.stringify(lista, null, 2)
@@ -758,10 +756,6 @@ Identifica la imagen correcta.
 <h3>
 ${++contadorEjercicios}. ${ejercicio.pregunta}
 </h3>
-
-<p style="color:red;">
-(Prueba de integración: el ejercicio llegó correctamente al motor)
-</p>
 
 </div>
 
