@@ -562,11 +562,15 @@ if(hojaIdentificarImagenes){
 
     }
 
-    ejercicioIdentificarImagenes = {
+ejercicioIdentificarImagenes = {
 
-    audio: urlAudio,
+    audio: leerCelda(
+        hojaIdentificarImagenes.getCell("B1")
+    ),
 
-    codigoBlogger: codigoBlogger,
+    codigoBlogger: leerCelda(
+        hojaIdentificarImagenes.getCell("B2")
+    ),
 
     imagenes: ejercicioIdentificarImagenes
 
