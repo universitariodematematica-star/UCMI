@@ -537,13 +537,15 @@ if (hojaIdentificarImagenes) {
     ejercicioIdentificarImagenes.codigoBlogger;
 
     // Extraer todas las URLs
-    UCMIBlogger.extraerImagenes();
+UCMIBlogger.extraerImagenes();
 
-    for (
-        let fila = 4;
-        fila <= hojaIdentificarImagenes.rowCount;
-        fila++
-    ) {
+
+for (
+let fila = 4;
+fila <= hojaIdentificarImagenes.rowCount;
+fila++
+){
+
 
         const oracion =
         leerCelda(
@@ -574,6 +576,30 @@ if (hojaIdentificarImagenes) {
         });
 
     }
+
+    // Asociar URLs Blogger con códigos Excel
+
+ejercicioIdentificarImagenes.imagenes.forEach(imagen=>{
+
+    const encontrada =
+    UCMIBlogger.imagenes.find(
+        url => url.includes(imagen.codigo)
+    );
+
+
+    if(encontrada){
+
+        imagen.url = encontrada;
+
+    }
+
+});
+
+
+console.log(
+    "IMÁGENES CON URL FINAL:",
+    ejercicioIdentificarImagenes.imagenes
+);
 
     console.log(
         "IDENTIFICAR IMÁGENES:",
