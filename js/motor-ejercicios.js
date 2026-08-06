@@ -734,6 +734,8 @@ return htmlCompletar;
 
 function crearIdentificarImagenes(lista){
 
+    console.log("LISTA IDENTIFICAR:", lista);
+
     let html = `
 
 <div class="instruccion-ejercicio">
