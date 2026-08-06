@@ -778,6 +778,32 @@ console.log(
 config.imagenes.forEach((imagen, indice)=>{
 
 
+let urlImagen = imagen.url;
+
+
+// Si todavía no tiene URL,
+// buscarla en Blogger
+
+if(!urlImagen){
+
+    const encontrada =
+    UCMIBlogger.imagenes.find(
+        url => url.includes(imagen.codigo)
+    );
+
+
+    if(encontrada){
+
+        urlImagen = encontrada;
+
+    }
+
+}
+
+
+
+html += `
+
 html += `
 
 <div 
@@ -788,7 +814,7 @@ onclick="seleccionarImagenIdentificar(this)"
 
 
 <img 
-src="${imagen.url}"
+src="${urlImagen}"
 >
 
 
