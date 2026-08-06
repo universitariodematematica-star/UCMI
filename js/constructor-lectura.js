@@ -498,11 +498,19 @@ ejerciciosTranscripcion
 IDENTIFICAR IMÁGENES
 =====================================================*/
 
-ejercicioIdentificarImagenes = [];
+ejercicioIdentificarImagenes = {
+
+    audio:"",
+
+    imagenes:[]
+
+};
+
 
 if(hojaIdentificarImagenes){
 
-    const urlAudio =
+
+    ejercicioIdentificarImagenes.audio =
     leerCelda(
         hojaIdentificarImagenes.getCell("B1")
     );
@@ -532,17 +540,21 @@ if(hojaIdentificarImagenes){
         );
 
 
-if(oracion.trim() !== ""){
+        if(oracion.trim() !== ""){
 
-    ejercicioIdentificarImagenes.push({
 
-        oracion: oracion,
+            ejercicioIdentificarImagenes.imagenes.push({
 
-        imagen: codigoImagen
+                codigo: codigoImagen,
 
-    });
+                oracion: oracion,
 
-}
+                url:""
+
+            });
+
+
+        }
 
     }
 
@@ -554,15 +566,10 @@ if(oracion.trim() !== ""){
 
 
     console.log(
-        "AUDIO:",
-        urlAudio
+        "AUDIO IDENTIFICAR:",
+        ejercicioIdentificarImagenes.audio
     );
 
-
-    console.log(
-        "CÓDIGO BLOGGER:",
-        codigoBlogger
-    );
 
 }
 
