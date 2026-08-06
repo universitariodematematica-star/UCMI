@@ -732,6 +732,40 @@ return htmlCompletar;
 
 }
 
+function crearIdentificarImagenes(lista){
+
+    let html = `
+
+<div class="instruccion-ejercicio">
+Identifica la imagen correcta.
+</div>
+
+`;
+
+    lista.forEach((ejercicio, indice)=>{
+
+        html += `
+
+<div class="ejercicio-identificar-imagen">
+
+<h3>
+${++contadorEjercicios}. ${ejercicio.pregunta}
+</h3>
+
+<p style="color:red;">
+(Prueba de integración: el ejercicio llegó correctamente al motor)
+</p>
+
+</div>
+
+`;
+
+    });
+
+    return html;
+
+}
+
 /*====================================================
         MOTOR PRINCIPAL
 ====================================================*/
@@ -877,6 +911,23 @@ if(
 
 }        
 
+//========================================
+// SECCIÓN: IDENTIFICAR IMÁGENES
+//========================================
+
+if(
+    config.identificarImagenes &&
+    config.mostrarIdentificarImagenes !== "No"
+){
+
+    console.log(">>> GENERANDO IDENTIFICAR IMÁGENES <<<");
+
+    htmlFinal += crearIdentificarImagenes(
+        config.identificarImagenes
+    );
+
+}
+        
 contenedor.innerHTML = htmlFinal;
 
 
