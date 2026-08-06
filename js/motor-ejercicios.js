@@ -926,17 +926,12 @@ if(
 // SECCIÓN: IDENTIFICAR IMÁGENES
 //========================================
 
-if(config.identificarImagenes){
+if(
+    config.identificarImagenes &&
+    config.mostrarIdentificarImagenes !== "No"
+){
 
-    console.log("FORZADO IDENTIFICAR");
-
-    htmlFinal += crearIdentificarImagenes(
-        config.identificarImagenes
-    );
-
-}{
-
-    console.log(">>> GENERANDO IDENTIFICAR IMÁGENES <<<");
+    console.log("GENERANDO IDENTIFICAR IMÁGENES");
 
     htmlFinal += crearIdentificarImagenes(
         config.identificarImagenes
