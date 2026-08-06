@@ -739,13 +739,7 @@ console.log(
 config
 );
 
-console.log(
-"URL IMÁGENES:",
-config.imagenes.map(img=>({
-    codigo:img.codigo,
-    url:img.url
-}))
-);    
+console.table(config.imagenes);    
 
 
 let html = `
