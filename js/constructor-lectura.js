@@ -521,6 +521,15 @@ if (hojaIdentificarImagenes) {
         hojaIdentificarImagenes.getCell("B1")
     );
 
+const codigoBloggerExcel =
+leerCelda(
+    hojaIdentificarImagenes.getCell("C2")
+);    
+
+console.log(
+    "CÓDIGO BLOGGER DESDE EXCEL:",
+    codigoBloggerExcel
+);    
 
 for (
 let fila = 3;
