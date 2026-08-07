@@ -683,6 +683,8 @@ function lanzarGeneracion(){
 
 } 
 
+}     
+
 //generarCodigo();
 
 /*=====================================================
