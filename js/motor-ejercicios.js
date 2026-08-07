@@ -2337,6 +2337,7 @@ let ordenSeleccionImagenes = 1;
 
 function seleccionarImagenIdentificar(elemento){
 
+console.log("IMAGEN TOCADA", elemento);    
 
 const circulo =
 elemento.querySelector(
@@ -2371,6 +2372,8 @@ circulo.classList.add(
 
 
 }
+
+
 
 console.log("MOTOR CARGADO CORRECTAMENTE");
 
