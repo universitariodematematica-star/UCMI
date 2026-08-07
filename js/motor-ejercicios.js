@@ -774,11 +774,11 @@ console.log(
 
 config.imagenes.forEach(imagen=>{
 
-    console.log(
-        "DATOS IMAGEN:",
-        imagen.codigo,
-        imagen.url
-    );
+console.log(
+    "ORACIÓN IMAGEN:",
+    imagen.codigo,
+    imagen.oracion
+);
 
 });    
 
