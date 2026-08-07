@@ -584,9 +584,14 @@ console.log(
         ejercicioIdentificarImagenes
     );
 
-    window.actualizarImagenesIdentificar = function(){
+window.actualizarImagenesIdentificar = function(){
 
     ejercicioIdentificarImagenes.imagenes.forEach(imagen=>{
+
+        const encontrada =
+        UCMIBlogger.imagenes.find(
+            url=>url.includes(imagen.codigo)
+        );
 
 
         if(encontrada){
