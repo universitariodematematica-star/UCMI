@@ -772,6 +772,16 @@ console.log(
     config.imagenes
 );
 
+identificarImagenes.imagenes.forEach(imagen=>{
+
+    console.log(
+        "DATOS IMAGEN:",
+        imagen.codigo,
+        imagen.url
+    );
+
+});    
+
 config.imagenes.forEach((imagen, indice)=>{
 
 let urlImagen = imagen.url || "";
