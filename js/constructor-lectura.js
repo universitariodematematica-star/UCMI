@@ -700,8 +700,6 @@ function lanzarGeneracion(){
 
 } 
 
-}  
-
 //generarCodigo();
 
 /*=====================================================
