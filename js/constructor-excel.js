@@ -30,6 +30,13 @@ hojaIdentificarImagenes.getCell("A1").value = "URL del audio";
 
 hojaIdentificarImagenes.getCell("B1").value =
 "audios/A1/Unidad_01/Tema_01/Grammar/AG.1.1.1.A1.mp3";
+
+
+hojaIdentificarImagenes.getCell("C1").value =
+"Código de blogger";
+
+hojaIdentificarImagenes.getCell("C2").value =
+"";
     
 // TABLA
 
@@ -54,7 +61,7 @@ hojaIdentificarImagenes.getCell("B5").value =
 "A1-U1-T1-I03";
     // Encabezados en negrita
 
-["A1","A2","B2"].forEach(celda=>{
+["A1","C1","A2","B2"].forEach(celda=>{
 
     hojaIdentificarImagenes.getCell(celda).font={
 
@@ -68,6 +75,7 @@ hojaIdentificarImagenes.getCell("B5").value =
 
 hojaIdentificarImagenes.getColumn("A").width = 70;
 hojaIdentificarImagenes.getColumn("B").width = 30;
+hojaIdentificarImagenes.getColumn("C").width = 80;
 
     // ENCABEZADOS
 
