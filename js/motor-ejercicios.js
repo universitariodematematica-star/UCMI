@@ -734,6 +734,8 @@ return htmlCompletar;
 
 function crearIdentificarImagenes(config){
 
+ordenSeleccionImagenes = 1;    
+
 console.log(
 "IDENTIFICAR CONFIG:",
 config
@@ -772,6 +774,35 @@ console.log(
     config.imagenes
 );
 
+//========================================
+// MEZCLAR IMÁGENES ALEATORIAMENTE
+//========================================
+
+const imagenesMezcladas =
+    [...config.imagenes];
+
+for(
+    let i = imagenesMezcladas.length - 1;
+    i > 0;
+    i--
+){
+
+    const j =
+        Math.floor(
+            Math.random() * (i + 1)
+        );
+
+    [
+        imagenesMezcladas[i],
+        imagenesMezcladas[j]
+    ] =
+    [
+        imagenesMezcladas[j],
+        imagenesMezcladas[i]
+    ];
+
+}    
+
 config.imagenes.forEach(imagen=>{
 
 console.log(
@@ -782,7 +813,7 @@ console.log(
 
 });    
 
-config.imagenes.forEach((imagen, indice)=>{
+imagenesMezcladas.forEach((imagen, indice)=>{
 
 let urlImagen = imagen.url || "img/no-disponible.png";
 
