@@ -27,36 +27,34 @@ HOJA IDENTIFICAR-IMAGENES
 // CONFIGURACIÓN
 
 hojaIdentificarImagenes.getCell("A1").value = "URL del audio";
-hojaIdentificarImagenes.getCell("B1").value = "";
 
-hojaIdentificarImagenes.getCell("A2").value = "Código Blogger";
-hojaIdentificarImagenes.getCell("B2").value = "";
-
+hojaIdentificarImagenes.getCell("B1").value =
+"audios/A1/Unidad_01/Tema_01/Grammar/AG.1.1.1.A1.mp3";
+    
 // TABLA
 
-hojaIdentificarImagenes.getCell("A3").value = "Oración";
-hojaIdentificarImagenes.getCell("B3").value = "Código de la imagen";
+hojaIdentificarImagenes.getCell("A2").value = "Oración";
+hojaIdentificarImagenes.getCell("B2").value = "Código de la imagen";
 
 // EJEMPLOS
 
-hojaIdentificarImagenes.getCell("A4").value =
+hojaIdentificarImagenes.getCell("A3").value =
 "The dog is chasing the cat.";
-hojaIdentificarImagenes.getCell("B4").value =
+hojaIdentificarImagenes.getCell("B3").value =
 "A1-U1-T1-I01";
 
-hojaIdentificarImagenes.getCell("A5").value =
+hojaIdentificarImagenes.getCell("A4").value =
 "The girl is reading a book.";
-hojaIdentificarImagenes.getCell("B5").value =
+hojaIdentificarImagenes.getCell("B4").value =
 "A1-U1-T1-I02";
 
-hojaIdentificarImagenes.getCell("A6").value =
+hojaIdentificarImagenes.getCell("A5").value =
 "The boy is drinking water.";
-hojaIdentificarImagenes.getCell("B6").value =
+hojaIdentificarImagenes.getCell("B5").value =
 "A1-U1-T1-I03";
-
     // Encabezados en negrita
 
-["A1","A2","A3","B3"].forEach(celda=>{
+["A1","A2","B2"].forEach(celda=>{
 
     hojaIdentificarImagenes.getCell(celda).font={
 
