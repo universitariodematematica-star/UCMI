@@ -166,6 +166,12 @@ campo.addEventListener(
         this.imagenes
     );
 
+   if(window.actualizarImagenesIdentificar){
+
+    window.actualizarImagenesIdentificar();
+
+}    
+
 } 
 
 };
