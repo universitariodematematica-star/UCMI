@@ -633,6 +633,8 @@ tituloEspanol:tituloEspanol
 
 };
 
+setTimeout(()=>{
+
 generarCodigo(
 datosPagina.nivel,
 datosPagina.unidad,
@@ -652,6 +654,7 @@ ejerciciosTranscripcion,
 ejercicioIdentificarImagenes,
 configuracionMostrar
 );
+},1000);    
 
 }  
 
