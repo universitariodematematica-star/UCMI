@@ -2572,75 +2572,100 @@ function evaluarIdentificarImagenes(){
     );
 
 
-    //========================================
-    // COMPARAR
-    //========================================
+//========================================
+// COMPARAR
+//========================================
 
-    let cantidadErrores = 0;
+let cantidadErrores = 0;
 
-    let htmlResultado = "";
-
-
-    ordenUsuario.forEach(
-        (imagenUsuario, indice) => {
-
-            const imagenCorrecta =
-                ordenCorrecto[indice];
+let htmlResultado = "";
 
 
-            const codigoUsuario =
-                imagenUsuario.dataset.codigo;
+ordenUsuario.forEach(
+    (imagenUsuario, indice) => {
 
 
-            const codigoCorrecto =
-                imagenCorrecta.dataset.codigo;
+        const imagenCorrecta =
+            ordenCorrecto[indice];
 
 
-            const numero =
-                indice + 1;
+        const codigoUsuario =
+            imagenUsuario.dataset.codigo;
 
 
-            const oracionCorrecta =
-                imagenCorrecta.dataset.oracion;
+        const codigoCorrecto =
+            imagenCorrecta.dataset.codigo;
 
 
-            if(
-                codigoUsuario ===
-                codigoCorrecto
-            ){
-
-                htmlResultado += `
-                
-                <div class="resultado-imagen-correcta">
-
-                    🟩 ${numero}.
-                    ${oracionCorrecta}
-
-                </div>
-
-                `;
-
-            }else{
-
-                cantidadErrores++;
+        const numero =
+            indice + 1;
 
 
-                htmlResultado += `
-                
-                <div class="resultado-imagen-error">
+        const oracionUsuario =
+            imagenUsuario.dataset.oracion;
 
-                    ❌ ${numero}.
-                    ${oracionCorrecta}
 
-                </div>
+        const oracionCorrecta =
+            imagenCorrecta.dataset.oracion;
 
-                `;
 
-            }
+        //========================================
+        // RESPUESTA CORRECTA
+        //========================================
+
+        if(
+            codigoUsuario ===
+            codigoCorrecto
+        ){
+
+            htmlResultado += `
+
+            <div class="resultado-imagen-correcta">
+
+                🟩 <b>${numero}.</b>
+                ${escaparTexto(oracionCorrecta)}
+
+            </div>
+
+            `;
+
 
         }
-    );
 
+
+        //========================================
+        // RESPUESTA INCORRECTA
+        //========================================
+
+        else{
+
+            cantidadErrores++;
+
+
+            htmlResultado += `
+
+            <div class="resultado-imagen-error">
+
+                ❌ <b>${numero}.</b>
+
+                <br>
+
+                <b>Tu imagen:</b>
+                ${escaparTexto(oracionUsuario)}
+
+                <br>
+
+                <b>Correcta:</b>
+                ${escaparTexto(oracionCorrecta)}
+
+            </div>
+
+            `;
+
+        }
+
+    }
+);
 
     //========================================
     // RESULTADO FINAL
