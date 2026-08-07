@@ -63,17 +63,21 @@ async function leerExcel(event){
 
     await libro.xlsx.load(buffer);
 
-    // Detectar si el ejercicio utiliza imágenes
+    let esperaImagenesBlogger = false;
+
+  // Detectar si el ejercicio utiliza imágenes
 
 const hojaImagenes =
 libro.getWorksheet("Identificar-imagenes");
 
 
-if(hojaImagenes){
+if (hojaImagenes){
 
     console.log(
         "Ejercicio con imágenes detectado"
     );
+
+    esperaImagenesBlogger = true;
 
     UCMIBlogger.mostrar();
 
@@ -82,6 +86,8 @@ if(hojaImagenes){
     console.log(
         "Ejercicio sin imágenes"
     );
+
+    esperaImagenesBlogger = false;
 
     UCMIBlogger.ocultar();
 
@@ -585,6 +591,26 @@ console.log(
 
     ejercicioIdentificarImagenes.imagenes.forEach(imagen=>{
 
+
+        if(encontrada){
+
+            imagen.url = encontrada;
+
+        }
+
+    });
+
+
+    console.log(
+        "IMÁGENES ACTUALIZADAS DESDE BLOGGER:",
+        ejercicioIdentificarImagenes.imagenes
+    );
+
+
+    lanzarGeneracion();
+
+};
+
         const encontrada =
         UCMIBlogger.imagenes.find(
             url=>url.includes(imagen.codigo)
@@ -633,28 +659,35 @@ tituloEspanol:tituloEspanol
 
 };
 
-setTimeout(()=>{
+if(!esperaImagenesBlogger){
 
-generarCodigo(
-datosPagina.nivel,
-datosPagina.unidad,
-datosPagina.tema,
-datosPagina.tituloIngles,
-datosPagina.tituloEspanol,
-[],
-"",
-[],
-ejerciciosSelSimple,
-ejerciciosCompletar,
-ejerciciosDragDrop,
-ejerciciosOrdenarOracion,
-ejerciciosEmparejarColumnas,
-ejerciciosTraduccion,
-ejerciciosTranscripcion,
-ejercicioIdentificarImagenes,
-configuracionMostrar
-);
-},1000);    
+    lanzarGeneracion();
+
+}
+
+function lanzarGeneracion(){
+
+    generarCodigo(
+        datosPagina.nivel,
+        datosPagina.unidad,
+        datosPagina.tema,
+        datosPagina.tituloIngles,
+        datosPagina.tituloEspanol,
+        [],
+        "",
+        [],
+        ejerciciosSelSimple,
+        ejerciciosCompletar,
+        ejerciciosDragDrop,
+        ejerciciosOrdenarOracion,
+        ejerciciosEmparejarColumnas,
+        ejerciciosTraduccion,
+        ejerciciosTranscripcion,
+        ejercicioIdentificarImagenes,
+        configuracionMostrar
+    );
+
+} 
 
 }  
 
