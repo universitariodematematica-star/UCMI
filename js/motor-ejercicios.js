@@ -2419,6 +2419,114 @@ function seleccionarImagenIdentificar(elemento){
 
 function evaluarIdentificarImagenes(){
 
+    console.log("EVALUANDO IDENTIFICAR IMÁGENES");
+
+    const ejercicio =
+        document.querySelector(
+            ".ejercicio-identificar-imagenes"
+        );
+
+    if(!ejercicio){
+
+        console.error(
+            "NO SE ENCONTRÓ EL EJERCICIO"
+        );
+
+        return;
+
+    }
+
+    const imagenesSeleccionadas =
+        [
+            ...ejercicio.querySelectorAll(
+                ".imagen-seleccionada"
+            )
+        ];
+
+    const resultado =
+        document.getElementById(
+            "resultado-identificar-imagenes"
+        );
+
+    console.log(
+        "IMÁGENES SELECCIONADAS:",
+        imagenesSeleccionadas
+    );
+
+    // Verificar que se hayan seleccionado todas
+
+    if(
+        imagenesSeleccionadas.length !==
+        ejercicio.querySelectorAll(
+            ".imagen-seleccionable"
+        ).length
+    ){
+
+        resultado.innerHTML =
+            "⚠️ Debes seleccionar todas las imágenes antes de evaluar.";
+
+        resultado.style.color =
+            "orange";
+
+        return;
+
+    }
+
+    // Orden correcto basado en los códigos
+
+    const ordenCorrecto =
+        [
+            "A1-U1-T1-I01",
+            "A1-U1-T1-I02",
+            "A1-U1-T1-I03",
+            "A1-U1-T1-I04",
+            "A1-U1-T1-I05"
+        ];
+
+    // Orden seleccionado por el estudiante
+
+    const ordenUsuario =
+        imagenesSeleccionadas
+        .sort(
+            (a,b)=>{
+
+                const numeroA =
+                    parseInt(
+                        a.querySelector(
+                            ".circulo-seleccion"
+                        ).textContent
+                    );
+
+                const numeroB =
+                    parseInt(
+                        b.querySelector(
+                            ".circulo-seleccion"
+                        ).textContent
+                    );
+
+                return numeroA - numeroB;
+
+            }
+        )
+        .map(
+            imagen =>
+            imagen.dataset.codigo
+        );
+
+    console.log(
+        "ORDEN CORRECTO:",
+        ordenCorrecto
+    );
+
+    console.log(
+        "ORDEN USUARIO:",
+        ordenUsuario
+    );
+
+}
+
+function evaluarIdentificarImagenes(){
+
     console.log(
         "EVALUANDO IDENTIFICAR IMÁGENES"
     );
