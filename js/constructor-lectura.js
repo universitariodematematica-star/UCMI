@@ -581,6 +581,32 @@ console.log(
         ejercicioIdentificarImagenes
     );
 
+    window.actualizarImagenesIdentificar = function(){
+
+    ejercicioIdentificarImagenes.imagenes.forEach(imagen=>{
+
+        const encontrada =
+        UCMIBlogger.imagenes.find(
+            url=>url.includes(imagen.codigo)
+        );
+
+
+        if(encontrada){
+
+            imagen.url = encontrada;
+
+        }
+
+    });
+
+
+    console.log(
+        "IMÁGENES ACTUALIZADAS DESDE BLOGGER:",
+        ejercicioIdentificarImagenes.imagenes
+    );
+
+};
+
  console.log(
 "PRUEBA AUDIO IMÁGENES:",
 ejercicioIdentificarImagenes.audio
