@@ -195,6 +195,11 @@ for(let fila = 2; fila <= hojaSelSimple.rowCount; fila++){
 
     });
 
+    console.log(
+"SEL SIMPLE:",
+ejerciciosSelSimple
+);
+
 }
 
 //===========================================
