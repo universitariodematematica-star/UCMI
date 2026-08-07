@@ -588,6 +588,16 @@ console.log(
         ejercicioIdentificarImagenes
     );
 
+ console.log(
+"PRUEBA AUDIO IMÁGENES:",
+ejercicioIdentificarImagenes.audio
+);
+
+console.log(
+"PRUEBA ARRAY IMÁGENES:",
+ejercicioIdentificarImagenes.imagenes
+);   
+
 }
 
     datosPagina = {
