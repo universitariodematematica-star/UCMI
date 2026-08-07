@@ -799,6 +799,7 @@ html += `
 <div 
 class="imagen-seleccionable"
 data-codigo="${imagen.codigo}"
+data-oracion="${escaparTexto(imagen.oracion)}"
 onclick="seleccionarImagenIdentificar(this)"
 >
 
@@ -887,6 +888,7 @@ const UCMIMotorEjercicios = {
         );
 
         contadorEjercicios = 0; 
+        ordenSeleccionImagenes = 1;
 
         console.log("mostrarSeleccionSimple =", config.mostrarSeleccionSimple);
 console.log("mostrarCompletar =", config.mostrarCompletar);
@@ -2384,7 +2386,228 @@ function seleccionarImagenIdentificar(elemento){
 
 }
 
+function evaluarIdentificarImagenes(){
 
+    console.log(
+        "EVALUANDO IDENTIFICAR IMÁGENES"
+    );
+
+    const ejercicio =
+        document.querySelector(
+            ".ejercicio-identificar-imagenes"
+        );
+
+    if(!ejercicio){
+        console.error(
+            "No existe el ejercicio de identificar imágenes."
+        );
+        return;
+    }
+
+
+    const imagenes =
+        [...ejercicio.querySelectorAll(
+            ".imagen-seleccionable"
+        )];
+
+
+    const resultado =
+        ejercicio.querySelector(
+            ".resultado-identificar-imagenes"
+        );
+
+
+    // ========================================
+    // OBTENER EL ORDEN CORRECTO
+    // ========================================
+
+    const ordenCorrecto =
+        imagenes
+        .map(imagen => ({
+            codigo:
+                imagen.dataset.codigo,
+
+            numero:
+                imagen.querySelector(
+                    ".circulo-seleccion"
+                ).textContent.trim()
+        }))
+        .filter(imagen => imagen.numero !== "")
+        .sort(
+            (a,b) =>
+                Number(a.numero) -
+                Number(b.numero)
+        );
+
+
+    console.log(
+        "ORDEN SELECCIONADO:",
+        ordenCorrecto
+    );
+
+
+    // ========================================
+    // COMPROBAR QUE SE SELECCIONARON TODAS
+    // ========================================
+
+    if(
+        ordenCorrecto.length !==
+        imagenes.length
+    ){
+
+        resultado.innerHTML =
+            "⚠️ Debes seleccionar todas las imágenes.";
+
+        resultado.style.color =
+            "orange";
+
+        return;
+    }
+
+
+    // ========================================
+    // OBTENER ORDEN CORRECTO DESDE LOS CÓDIGOS
+    // ========================================
+
+const codigosCorrectos =
+    imagenes.map(
+        imagen =>
+            imagen.dataset.codigo
+    );
+
+
+    console.log(
+        "CÓDIGOS CORRECTOS:",
+        codigosCorrectos
+    );
+
+
+    // ========================================
+    // ORDEN DEL USUARIO
+    // ========================================
+
+    const codigosUsuario =
+        ordenCorrecto.map(
+            imagen =>
+                imagen.codigo
+        );
+
+
+    console.log(
+        "CÓDIGOS USUARIO:",
+        codigosUsuario
+    );
+
+
+    // ========================================
+    // COMPARAR
+    // ========================================
+
+    let correcto = true;
+
+
+    for(
+        let i = 0;
+        i < codigosCorrectos.length;
+        i++
+    ){
+
+        if(
+            codigosUsuario[i] !==
+            codigosCorrectos[i]
+        ){
+
+            correcto = false;
+            break;
+
+        }
+
+    }
+
+
+    // ========================================
+    // MOSTRAR RESULTADO
+    // ========================================
+
+    if(correcto){
+
+        resultado.innerHTML =
+            "✅ Correcto.";
+
+        resultado.style.color =
+            "green";
+
+
+    }else{
+
+        resultado.innerHTML =
+            "❌ Incorrecto.";
+
+        resultado.style.color =
+            "red";
+
+
+        // ====================================
+        // MOSTRAR NÚMEROS + ORACIÓN
+        // ====================================
+
+        let errores = "";
+
+
+        ordenCorrecto.forEach(
+            (imagen, indice) => {
+
+                const numero =
+                    indice + 1;
+
+
+                const elemento =
+                    imagenes.find(
+                        img =>
+                            img.dataset.codigo ===
+                            imagen.codigo
+                    );
+
+
+                const oracion =
+                    elemento?.dataset.oracion
+                    ||
+                    "";
+
+
+                errores += `
+
+<div class="error-imagen-identificar">
+
+    <b>${numero}.</b>
+
+    ${oracion}
+
+</div>
+
+`;
+
+            }
+        );
+
+
+        resultado.innerHTML += `
+
+<br>
+
+<b>Orden correcto:</b>
+
+<div class="orden-correcto-imagenes">
+
+${errores}
+
+</div>
+
+`;
+
+    }
+
+}
 
 console.log("MOTOR CARGADO CORRECTAMENTE");
 
