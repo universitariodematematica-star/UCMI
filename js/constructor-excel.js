@@ -503,7 +503,7 @@ hojaMostrar.getCell("A9").value =
 "Identificar imágenes";
 
 hojaMostrar.getCell("B9").value =
-"No";    
+"Sí";    
 
 // Lista desplegable Sí / No
 
