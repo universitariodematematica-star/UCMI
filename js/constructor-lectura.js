@@ -77,17 +77,14 @@ if (hojaImagenes){
         "Ejercicio con imágenes detectado"
     );
 
-    esperaImagenesBlogger = true;
-
     UCMIBlogger.mostrar();
+
 
 }else{
 
     console.log(
         "Ejercicio sin imágenes"
     );
-
-    esperaImagenesBlogger = false;
 
     UCMIBlogger.ocultar();
 
@@ -658,6 +655,20 @@ tituloIngles:tituloIngles,
 tituloEspanol:tituloEspanol
 
 };
+
+if(
+    hojaIdentificarImagenes
+){
+
+    console.log(
+        "Esperando actualización de imágenes Blogger..."
+    );
+
+}else{
+
+    lanzarGeneracion();
+
+}
 
 if(!esperaImagenesBlogger){
 
