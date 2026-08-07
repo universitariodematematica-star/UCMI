@@ -2335,41 +2335,41 @@ UCMIResultados.guardar(
 let ordenSeleccionImagenes = 1;
 
 
+let ordenSeleccionImagenes = 1;
+
 function seleccionarImagenIdentificar(elemento){
 
-console.log("IMAGEN TOCADA", elemento);    
+    console.log("IMAGEN TOCADA:", elemento);
 
-const circulo =
-elemento.querySelector(
-".circulo-seleccion"
-);
+    const circulo =
+        elemento.querySelector(".circulo-seleccion");
 
+    console.log("CÍRCULO ENCONTRADO:", circulo);
 
+    if(!circulo){
+        console.error(
+            "NO SE ENCONTRÓ .circulo-seleccion"
+        );
+        return;
+    }
 
-if(circulo.textContent !== ""){
+    if(circulo.textContent.trim() !== ""){
+        return;
+    }
 
-return;
+    circulo.textContent =
+        ordenSeleccionImagenes;
 
-}
+    elemento.classList.add(
+        "imagen-seleccionada"
+    );
 
+    console.log(
+        "NÚMERO ASIGNADO:",
+        ordenSeleccionImagenes
+    );
 
-
-circulo.textContent =
-ordenSeleccionImagenes;
-
-
-
-ordenSeleccionImagenes++;
-
-
-elemento.classList.add(
-"imagen-seleccionada"
-);
-
-circulo.classList.add(
-"circulo-activo"
-);    
-
+    ordenSeleccionImagenes++;
 
 }
 
