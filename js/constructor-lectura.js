@@ -518,9 +518,6 @@ if (hojaIdentificarImagenes) {
         hojaIdentificarImagenes.getCell("B1")
     );
 
-// Extraer todas las URLs
-UCMIBlogger.extraerImagenes();
-
 
 for (
 let fila = 3;
@@ -543,19 +540,15 @@ fila++
 
         // Buscar la URL correspondiente
         const url =
-        UCMIBlogger.imagenes.find(
-            x => x.includes(codigo)
-        ) || "";
+ejercicioIdentificarImagenes.imagenes.push({
 
-        ejercicioIdentificarImagenes.imagenes.push({
+    codigo: codigo,
 
-            codigo: codigo,
+    oracion: oracion,
 
-            oracion: oracion,
+    url: ""
 
-            url: url
-
-        });
+});
 
     }
 
