@@ -176,7 +176,7 @@ for(let fila = 2; fila <= hojaSelSimple.rowCount; fila++){
 
     ejerciciosSelSimple.push({
 
-        pregunta: pregunta,
+        oracion: pregunta,
 
         correcta:
         leerCelda(hojaSelSimple.getCell("B" + fila)),
