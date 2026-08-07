@@ -2334,9 +2334,6 @@ UCMIResultados.guardar(
 
 let ordenSeleccionImagenes = 1;
 
-
-let ordenSeleccionImagenes = 1;
-
 function seleccionarImagenIdentificar(elemento){
 
     console.log("IMAGEN TOCADA:", elemento);
