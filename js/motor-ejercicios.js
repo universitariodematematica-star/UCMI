@@ -2738,8 +2738,6 @@ ordenUsuario.forEach(
 
 }
 
-console.log("MOTOR CARGADO CORRECTAMENTE");
-
 document.addEventListener(
 "dragover",
 function(event){
