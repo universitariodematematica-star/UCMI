@@ -244,7 +244,7 @@ for(let fila = 2; fila <= hojaCompletar.rowCount; fila++){
 
     ejerciciosCompletar.push({
 
-        pregunta: pregunta,
+        oracion: pregunta,
 
         respuesta:
         leerCelda(hojaCompletar.getCell("B" + fila)),
