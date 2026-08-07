@@ -829,6 +829,20 @@ html += `
 
 </div>
 
+<button
+    type="button"
+    class="boton-evaluar-imagenes"
+    onclick="evaluarIdentificarImagenes()"
+>
+    Evaluar
+</button>
+
+<div
+    id="resultado-identificar-imagenes"
+    class="resultado-identificar-imagenes"
+>
+</div>
+
 </div>
 
 
