@@ -2419,12 +2419,16 @@ function seleccionarImagenIdentificar(elemento){
 
 function evaluarIdentificarImagenes(){
 
-    console.log("EVALUANDO IDENTIFICAR IMÁGENES");
+    console.log(
+        "EVALUANDO IDENTIFICAR IMÁGENES"
+    );
+
 
     const ejercicio =
         document.querySelector(
             ".ejercicio-identificar-imagenes"
         );
+
 
     if(!ejercicio){
 
@@ -2436,30 +2440,50 @@ function evaluarIdentificarImagenes(){
 
     }
 
-    const imagenesSeleccionadas =
+
+    const resultado =
+        ejercicio.querySelector(
+            "#resultado-identificar-imagenes"
+        );
+
+
+    const botonEvaluar =
+        ejercicio.querySelector(
+            ".boton-evaluar-imagenes"
+        );
+
+
+    const imagenes =
         [
             ...ejercicio.querySelectorAll(
-                ".imagen-seleccionada"
+                ".imagen-seleccionable"
             )
         ];
 
-    const resultado =
-        document.getElementById(
-            "resultado-identificar-imagenes"
-        );
 
-    console.log(
-        "IMÁGENES SELECCIONADAS:",
-        imagenesSeleccionadas
-    );
+    //========================================
+    // VERIFICAR QUE TODAS FUERON SELECCIONADAS
+    //========================================
 
-    // Verificar que se hayan seleccionado todas
+    const seleccionadas =
+        imagenes.filter(imagen => {
+
+            const circulo =
+                imagen.querySelector(
+                    ".circulo-seleccion"
+                );
+
+            return (
+                circulo &&
+                circulo.textContent.trim() !== ""
+            );
+
+        });
+
 
     if(
-        imagenesSeleccionadas.length !==
-        ejercicio.querySelectorAll(
-            ".imagen-seleccionable"
-        ).length
+        seleccionadas.length !==
+        imagenes.length
     ){
 
         resultado.innerHTML =
@@ -2472,56 +2496,220 @@ function evaluarIdentificarImagenes(){
 
     }
 
-    // Orden correcto basado en los códigos
+
+    //========================================
+    // ORDEN CORRECTO
+    //========================================
 
     const ordenCorrecto =
-        [
-            "A1-U1-T1-I01",
-            "A1-U1-T1-I02",
-            "A1-U1-T1-I03",
-            "A1-U1-T1-I04",
-            "A1-U1-T1-I05"
-        ];
+        [...imagenes]
+        .sort((a,b)=>{
 
-    // Orden seleccionado por el estudiante
+            const codigoA =
+                a.dataset.codigo;
+
+            const codigoB =
+                b.dataset.codigo;
+
+
+            const numeroA =
+                parseInt(
+                    codigoA.match(/I(\d+)$/)[1]
+                );
+
+            const numeroB =
+                parseInt(
+                    codigoB.match(/I(\d+)$/)[1]
+                );
+
+
+            return numeroA - numeroB;
+
+        });
+
+
+    //========================================
+    // ORDEN SELECCIONADO POR EL ESTUDIANTE
+    //========================================
 
     const ordenUsuario =
-        imagenesSeleccionadas
-        .sort(
-            (a,b)=>{
+        [...seleccionadas]
+        .sort((a,b)=>{
 
-                const numeroA =
-                    parseInt(
-                        a.querySelector(
-                            ".circulo-seleccion"
-                        ).textContent
-                    );
+            const numeroA =
+                parseInt(
+                    a.querySelector(
+                        ".circulo-seleccion"
+                    ).textContent
+                );
 
-                const numeroB =
-                    parseInt(
-                        b.querySelector(
-                            ".circulo-seleccion"
-                        ).textContent
-                    );
+            const numeroB =
+                parseInt(
+                    b.querySelector(
+                        ".circulo-seleccion"
+                    ).textContent
+                );
 
-                return numeroA - numeroB;
 
-            }
-        )
-        .map(
-            imagen =>
-            imagen.dataset.codigo
-        );
+            return numeroA - numeroB;
+
+        });
+
 
     console.log(
         "ORDEN CORRECTO:",
-        ordenCorrecto
+        ordenCorrecto.map(
+            imagen => imagen.dataset.codigo
+        )
     );
+
 
     console.log(
         "ORDEN USUARIO:",
-        ordenUsuario
+        ordenUsuario.map(
+            imagen => imagen.dataset.codigo
+        )
     );
+
+
+    //========================================
+    // COMPARAR
+    //========================================
+
+    let cantidadErrores = 0;
+
+    let htmlResultado = "";
+
+
+    ordenUsuario.forEach(
+        (imagenUsuario, indice) => {
+
+            const imagenCorrecta =
+                ordenCorrecto[indice];
+
+
+            const codigoUsuario =
+                imagenUsuario.dataset.codigo;
+
+
+            const codigoCorrecto =
+                imagenCorrecta.dataset.codigo;
+
+
+            const numero =
+                indice + 1;
+
+
+            const oracionCorrecta =
+                imagenCorrecta.dataset.oracion;
+
+
+            if(
+                codigoUsuario ===
+                codigoCorrecto
+            ){
+
+                htmlResultado += `
+                
+                <div class="resultado-imagen-correcta">
+
+                    🟩 ${numero}.
+                    ${oracionCorrecta}
+
+                </div>
+
+                `;
+
+            }else{
+
+                cantidadErrores++;
+
+
+                htmlResultado += `
+                
+                <div class="resultado-imagen-error">
+
+                    ❌ ${numero}.
+                    ${oracionCorrecta}
+
+                </div>
+
+                `;
+
+            }
+
+        }
+    );
+
+
+    //========================================
+    // RESULTADO FINAL
+    //========================================
+
+    if(cantidadErrores === 0){
+
+        resultado.innerHTML = `
+
+            <div class="resultado-imagen-excelente">
+
+                ✅ ¡Excelente!
+                Todas las imágenes están
+                en el orden correcto.
+
+            </div>
+
+        `;
+
+        resultado.style.color =
+            "green";
+
+
+    }else{
+
+        resultado.innerHTML = `
+
+            <div class="resultado-imagen-resumen">
+
+                ❌ Hay ${cantidadErrores}
+                ${
+                    cantidadErrores === 1
+                    ? "error"
+                    : "errores"
+                } en el orden.
+
+            </div>
+
+            <div class="lista-resultados-imagenes">
+
+                ${htmlResultado}
+
+            </div>
+
+        `;
+
+        resultado.style.color =
+            "red";
+
+    }
+
+
+    //========================================
+    // DESHABILITAR EVALUACIÓN
+    //========================================
+
+    if(botonEvaluar){
+
+        botonEvaluar.disabled =
+            true;
+
+        botonEvaluar.style.opacity =
+            "0.5";
+
+        botonEvaluar.style.cursor =
+            "not-allowed";
+
+    }
+
 
 }
 
