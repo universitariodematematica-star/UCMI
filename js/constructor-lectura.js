@@ -507,12 +507,10 @@ ejercicioIdentificarImagenes = {
 
     audio: "",
 
-    codigoBlogger: "",
-
     imagenes: []
 
 };
-
+    
 if (hojaIdentificarImagenes) {
 
     ejercicioIdentificarImagenes.audio =
@@ -520,33 +518,12 @@ if (hojaIdentificarImagenes) {
         hojaIdentificarImagenes.getCell("B1")
     );
 
-    console.log(
-    "B2 RAW:",
-    hojaIdentificarImagenes.getCell("B2").value
-);
-
-    console.log(
-    "B2 LEÍDO:",
-    leerCelda(
-        hojaIdentificarImagenes.getCell("B2")
-    )
-);
-
-    ejercicioIdentificarImagenes.codigoBlogger =
-    leerCelda(
-        hojaIdentificarImagenes.getCell("B2")
-    );
-
-    // Enviar el código Blogger al módulo
-    document.getElementById("codigoBlogger").value =
-    ejercicioIdentificarImagenes.codigoBlogger;
-
-    // Extraer todas las URLs
+// Extraer todas las URLs
 UCMIBlogger.extraerImagenes();
 
 
 for (
-let fila = 4;
+let fila = 3;
 fila <= hojaIdentificarImagenes.rowCount;
 fila++
 ){
