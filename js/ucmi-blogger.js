@@ -14,7 +14,7 @@ const UCMIBlogger = {
 
     }
 
-}
+},
 
     iniciar(config={}){
 
