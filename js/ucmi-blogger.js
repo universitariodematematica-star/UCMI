@@ -4,6 +4,18 @@ const UCMIBlogger = {
 
     imagenes:[],
 
+    actualizar(){
+
+    this.extraerImagenes();
+
+    if(window.actualizarImagenesIdentificar){
+
+        window.actualizarImagenesIdentificar();
+
+    }
+
+}
+
     iniciar(config={}){
 
         const contenedor =
@@ -66,7 +78,7 @@ campo.addEventListener(
 "input",
 ()=>{
 
-    this.extraerImagenes();
+    this.actualizar();
 
 });
 
