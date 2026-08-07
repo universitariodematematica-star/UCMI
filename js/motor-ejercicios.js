@@ -2365,6 +2365,10 @@ elemento.classList.add(
 "imagen-seleccionada"
 );
 
+circulo.classList.add(
+"circulo-activo"
+);    
+
 
 }
 
