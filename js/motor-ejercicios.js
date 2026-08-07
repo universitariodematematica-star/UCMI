@@ -772,7 +772,7 @@ console.log(
     config.imagenes
 );
 
-identificarImagenes.imagenes.forEach(imagen=>{
+config.imagenes.forEach(imagen=>{
 
     console.log(
         "DATOS IMAGEN:",
@@ -784,7 +784,7 @@ identificarImagenes.imagenes.forEach(imagen=>{
 
 config.imagenes.forEach((imagen, indice)=>{
 
-let urlImagen = imagen.url || "";
+let urlImagen = imagen.url || "img/no-disponible.png";
 
 console.log(
     "IMAGEN FINAL:",
