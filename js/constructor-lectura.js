@@ -77,8 +77,7 @@ if (hojaImagenes){
         "Ejercicio con imágenes detectado"
     );
 
-    UCMIBlogger.mostrar();
-
+    UCMIBlogger.ocultar();
 
 }else{
 
@@ -89,7 +88,6 @@ if (hojaImagenes){
     UCMIBlogger.ocultar();
 
 }
-
     console.log(
     libro.worksheets.map(
         hoja => hoja.name
