@@ -529,6 +529,10 @@ leerCelda(
 console.log(
     "CÓDIGO BLOGGER DESDE EXCEL:",
     codigoBloggerExcel
+); 
+
+UCMIBlogger.extraerImagenes(
+    codigoBloggerExcel
 );    
 
 for (
