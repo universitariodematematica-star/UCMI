@@ -130,30 +130,49 @@ campo.addEventListener(
 
     },
 
-   extraerImagenes(){
+extraerImagenes(codigoHTML = null){
 
     const codigo =
-    document.getElementById(
-        "codigoBlogger"
-    ).value;
+        codigoHTML !== null
+            ? codigoHTML
+            : (
+                document.getElementById("codigoBlogger")
+                ? document.getElementById("codigoBlogger").value
+                : ""
+            );
 
 
     const patron =
-    /https:\/\/blogger\.googleusercontent\.com\/[^"]+/gi;
+        /https:\/\/blogger\.googleusercontent\.com\/[^"'\s<>]+/gi;
 
 
     const encontrados =
-    codigo.match(patron);
+        codigo.match(patron);
+
+    console.log(
+    "BLOGGER - CÓDIGO RECIBIDO:",
+    codigo
+);
+
+console.log(
+    "BLOGGER - URLs EXTRAÍDAS:",
+    encontrados
+);
 
 
     if(!encontrados){
 
-        this.imagenes=[];
+        this.imagenes = [];
 
-        document.getElementById(
-            "estadoBlogger"
-        ).innerHTML =
-        "No se encontraron imágenes";
+        const estado =
+            document.getElementById("estadoBlogger");
+
+        if(estado){
+
+            estado.innerHTML =
+                "No se encontraron imágenes";
+
+        }
 
         return;
 
@@ -161,16 +180,20 @@ campo.addEventListener(
 
 
     this.imagenes =
-    [...new Set(encontrados)];
+        [...new Set(encontrados)];
 
 
-    document.getElementById(
-        "estadoBlogger"
-    ).innerHTML =
+    const estado =
+        document.getElementById("estadoBlogger");
 
-    "✅ Imágenes encontradas: "
-    +
-    this.imagenes.length;
+    if(estado){
+
+        estado.innerHTML =
+            "✅ Imágenes encontradas: "
+            +
+            this.imagenes.length;
+
+    }
 
 
     console.log(
@@ -178,11 +201,12 @@ campo.addEventListener(
         this.imagenes
     );
 
-   if(window.actualizarImagenesIdentificar){
 
-    window.actualizarImagenesIdentificar();
+    if(window.actualizarImagenesIdentificar){
 
-}    
+        window.actualizarImagenesIdentificar();
+
+    }
 
 } 
 
