@@ -4,15 +4,10 @@ const UCMIBlogger = {
 
     imagenes:[],
 
-    actualizar(){
+
+actualizar(){
 
     this.extraerImagenes();
-
-    if(window.actualizarImagenesIdentificar){
-
-        window.actualizarImagenesIdentificar();
-
-    }
 
 },
 
