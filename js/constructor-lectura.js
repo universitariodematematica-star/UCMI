@@ -111,6 +111,13 @@ if (hojaImagenes){
     console.log("ORDENAR:", hojaOrdenarOracion);
     console.log("ESTRUCTURAS:", hojaEstructuras);
 
+    console.log(
+    "DATOS ESTRUCTURAS:",
+    hojaEstructuras ?
+    hojaEstructuras.getSheetValues() :
+    "NO EXISTE"
+);
+
 const nivel =
 leerCelda(hoja.getCell("A2"));
 
