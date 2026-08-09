@@ -138,13 +138,17 @@ extraerImagenes(codigoHTML = null){
 
 
     const patron =
-        /https:\/\/blogger\.googleusercontent\.com\/[^"'\s<>]+/gi;
+    /https:\/\/blogger\.googleusercontent\.com\/[^"'\s<>]+/gi;
 
+let encontrados =
+    codigo.match(patron) || [];
 
-    const encontrados =
-        codigo.match(patron);
+// Eliminar duplicados producidos por el formato
+// [URL](URL) y conservar únicamente una URL por imagen.
+encontrados =
+    [...new Set(encontrados)];
 
-    console.log(
+console.log(
     "BLOGGER - CÓDIGO RECIBIDO:",
     codigo
 );
