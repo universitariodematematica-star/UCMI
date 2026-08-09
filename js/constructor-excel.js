@@ -866,11 +866,11 @@ hojaEstructuras.getCell("G17").value =
 // ANCHO DE COLUMNAS
 //-----------------------------------------------------
 
-hojaEstructuras.getColumn("A").width = 25;
+hojaEstructuras.getColumn("A").width = 20;
 
 for (let columna of ["B","C","D","E","F","G","H","I","J"]) {
 
-    hojaEstructuras.getColumn(columna).width = 22;
+    hojaEstructuras.getColumn(columna).width = 18;
 
 }
 
