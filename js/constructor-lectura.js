@@ -105,9 +105,11 @@ if (hojaImagenes){
     const hojaTraduccion = libro.getWorksheet("Traducción");
     const hojaTranscripcion = libro.getWorksheet("Transcripción");
     const hojaIdentificarImagenes = libro.getWorksheet("Identificar-imagenes");
-
+    const hojaEstructuras = libro.getWorksheet("Estructuras");
+    
     console.log("HOJAS:", libro.worksheets.map(h=>h.name));
     console.log("ORDENAR:", hojaOrdenarOracion);
+    console.log("ESTRUCTURAS:", hojaEstructuras);
 
 const nivel =
 leerCelda(hoja.getCell("A2"));
