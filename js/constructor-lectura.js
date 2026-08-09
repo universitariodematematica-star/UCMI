@@ -118,6 +118,26 @@ if (hojaImagenes){
     "NO EXISTE"
 );
 
+if (hojaEstructuras) {
+
+    console.log(
+        "CONTENIDO COMPLETO ESTRUCTURAS:"
+    );
+
+    hojaEstructuras.eachRow(
+        (fila, numeroFila) => {
+
+            console.log(
+                "FILA",
+                numeroFila,
+                fila.values
+            );
+
+        }
+    );
+
+}    
+
 const nivel =
 leerCelda(hoja.getCell("A2"));
 
