@@ -563,6 +563,333 @@ for(let celda of ["A1","B1"]){
 
 }
 
+//=====================================================
+// HOJA: Estructuras
+//=====================================================
+
+//-----------------------------------------------------
+// FILA 1 — INFORMACIÓN ESTRUCTURAL
+//-----------------------------------------------------
+
+hojaEstructuras.getCell("A1").value =
+    "Información estructural";
+
+hojaEstructuras.getCell("B1").value = "E1";
+hojaEstructuras.getCell("C1").value = "E2";
+hojaEstructuras.getCell("D1").value = "E3";
+hojaEstructuras.getCell("E1").value = "E4";
+hojaEstructuras.getCell("F1").value = "E5";
+hojaEstructuras.getCell("G1").value = "E6";
+hojaEstructuras.getCell("H1").value = "E7";
+hojaEstructuras.getCell("I1").value = "E8";
+hojaEstructuras.getCell("J1").value = "E9";
+
+
+//-----------------------------------------------------
+// FILA 2 — ESTRUCTURA 1
+//-----------------------------------------------------
+
+hojaEstructuras.getCell("A2").value =
+    "Estructura 1";
+
+hojaEstructuras.getCell("B2").value =
+    "Sujeto";
+
+hojaEstructuras.getCell("C2").value =
+    "Verbo";
+
+hojaEstructuras.getCell("D2").value =
+    "Complemento";
+
+
+// E4-E9 permanecen vacías
+
+
+//-----------------------------------------------------
+// FILA 3 — ESTRUCTURA 2
+//-----------------------------------------------------
+
+hojaEstructuras.getCell("A3").value =
+    "Estructura 2";
+
+hojaEstructuras.getCell("B3").value =
+    "Sujeto";
+
+hojaEstructuras.getCell("C3").value =
+    "will";
+
+hojaEstructuras.getCell("D3").value =
+    "Base";
+
+hojaEstructuras.getCell("E3").value =
+    "Complemento";
+
+
+// E5-E9 permanecen vacías
+
+
+//-----------------------------------------------------
+// FILA 4 — ESTRUCTURA 3
+//-----------------------------------------------------
+
+hojaEstructuras.getCell("A4").value =
+    "Estructura 3";
+
+hojaEstructuras.getCell("B4").value =
+    "Sujeto";
+
+hojaEstructuras.getCell("C4").value =
+    "have/has";
+
+hojaEstructuras.getCell("D4").value =
+    "been";
+
+hojaEstructuras.getCell("E4").value =
+    "ing";
+
+hojaEstructuras.getCell("F4").value =
+    "Complemento";
+
+
+// E6-E9 permanecen vacías
+
+
+//-----------------------------------------------------
+// FILA 5 — ESTRUCTURA 4
+//-----------------------------------------------------
+
+hojaEstructuras.getCell("A5").value =
+    "Estructura 4";
+
+hojaEstructuras.getCell("B5").value =
+    "Sujeto";
+
+hojaEstructuras.getCell("C5").value =
+    "will";
+
+hojaEstructuras.getCell("D5").value =
+    "have/has";
+
+hojaEstructuras.getCell("E5").value =
+    "been";
+
+hojaEstructuras.getCell("F5").value =
+    "ing";
+
+hojaEstructuras.getCell("G5").value =
+    "Complemento";
+
+
+// E7-E9 permanecen vacías
+
+
+//-----------------------------------------------------
+// FILA 6 — COMPLETAMENTE RESERVADA
+//-----------------------------------------------------
+
+// A6:J6 permanece completamente vacía.
+
+
+//-----------------------------------------------------
+// FILA 7 — ORACIONES ESTRUCTURADAS
+//-----------------------------------------------------
+
+hojaEstructuras.getCell("A7").value =
+    "Oraciones estructuradas";
+
+hojaEstructuras.getCell("B7").value = "E1";
+hojaEstructuras.getCell("C7").value = "E2";
+hojaEstructuras.getCell("D7").value = "E3";
+hojaEstructuras.getCell("E7").value = "E4";
+hojaEstructuras.getCell("F7").value = "E5";
+hojaEstructuras.getCell("G7").value = "E6";
+hojaEstructuras.getCell("H7").value = "E7";
+hojaEstructuras.getCell("I7").value = "E8";
+hojaEstructuras.getCell("J7").value = "E9";
+
+
+//-----------------------------------------------------
+// FILA 8 — ESTRUCTURA 1
+//-----------------------------------------------------
+
+hojaEstructuras.getCell("A8").value =
+    "Estructura 1";
+
+hojaEstructuras.getCell("B8").value =
+    "She";
+
+hojaEstructuras.getCell("C8").value =
+    "is";
+
+hojaEstructuras.getCell("D8").value =
+    "a doctor";
+
+
+// E4-E9 permanecen vacías
+
+
+//-----------------------------------------------------
+// FILA 9 — COMPLETAMENTE RESERVADA
+//-----------------------------------------------------
+
+// A9:J9 permanece completamente vacía.
+
+
+//-----------------------------------------------------
+// FILA 10 — COMPLETAMENTE RESERVADA
+//-----------------------------------------------------
+
+// A10:J10 permanece completamente vacía.
+
+
+//-----------------------------------------------------
+// FILA 11 — ESTRUCTURA 2
+//-----------------------------------------------------
+
+hojaEstructuras.getCell("A11").value =
+    "Estructura 2";
+
+hojaEstructuras.getCell("B11").value =
+    "He";
+
+hojaEstructuras.getCell("C11").value =
+    "will";
+
+hojaEstructuras.getCell("D11").value =
+    "come";
+
+hojaEstructuras.getCell("E11").value =
+    "by then";
+
+
+// E5-E9 permanecen vacías
+
+
+//-----------------------------------------------------
+// FILA 12 — COMPLETAMENTE RESERVADA
+//-----------------------------------------------------
+
+// A12:J12 permanece completamente vacía.
+
+
+//-----------------------------------------------------
+// FILA 13 — COMPLETAMENTE RESERVADA
+//-----------------------------------------------------
+
+// A13:J13 permanece completamente vacía.
+
+
+//-----------------------------------------------------
+// FILA 14 — ESTRUCTURA 3
+//-----------------------------------------------------
+
+hojaEstructuras.getCell("A14").value =
+    "Estructura 3";
+
+hojaEstructuras.getCell("B14").value =
+    "I";
+
+hojaEstructuras.getCell("C14").value =
+    "have";
+
+hojaEstructuras.getCell("D14").value =
+    "been";
+
+hojaEstructuras.getCell("E14").value =
+    "waiting";
+
+hojaEstructuras.getCell("F14").value =
+    "for you";
+
+
+// E6-E9 permanecen vacías
+
+
+//-----------------------------------------------------
+// FILA 15 — COMPLETAMENTE RESERVADA
+//-----------------------------------------------------
+
+// A15:J15 permanece completamente vacía.
+
+
+//-----------------------------------------------------
+// FILA 16 — COMPLETAMENTE RESERVADA
+//-----------------------------------------------------
+
+// A16:J16 permanece completamente vacía.
+
+
+//-----------------------------------------------------
+// FILA 17 — ESTRUCTURA 4
+//-----------------------------------------------------
+
+hojaEstructuras.getCell("A17").value =
+    "Estructura 4";
+
+hojaEstructuras.getCell("B17").value =
+    "You";
+
+hojaEstructuras.getCell("C17").value =
+    "will";
+
+hojaEstructuras.getCell("D17").value =
+    "have";
+
+hojaEstructuras.getCell("E17").value =
+    "been";
+
+hojaEstructuras.getCell("F17").value =
+    "running";
+
+hojaEstructuras.getCell("G17").value =
+    "for hours";
+
+
+// E7-E9 permanecen vacías
+
+
+//-----------------------------------------------------
+// FILA 18 — COMPLETAMENTE RESERVADA
+//-----------------------------------------------------
+
+// A18:J18 permanece completamente vacía.
+
+
+//-----------------------------------------------------
+// FILA 19 — COMPLETAMENTE RESERVADA
+//-----------------------------------------------------
+
+// A19:J19 permanece completamente vacía.
+
+
+//-----------------------------------------------------
+// ANCHO DE COLUMNAS
+//-----------------------------------------------------
+
+hojaEstructuras.getColumn("A").width = 25;
+
+for (let columna of ["B","C","D","E","F","G","H","I","J"]) {
+
+    hojaEstructuras.getColumn(columna).width = 22;
+
+}
+
+
+//-----------------------------------------------------
+// ENCABEZADOS EN NEGRITA
+//-----------------------------------------------------
+
+for (let celda of [
+    "A1","B1","C1","D1","E1","F1","G1","H1","I1","J1",
+    "A7","B7","C7","D7","E7","F7","G7","H7","I7","J7"
+]) {
+
+    hojaEstructuras.getCell(celda).font = {
+        bold: true
+    };
+
+}    
+
 
 // PRUEBA TEMPORAL
 
