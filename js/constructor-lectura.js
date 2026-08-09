@@ -122,116 +122,45 @@ if (hojaImagenes){
 
 if (hojaEstructuras) {
 
-    console.log(
-        "CONTENIDO COMPLETO ESTRUCTURAS:"
-    );
+    console.log("EJECUTANDO LECTURA DE HOJA ESTRUCTURAS");
+    let infoEstructural = [];
+    let oracionesEstructuradas = [];
 
-    hojaEstructuras.eachRow(
-        (fila, numeroFila) => {
-
-            console.log(
-                "FILA",
-                numeroFila,
-                fila.values
-            );
-
-        }
-    );
-
-}
-
-if (hojaEstructuras) {
-
-    const filas = hojaEstructuras.getSheetValues();
-
-    let modo = "";
-
-    let estructurasInfo = {};
-    let estructurasOraciones = {};
-
-    for (let fila = 1; fila < filas.length; fila++) {
-
-        const datos = filas[fila];
-
-        if (!datos) continue;
-
-        const primeraCelda = leerCelda({
-            value: datos[1]
-        });
-
-        if (primeraCelda === "Información estructural") {
-
-            modo = "informacion";
-            continue;
-
-        }
-
-        if (primeraCelda === "Oraciones estructuradas") {
-
-            modo = "oraciones";
-            continue;
-
-        }
-
-        if (!primeraCelda.startsWith("Estructura")) {
+    for (let fila = 1; fila <= 19; fila++) {
+        const tipoFila = leerCelda(hojaEstructuras.getCell("A" + fila));
+        
+        if (!tipoFila) {
             continue;
         }
 
-        const numero =
-            primeraCelda.replace("Estructura ", "");
-
-        const componentes = [];
-
-        for (
-            let columna = 2;
-            columna < datos.length;
-            columna++
-        ) {
-
-            if (
-                datos[columna] !== undefined &&
-                datos[columna] !== null &&
-                datos[columna] !== ""
-            ) {
-
-                componentes.push(
-                    String(datos[columna])
-                );
-
-            }
-
+        let elementosFila = [];
+        for (let col = 2; col <= 10; col++) {
+            const letraColumna = String.fromCharCode(64 + col);
+            const valorCelda = leerCelda(hojaEstructuras.getCell(letraColumna + fila));
+            elementosFila.push(valorCelda !== undefined ? valorCelda : "");
         }
 
-        if (modo === "informacion") {
-
-            estructurasInfo[numero] = componentes;
-
+        if (fila >= 1 && fila <= 5) {
+            infoEstructural.push({
+                fila: fila,
+                tipo: tipoFila,
+                componentes: elementosFila
+            });
+        } else if (fila === 7 || (fila >= 8 && fila <= 19)) {
+            oracionesEstructuradas.push({
+                fila: fila,
+                tipo: tipoFila,
+                elementos: elementosFila
+            });
         }
-
-        if (modo === "oraciones") {
-
-            estructurasOraciones[numero] = componentes;
-
-        }
-
     }
 
-    Object.keys(estructurasInfo).forEach(numero => {
+    estructurasGlobal = {
+        informacion: infoEstructural,
+        oraciones: oracionesEstructuradas
+    };
 
-        estructurasGlobal.push({
-
-            estructura: numero,
-
-            componentes:
-                estructurasInfo[numero],
-
-            oracion:
-                estructurasOraciones[numero] || []
-
-        });
-
-    });
-
+    console.log("ESTRUCTURAS GLOBAL PROCESADO CORRECTAMENTE:", estructurasGlobal);
 }
 
 console.log(
