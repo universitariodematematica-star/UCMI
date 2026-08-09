@@ -160,7 +160,10 @@ if (hojaEstructuras) {
         oraciones: oracionesEstructuradas
     };
 
-    console.log("ESTRUCTURAS GLOBAL PROCESADO CORRECTAMENTE:", estructurasGlobal);
+    console.log(
+        "ESTRUCTURAS GLOBAL PROCESADO CORRECTAMENTE:",
+        estructurasGlobal
+    );
 }
 
 console.log(
