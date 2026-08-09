@@ -44,6 +44,8 @@ function leerCelda(celda){
 FIN - FUNCIONES AUXILIARES DE LECTURA
 =====================================================*/    
 
+let estructurasGlobal = [];
+
 
 /*=====================================================
 INICIO - LECTOR PRINCIPAL DEL EXCEL
@@ -137,8 +139,6 @@ if (hojaEstructuras) {
     );
 
 }
-
-let estructurasGlobal = [];
 
 if (hojaEstructuras) {
 
