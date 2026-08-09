@@ -136,7 +136,108 @@ if (hojaEstructuras) {
         }
     );
 
-}    
+}
+
+let estructurasGlobal = [];
+
+if (hojaEstructuras) {
+
+    const filas = hojaEstructuras.getSheetValues();
+
+    let modo = "";
+
+    let estructurasInfo = {};
+    let estructurasOraciones = {};
+
+    for (let fila = 1; fila < filas.length; fila++) {
+
+        const datos = filas[fila];
+
+        if (!datos) continue;
+
+        const primeraCelda = leerCelda({
+            value: datos[1]
+        });
+
+        if (primeraCelda === "Información estructural") {
+
+            modo = "informacion";
+            continue;
+
+        }
+
+        if (primeraCelda === "Oraciones estructuradas") {
+
+            modo = "oraciones";
+            continue;
+
+        }
+
+        if (!primeraCelda.startsWith("Estructura")) {
+            continue;
+        }
+
+        const numero =
+            primeraCelda.replace("Estructura ", "");
+
+        const componentes = [];
+
+        for (
+            let columna = 2;
+            columna < datos.length;
+            columna++
+        ) {
+
+            if (
+                datos[columna] !== undefined &&
+                datos[columna] !== null &&
+                datos[columna] !== ""
+            ) {
+
+                componentes.push(
+                    String(datos[columna])
+                );
+
+            }
+
+        }
+
+        if (modo === "informacion") {
+
+            estructurasInfo[numero] = componentes;
+
+        }
+
+        if (modo === "oraciones") {
+
+            estructurasOraciones[numero] = componentes;
+
+        }
+
+    }
+
+    Object.keys(estructurasInfo).forEach(numero => {
+
+        estructurasGlobal.push({
+
+            estructura: numero,
+
+            componentes:
+                estructurasInfo[numero],
+
+            oracion:
+                estructurasOraciones[numero] || []
+
+        });
+
+    });
+
+}
+
+console.log(
+    "ESTRUCTURAS GLOBAL:",
+    estructurasGlobal
+);    
 
 const nivel =
 leerCelda(hoja.getCell("A2"));
