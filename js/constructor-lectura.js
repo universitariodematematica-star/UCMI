@@ -147,56 +147,63 @@ if (hojaEstructuras) {
     }
 
 
-    //===========================================
-    // LEER ORACIONES ESTRUCTURADAS
-    //
-    // Cada estructura tiene exactamente
-    // tres oraciones.
-    //
-    // Estructura 1 → filas 8, 9, 10
-    // Estructura 2 → filas 11, 12, 13
-    // Estructura 3 → filas 14, 15, 16
-    // Estructura 4 → filas 17, 18, 19
-    //===========================================
+//===========================================
+// LEER ORACIONES ESTRUCTURADAS
+//
+// Fila 7 = encabezado.
+// Filas 8 a 19 = 12 oraciones.
+//
+// La columna A puede estar vacía en las
+// filas segunda y tercera de cada estructura.
+// Por eso NO se utiliza A para descartar
+// una fila.
+//===========================================
 
-    for (let fila = 7; fila <= 19; fila++) {
+for (let fila = 8; fila <= 19; fila++) {
 
-        const tipoFila =
+    let elementosFila = [];
+
+    for (let col = 2; col <= 10; col++) {
+
+        const letraColumna =
+            String.fromCharCode(64 + col);
+
+        const valorCelda =
             leerCelda(
-                hojaEstructuras.getCell("A" + fila)
+                hojaEstructuras.getCell(
+                    letraColumna + fila
+                )
             );
 
-        if (!tipoFila) {
-            continue;
-        }
-
-        let elementosFila = [];
-
-        for (let col = 2; col <= 10; col++) {
-
-            const letraColumna =
-                String.fromCharCode(64 + col);
-
-            const valorCelda =
-                leerCelda(
-                    hojaEstructuras.getCell(
-                        letraColumna + fila
-                    )
-                );
-
-            elementosFila.push(valorCelda);
-        }
-
-        oracionesEstructuradas.push({
-
-            fila: fila,
-
-            tipo: tipoFila,
-
-            elementos: elementosFila
-
-        });
+        elementosFila.push(valorCelda);
     }
+
+    // Solo conservar la fila si tiene
+    // al menos un elemento real.
+    const tieneElementos =
+        elementosFila.some(
+            elemento => elemento.trim() !== ""
+        );
+
+    if (!tieneElementos) {
+        continue;
+    }
+
+    const tipoFila =
+        leerCelda(
+            hojaEstructuras.getCell("A" + fila)
+        );
+
+    oracionesEstructuradas.push({
+
+        fila: fila,
+
+        tipo: tipoFila,
+
+        elementos: elementosFila
+
+    });
+}
 
 
     //===========================================
