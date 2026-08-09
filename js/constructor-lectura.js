@@ -75,27 +75,13 @@ libro.getWorksheet("Identificar-imagenes");
 
 if (hojaImagenes){
 
-    console.log(
-        "Ejercicio con imágenes detectado"
-    );
-
     UCMIBlogger.ocultar();
 
 }else{
 
-    console.log(
-        "Ejercicio sin imágenes"
-    );
-
     UCMIBlogger.ocultar();
 
 }
-    console.log(
-    libro.worksheets.map(
-        hoja => hoja.name
-    )
-);
-
 
     const hoja = libro.getWorksheet("Datos");
     const hojaSelSimple = libro.getWorksheet("Sel-simp-op");
@@ -108,17 +94,6 @@ if (hojaImagenes){
     const hojaTranscripcion = libro.getWorksheet("Transcripción");
     const hojaIdentificarImagenes = libro.getWorksheet("Identificar-imagenes");
     const hojaEstructuras = libro.getWorksheet("Estructuras");
-    
-    console.log("HOJAS:", libro.worksheets.map(h=>h.name));
-    console.log("ORDENAR:", hojaOrdenarOracion);
-    console.log("ESTRUCTURAS:", hojaEstructuras);
-
-    console.log(
-    "DATOS ESTRUCTURAS:",
-    hojaEstructuras ?
-    hojaEstructuras.getSheetValues() :
-    "NO EXISTE"
-);
 
 if (hojaEstructuras) {
 
@@ -297,93 +272,7 @@ if (hojaEstructuras) {
 
     };
 
-
-    console.log(
-        "ESTRUCTURAS GLOBAL PROCESADO CORRECTAMENTE:",
-        estructurasGlobal
-    );
-
-
-    console.log(
-        "========== TABLAS DE ESTRUCTURAS =========="
-    );
-
-
-    estructurasGlobal.tablas.forEach(
-        tabla => {
-
-            console.log(
-                "TABLA:",
-                tabla.numero
-            );
-
-            console.log(
-                "ENCABEZADOS:",
-                tabla.encabezados
-            );
-
-            console.log(
-                "ORACIONES:",
-                tabla.oraciones
-            );
-
-        }
-    );
-
 }
-
-console.log(
-    "ESTRUCTURAS GLOBAL:",
-    estructurasGlobal
-);
-
-console.log("========== ESTRUCTURAS GRAMATICALES ==========");
-
-estructurasGlobal.informacion.forEach(estructura => {
-
-    const componentesActivos =
-        estructura.componentes.filter(
-            componente => componente.trim() !== ""
-        );
-
-    console.log(
-        "FILA:",
-        estructura.fila,
-        "| TIPO:",
-        estructura.tipo,
-        "| COMPONENTES:",
-        componentesActivos
-    );
-
-});
-
-console.log("========== ORACIONES ESTRUCTURADAS ==========");
-
-estructurasGlobal.oraciones.forEach(oracion => {
-
-    const elementosActivos =
-        oracion.elementos.filter(
-            elemento => elemento.trim() !== ""
-        );
-
-    console.log(
-        "FILA:",
-        oracion.fila,
-        "| TIPO:",
-        oracion.tipo,
-        "| ELEMENTOS:",
-        elementosActivos
-    );
-
-}); 
-
-console.table(
-    estructurasGlobal.informacion
-);
-
-console.table(
-    estructurasGlobal.oraciones
-);    
 
 const nivel =
 leerCelda(hoja.getCell("A2"));
@@ -471,11 +360,6 @@ for(let fila = 2; fila <= hojaSelSimple.rowCount; fila++){
         leerCelda(hojaSelSimple.getCell("F" + fila))
 
     });
-
-    console.log(
-"SEL SIMPLE:",
-ejerciciosSelSimple
-);
 
 }
 
@@ -576,8 +460,6 @@ opciones:[
 
 }    
 
-console.log("DRAG DROP:", ejerciciosDragDrop);    
-
 //===========================================
 // Leer ejercicios Ordenar oración
 //===========================================
@@ -608,12 +490,6 @@ for(let fila = 2; fila <= hojaOrdenarOracion.rowCount; fila++){
     });
 
 }
-
-
-console.log(
-"ORDENAR ORACION:",
-ejerciciosOrdenarOracion
-);
 
 //===========================================
 // Leer ejercicios Relacionar columnas
@@ -650,12 +526,6 @@ for(let fila = 2; fila <= hojaRelacionar.rowCount; fila++){
     });
 
 }
-
-
-console.log(
-"RELACIONAR COLUMNAS:",
-ejerciciosEmparejarColumnas
-);   
 
 //===========================================
 // Leer ejercicios Traducción
@@ -715,12 +585,6 @@ ejerciciosTraduccion.push({
 
 }
 
-
-console.log(
-"TRADUCCIÓN:",
-ejerciciosTraduccion
-);
-
 /*=====================================================
 TRANSCRIPCIÓN
 =====================================================*/
@@ -771,11 +635,6 @@ ejerciciosTranscripcion = {
 
 }
 
-console.log(
-"TRANSCRIPCIÓN:",
-ejerciciosTranscripcion
-);
-
 /*=====================================================
 IDENTIFICAR IMÁGENES
 =====================================================*/
@@ -799,11 +658,6 @@ const codigoBloggerExcel =
 leerCelda(
     hojaIdentificarImagenes.getCell("C2")
 );    
-
-console.log(
-    "CÓDIGO BLOGGER DESDE EXCEL:",
-    codigoBloggerExcel
-); 
 
 UCMIBlogger.extraerImagenes(
     codigoBloggerExcel
@@ -860,17 +714,6 @@ ejercicioIdentificarImagenes.imagenes.forEach(imagen=>{
 
 });
 
-
-console.log(
-    "IMÁGENES CON URL FINAL:",
-    ejercicioIdentificarImagenes.imagenes
-);
-
-    console.log(
-        "IDENTIFICAR IMÁGENES:",
-        ejercicioIdentificarImagenes
-    );
-
 window.actualizarImagenesIdentificar = function(){
 
     ejercicioIdentificarImagenes.imagenes.forEach(imagen=>{
@@ -889,27 +732,9 @@ window.actualizarImagenesIdentificar = function(){
 
     });
 
-
-    console.log(
-        "IMÁGENES ACTUALIZADAS DESDE BLOGGER:",
-        ejercicioIdentificarImagenes.imagenes
-    );
-
-
     lanzarGeneracion();
 
 };
-
- console.log(
-"PRUEBA AUDIO IMÁGENES:",
-ejercicioIdentificarImagenes.audio
-);
-
-console.log(
-"PRUEBA ARRAY IMÁGENES:",
-ejercicioIdentificarImagenes.imagenes
-);   
-
 }
 
     datosPagina = {
@@ -929,10 +754,6 @@ tituloEspanol:tituloEspanol
 if(
     hojaIdentificarImagenes
 ){
-
-    console.log(
-        "Esperando actualización de imágenes Blogger..."
-    );
 
 }else{
 
