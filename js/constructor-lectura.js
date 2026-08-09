@@ -169,6 +169,54 @@ if (hojaEstructuras) {
 console.log(
     "ESTRUCTURAS GLOBAL:",
     estructurasGlobal
+);
+
+console.log("========== ESTRUCTURAS GRAMATICALES ==========");
+
+estructurasGlobal.informacion.forEach(estructura => {
+
+    const componentesActivos =
+        estructura.componentes.filter(
+            componente => componente.trim() !== ""
+        );
+
+    console.log(
+        "FILA:",
+        estructura.fila,
+        "| TIPO:",
+        estructura.tipo,
+        "| COMPONENTES:",
+        componentesActivos
+    );
+
+});
+
+console.log("========== ORACIONES ESTRUCTURADAS ==========");
+
+estructurasGlobal.oraciones.forEach(oracion => {
+
+    const elementosActivos =
+        oracion.elementos.filter(
+            elemento => elemento.trim() !== ""
+        );
+
+    console.log(
+        "FILA:",
+        oracion.fila,
+        "| TIPO:",
+        oracion.tipo,
+        "| ELEMENTOS:",
+        elementosActivos
+    );
+
+}); 
+
+console.table(
+    estructurasGlobal.informacion
+);
+
+console.table(
+    estructurasGlobal.oraciones
 );    
 
 const nivel =
