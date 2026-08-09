@@ -123,47 +123,213 @@ if (hojaImagenes){
 if (hojaEstructuras) {
 
     console.log("EJECUTANDO LECTURA DE HOJA ESTRUCTURAS");
+
     let infoEstructural = [];
     let oracionesEstructuradas = [];
 
-    for (let fila = 1; fila <= 19; fila++) {
-        const tipoFila = leerCelda(hojaEstructuras.getCell("A" + fila));
-        
+    //===========================================
+    // LEER ESTRUCTURAS GRAMATICALES
+    // Filas 2 a 5
+    //===========================================
+
+    for (let fila = 2; fila <= 5; fila++) {
+
+        const tipoFila =
+            leerCelda(
+                hojaEstructuras.getCell("A" + fila)
+            );
+
         if (!tipoFila) {
             continue;
         }
 
         let elementosFila = [];
+
         for (let col = 2; col <= 10; col++) {
-            const letraColumna = String.fromCharCode(64 + col);
-            const valorCelda = leerCelda(hojaEstructuras.getCell(letraColumna + fila));
-            elementosFila.push(valorCelda !== undefined ? valorCelda : "");
+
+            const letraColumna =
+                String.fromCharCode(64 + col);
+
+            const valorCelda =
+                leerCelda(
+                    hojaEstructuras.getCell(
+                        letraColumna + fila
+                    )
+                );
+
+            elementosFila.push(valorCelda);
         }
 
-        if (fila >= 1 && fila <= 5) {
-            infoEstructural.push({
-                fila: fila,
-                tipo: tipoFila,
-                componentes: elementosFila
-            });
-        } else if (fila === 7 || (fila >= 8 && fila <= 19)) {
-            oracionesEstructuradas.push({
-                fila: fila,
-                tipo: tipoFila,
-                elementos: elementosFila
-            });
-        }
+        infoEstructural.push({
+
+            fila: fila,
+
+            tipo: tipoFila,
+
+            componentes: elementosFila
+
+        });
     }
 
+
+    //===========================================
+    // LEER ORACIONES ESTRUCTURADAS
+    //
+    // Cada estructura tiene exactamente
+    // tres oraciones.
+    //
+    // Estructura 1 → filas 8, 9, 10
+    // Estructura 2 → filas 11, 12, 13
+    // Estructura 3 → filas 14, 15, 16
+    // Estructura 4 → filas 17, 18, 19
+    //===========================================
+
+    for (let fila = 7; fila <= 19; fila++) {
+
+        const tipoFila =
+            leerCelda(
+                hojaEstructuras.getCell("A" + fila)
+            );
+
+        if (!tipoFila) {
+            continue;
+        }
+
+        let elementosFila = [];
+
+        for (let col = 2; col <= 10; col++) {
+
+            const letraColumna =
+                String.fromCharCode(64 + col);
+
+            const valorCelda =
+                leerCelda(
+                    hojaEstructuras.getCell(
+                        letraColumna + fila
+                    )
+                );
+
+            elementosFila.push(valorCelda);
+        }
+
+        oracionesEstructuradas.push({
+
+            fila: fila,
+
+            tipo: tipoFila,
+
+            elementos: elementosFila
+
+        });
+    }
+
+
+    //===========================================
+    // CONSTRUIR LAS TABLAS DE ESTRUCTURAS
+    //===========================================
+
+    let tablasEstructuras = [];
+
+    infoEstructural.forEach(
+        (estructura, indice) => {
+
+            const componentes =
+                estructura.componentes.filter(
+                    componente =>
+                        componente.trim() !== ""
+                );
+
+
+            // Las tres filas de oraciones
+            // correspondientes a esta estructura
+
+            const inicio =
+                indice * 3;
+
+            const oraciones =
+                oracionesEstructuradas
+                    .slice(
+                        inicio,
+                        inicio + 3
+                    );
+
+
+            tablasEstructuras.push({
+
+                numero:
+                    indice + 1,
+
+                tipo:
+                    estructura.tipo,
+
+                encabezados:
+                    componentes,
+
+                oraciones:
+                    oraciones.map(
+                        oracion => {
+
+                            return oracion.elementos
+                                .slice(
+                                    0,
+                                    componentes.length
+                                );
+
+                        }
+                    )
+
+            });
+
+        }
+    );
+
+
     estructurasGlobal = {
-        informacion: infoEstructural,
-        oraciones: oracionesEstructuradas
+
+        informacion:
+            infoEstructural,
+
+        oraciones:
+            oracionesEstructuradas,
+
+        tablas:
+            tablasEstructuras
+
     };
+
 
     console.log(
         "ESTRUCTURAS GLOBAL PROCESADO CORRECTAMENTE:",
         estructurasGlobal
     );
+
+
+    console.log(
+        "========== TABLAS DE ESTRUCTURAS =========="
+    );
+
+
+    estructurasGlobal.tablas.forEach(
+        tabla => {
+
+            console.log(
+                "TABLA:",
+                tabla.numero
+            );
+
+            console.log(
+                "ENCABEZADOS:",
+                tabla.encabezados
+            );
+
+            console.log(
+                "ORACIONES:",
+                tabla.oraciones
+            );
+
+        }
+    );
+
 }
 
 console.log(
