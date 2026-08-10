@@ -25,6 +25,24 @@ estructurasGlobal={},
 configuracionMostrar={}
 ){
 
+    console.log(
+    "========== GENERADOR - ESTRUCTURAS =========="
+);
+
+console.log(
+    "ESTRUCTURAS RECIBIDAS:",
+    estructurasGlobal
+);
+
+console.log(
+    "TABLAS RECIBIDAS:",
+    estructurasGlobal?.tablas
+);
+
+console.log(
+    "========== FIN GENERADOR - ESTRUCTURAS =========="
+);
+
     Object.keys(localStorage)
     .forEach(key=>{
 
