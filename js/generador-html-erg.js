@@ -680,37 +680,32 @@ UCMIMotorEjercicios.generar({
     estructuras:
     ${JSON.stringify(estructurasGlobal)},
     
-    mostrarSeleccionSimple:
-    "${configuracionMostrar["Selección simple"] || "Sí"}",
-    
+mostrarSeleccionSimple:
+"${configuracionMostrar["Selección simple"] || "No"}",
 
-    mostrarCompletar:
-    "${configuracionMostrar["Completar espacios"] || "Sí"}",
+mostrarCompletar:
+"${configuracionMostrar["Completar espacios"] || "No"}",
 
+mostrarDragDrop:
+"${configuracionMostrar["Drag and drop blanco"] || "No"}",
 
-    mostrarDragDrop:
-    "${configuracionMostrar["Drag and drop blanco"] || "Sí"}",
-
-
-    mostrarOrdenarOracion:
-    "${configuracionMostrar["Ordenar oración"] || "Sí"}",
+mostrarOrdenarOracion:
+"${configuracionMostrar["Ordenar oración"] || "No"}",
 
 mostrarRelacionar:
-"${configuracionMostrar["Relacionar"] || "Sí"}",
+"${configuracionMostrar["Relacionar"] || "No"}",
 
 mostrarTraduccion:
-"${configuracionMostrar["Traducción"] || "Sí"}",
+"${configuracionMostrar["Traducción"] || "No"}",
 
 mostrarTranscripcion:
-"${configuracionMostrar["Transcripción"] || "Sí"}",
+"${configuracionMostrar["Transcripción"] || "No"}",
 
 mostrarIdentificarImagenes:
-
-"${configuracionMostrar["Identificar imágenes"] || "Sí"}",
+"${configuracionMostrar["Identificar imágenes"] || "No"}"
 
 mostrarEstructuras:
-
-"${configuracionMostrar["Estructuras"] || "Sí"}"
+"${configuracionMostrar["Estructuras"] || "No"}"
 
 });
 
