@@ -822,7 +822,7 @@ if(!esperaImagenesBlogger){
 
 function lanzarGeneracion(){
 
-    generarCodigo(
+    generarCodigo(   // ← VIENE DE: js/generador-html-erg.js
         datosPagina.nivel,
         datosPagina.unidad,
         datosPagina.tema,
