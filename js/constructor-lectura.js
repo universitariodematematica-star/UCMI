@@ -839,10 +839,11 @@ function lanzarGeneracion(){
         ejerciciosTraduccion,
         ejerciciosTranscripcion,
         ejercicioIdentificarImagenes,
+        estructurasGlobal,
         configuracionMostrar
     );
 
-} 
+}
 
 }     
 
