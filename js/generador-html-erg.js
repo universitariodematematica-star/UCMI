@@ -659,6 +659,9 @@ UCMIMotorEjercicios.generar({
     identificarImagenes:
     ${JSON.stringify(ejercicioIdentificarImagenes)},
     
+    estructuras:
+    ${JSON.stringify(estructurasGlobal)},
+    
     mostrarSeleccionSimple:
     "${configuracionMostrar["Selección simple"] || "Sí"}",
     
