@@ -2,7 +2,7 @@
 GENERADOR DEL CONSTRUCTOR
 =====================================================*/
 
-function generarCodigoActualizado(){
+function generarCodigoActualizado(){   // ← VIENE DE: js/generador-html-erg.js
 
     generarCodigo(
 
