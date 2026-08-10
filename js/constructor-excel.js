@@ -513,11 +513,17 @@ hojaMostrar.getCell("A9").value =
 "Identificar imágenes";
 
 hojaMostrar.getCell("B9").value =
-"Sí";    
+"Sí";
+
+hojaMostrar.getCell("A10").value =
+"Estructuras";
+
+hojaMostrar.getCell("B10").value =
+"Sí";
 
 // Lista desplegable Sí / No
 
-for(let fila = 2; fila <= 9; fila++){
+for(let fila = 2; fila <= 10; fila++){
 
     hojaMostrar.getCell("B"+fila).dataValidation = {
 
@@ -538,7 +544,7 @@ for(let fila = 2; fila <= 9; fila++){
 
     };
 
-}    
+}   
 
 
 
