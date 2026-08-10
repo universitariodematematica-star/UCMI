@@ -20,8 +20,9 @@ ejerciciosOrdenarOracion=[],
 ejerciciosEmparejarColumnas=[],
 ejerciciosTraduccion=[],
 ejerciciosTranscripcion=[],
-ejercicioIdentificarImagenes=[],    
-configuracionMostrar={}    
+ejercicioIdentificarImagenes=[],
+estructurasGlobal={},
+configuracionMostrar={}
 ){
 
     Object.keys(localStorage)
