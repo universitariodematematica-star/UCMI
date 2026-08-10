@@ -574,6 +574,158 @@ data-id="traduccion-${indice}"
 
 }
 
+/*====================================================*
+*SECCIÓN: ESTRUCTURAS GRAMATICALES*
+*====================================================*/
+
+function crearEstructuras(estructuras){
+
+    if(
+        !estructuras ||
+        !estructuras.tablas ||
+        !Array.isArray(estructuras.tablas) ||
+        estructuras.tablas.length === 0
+    ){
+
+        console.log(
+            "ESTRUCTURAS: no hay tablas para generar"
+        );
+
+        return "";
+    }
+
+
+    console.log(
+        "ESTRUCTURAS: generando tablas:",
+        estructuras.tablas.length
+    );
+
+
+    let htmlEstructuras = `
+
+    <div class="seccion-estructuras">
+
+    `;
+
+
+    estructuras.tablas.forEach(
+        (tabla, indice) => {
+
+            htmlEstructuras += `
+
+            <div
+                class="estructura-gramatical"
+                data-estructura="${tabla.numero}"
+            >
+
+                <div class="titulo-estructura">
+
+                    Estructura ${tabla.numero}
+
+                </div>
+
+
+                <div class="tabla-estructura">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+            `;
+
+
+            tabla.encabezados.forEach(
+                encabezado => {
+
+                    htmlEstructuras += `
+
+                        <th>
+                            ${escaparTexto(encabezado)}
+                        </th>
+
+                    `;
+
+                }
+            );
+
+
+            htmlEstructuras += `
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+            `;
+
+
+            tabla.oraciones.forEach(
+                oracion => {
+
+                    htmlEstructuras += `
+
+                            <tr>
+
+                    `;
+
+
+                    oracion.forEach(
+                        elemento => {
+
+                            htmlEstructuras += `
+
+                                <td>
+                                    ${escaparTexto(elemento)}
+                                </td>
+
+                            `;
+
+                        }
+                    );
+
+
+                    htmlEstructuras += `
+
+                            </tr>
+
+                    `;
+
+                }
+            );
+
+
+            htmlEstructuras += `
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            `;
+
+        }
+    );
+
+
+    htmlEstructuras += `
+
+    </div>
+
+    `;
+
+
+    console.log(
+        "ESTRUCTURAS: HTML generado correctamente"
+    );
+
+
+    return htmlEstructuras;
+}
 
 
 /*====================================================
@@ -1000,7 +1152,27 @@ if(
         config.ordenarOracion
     );
 
-}   
+}
+
+//========================================
+// SECCIÓN: ESTRUCTURAS GRAMATICALES
+//========================================
+
+if(
+    config.estructuras &&
+    config.estructuras.tablas &&
+    config.estructuras.tablas.length > 0
+){
+
+    console.log(
+        "GENERANDO ESTRUCTURAS GRAMATICALES"
+    );
+
+    htmlFinal += crearEstructuras(
+        config.estructuras
+    );
+
+}        
 
 if(
     config.emparejarColumnas &&
