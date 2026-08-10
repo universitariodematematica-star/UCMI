@@ -601,11 +601,15 @@ function crearEstructuras(estructuras){
     );
 
 
-    let htmlEstructuras = `
+let htmlEstructuras = `
 
-    <div class="seccion-estructuras">
+<div class="seccion-estructuras">
 
-    `;
+    <div class="enunciado-ejercicio">
+        Construya las oraciones según la estructura que aparecen en los encabezados de las tablas, usando las expresiones o palabras disponibles.
+    </div>
+
+`;
 
 
     estructuras.tablas.forEach(
