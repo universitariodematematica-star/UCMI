@@ -705,7 +705,12 @@ mostrarTranscripcion:
 "${configuracionMostrar["Transcripción"] || "Sí"}",
 
 mostrarIdentificarImagenes:
-"${configuracionMostrar["Identificar imágenes"] || "Sí"}"
+
+"${configuracionMostrar["Identificar imágenes"] || "Sí"}",
+
+mostrarEstructuras:
+
+"${configuracionMostrar["Estructuras"] || "Sí"}"
 
 });
 
