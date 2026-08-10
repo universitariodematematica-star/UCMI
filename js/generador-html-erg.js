@@ -702,7 +702,7 @@ mostrarTranscripcion:
 "${configuracionMostrar["Transcripción"] || "No"}",
 
 mostrarIdentificarImagenes:
-"${configuracionMostrar["Identificar imágenes"] || "No"}"
+"${configuracionMostrar["Identificar imágenes"] || "No"}",
 
 mostrarEstructuras:
 "${configuracionMostrar["Estructuras"] || "No"}"
