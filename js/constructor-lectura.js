@@ -279,6 +279,52 @@ for (let fila = 8; fila <= 19; fila++) {
 
     };
 
+    console.log(
+    "========== VERIFICACIÓN ESTRUCTURAS =========="
+);
+
+console.log(
+    "TOTAL ORACIONES LEÍDAS:",
+    oracionesEstructuradas.length
+);
+
+oracionesEstructuradas.forEach(
+    (oracion, indice) => {
+
+        console.log(
+            "ORACIÓN",
+            indice + 1,
+            "| FILA EXCEL:",
+            oracion.fila,
+            "| TIPO:",
+            oracion.tipo,
+            "| ELEMENTOS:",
+            oracion.elementos
+        );
+
+    }
+);
+
+tablasEstructuras.forEach(
+    tabla => {
+
+        console.log(
+            "TABLA",
+            tabla.numero,
+            "| ENCABEZADOS:",
+            tabla.encabezados,
+            "| ORACIONES:",
+            tabla.oraciones.length,
+            tabla.oraciones
+        );
+
+    }
+);
+
+console.log(
+    "========== FIN VERIFICACIÓN ESTRUCTURAS =========="
+);
+
 }
 
 const nivel =
