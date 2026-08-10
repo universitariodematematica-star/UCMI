@@ -611,7 +611,6 @@ let htmlEstructuras = `
 
 `;
 
-
     estructuras.tablas.forEach(
         (tabla, indice) => {
 
