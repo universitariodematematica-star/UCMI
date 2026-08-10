@@ -1159,9 +1159,10 @@ if(
 //========================================
 
 if(
-    config.estructuras &&
-    config.estructuras.tablas &&
-    config.estructuras.tablas.length > 0
+config.estructuras &&
+config.estructuras.tablas &&
+config.estructuras.tablas.length > 0 &&
+config.mostrarEstructuras !== "No"
 ){
 
     console.log(
@@ -1172,7 +1173,7 @@ if(
         config.estructuras
     );
 
-}        
+}      
 
 if(
     config.emparejarColumnas &&
