@@ -612,19 +612,21 @@ function crearEstructuras(estructuras){
 `;
 
 
-    estructuras.tablas.forEach(
-        (tabla, indice) => {
+estructuras.tablas.forEach(
+    (tabla, indice) => {
 
-            htmlEstructuras += `
+        contadorEjercicios++;
 
-        <div
-            class="estructura-gramatical"
-            data-estructura="${tabla.numero}"
-        >
+        htmlEstructuras += `
 
-            <div class="titulo-estructura">
-                Estructura ${tabla.numero}
-            </div>
+    <div
+        class="estructura-gramatical"
+        data-estructura="${tabla.numero}"
+    >
+
+        <div class="titulo-estructura">
+            ${contadorEjercicios}. Estructura ${tabla.numero}
+        </div>
 
 
             <div class="tabla-estructura">
