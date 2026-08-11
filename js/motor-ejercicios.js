@@ -826,9 +826,18 @@ tabla.oraciones.forEach(
     }
 );
 
-            htmlEstructuras += `
+htmlEstructuras += `
 
             </div>
+
+            <button
+                type="button"
+                class="boton-evaluar-estructuras"
+                onclick="evaluarEstructuras(this)"
+                data-estructura="${tabla.numero}"
+            >
+                Evaluar
+            </button>
 
         </div>
 
