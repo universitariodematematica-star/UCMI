@@ -1596,13 +1596,26 @@ if(
         
 contenedor.innerHTML = htmlFinal;
 
+//========================================
+// ACTIVAR DRAG & DROP DE ESTRUCTURAS
+//========================================
+
+if(
+    config.estructuras &&
+    config.estructuras.tablas &&
+    config.estructuras.tablas.length > 0 &&
+    config.mostrarEstructuras !== "No"
+){
+
+    activarDragDropEstructuras();
+
+}
 
 //========================================
 // RECUPERAR RESULTADOS GUARDADOS
 //========================================
 
 setTimeout(()=>{
-
 
     document.querySelectorAll(
         ".resultado[data-id]"
