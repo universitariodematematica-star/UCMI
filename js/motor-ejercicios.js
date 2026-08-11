@@ -3157,18 +3157,22 @@ bloque.querySelector(
 
 
 
-if(
-palabrasUsuario
-.trim()
-.replace(/\s+/g," ")
-.normalize()
-===
 const respuestaUsuarioNormalizada =
 palabrasUsuario
 .trim()
 .replace(/\s+/g," ")
 .normalize();
 
+const respuestaCorrectaNormalizada =
+respuestaCorrecta
+.trim()
+.replace(/\s+/g," ")
+.normalize();
+
+if(
+respuestaUsuarioNormalizada ===
+respuestaCorrectaNormalizada
+){
 const respuestaCorrectaNormalizada =
 respuestaCorrecta
 .trim()
