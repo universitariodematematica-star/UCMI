@@ -1101,6 +1101,249 @@ this.appendChild(
 
 }
 
+/*====================================================*
+*EVALUACIÓN - ESTRUCTURAS GRAMATICALES*
+*====================================================*/
+
+function evaluarEstructuras(boton){
+
+    console.log(
+        "========== EVALUACIÓN ESTRUCTURA =========="
+    );
+
+
+    //========================================
+    // IDENTIFICAR ESTRUCTURA
+    //========================================
+
+    const estructura =
+        boton.dataset.estructura;
+
+
+    console.log(
+        "ESTRUCTURA A EVALUAR:",
+        estructura
+    );
+
+
+    //========================================
+    // BUSCAR LAS CELDAS DE ESTA ESTRUCTURA
+    //========================================
+
+    const celdas =
+        document.querySelectorAll(
+            `.celda-estructural[data-estructura="${estructura}"]`
+        );
+
+
+    console.log(
+        "CELDAS ENCONTRADAS:",
+        celdas.length
+    );
+
+
+    if(celdas.length === 0){
+
+        console.warn(
+            "ESTRUCTURAS: no se encontraron celdas"
+        );
+
+        return;
+
+    }
+
+
+    //========================================
+    // CONTADORES
+    //========================================
+
+    let correctas = 0;
+    let incorrectas = 0;
+
+
+    //========================================
+    // EVALUAR CADA CELDA
+    //========================================
+
+    celdas.forEach(
+        celda => {
+
+            //====================================
+            // BUSCAR ELEMENTO COLOCADO
+            //====================================
+
+            const elemento =
+                celda.querySelector(
+                    ".elemento-estructural"
+                );
+
+
+            //====================================
+            // CELDA VACÍA
+            //====================================
+
+            if(!elemento){
+
+                celda.classList.add(
+                    "estructura-incorrecta"
+                );
+
+                celda.classList.remove(
+                    "estructura-correcta"
+                );
+
+                incorrectas++;
+
+                console.log(
+                    "CELDA VACÍA:",
+                    "Oración =", celda.dataset.oracion,
+                    "| Elemento =", celda.dataset.elemento
+                );
+
+                return;
+
+            }
+
+
+            //====================================
+            // INFORMACIÓN DEL ELEMENTO COLOCADO
+            //====================================
+
+            const estructuraElemento =
+                elemento.dataset.estructura;
+
+            const oracionElemento =
+                elemento.dataset.oracion;
+
+            const elementoElemento =
+                elemento.dataset.elemento;
+
+
+            //====================================
+            // INFORMACIÓN CORRECTA DE LA CELDA
+            //====================================
+
+            const estructuraCorrecta =
+                celda.dataset.correctoEstructura;
+
+            const oracionCorrecta =
+                celda.dataset.correctoOracion;
+
+            const elementoCorrecto =
+                celda.dataset.correctoElemento;
+
+
+            //====================================
+            // COMPARAR
+            //====================================
+
+            const esCorrecto =
+                estructuraElemento === estructuraCorrecta &&
+                oracionElemento === oracionCorrecta &&
+                elementoElemento === elementoCorrecto;
+
+
+            //====================================
+            // RESULTADO
+            //====================================
+
+            if(esCorrecto){
+
+                celda.classList.remove(
+                    "estructura-incorrecta"
+                );
+
+                celda.classList.add(
+                    "estructura-correcta"
+                );
+
+                correctas++;
+
+            }else{
+
+                celda.classList.remove(
+                    "estructura-correcta"
+                );
+
+                celda.classList.add(
+                    "estructura-incorrecta"
+                );
+
+                incorrectas++;
+
+            }
+
+
+            console.log(
+                "EVALUACIÓN CELDA:",
+                "Estructura =", estructura,
+                "| Oración =", celda.dataset.oracion,
+                "| Elemento =", celda.dataset.elemento,
+                "| Colocado =", elemento.dataset.elemento,
+                "| Correcta =", esCorrecto
+            );
+
+        }
+    );
+
+
+    //========================================
+    // RESULTADO DE LA ESTRUCTURA
+    //========================================
+
+    console.log(
+        "========== RESULTADO =========="
+    );
+
+    console.log(
+        "Estructura:",
+        estructura
+    );
+
+    console.log(
+        "Correctas:",
+        correctas
+    );
+
+    console.log(
+        "Incorrectas:",
+        incorrectas
+    );
+
+
+    //========================================
+    // MOSTRAR RESULTADO
+    //========================================
+
+    let resultado =
+        boton.parentElement.querySelector(
+            ".resultado-estructura"
+        );
+
+
+    if(!resultado){
+
+        resultado =
+            document.createElement(
+                "div"
+            );
+
+        resultado.className =
+            "resultado-estructura";
+
+
+        boton.parentElement.appendChild(
+            resultado
+        );
+
+    }
+
+
+    resultado.textContent =
+        `Correctas: ${correctas} | Incorrectas: ${incorrectas}`;
+
+}
+
 /*====================================================
         TRANSCRIPCIÓN
 ====================================================*/
