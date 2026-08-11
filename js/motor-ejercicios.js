@@ -603,13 +603,13 @@ function crearEstructuras(estructuras){
 
     let htmlEstructuras = `
 
-    <div class="seccion-estructuras">
+<div class="seccion-estructuras">
 
-        <div class="instruccion-ejercicio">
-            Construya las oraciones según la estructura que aparecen en los encabezados de las tablas, usando las expresiones o palabras disponibles.
-        </div>
+    <div class="instruccion-ejercicio">
+        Construya las oraciones según la estructura que aparece en los encabezados de las tablas, usando las expresiones o palabras disponibles.
+    </div>
 
-    `;
+`;
 
 
     estructuras.tablas.forEach(
@@ -617,29 +617,29 @@ function crearEstructuras(estructuras){
 
             htmlEstructuras += `
 
-            <div
-                class="estructura-gramatical"
-                data-estructura="${tabla.numero}"
-            >
+        <div
+            class="estructura-gramatical"
+            data-estructura="${tabla.numero}"
+        >
 
-                <div class="titulo-estructura">
-                    Estructura ${tabla.numero}
-                </div>
+            <div class="titulo-estructura">
+                Estructura ${tabla.numero}
+            </div>
 
 
-                <div class="tabla-estructura">
+            <div class="tabla-estructura">
 
-                    <table>
+                <table>
 
-                        <thead>
+                    <thead>
 
-                            <tr>
+                        <tr>
+
             `;
 
 
             //========================================
             // ENCABEZADOS
-            // Cada elemento ocupa su propia columna
             //========================================
 
             tabla.encabezados.forEach(
@@ -659,53 +659,57 @@ function crearEstructuras(estructuras){
 
             htmlEstructuras += `
 
-                            </tr>
+                        </tr>
 
-                        </thead>
+                    </thead>
 
-                        <tbody>
+                    <tbody>
 
             `;
 
 
             //========================================
-            // ORACIONES
-            // Cada elemento ocupa su propia celda
+            // CELDAS DESTINO
+            // Inicialmente vacías
             //========================================
 
             tabla.oraciones.forEach(
-                oracion => {
+                (oracion, indiceOracion) => {
+
+                    console.log(
+                        "ESTRUCTURA - ORACIÓN RECIBIDA:",
+                        oracion
+                    );
+
 
                     htmlEstructuras += `
 
-                            <tr>
+                        <tr>
 
                     `;
 
 
-console.log(
-    "ESTRUCTURA - ORACIÓN RECIBIDA:",
-    oracion
-);
+                    oracion.forEach(
+                        (elemento, indiceElemento) => {
 
-oracion.forEach(
-    elemento => {
+                            htmlEstructuras += `
 
-        htmlEstructuras += `
+                            <td
+                                class="celda-estructural"
+                                data-estructura="${tabla.numero}"
+                                data-oracion="${indiceOracion + 1}"
+                                data-elemento="${indiceElemento + 1}"
+                            ></td>
 
-            <td>
-                ${escaparTexto(elemento)}
-            </td>
+                            `;
 
-        `;
-
-    }
-);
+                        }
+                    );
 
 
                     htmlEstructuras += `
 
-                            </tr>
+                        </tr>
 
                     `;
 
@@ -713,7 +717,7 @@ oracion.forEach(
             );
 
 
-        htmlEstructuras += `
+            htmlEstructuras += `
 
                     </tbody>
 
@@ -724,86 +728,84 @@ oracion.forEach(
 
             <div class="elementos-estructurales">
 
-        `;
+            `;
 
 
-//========================================
-// ELEMENTOS CONSTITUYENTES
-// Cada oración ocupa una fila
-// Cada elemento ocupa su propia unidad
-//========================================
+            //========================================
+            // ELEMENTOS CONSTITUYENTES
+            // Cada oración ocupa una fila
+            // Cada elemento es una pieza arrastrable
+            //========================================
 
-tabla.oraciones.forEach(
-    (oracion, indiceOracion) => {
+            tabla.oraciones.forEach(
+                (oracion, indiceOracion) => {
 
-        htmlEstructuras += `
+                    htmlEstructuras += `
 
-            <div class="elementos-oracion">
+                <div
+                    class="elementos-oracion"
+                    data-estructura="${tabla.numero}"
+                    data-oracion="${indiceOracion + 1}"
+                >
 
-        `;
+                `;
 
 
-        oracion.forEach(
-            (elemento, indiceElemento) => {
+                    oracion.forEach(
+                        (elemento, indiceElemento) => {
 
-                if(
-                    elemento !== null &&
-                    elemento !== undefined &&
-                    elemento.trim() !== ""
-                ){
+                            if(
+                                elemento !== null &&
+                                elemento !== undefined &&
+                                elemento.trim() !== ""
+                            ){
 
-                    console.log(
-                        "ELEMENTO ESTRUCTURAL:",
-                        "Estructura =", tabla.numero,
-                        "| Oración =", indiceOracion + 1,
-                        "| Elemento =", indiceElemento + 1,
-                        "| Contenido =", elemento
+                                console.log(
+                                    "ELEMENTO ESTRUCTURAL:",
+                                    "Estructura =", tabla.numero,
+                                    "| Oración =", indiceOracion + 1,
+                                    "| Elemento =", indiceElemento + 1,
+                                    "| Contenido =", elemento
+                                );
+
+
+                                htmlEstructuras += `
+
+                    <div
+                        class="elemento-estructural"
+                        draggable="true"
+                        data-estructura="${tabla.numero}"
+                        data-oracion="${indiceOracion + 1}"
+                        data-elemento="${indiceElemento + 1}"
+                    >
+                        ${escaparTexto(elemento)}
+                    </div>
+
+                                `;
+
+                            }
+
+                        }
                     );
 
 
                     htmlEstructuras += `
 
-                        <div
-                            class="elemento-estructural"
-                            data-estructura="${tabla.numero}"
-                            data-oracion="${indiceOracion + 1}"
-                            data-elemento="${indiceElemento + 1}"
-                        >
-                            ${escaparTexto(elemento)}
-                        </div>
+                </div>
 
                     `;
 
                 }
-
-            }
-        );
+            );
 
 
-        htmlEstructuras += `
-
-            </div>
-
-        `;
-
-    }
-);
-
-
-htmlEstructuras += `
-
-        </div>
-
-`;
-
-
-        htmlEstructuras += `
+            htmlEstructuras += `
 
             </div>
 
         </div>
 
-        `;
+            `;
 
         }
     );
@@ -811,9 +813,9 @@ htmlEstructuras += `
 
     htmlEstructuras += `
 
-    </div>
+</div>
 
-    `;
+`;
 
 
     console.log(
