@@ -1770,26 +1770,7 @@ if(
 
 }
 
-//========================================
-// SECCIÓN: ESTRUCTURAS GRAMATICALES
-//========================================
-
-if(
-config.estructuras &&
-config.estructuras.tablas &&
-config.estructuras.tablas.length > 0 &&
-config.mostrarEstructuras !== "No"
-){
-
-    console.log(
-        "GENERANDO ESTRUCTURAS GRAMATICALES"
-    );
-
-    htmlFinal += crearEstructuras(
-        config.estructuras
-    );
-
-}      
+      
 
 if(
     config.emparejarColumnas &&
@@ -1848,6 +1829,27 @@ if(
     );
 
 }
+
+//========================================
+// SECCIÓN: ESTRUCTURAS GRAMATICALES
+//========================================
+
+if(
+config.estructuras &&
+config.estructuras.tablas &&
+config.estructuras.tablas.length > 0 &&
+config.mostrarEstructuras !== "No"
+){
+
+    console.log(
+        "GENERANDO ESTRUCTURAS GRAMATICALES"
+    );
+
+    htmlFinal += crearEstructuras(
+        config.estructuras
+    );
+
+}        
         
 console.log("ESTRUCTURAS: ANTES DE INSERTAR HTML");
 
