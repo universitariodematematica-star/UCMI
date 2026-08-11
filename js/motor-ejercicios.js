@@ -826,6 +826,199 @@ function crearEstructuras(estructuras){
     return htmlEstructuras;
 }
 
+/*====================================================*
+*DRAG & DROP - ESTRUCTURAS GRAMATICALES*
+*====================================================*/
+
+function activarDragDropEstructuras(){
+
+    console.log(
+        "ESTRUCTURAS: activando Drag & Drop"
+    );
+
+
+    const elementos =
+        document.querySelectorAll(
+            ".elemento-estructural"
+        );
+
+
+    const celdas =
+        document.querySelectorAll(
+            ".celda-estructural"
+        );
+
+
+    console.log(
+        "ESTRUCTURAS: elementos arrastrables:",
+        elementos.length
+    );
+
+
+    console.log(
+        "ESTRUCTURAS: celdas destino:",
+        celdas.length
+    );
+
+
+    elementos.forEach(
+        elemento => {
+
+            elemento.addEventListener(
+                "dragstart",
+                function(event){
+
+                    event.dataTransfer.setData(
+                        "text/plain",
+                        this.dataset.estructura +
+                        "|" +
+                        this.dataset.oracion +
+                        "|" +
+                        this.dataset.elemento
+                    );
+
+
+                    this.classList.add(
+                        "elemento-arrastrando"
+                    );
+
+
+                    console.log(
+                        "ESTRUCTURAS: dragstart",
+                        "Estructura =", this.dataset.estructura,
+                        "| Oración =", this.dataset.oracion,
+                        "| Elemento =", this.dataset.elemento
+                    );
+
+                }
+            );
+
+
+            elemento.addEventListener(
+                "dragend",
+                function(){
+
+                    this.classList.remove(
+                        "elemento-arrastrando"
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+    celdas.forEach(
+        celda => {
+
+            celda.addEventListener(
+                "dragover",
+                function(event){
+
+                    event.preventDefault();
+
+
+                    this.classList.add(
+                        "celda-destino-hover"
+                    );
+
+                }
+            );
+
+
+            celda.addEventListener(
+                "dragleave",
+                function(){
+
+                    this.classList.remove(
+                        "celda-destino-hover"
+                    );
+
+                }
+            );
+
+
+            celda.addEventListener(
+                "drop",
+                function(event){
+
+                    event.preventDefault();
+
+
+                    this.classList.remove(
+                        "celda-destino-hover"
+                    );
+
+
+                    const datos =
+                        event.dataTransfer.getData(
+                            "text/plain"
+                        );
+
+
+                    if(!datos){
+                        return;
+                    }
+
+
+                    const partes =
+                        datos.split("|");
+
+
+                    const estructura =
+                        partes[0];
+
+
+                    const oracion =
+                        partes[1];
+
+
+                    const elemento =
+                        partes[2];
+
+
+                    console.log(
+                        "ESTRUCTURAS: drop",
+                        "Elemento =", elemento,
+                        "Estructura =", estructura,
+                        "Oración =", oracion,
+                        "Celda destino =",
+                        this.dataset.estructura,
+                        this.dataset.oracion,
+                        this.dataset.elemento
+                    );
+
+
+                    this.innerHTML = "";
+
+
+                    const elementoArrastrado =
+                        document.querySelector(
+                            `.elemento-estructural[data-estructura="${estructura}"][data-oracion="${oracion}"][data-elemento="${elemento}"]`
+                        );
+
+
+                    if(!elementoArrastrado){
+                        console.warn(
+                            "ESTRUCTURAS: elemento arrastrado no encontrado"
+                        );
+
+                        return;
+                    }
+
+
+                    this.appendChild(
+                        elementoArrastrado
+                    );
+
+                }
+            );
+
+        }
+    );
+
+}
 
 /*====================================================
         TRANSCRIPCIÓN
