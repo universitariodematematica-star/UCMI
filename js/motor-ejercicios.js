@@ -851,6 +851,19 @@ htmlEstructuras += `
 
 function activarDragDropEstructuras(){
 
+    if(
+        typeof config !== "undefined" &&
+        config.mostrarEstructuras === "No"
+    ){
+
+        console.log(
+            "ESTRUCTURAS: Drag & Drop no activado porque mostrarEstructuras = No"
+        );
+
+        return;
+    }
+
+
     console.log(
         "ESTRUCTURAS: activando Drag & Drop"
     );
@@ -1871,9 +1884,10 @@ console.log("cantidad tablas =", config.estructuras?.tablas?.length);
 console.log("config.mostrarEstructuras =", config.mostrarEstructuras);
 
 if(
-    config.estructuras &&
-    config.estructuras.tablas &&
-    config.estructuras.tablas.length > 0
+config.estructuras &&
+config.estructuras.tablas &&
+config.estructuras.tablas.length > 0 &&
+config.mostrarEstructuras !== "No"
 ){
 
     console.log("ESTRUCTURAS: llamando activarDragDropEstructuras()");
@@ -1881,8 +1895,9 @@ if(
 
 }else{
 
-    console.log("ESTRUCTURAS: NO SE ACTIVA PORQUE FALTA config.estructuras.tablas");
-
+    console.log(
+        "ESTRUCTURAS: Drag & Drop no activado"
+    );
 }
 
 //========================================
