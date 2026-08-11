@@ -771,6 +771,8 @@ oracion.forEach(
                     data-estructura="${tabla.numero}"
                     data-oracion="${indiceOracion + 1}"
                     data-elemento="${indiceElemento + 1}"
+                    data-contenido="${escaparTexto(elemento)}"
+                    draggable="false"
                 >
                     ${escaparTexto(elemento)}
                 </div>
