@@ -686,6 +686,11 @@ function crearEstructuras(estructuras){
                     oracion.forEach(
                         elemento => {
 
+                            console.log(
+                                "ESTRUCTURA - ORACIÓN RECIBIDA:",
+                                oracion
+                            );
+
                             htmlEstructuras += `
 
                                 <td>
