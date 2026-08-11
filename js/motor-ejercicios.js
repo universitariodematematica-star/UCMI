@@ -727,62 +727,57 @@ oracion.forEach(
         `;
 
 
-        //========================================
-        // ELEMENTOS CONSTITUYENTES
-        // Se muestran debajo de la tabla
-        // respetando el orden de cada oración
-        //========================================
+//========================================
+// ELEMENTOS CONSTITUYENTES
+// Cada oración ocupa una fila
+// Cada elemento ocupa su propia unidad
+//========================================
 
 tabla.oraciones.forEach(
     (oracion, indiceOracion) => {
 
         htmlEstructuras += `
 
-            <div
-                class="elementos-oracion"
-                data-estructura="${tabla.numero}"
-                data-oracion="${indiceOracion + 1}"
-            >
+            <div class="elementos-oracion">
 
         `;
 
 
-oracion.forEach(
-    (elemento, indiceElemento) => {
+        oracion.forEach(
+            (elemento, indiceElemento) => {
 
-        if(
-            elemento !== null &&
-            elemento !== undefined &&
-            elemento.trim() !== ""
-        ){
+                if(
+                    elemento !== null &&
+                    elemento !== undefined &&
+                    elemento.trim() !== ""
+                ){
 
-            console.log(
-                "ELEMENTO ESTRUCTURAL:",
-                "Estructura =", tabla.numero,
-                "| Oración =", indiceOracion + 1,
-                "| Elemento =", indiceElemento + 1,
-                "| Contenido =", elemento
-            );
+                    console.log(
+                        "ELEMENTO ESTRUCTURAL:",
+                        "Estructura =", tabla.numero,
+                        "| Oración =", indiceOracion + 1,
+                        "| Elemento =", indiceElemento + 1,
+                        "| Contenido =", elemento
+                    );
 
-            htmlEstructuras += `
 
-                <div
-                    class="elemento-estructural"
-                    data-estructura="${tabla.numero}"
-                    data-oracion="${indiceOracion + 1}"
-                    data-elemento="${indiceElemento + 1}"
-                    data-contenido="${escaparTexto(elemento)}"
-                    draggable="false"
-                >
-                    ${escaparTexto(elemento)}
-                </div>
+                    htmlEstructuras += `
 
-            `;
+                        <div
+                            class="elemento-estructural"
+                            data-estructura="${tabla.numero}"
+                            data-oracion="${indiceOracion + 1}"
+                            data-elemento="${indiceElemento + 1}"
+                        >
+                            ${escaparTexto(elemento)}
+                        </div>
 
-        }
+                    `;
 
-    }
-);
+                }
+
+            }
+        );
 
 
         htmlEstructuras += `
@@ -793,6 +788,13 @@ oracion.forEach(
 
     }
 );
+
+
+htmlEstructuras += `
+
+        </div>
+
+`;
 
 
         htmlEstructuras += `
