@@ -708,17 +708,76 @@ function crearEstructuras(estructuras){
             );
 
 
-            htmlEstructuras += `
+        htmlEstructuras += `
 
-                        </tbody>
+                    </tbody>
 
-                    </table>
-
-                </div>
+                </table>
 
             </div>
 
-            `;
+
+            <div class="elementos-estructurales">
+
+        `;
+
+
+        //========================================
+        // ELEMENTOS CONSTITUYENTES
+        // Se muestran debajo de la tabla
+        // respetando el orden de cada oración
+        //========================================
+
+        tabla.oraciones.forEach(
+            oracion => {
+
+                htmlEstructuras += `
+
+                    <div class="elementos-oracion">
+
+                `;
+
+
+                oracion.forEach(
+                    elemento => {
+
+                        if(
+                            elemento !== null &&
+                            elemento !== undefined &&
+                            elemento.trim() !== ""
+                        ){
+
+                            htmlEstructuras += `
+
+                                <div class="elemento-estructural">
+                                    ${escaparTexto(elemento)}
+                                </div>
+
+                            `;
+
+                        }
+
+                    }
+                );
+
+
+                htmlEstructuras += `
+
+                    </div>
+
+                `;
+
+            }
+        );
+
+
+        htmlEstructuras += `
+
+            </div>
+
+        </div>
+
+        `;
 
         }
     );
