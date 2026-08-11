@@ -629,6 +629,8 @@ onclick="UCMIRestaurarEjercicios.reiniciar()">
 
 <script src="${rutaJS}motor-ejercicios.js"><\/script>
 
+<script src="${rutaJS}motor-estructuras.js"><\/script>
+
 <script>
 
 
@@ -678,7 +680,7 @@ UCMIMotorEjercicios.generar({
     ${JSON.stringify(ejercicioIdentificarImagenes)},
     
     estructuras:
-    ${JSON.stringify(estructurasGlobal)},
+    [],
     
 mostrarSeleccionSimple:
 "${configuracionMostrar["Selección simple"] || "No"}",
@@ -705,7 +707,7 @@ mostrarIdentificarImagenes:
 "${configuracionMostrar["Identificar imágenes"] || "No"}",
 
 mostrarEstructuras:
-"${configuracionMostrar["Estructuras"] || "No"}"
+"No"
 
 });
 
