@@ -747,32 +747,40 @@ tabla.oraciones.forEach(
         `;
 
 
-        oracion.forEach(
-            (elemento, indiceElemento) => {
+oracion.forEach(
+    (elemento, indiceElemento) => {
 
-                if(
-                    elemento !== null &&
-                    elemento !== undefined &&
-                    elemento.trim() !== ""
-                ){
+        if(
+            elemento !== null &&
+            elemento !== undefined &&
+            elemento.trim() !== ""
+        ){
 
-                    htmlEstructuras += `
+            console.log(
+                "ELEMENTO ESTRUCTURAL:",
+                "Estructura =", tabla.numero,
+                "| Oración =", indiceOracion + 1,
+                "| Elemento =", indiceElemento + 1,
+                "| Contenido =", elemento
+            );
 
-                        <div
-                            class="elemento-estructural"
-                            data-estructura="${tabla.numero}"
-                            data-oracion="${indiceOracion + 1}"
-                            data-elemento="${indiceElemento + 1}"
-                        >
-                            ${escaparTexto(elemento)}
-                        </div>
+            htmlEstructuras += `
 
-                    `;
+                <div
+                    class="elemento-estructural"
+                    data-estructura="${tabla.numero}"
+                    data-oracion="${indiceOracion + 1}"
+                    data-elemento="${indiceElemento + 1}"
+                >
+                    ${escaparTexto(elemento)}
+                </div>
 
-                }
+            `;
 
-            }
-        );
+        }
+
+    }
+);
 
 
         htmlEstructuras += `
