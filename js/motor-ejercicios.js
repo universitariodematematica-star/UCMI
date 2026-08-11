@@ -733,47 +733,56 @@ oracion.forEach(
         // respetando el orden de cada oración
         //========================================
 
-        tabla.oraciones.forEach(
-            oracion => {
+tabla.oraciones.forEach(
+    (oracion, indiceOracion) => {
 
-                htmlEstructuras += `
+        htmlEstructuras += `
 
-                    <div class="elementos-oracion">
+            <div
+                class="elementos-oracion"
+                data-estructura="${tabla.numero}"
+                data-oracion="${indiceOracion + 1}"
+            >
 
-                `;
-
-
-                oracion.forEach(
-                    elemento => {
-
-                        if(
-                            elemento !== null &&
-                            elemento !== undefined &&
-                            elemento.trim() !== ""
-                        ){
-
-                            htmlEstructuras += `
-
-                                <div class="elemento-estructural">
-                                    ${escaparTexto(elemento)}
-                                </div>
-
-                            `;
-
-                        }
-
-                    }
-                );
+        `;
 
 
-                htmlEstructuras += `
+        oracion.forEach(
+            (elemento, indiceElemento) => {
 
-                    </div>
+                if(
+                    elemento !== null &&
+                    elemento !== undefined &&
+                    elemento.trim() !== ""
+                ){
 
-                `;
+                    htmlEstructuras += `
+
+                        <div
+                            class="elemento-estructural"
+                            data-estructura="${tabla.numero}"
+                            data-oracion="${indiceOracion + 1}"
+                            data-elemento="${indiceElemento + 1}"
+                        >
+                            ${escaparTexto(elemento)}
+                        </div>
+
+                    `;
+
+                }
 
             }
         );
+
+
+        htmlEstructuras += `
+
+            </div>
+
+        `;
+
+    }
+);
 
 
         htmlEstructuras += `
