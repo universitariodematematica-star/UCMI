@@ -1594,7 +1594,11 @@ if(
 
 }
         
+console.log("ESTRUCTURAS: ANTES DE INSERTAR HTML");
+
 contenedor.innerHTML = htmlFinal;
+
+console.log("ESTRUCTURAS: DESPUÉS DE INSERTAR HTML");
 
 //========================================
 // ACTIVAR DRAG & DROP DE ESTRUCTURAS
