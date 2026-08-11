@@ -683,24 +683,24 @@ function crearEstructuras(estructuras){
                     `;
 
 
-                    oracion.forEach(
-                        elemento => {
+console.log(
+    "ESTRUCTURA - ORACIÓN RECIBIDA:",
+    oracion
+);
 
-                            console.log(
-                                "ESTRUCTURA - ORACIÓN RECIBIDA:",
-                                oracion
-                            );
+oracion.forEach(
+    elemento => {
 
-                            htmlEstructuras += `
+        htmlEstructuras += `
 
-                                <td>
-                                    ${escaparTexto(elemento)}
-                                </td>
+            <td>
+                ${escaparTexto(elemento)}
+            </td>
 
-                            `;
+        `;
 
-                        }
-                    );
+    }
+);
 
 
                     htmlEstructuras += `
