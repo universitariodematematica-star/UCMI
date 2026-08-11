@@ -3123,78 +3123,78 @@ window.UCMIRestaurarEjercicios = UCMIRestaurarEjercicios;
 
 function evaluarOrdenar(boton){
 
-    const bloque =
-        boton.closest(
-            ".ejercicio-ordenar-oracion"
-        );
+const bloque =
+boton.closest(
+".ejercicio-ordenar-oracion"
+);
 
-    const zona =
-        bloque.querySelector(
-            ".zona-destino-oracion"
-        );
+const zona =
+bloque.querySelector(
+".zona-destino-oracion"
+);
 
-    const respuestaCorrecta =
-        zona.dataset.respuesta.trim();
+const respuestaCorrecta =
+zona.dataset.respuesta.trim();
 
-    const palabrasUsuario =
-        [...zona.querySelectorAll(
-            ".palabra-arrastrable"
-        )]
-        .map(boton =>
-            boton.textContent.trim()
-        )
-        .join(" ")
-        .trim();
+const palabrasUsuario =
+[...zona.querySelectorAll(
+".palabra-arrastrable"
+)]
+.map(boton =>
+boton.textContent.trim()
+)
+.join(" ")
+.trim();
 
-    const resultado =
-        bloque.querySelector(
-            ".resultado"
-        );
+const resultado =
+bloque.querySelector(
+".resultado"
+);
 
-    const respuestaUsuarioNormalizada =
-        palabrasUsuario
-        .trim()
-        .replace(/\s+/g," ")
-        .normalize();
+const respuestaUsuarioNormalizada =
+palabrasUsuario
+.trim()
+.replace(/\s+/g," ")
+.normalize();
 
-    const respuestaCorrectaNormalizada =
-        respuestaCorrecta
-        .trim()
-        .replace(/\s+/g," ")
-        .normalize();
+const respuestaCorrectaNormalizada =
+respuestaCorrecta
+.trim()
+.replace(/\s+/g," ")
+.normalize();
 
-    if(
-        respuestaUsuarioNormalizada ===
-        respuestaCorrectaNormalizada
-    ){
+if(
+respuestaUsuarioNormalizada ===
+respuestaCorrectaNormalizada
+){
 
-        resultado.innerHTML =
-            "✅ Correcto";
+resultado.innerHTML =
+"✅ Correcto";
 
-        resultado.style.color =
-            "green";
+resultado.style.color =
+"green";
 
-    }else{
+}else{
 
-        resultado.innerHTML =
-            "❌ Incorrecto." +
-            " Respuesta correcta: " +
-            respuestaCorrecta;
+resultado.innerHTML =
+"❌ Incorrecto." +
+" Respuesta correcta: " +
+respuestaCorrecta;
 
-        resultado.style.color =
-            "red";
+resultado.style.color =
+"red";
 
-    }
+}
 
-    // GUARDAR RESULTADO
+// GUARDAR RESULTADO
 
-    UCMIResultados.guardar(
-        bloque.dataset.id,
-        {
-            resultado: resultado.innerHTML,
-            color: resultado.style.color
-        }
-    );
+UCMIResultados.guardar(
+bloque.dataset.id,
+{
+resultado: resultado.innerHTML,
+color: resultado.style.color
+}
+);
 
 }
 
