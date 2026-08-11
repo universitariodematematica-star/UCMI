@@ -490,6 +490,10 @@ function crearEmparejarColumnas(ejerciciosRelacionar){
 
     `;
 
+    console.log(
+    "RELACIONAR - HTML GENERADO:",
+    htmlRelacionar
+);
 
     return htmlRelacionar;
 
