@@ -737,67 +737,91 @@ function crearEstructuras(estructuras){
             // Cada elemento es una pieza arrastrable
             //========================================
 
-            tabla.oraciones.forEach(
-                (oracion, indiceOracion) => {
+tabla.oraciones.forEach(
+    (oracion, indiceOracion) => {
 
-                    htmlEstructuras += `
+        htmlEstructuras += `
+
+            <div
+                class="elementos-oracion"
+                data-estructura="${tabla.numero}"
+                data-oracion="${indiceOracion + 1}"
+            >
+
+        `;
+
+
+        //========================================
+        // MEZCLAR ELEMENTOS DE ESTA ORACIÓN
+        // SOLAMENTE
+        //
+        // La mezcla no modifica la información
+        // original de estructura, oración o elemento.
+        //========================================
+
+        const elementosMezclados =
+            oracion
+                .map(
+                    (elemento, indiceElemento) => ({
+                        contenido: elemento,
+                        indiceElemento: indiceElemento
+                    })
+                )
+                .filter(
+                    item =>
+                        item.contenido !== null &&
+                        item.contenido !== undefined &&
+                        item.contenido.trim() !== ""
+                );
+
+
+        elementosMezclados.sort(
+            () => Math.random() - 0.5
+        );
+
+
+        elementosMezclados.forEach(
+            item => {
+
+                const elemento = item.contenido;
+                const indiceElemento = item.indiceElemento;
+
+
+                console.log(
+                    "ELEMENTO ESTRUCTURAL:",
+                    "Estructura =", tabla.numero,
+                    "| Oración =", indiceOracion + 1,
+                    "| Elemento =", indiceElemento + 1,
+                    "| Contenido =", elemento
+                );
+
+
+                htmlEstructuras += `
 
                 <div
-                    class="elementos-oracion"
+                    class="elemento-estructural"
+                    draggable="true"
                     data-estructura="${tabla.numero}"
                     data-oracion="${indiceOracion + 1}"
+                    data-elemento="${indiceElemento + 1}"
                 >
+                    ${escaparTexto(elemento)}
+                </div>
 
                 `;
 
-
-                    oracion.forEach(
-                        (elemento, indiceElemento) => {
-
-                            if(
-                                elemento !== null &&
-                                elemento !== undefined &&
-                                elemento.trim() !== ""
-                            ){
-
-                                console.log(
-                                    "ELEMENTO ESTRUCTURAL:",
-                                    "Estructura =", tabla.numero,
-                                    "| Oración =", indiceOracion + 1,
-                                    "| Elemento =", indiceElemento + 1,
-                                    "| Contenido =", elemento
-                                );
+            }
+        );
 
 
-                                htmlEstructuras += `
+        htmlEstructuras += `
 
-                    <div
-                        class="elemento-estructural"
-                        draggable="true"
-                        data-estructura="${tabla.numero}"
-                        data-oracion="${indiceOracion + 1}"
-                        data-elemento="${indiceElemento + 1}"
-                    >
-                        ${escaparTexto(elemento)}
-                    </div>
+            </div>
 
-                                `;
+        `;
 
-                            }
-
-                        }
-                    );
-
-
-                    htmlEstructuras += `
-
-                </div>
-
-                    `;
-
-                }
-            );
-
+    }
+);
 
             htmlEstructuras += `
 
