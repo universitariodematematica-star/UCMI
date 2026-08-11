@@ -1612,6 +1612,18 @@ contenedor.innerHTML = htmlFinal;
 
 console.log("ESTRUCTURAS: DESPUÉS DE INSERTAR HTML");
 
+console.log(
+    "BOTONES ESTRUCTURAS EN DOM:",
+    contenedor.querySelectorAll(".boton-evaluar-estructuras").length
+);
+
+console.log(
+    "HTML BOTONES ESTRUCTURAS:",
+    contenedor.querySelectorAll(".boton-evaluar-estructuras")
+);        
+
+console.log("ESTRUCTURAS: DESPUÉS DE INSERTAR HTML");
+
 //========================================
 // ACTIVAR DRAG & DROP DE ESTRUCTURAS
 //========================================
