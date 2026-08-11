@@ -3163,35 +3163,38 @@ palabrasUsuario
 .replace(/\s+/g," ")
 .normalize()
 ===
+const respuestaUsuarioNormalizada =
+palabrasUsuario
+.trim()
+.replace(/\s+/g," ")
+.normalize();
+
+const respuestaCorrectaNormalizada =
 respuestaCorrecta
 .trim()
 .replace(/\s+/g," ")
-.normalize()
+.normalize();
+
+if(
+respuestaUsuarioNormalizada ===
+respuestaCorrectaNormalizada
 ){
 
+    resultado.innerHTML =
+    "✅ Correcto";
 
-resultado.innerHTML =
-"✅ Correcto";
-
-
-resultado.style.color =
-"green";
-
+    resultado.style.color =
+    "green";
 
 }else{
 
+    resultado.innerHTML =
+    "❌ Incorrecto." +
+    " Respuesta correcta: " +
+    respuestaCorrecta;
 
-resultado.innerHTML =
-"❌ Incorrecto.<br><br>"
-+
-"<b>Respuesta correcta:</b> "
-+
-respuestaCorrecta;
-
-
-resultado.style.color =
-"red";
-
+    resultado.style.color =
+    "red";
 
 }
 
