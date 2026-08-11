@@ -692,16 +692,19 @@ function crearEstructuras(estructuras){
                     oracion.forEach(
                         (elemento, indiceElemento) => {
 
-                            htmlEstructuras += `
+                           htmlEstructuras += `
 
-                            <td
-                                class="celda-estructural"
-                                data-estructura="${tabla.numero}"
-                                data-oracion="${indiceOracion + 1}"
-                                data-elemento="${indiceElemento + 1}"
-                            ></td>
+    <td
+        class="celda-estructural"
+        data-estructura="${tabla.numero}"
+        data-oracion="${indiceOracion + 1}"
+        data-elemento="${indiceElemento + 1}"
+        data-correcto-estructura="${tabla.numero}"
+        data-correcto-oracion="${indiceOracion + 1}"
+        data-correcto-elemento="${indiceElemento + 1}"
+    ></td>
 
-                            `;
+`;
 
                         }
                     );
