@@ -1600,14 +1600,24 @@ contenedor.innerHTML = htmlFinal;
 // ACTIVAR DRAG & DROP DE ESTRUCTURAS
 //========================================
 
+console.log("========== ACTIVACIÓN ESTRUCTURAS ==========");
+console.log("config.estructuras =", config.estructuras);
+console.log("config.estructuras.tablas =", config.estructuras?.tablas);
+console.log("cantidad tablas =", config.estructuras?.tablas?.length);
+console.log("config.mostrarEstructuras =", config.mostrarEstructuras);
+
 if(
     config.estructuras &&
     config.estructuras.tablas &&
-    config.estructuras.tablas.length > 0 &&
-    config.mostrarEstructuras !== "No"
+    config.estructuras.tablas.length > 0
 ){
 
+    console.log("ESTRUCTURAS: llamando activarDragDropEstructuras()");
     activarDragDropEstructuras();
+
+}else{
+
+    console.log("ESTRUCTURAS: NO SE ACTIVA PORQUE FALTA config.estructuras.tablas");
 
 }
 
