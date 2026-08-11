@@ -601,15 +601,16 @@ function crearEstructuras(estructuras){
     );
 
 
-let htmlEstructuras = `
+    let htmlEstructuras = `
 
-<div class="seccion-estructuras">
+    <div class="seccion-estructuras">
 
-    <div class="instruccion-ejercicio">
-        Construya las oraciones según la estructura que aparecen en los encabezados de las tablas, usando las expresiones o palabras disponibles.
-    </div>
+        <div class="instruccion-ejercicio">
+            Construya las oraciones según la estructura que aparecen en los encabezados de las tablas, usando las expresiones o palabras disponibles.
+        </div>
 
-`;
+    `;
+
 
     estructuras.tablas.forEach(
         (tabla, indice) => {
@@ -622,9 +623,7 @@ let htmlEstructuras = `
             >
 
                 <div class="titulo-estructura">
-
                     Estructura ${tabla.numero}
-
                 </div>
 
 
@@ -637,6 +636,11 @@ let htmlEstructuras = `
                             <tr>
             `;
 
+
+            //========================================
+            // ENCABEZADOS
+            // Cada elemento ocupa su propia columna
+            //========================================
 
             tabla.encabezados.forEach(
                 encabezado => {
@@ -663,6 +667,11 @@ let htmlEstructuras = `
 
             `;
 
+
+            //========================================
+            // ORACIONES
+            // Cada elemento ocupa su propia celda
+            //========================================
 
             tabla.oraciones.forEach(
                 oracion => {
