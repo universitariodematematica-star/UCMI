@@ -422,26 +422,26 @@ for(let fila = 2; fila <= hojaSelSimple.rowCount; fila++){
 
 configuracionMostrar = {};
 
-
 for(let fila = 2; fila <= hojaMostrar.rowCount; fila++){
 
     const tipo =
     leerCelda(
         hojaMostrar.getCell("A"+fila)
-    );
+    ).trim();
 
 
     const mostrar =
     leerCelda(
         hojaMostrar.getCell("B"+fila)
-    );
+    ).trim();
 
 
-    if(tipo){
-
-        configuracionMostrar[tipo] = mostrar;
-
+    if(!tipo){
+        continue;
     }
+
+
+    configuracionMostrar[tipo] = mostrar;
 
 }
 
