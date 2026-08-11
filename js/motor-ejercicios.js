@@ -1856,6 +1856,16 @@ contenedor.innerHTML = htmlFinal;
 console.log("ESTRUCTURAS: DESPUÉS DE INSERTAR HTML");
 
 console.log(
+    "PRUEBA RELACIONAR - HTML GENERADO:",
+    htmlFinal.includes("ejercicio-relacionar")
+);
+
+console.log(
+    "PRUEBA RELACIONAR - ELEMENTOS EN DOM:",
+    contenedor.querySelectorAll(".ejercicio-relacionar").length
+);        
+
+console.log(
     "BOTONES ESTRUCTURAS EN DOM:",
     contenedor.querySelectorAll(".boton-evaluar-estructuras").length
 );
