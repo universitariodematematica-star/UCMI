@@ -3123,94 +3123,87 @@ window.UCMIRestaurarEjercicios = UCMIRestaurarEjercicios;
 
 function evaluarOrdenar(boton){
 
-
-const bloque =
-boton.closest(
-".ejercicio-ordenar-oracion"
-);
-
-
-const zona =
-bloque.querySelector(
-".zona-destino-oracion"
-);
+    const bloque =
+    boton.closest(
+        ".ejercicio-ordenar-oracion"
+    );
 
 
-const respuestaCorrecta =
-zona.dataset.respuesta.trim();
+    const zona =
+    bloque.querySelector(
+        ".zona-destino-oracion"
+    );
 
 
-const palabrasUsuario =
-[...zona.querySelectorAll(
-".palabra-arrastrable"
-)]
-.map(boton =>
-boton.textContent.trim()
-)
-.join(" ")
-.trim();
-
-const resultado =
-bloque.querySelector(
-".resultado"
-);
+    const respuestaCorrecta =
+    zona.dataset.respuesta.trim();
 
 
+    const palabrasUsuario =
+    [...zona.querySelectorAll(
+        ".palabra-arrastrable"
+    )]
+    .map(boton =>
+        boton.textContent.trim()
+    )
+    .join(" ")
+    .trim();
 
-const respuestaUsuarioNormalizada =
-palabrasUsuario
-.trim()
-.replace(/\s+/g," ")
-.normalize();
 
-const respuestaCorrectaNormalizada =
-respuestaCorrecta
-.trim()
-.replace(/\s+/g," ")
-.normalize();
+    const resultado =
+    bloque.querySelector(
+        ".resultado"
+    );
 
-if(
-respuestaUsuarioNormalizada ===
-respuestaCorrectaNormalizada
-){
-const respuestaCorrectaNormalizada =
-respuestaCorrecta
-.trim()
-.replace(/\s+/g," ")
-.normalize();
 
-if(
-respuestaUsuarioNormalizada ===
-respuestaCorrectaNormalizada
-){
+    const respuestaUsuarioNormalizada =
+    palabrasUsuario
+    .trim()
+    .replace(/\s+/g," ")
+    .normalize();
 
-    resultado.innerHTML =
-    "✅ Correcto";
 
-    resultado.style.color =
-    "green";
+    const respuestaCorrectaNormalizada =
+    respuestaCorrecta
+    .trim()
+    .replace(/\s+/g," ")
+    .normalize();
 
-}else{
 
-    resultado.innerHTML =
-    "❌ Incorrecto." +
-    " Respuesta correcta: " +
-    respuestaCorrecta;
+    if(
+        respuestaUsuarioNormalizada ===
+        respuestaCorrectaNormalizada
+    ){
 
-    resultado.style.color =
-    "red";
+        resultado.innerHTML =
+            "✅ Correcto";
 
-}
+        resultado.style.color =
+            "green";
 
-// GUARDAR RESULTADO
 
-UCMIResultados.guardar(
-    bloque.dataset.id,
-    {
-        resultado: resultado.innerHTML,
-        color: resultado.style.color
+    }else{
+
+        resultado.innerHTML =
+            "❌ Incorrecto." +
+            " Respuesta correcta: " +
+            respuestaCorrecta;
+
+        resultado.style.color =
+            "red";
+
     }
-);
+
+
+    // GUARDAR RESULTADO
+
+    UCMIResultados.guardar(
+        bloque.dataset.id,
+        {
+            resultado: resultado.innerHTML,
+            color: resultado.style.color
+        }
+    );
 
 }
 
