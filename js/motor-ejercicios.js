@@ -3124,51 +3124,44 @@ window.UCMIRestaurarEjercicios = UCMIRestaurarEjercicios;
 function evaluarOrdenar(boton){
 
     const bloque =
-    boton.closest(
-        ".ejercicio-ordenar-oracion"
-    );
-
+        boton.closest(
+            ".ejercicio-ordenar-oracion"
+        );
 
     const zona =
-    bloque.querySelector(
-        ".zona-destino-oracion"
-    );
-
+        bloque.querySelector(
+            ".zona-destino-oracion"
+        );
 
     const respuestaCorrecta =
-    zona.dataset.respuesta.trim();
-
+        zona.dataset.respuesta.trim();
 
     const palabrasUsuario =
-    [...zona.querySelectorAll(
-        ".palabra-arrastrable"
-    )]
-    .map(boton =>
-        boton.textContent.trim()
-    )
-    .join(" ")
-    .trim();
-
+        [...zona.querySelectorAll(
+            ".palabra-arrastrable"
+        )]
+        .map(boton =>
+            boton.textContent.trim()
+        )
+        .join(" ")
+        .trim();
 
     const resultado =
-    bloque.querySelector(
-        ".resultado"
-    );
-
+        bloque.querySelector(
+            ".resultado"
+        );
 
     const respuestaUsuarioNormalizada =
-    palabrasUsuario
-    .trim()
-    .replace(/\s+/g," ")
-    .normalize();
-
+        palabrasUsuario
+        .trim()
+        .replace(/\s+/g," ")
+        .normalize();
 
     const respuestaCorrectaNormalizada =
-    respuestaCorrecta
-    .trim()
-    .replace(/\s+/g," ")
-    .normalize();
-
+        respuestaCorrecta
+        .trim()
+        .replace(/\s+/g," ")
+        .normalize();
 
     if(
         respuestaUsuarioNormalizada ===
@@ -3181,7 +3174,6 @@ function evaluarOrdenar(boton){
         resultado.style.color =
             "green";
 
-
     }else{
 
         resultado.innerHTML =
@@ -3193,7 +3185,6 @@ function evaluarOrdenar(boton){
             "red";
 
     }
-
 
     // GUARDAR RESULTADO
 
