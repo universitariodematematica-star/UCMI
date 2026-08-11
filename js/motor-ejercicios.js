@@ -375,127 +375,144 @@ data-id="drag-${indice}"
 
 function crearEmparejarColumnas(ejerciciosRelacionar){
 
-    let htmlRelacionar = `
+let htmlRelacionar = `
 
-    <div class="ejercicio-relacionar">
-
-        <div class="columnas-relacionar">
-
-            <div class="columna-izquierda-relacionar">
-
-    `;
+<div class="instruccion-ejercicio">
+Arrastra cada palabra de la izquierda hasta su significado correcto.
+</div>
 
 
-    //========================================
-    // COLUMNA IZQUIERDA
-    //========================================
-
-    ejerciciosRelacionar.forEach(
-        (ejercicio, indice)=>{
-
-            htmlRelacionar += `
-
-                <div
-                    class="izquierda-relacionar"
-                    draggable="true"
-                    data-respuesta="${escaparTexto(ejercicio.derecha)}"
-                >
-                    ${escaparTexto(ejercicio.izquierda)}
-                </div>
-
-            `;
-
-        }
-    );
+<div class="ejercicio-relacionar"
+data-id="relacionar-0"
+>
 
 
-    htmlRelacionar += `
-
-            </div>
-
-            <div class="columna-derecha-relacionar">
-
-    `;
+<h3>
+${++contadorEjercicios}. Relaciona:
+</h3>
 
 
-    //========================================
-    // COLUMNA DERECHA MEZCLADA
-    //========================================
-
-    let derecha =
-        ejerciciosRelacionar.map(
-            e=>e.derecha
-        );
+<div class="contenedor-relacionar">
 
 
-    for(
-        let i=derecha.length-1;
-        i>0;
-        i--
-    ){
-
-        let j =
-            Math.floor(
-                Math.random()*(i+1)
-            );
+<div class="columna-relacionar">
 
 
-        [
-            derecha[i],
-            derecha[j]
-        ] =
-        [
-            derecha[j],
-            derecha[i]
-        ];
+<h3>
+Palabras
+</h3>
 
-    }
+`;
 
 
-    derecha.forEach((texto)=>{
+// COLUMNA IZQUIERDA
 
-        htmlRelacionar += `
-
-            <div
-                class="derecha-relacionar"
-                data-valor="${escaparTexto(texto)}"
-            >
-                ${escaparTexto(texto)}
-            </div>
-
-        `;
-
-    });
+ejerciciosRelacionar.forEach((ejercicio, indice)=>{
 
 
-    htmlRelacionar += `
-
-            </div>
-
-        </div>
+htmlRelacionar += `
 
 
-        <button
-            type="button"
-            class="boton-evaluar-relacionar"
-            onclick="evaluarRelacionar(this)"
-        >
-            Evaluar
-        </button>
+<div
+class="elemento-relacionar izquierda-relacionar"
+draggable="true"
+data-id="relacion-${indice}"
+data-respuesta="${escaparTexto(ejercicio.derecha)}"
+>
+
+${escaparTexto(ejercicio.izquierda)}
+
+</div>
 
 
-        <div class="resultado resultado-relacionar"></div>
+`;
 
-    </div>
 
-    `;
+});
 
-    console.log(
-    "RELACIONAR - HTML GENERADO:",
-    htmlRelacionar
+
+
+htmlRelacionar += `
+
+</div>
+
+
+
+<div class="columna-relacionar">
+
+
+<h3>
+Significados
+</h3>
+
+
+`;
+
+
+// COLUMNA DERECHA MEZCLADA
+
+let derecha =
+ejerciciosRelacionar.map(
+e=>e.derecha
 );
 
-    return htmlRelacionar;
+
+
+for(
+let i=derecha.length-1;
+i>0;
+i--
+){
+
+let j =
+Math.floor(
+Math.random()*(i+1)
+);
+
+
+[derecha[i],derecha[j]]
+=
+[derecha[j],derecha[i]];
+
+}
+
+
+
+derecha.forEach((texto)=>{
+
+
+htmlRelacionar += `
+
+
+<div
+class="elemento-relacionar derecha-relacionar"
+data-valor="${escaparTexto(texto)}"
+data-original="${escaparTexto(texto)}"
+>
+
+${escaparTexto(texto)}
+
+</div>
+
+
+`;
+
+});
+
+
+htmlRelacionar += `
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+
+
+return htmlRelacionar;
 
 }
 
@@ -850,19 +867,6 @@ htmlEstructuras += `
 *====================================================*/
 
 function activarDragDropEstructuras(){
-
-    if(
-        typeof config !== "undefined" &&
-        config.mostrarEstructuras === "No"
-    ){
-
-        console.log(
-            "ESTRUCTURAS: Drag & Drop no activado porque mostrarEstructuras = No"
-        );
-
-        return;
-    }
-
 
     console.log(
         "ESTRUCTURAS: activando Drag & Drop"
@@ -1852,16 +1856,6 @@ contenedor.innerHTML = htmlFinal;
 console.log("ESTRUCTURAS: DESPUÉS DE INSERTAR HTML");
 
 console.log(
-    "PRUEBA RELACIONAR - HTML GENERADO:",
-    htmlFinal.includes("ejercicio-relacionar")
-);
-
-console.log(
-    "PRUEBA RELACIONAR - ELEMENTOS EN DOM:",
-    contenedor.querySelectorAll(".ejercicio-relacionar").length
-);        
-
-console.log(
     "BOTONES ESTRUCTURAS EN DOM:",
     contenedor.querySelectorAll(".boton-evaluar-estructuras").length
 );
@@ -1884,10 +1878,9 @@ console.log("cantidad tablas =", config.estructuras?.tablas?.length);
 console.log("config.mostrarEstructuras =", config.mostrarEstructuras);
 
 if(
-config.estructuras &&
-config.estructuras.tablas &&
-config.estructuras.tablas.length > 0 &&
-config.mostrarEstructuras !== "No"
+    config.estructuras &&
+    config.estructuras.tablas &&
+    config.estructuras.tablas.length > 0
 ){
 
     console.log("ESTRUCTURAS: llamando activarDragDropEstructuras()");
@@ -1895,9 +1888,8 @@ config.mostrarEstructuras !== "No"
 
 }else{
 
-    console.log(
-        "ESTRUCTURAS: Drag & Drop no activado"
-    );
+    console.log("ESTRUCTURAS: NO SE ACTIVA PORQUE FALTA config.estructuras.tablas");
+
 }
 
 //========================================
