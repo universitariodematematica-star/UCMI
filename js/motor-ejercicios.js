@@ -1014,27 +1014,72 @@ function activarDragDropEstructuras(){
                     );
 
 
-                    this.innerHTML = "";
+//========================================
+// BUSCAR ELEMENTO ARRASTRADO
+//========================================
+
+const elementoArrastrado =
+    document.querySelector(
+        `.elemento-estructural[data-estructura="${estructura}"][data-oracion="${oracion}"][data-elemento="${elemento}"]`
+    );
 
 
-                    const elementoArrastrado =
-                        document.querySelector(
-                            `.elemento-estructural[data-estructura="${estructura}"][data-oracion="${oracion}"][data-elemento="${elemento}"]`
-                        );
+if(!elementoArrastrado){
+
+    console.warn(
+        "ESTRUCTURAS: elemento arrastrado no encontrado"
+    );
+
+    return;
+
+}
 
 
-                    if(!elementoArrastrado){
-                        console.warn(
-                            "ESTRUCTURAS: elemento arrastrado no encontrado"
-                        );
+//========================================
+// SI LA CELDA YA ESTÁ OCUPADA
+// DEVOLVER EL ELEMENTO ANTERIOR
+// A SU BANCO DE ORIGEN
+//========================================
 
-                        return;
-                    }
+const elementoAnterior =
+    this.querySelector(
+        ".elemento-estructural"
+    );
 
 
-                    this.appendChild(
-                        elementoArrastrado
-                    );
+if(elementoAnterior){
+
+    const estructuraAnterior =
+        elementoAnterior.dataset.estructura;
+
+    const oracionAnterior =
+        elementoAnterior.dataset.oracion;
+
+
+    const bancoAnterior =
+        document.querySelector(
+            `.elementos-oracion[data-estructura="${estructuraAnterior}"][data-oracion="${oracionAnterior}"]`
+        );
+
+
+    if(bancoAnterior){
+
+        bancoAnterior.appendChild(
+            elementoAnterior
+        );
+
+    }
+
+}
+
+
+//========================================
+// COLOCAR EL NUEVO ELEMENTO
+//========================================
+
+this.appendChild(
+    elementoArrastrado
+);
 
                 }
             );
