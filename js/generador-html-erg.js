@@ -680,7 +680,7 @@ UCMIMotorEjercicios.generar({
     ${JSON.stringify(ejercicioIdentificarImagenes)},
     
     estructuras:
-    [],
+    ${JSON.stringify(estructurasGlobal)},
     
 mostrarSeleccionSimple:
 "${configuracionMostrar["Selección simple"] || "No"}",
@@ -707,7 +707,7 @@ mostrarIdentificarImagenes:
 "${configuracionMostrar["Identificar imágenes"] || "No"}",
 
 mostrarEstructuras:
-"No"
+"${configuracionMostrar["Estructuras"] || "No"}"
 
 });
 
