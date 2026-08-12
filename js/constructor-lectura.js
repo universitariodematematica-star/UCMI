@@ -409,6 +409,172 @@ for(let fila = 2; fila <= hojaMostrar.rowCount; fila++){
 
 }
 
+
+//===========================================
+// COMPLETAR TEXTO - LISTENING
+//===========================================
+//
+// B1      = ruta del audio
+// B3:B32  = párrafos
+// E3:E32  = número de párrafo
+// F3:O32  = posiciones de palabras a ocultar
+//
+// IMPORTANTE:
+// Los números de F:O NO representan palabras
+// que JavaScript deba buscar por contenido.
+// Representan posiciones dentro del párrafo
+// indicado en E.
+//===========================================
+
+let completarTextoListening = {
+
+    audio: "",
+
+    parrafos: [],
+
+    ocultamientos: []
+
+};
+
+
+//===========================================
+// RUTA DEL AUDIO
+//===========================================
+
+completarTextoListening.audio =
+leerCelda(
+    hojaMostrar.getCell("B1")
+);
+
+
+//===========================================
+// LEER PÁRRAFOS
+//===========================================
+
+for(let fila = 3; fila <= 32; fila++){
+
+    const parrafo =
+    leerCelda(
+        hojaMostrar.getCell("B" + fila)
+    ).trim();
+
+
+    if(!parrafo){
+        continue;
+    }
+
+
+    completarTextoListening.parrafos.push({
+
+        filaExcel: fila,
+
+        texto: parrafo
+
+    });
+
+}
+
+
+//===========================================
+// LEER RELACIÓN:
+// E = NÚMERO DE PÁRRAFO
+// F:O = POSICIONES DE PALABRAS
+//===========================================
+
+for(let fila = 3; fila <= 32; fila++){
+
+    const numeroParrafoTexto =
+    leerCelda(
+        hojaMostrar.getCell("E" + fila)
+    ).trim();
+
+
+    if(!numeroParrafoTexto){
+        continue;
+    }
+
+
+    const numeroParrafo =
+    Number(numeroParrafoTexto);
+
+
+    if(!Number.isInteger(numeroParrafo)){
+        continue;
+    }
+
+
+    for(let col = 6; col <= 15; col++){
+
+        const valor =
+        leerCelda(
+            hojaMostrar.getCell(
+                fila,
+                col
+            )
+        ).trim();
+
+
+        if(!valor){
+            continue;
+        }
+
+
+        const numeroPalabra =
+        Number(valor);
+
+
+        if(!Number.isInteger(numeroPalabra)){
+            continue;
+        }
+
+
+        completarTextoListening.ocultamientos.push({
+
+            filaExcel: fila,
+
+            parrafo: numeroParrafo,
+
+            palabra: numeroPalabra
+
+        });
+
+    }
+
+}
+
+
+//===========================================
+// EXPONER LOS DATOS LEÍDOS
+//===========================================
+
+console.log(
+    "========== COMPLETAR TEXTO - LISTENING =========="
+);
+
+console.log(
+    "MOSTRAR:",
+    configuracionMostrar
+);
+
+console.log(
+    "AUDIO:",
+    completarTextoListening.audio
+);
+
+console.log(
+    "PÁRRAFOS:",
+    completarTextoListening.parrafos
+);
+
+console.log(
+    "OCULTAMIENTOS:",
+    completarTextoListening.ocultamientos
+);
+
+console.log(
+    "========== FIN COMPLETAR TEXTO - LISTENING =========="
+);
+
   ejerciciosCompletar = [];
 
 for(let fila = 2; fila <= hojaCompletar.rowCount; fila++){
