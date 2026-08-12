@@ -25,24 +25,6 @@ estructurasGlobal={},
 configuracionMostrar={}
 ){
 
-    console.log(
-    "========== GENERADOR - ESTRUCTURAS =========="
-);
-
-console.log(
-    "ESTRUCTURAS RECIBIDAS:",
-    estructurasGlobal
-);
-
-console.log(
-    "TABLAS RECIBIDAS:",
-    estructurasGlobal?.tablas
-);
-
-console.log(
-    "========== FIN GENERADOR - ESTRUCTURAS =========="
-);
-
     Object.keys(localStorage)
     .forEach(key=>{
 
@@ -643,11 +625,6 @@ UCMIEncabezado.iniciar({
     skill:"Grammar"
 });
 
-console.log(
-"CONFIGURACIÓN MOSTRAR:",
-${JSON.stringify(configuracionMostrar)}
-);
-
 UCMIMotorEjercicios.generar({
 
     contenedor:"zona-ejercicios",
@@ -711,11 +688,6 @@ mostrarEstructuras:
 
 });
 
-
-console.log(
-"TRANSCRIPCIÓN GENERADA:",
-${JSON.stringify(ejerciciosTranscripcion)}
-);
 
 document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
 
