@@ -587,18 +587,8 @@ function crearEstructuras(estructuras){
         estructuras.tablas.length === 0
     ){
 
-        console.log(
-            "ESTRUCTURAS: no hay tablas para generar"
-        );
-
         return "";
     }
-
-
-    console.log(
-        "ESTRUCTURAS: generando tablas:",
-        estructuras.tablas.length
-    );
 
 
     let htmlEstructuras = `
@@ -677,11 +667,6 @@ estructuras.tablas.forEach(
 
             tabla.oraciones.forEach(
                 (oracion, indiceOracion) => {
-
-                    console.log(
-                        "ESTRUCTURA - ORACIÓN RECIBIDA:",
-                        oracion
-                    );
 
 
                     htmlEstructuras += `
@@ -791,16 +776,6 @@ tabla.oraciones.forEach(
                 const elemento = item.contenido;
                 const indiceElemento = item.indiceElemento;
 
-
-                console.log(
-                    "ELEMENTO ESTRUCTURAL:",
-                    "Estructura =", tabla.numero,
-                    "| Oración =", indiceOracion + 1,
-                    "| Elemento =", indiceElemento + 1,
-                    "| Contenido =", elemento
-                );
-
-
                 htmlEstructuras += `
 
                 <div
@@ -855,12 +830,6 @@ htmlEstructuras += `
 
 `;
 
-
-    console.log(
-        "ESTRUCTURAS: HTML generado correctamente"
-    );
-
-
     return htmlEstructuras;
 }
 
@@ -869,10 +838,6 @@ htmlEstructuras += `
 *====================================================*/
 
 function activarDragDropEstructuras(){
-
-    console.log(
-        "ESTRUCTURAS: activando Drag & Drop"
-    );
 
 
     const elementos =
@@ -885,18 +850,6 @@ function activarDragDropEstructuras(){
         document.querySelectorAll(
             ".celda-estructural"
         );
-
-
-    console.log(
-        "ESTRUCTURAS: elementos arrastrables:",
-        elementos.length
-    );
-
-
-    console.log(
-        "ESTRUCTURAS: celdas destino:",
-        celdas.length
-    );
 
 
     elementos.forEach(
@@ -918,14 +871,6 @@ function activarDragDropEstructuras(){
 
                     this.classList.add(
                         "elemento-arrastrando"
-                    );
-
-
-                    console.log(
-                        "ESTRUCTURAS: dragstart",
-                        "Estructura =", this.dataset.estructura,
-                        "| Oración =", this.dataset.oracion,
-                        "| Elemento =", this.dataset.elemento
                     );
 
                 }
@@ -1016,18 +961,6 @@ function activarDragDropEstructuras(){
                         partes[2];
 
 
-                    console.log(
-                        "ESTRUCTURAS: drop",
-                        "Elemento =", elemento,
-                        "Estructura =", estructura,
-                        "Oración =", oracion,
-                        "Celda destino =",
-                        this.dataset.estructura,
-                        this.dataset.oracion,
-                        this.dataset.elemento
-                    );
-
-
 //========================================
 // BUSCAR ELEMENTO ARRASTRADO
 //========================================
@@ -1109,24 +1042,12 @@ this.appendChild(
 
 function evaluarEstructuras(boton){
 
-    console.log(
-        "========== EVALUACIÓN ESTRUCTURA =========="
-    );
-
-
     //========================================
     // IDENTIFICAR ESTRUCTURA
     //========================================
 
     const estructura =
         boton.dataset.estructura;
-
-
-    console.log(
-        "ESTRUCTURA A EVALUAR:",
-        estructura
-    );
-
 
     //========================================
     // BUSCAR LAS CELDAS DE ESTA ESTRUCTURA
@@ -1136,12 +1057,6 @@ function evaluarEstructuras(boton){
         document.querySelectorAll(
             `.celda-estructural[data-estructura="${estructura}"]`
         );
-
-
-    console.log(
-        "CELDAS ENCONTRADAS:",
-        celdas.length
-    );
 
 
     if(celdas.length === 0){
@@ -1195,12 +1110,6 @@ function evaluarEstructuras(boton){
                 );
 
                 incorrectas++;
-
-                console.log(
-                    "CELDA VACÍA:",
-                    "Oración =", celda.dataset.oracion,
-                    "| Elemento =", celda.dataset.elemento
-                );
 
                 return;
 
@@ -1275,16 +1184,6 @@ function evaluarEstructuras(boton){
 
             }
 
-
-            console.log(
-                "EVALUACIÓN CELDA:",
-                "Estructura =", estructura,
-                "| Oración =", celda.dataset.oracion,
-                "| Elemento =", celda.dataset.elemento,
-                "| Colocado =", elemento.dataset.elemento,
-                "| Correcta =", esCorrecto
-            );
-
         }
     );
 
@@ -1292,26 +1191,6 @@ function evaluarEstructuras(boton){
     //========================================
     // RESULTADO DE LA ESTRUCTURA
     //========================================
-
-    console.log(
-        "========== RESULTADO =========="
-    );
-
-    console.log(
-        "Estructura:",
-        estructura
-    );
-
-    console.log(
-        "Correctas:",
-        correctas
-    );
-
-    console.log(
-        "Incorrectas:",
-        incorrectas
-    );
-
 
     //========================================
     // MOSTRAR RESULTADO
@@ -1506,14 +1385,6 @@ function crearIdentificarImagenes(config){
 
 ordenSeleccionImagenes = 1;    
 
-console.log(
-"IDENTIFICAR CONFIG:",
-config
-);
-
-console.table(config.imagenes);    
-
-
 let html = `
 
 <div class="ejercicio-identificar-imagenes">
@@ -1538,11 +1409,6 @@ data-audio="${config.audio}">
 <div class="galeria-imagenes">
 
 `;
-
-console.log(
-    "IMAGENES ANTES DE ASIGNAR URL:",
-    config.imagenes
-);
 
 //========================================
 // MEZCLAR IMÁGENES ALEATORIAMENTE
@@ -1575,25 +1441,11 @@ for(
 
 config.imagenes.forEach(imagen=>{
 
-console.log(
-    "ORACIÓN IMAGEN:",
-    imagen.codigo,
-    imagen.oracion
-);
-
 });    
 
 imagenesMezcladas.forEach((imagen, indice)=>{
 
 let urlImagen = imagen.url || "img/no-disponible.png";
-
-console.log(
-    "IMAGEN FINAL:",
-    imagen.codigo,
-    urlImagen
-);
-
-
 
 html += `
 
@@ -1683,37 +1535,8 @@ const UCMIMotorEjercicios = {
 
         let htmlFinal = "";
 
-        console.log(
-            "MOTOR ORDENAR:",
-            config.ordenarOracion
-        );
-
         contadorEjercicios = 0; 
         ordenSeleccionImagenes = 1;
-
-        console.log("mostrarSeleccionSimple =", config.mostrarSeleccionSimple);
-console.log("mostrarCompletar =", config.mostrarCompletar);
-console.log("mostrarDragDrop =", config.mostrarDragDrop);
-console.log("mostrarOrdenarOracion =", config.mostrarOrdenarOracion);
-console.log("mostrarRelacionar =", config.mostrarRelacionar);
-console.log("mostrarTraduccion =", config.mostrarTraduccion);
-console.log("mostrarTranscripcion =", config.mostrarTranscripcion);
-
-console.log(
-"JSON mostrarSeleccionSimple =",
-JSON.stringify(config.mostrarSeleccionSimple)
-);
-
-console.log(
-"mostrarIdentificarImagenes =",
-config.mostrarIdentificarImagenes
-);
-
-console.log(
-"identificarImagenes =",
-config.identificarImagenes
-);        
-
 
         //========================================
         // SECCIÓN: SELECCIÓN SIMPLE
@@ -1824,8 +1647,6 @@ if(
     config.mostrarIdentificarImagenes !== "No"
 ){
 
-    console.log("GENERANDO IDENTIFICAR IMÁGENES");
-
     htmlFinal += crearIdentificarImagenes(
         config.identificarImagenes
     );
@@ -1842,58 +1663,27 @@ config.estructuras.tablas &&
 config.estructuras.tablas.length > 0 &&
 config.mostrarEstructuras !== "No"
 ){
-
-    console.log(
-        "GENERANDO ESTRUCTURAS GRAMATICALES"
-    );
-
     htmlFinal += crearEstructuras(
         config.estructuras
     );
 
 }        
-        
-console.log("ESTRUCTURAS: ANTES DE INSERTAR HTML");
 
 contenedor.innerHTML = htmlFinal;
-
-console.log("ESTRUCTURAS: DESPUÉS DE INSERTAR HTML");
-
-console.log(
-    "BOTONES ESTRUCTURAS EN DOM:",
-    contenedor.querySelectorAll(".boton-evaluar-estructuras").length
-);
-
-console.log(
-    "HTML BOTONES ESTRUCTURAS:",
-    contenedor.querySelectorAll(".boton-evaluar-estructuras")
-);        
-
-console.log("ESTRUCTURAS: DESPUÉS DE INSERTAR HTML");
 
 //========================================
 // ACTIVAR DRAG & DROP DE ESTRUCTURAS
 //========================================
-
-console.log("========== ACTIVACIÓN ESTRUCTURAS ==========");
-console.log("config.estructuras =", config.estructuras);
-console.log("config.estructuras.tablas =", config.estructuras?.tablas);
-console.log("cantidad tablas =", config.estructuras?.tablas?.length);
-console.log("config.mostrarEstructuras =", config.mostrarEstructuras);
 
 if(
     config.estructuras &&
     config.estructuras.tablas &&
     config.estructuras.tablas.length > 0
 ){
-
-    console.log("ESTRUCTURAS: llamando activarDragDropEstructuras()");
     activarDragDropEstructuras();
 
 }else{
-
-    console.log("ESTRUCTURAS: NO SE ACTIVA PORQUE FALTA config.estructuras.tablas");
-
+    
 }
 
 //========================================
@@ -2667,7 +2457,6 @@ correctaMostrar[i]
 }
 
 function verificarTraduccion(boton){
-console.log("ENTRÓ A verificarTraduccion");
     
     const respuestaCorrecta =
     boton.dataset.respuesta;
@@ -2709,18 +2498,6 @@ console.log("ENTRÓ A verificarTraduccion");
     .map(r =>
         normalizarRespuestaTraduccion(r)
     );
-
-    console.log("Respuesta usuario:", respuestaUsuario);
-console.log("Respuesta correcta:", respuestaCorrecta);
-console.log("Alternativas:", respuestasAlternativas);
-console.log("Respuestas válidas:", respuestasValidas);
-
-console.log("USUARIO NORMALIZADO:", respuestaUsuario);
-
-console.log(
-"VALIDAS NORMALIZADAS:",
-respuestasValidas
-);
     
     if(respuestasValidas.includes(respuestaUsuario)){
 
@@ -3028,9 +2805,6 @@ data-id="ordenar-${indice}"
 
 `;
     });
-    console.log(
-    "HTML ORDENAR GENERADO CORRECTAMENTE"
-);
 
 return htmlOrdenar;
 }
@@ -3206,12 +2980,8 @@ let ordenSeleccionImagenes = 1;
 
 function seleccionarImagenIdentificar(elemento){
 
-    console.log("IMAGEN TOCADA:", elemento);
-
     const circulo =
         elemento.querySelector(".circulo-seleccion");
-
-    console.log("CÍRCULO ENCONTRADO:", circulo);
 
     if(!circulo){
         console.error(
@@ -3231,21 +3001,11 @@ function seleccionarImagenIdentificar(elemento){
         "imagen-seleccionada"
     );
 
-    console.log(
-        "NÚMERO ASIGNADO:",
-        ordenSeleccionImagenes
-    );
-
     ordenSeleccionImagenes++;
 
 }
 
 function evaluarIdentificarImagenes(){
-
-    console.log(
-        "EVALUANDO IDENTIFICAR IMÁGENES"
-    );
-
 
     const ejercicio =
         document.querySelector(
@@ -3377,23 +3137,6 @@ function evaluarIdentificarImagenes(){
             return numeroA - numeroB;
 
         });
-
-
-    console.log(
-        "ORDEN CORRECTO:",
-        ordenCorrecto.map(
-            imagen => imagen.dataset.codigo
-        )
-    );
-
-
-    console.log(
-        "ORDEN USUARIO:",
-        ordenUsuario.map(
-            imagen => imagen.dataset.codigo
-        )
-    );
-
 
 //========================================
 // COMPARAR
