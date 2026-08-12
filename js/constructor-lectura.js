@@ -97,8 +97,6 @@ if (hojaImagenes){
 
 if (hojaEstructuras) {
 
-    console.log("EJECUTANDO LECTURA DE HOJA ESTRUCTURAS");
-
     let infoEstructural = [];
     let oracionesEstructuradas = [];
 
@@ -279,28 +277,8 @@ for (let fila = 8; fila <= 19; fila++) {
 
     };
 
-    console.log(
-    "========== VERIFICACIÓN ESTRUCTURAS =========="
-);
-
-console.log(
-    "TOTAL ORACIONES LEÍDAS:",
-    oracionesEstructuradas.length
-);
-
 oracionesEstructuradas.forEach(
     (oracion, indice) => {
-
-        console.log(
-            "ORACIÓN",
-            indice + 1,
-            "| FILA EXCEL:",
-            oracion.fila,
-            "| TIPO:",
-            oracion.tipo,
-            "| ELEMENTOS:",
-            oracion.elementos
-        );
 
     }
 );
@@ -308,21 +286,7 @@ oracionesEstructuradas.forEach(
 tablasEstructuras.forEach(
     tabla => {
 
-        console.log(
-            "TABLA",
-            tabla.numero,
-            "| ENCABEZADOS:",
-            tabla.encabezados,
-            "| ORACIONES:",
-            tabla.oraciones.length,
-            tabla.oraciones
-        );
-
     }
-);
-
-console.log(
-    "========== FIN VERIFICACIÓN ESTRUCTURAS =========="
 );
 
 }
@@ -862,11 +826,6 @@ document.addEventListener(
 function(){
 
     const inputExcel = document.getElementById("excelInput");
-
-    console.log(
-        "INPUT EXCEL:",
-        inputExcel
-    );
 
     if(!inputExcel){
         console.error(
