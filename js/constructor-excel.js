@@ -717,9 +717,15 @@ hojaMostrar.getCell("A10").value =
 hojaMostrar.getCell("B10").value =
 "Sí";
 
+hojaMostrar.getCell("A11").value =
+"Completar-texto-listening";
+
+hojaMostrar.getCell("B11").value =
+"Sí";
+
 // Lista desplegable Sí / No
 
-for(let fila = 2; fila <= 10; fila++){
+for(let fila = 2; fila <= 11; fila++){
 
     hojaMostrar.getCell("B"+fila).dataValidation = {
 
