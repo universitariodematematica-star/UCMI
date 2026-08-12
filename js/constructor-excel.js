@@ -103,7 +103,7 @@ for (let fila = 1; fila <= 32; fila++) {
 hojaCompletarTextoListening.getCell("E2").value =
     "número párrafo";
 
-hojaCompletarTextoListening.getCell("E2").comment = {
+hojaCompletarTextoListening.getCell("E2").note = {
     texts: [
         {
             text: "Los números debajo tienen que ser números enteros."
@@ -152,7 +152,7 @@ for (let columna = 6; columna <= 15; columna++) {
 // COMENTARIO EN F2
 //-----------------------------------------------------
 
-hojaCompletarTextoListening.getCell("F2").comment = {
+hojaCompletarTextoListening.getCell("F2").note = {
     texts: [
         {
             text:
