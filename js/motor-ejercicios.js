@@ -1383,6 +1383,8 @@ return htmlCompletar;
 
 function crearIdentificarImagenes(config){
 
+contadorEjercicios++;
+
 ordenSeleccionImagenes = 1;    
 
 let html = `
@@ -1390,7 +1392,7 @@ let html = `
 <div class="ejercicio-identificar-imagenes">
 
 <div class="instruccion-ejercicio">
-Escucha el audio y selecciona las imágenes en el orden correcto.
+${contadorEjercicios}. Escucha el audio y selecciona las imágenes en el orden correcto.
 </div>
 
 
