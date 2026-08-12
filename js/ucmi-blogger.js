@@ -148,17 +148,6 @@ let encontrados =
 encontrados =
     [...new Set(encontrados)];
 
-console.log(
-    "BLOGGER - CÓDIGO RECIBIDO:",
-    codigo
-);
-
-console.log(
-    "BLOGGER - URLs EXTRAÍDAS:",
-    encontrados
-);
-
-
     if(!encontrados){
 
         this.imagenes = [];
@@ -194,13 +183,6 @@ console.log(
 
     }
 
-
-    console.log(
-        "Imágenes Blogger:",
-        this.imagenes
-    );
-
-
     if(window.actualizarImagenesIdentificar){
 
         window.actualizarImagenesIdentificar();
@@ -215,8 +197,3 @@ console.log(
 // Exponer globalmente
 
 window.UCMIBlogger = UCMIBlogger;
-
-
-console.log(
-"UCMIBlogger cargado correctamente"
-);
