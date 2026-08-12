@@ -34,7 +34,7 @@ hojaCompletarTextoListening.getCell("A1").value =
     "ruta audio";
 
 hojaCompletarTextoListening.getCell("B1").value =
-    "URL";
+    "audios/A1/Unidad_01/Tema_01/Grammar/AG.1.1.1.A1.mp3";
 
 hojaCompletarTextoListening.getCell("A3").value =
     "texto";
@@ -146,6 +146,14 @@ for (let columna = 6; columna <= 15; columna++) {
         "palabra " + (columna - 5);
 
 }
+
+//-----------------------------------------------------
+// EJEMPLO DE NÚMEROS DE PALABRAS FALTANTES
+//-----------------------------------------------------
+
+hojaCompletarTextoListening.getCell("F3").value = 1;
+hojaCompletarTextoListening.getCell("G3").value = 2;
+hojaCompletarTextoListening.getCell("H3").value = 3;    
 
 
 //-----------------------------------------------------
