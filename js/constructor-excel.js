@@ -22,6 +22,193 @@ async function descargarPlantilla(){
     console.log("CREANDO HOJA MOSTRAR");
     console.log("CREANDO HOJA ESTRUCTURAS");
 
+    //=====================================================
+// HOJA: Completar-texto-listening
+//=====================================================
+
+//-----------------------------------------------------
+// CONFIGURACIÓN GENERAL
+//-----------------------------------------------------
+
+hojaCompletarTextoListening.getCell("A1").value =
+    "ruta audio";
+
+hojaCompletarTextoListening.getCell("B1").value =
+    "URL";
+
+hojaCompletarTextoListening.getCell("A3").value =
+    "texto";
+
+hojaCompletarTextoListening.getCell("D3").value =
+    "faltantes";
+
+
+//-----------------------------------------------------
+// URL DEL AUDIO
+//-----------------------------------------------------
+
+hojaCompletarTextoListening.getCell("B1").font = {
+    color: {
+        argb: "FF808080"
+    }
+};
+
+
+//-----------------------------------------------------
+// PÁRRAFOS
+//-----------------------------------------------------
+
+for (let fila = 3; fila <= 32; fila++) {
+
+    hojaCompletarTextoListening.getCell(fila, 2).value =
+        "PÁRRAFO " + (fila - 2);
+
+    hojaCompletarTextoListening.getCell(fila, 2).font = {
+        color: {
+            argb: "FF808080"
+        }
+    };
+
+}
+
+
+//-----------------------------------------------------
+// BORDES B1:B32
+//-----------------------------------------------------
+
+for (let fila = 1; fila <= 32; fila++) {
+
+    hojaCompletarTextoListening.getCell(fila, 2).border = {
+        top: {
+            style: "thin"
+        },
+        left: {
+            style: "thin"
+        },
+        bottom: {
+            style: "thin"
+        },
+        right: {
+            style: "thin"
+        }
+    };
+
+}
+
+
+//-----------------------------------------------------
+// NÚMERO DE PÁRRAFO
+//-----------------------------------------------------
+
+hojaCompletarTextoListening.getCell("E2").value =
+    "número párrafo";
+
+hojaCompletarTextoListening.getCell("E2").comment = {
+    texts: [
+        {
+            text: "Los números debajo tienen que ser números enteros."
+        }
+    ]
+};
+
+
+//-----------------------------------------------------
+// BORDES E3:E32
+//-----------------------------------------------------
+
+for (let fila = 3; fila <= 32; fila++) {
+
+    hojaCompletarTextoListening.getCell(fila, 5).border = {
+        top: {
+            style: "thin"
+        },
+        left: {
+            style: "thin"
+        },
+        bottom: {
+            style: "thin"
+        },
+        right: {
+            style: "thin"
+        }
+    };
+
+}
+
+
+//-----------------------------------------------------
+// PALABRAS FALTANTES
+//-----------------------------------------------------
+
+for (let columna = 6; columna <= 15; columna++) {
+
+    hojaCompletarTextoListening.getCell(2, columna).value =
+        "palabra " + (columna - 5);
+
+}
+
+
+//-----------------------------------------------------
+// COMENTARIO EN F2
+//-----------------------------------------------------
+
+hojaCompletarTextoListening.getCell("F2").comment = {
+    texts: [
+        {
+            text:
+            "Palabra 1, palabra 2, palabra 3, tienen que ser números enteros positivos."
+        }
+    ]
+};
+
+
+//-----------------------------------------------------
+// ANCHOS DE COLUMNAS
+//-----------------------------------------------------
+
+hojaCompletarTextoListening.getColumn("A").width = 20;
+hojaCompletarTextoListening.getColumn("B").width = 50;
+hojaCompletarTextoListening.getColumn("C").width = 5;
+hojaCompletarTextoListening.getColumn("D").width = 15;
+hojaCompletarTextoListening.getColumn("E").width = 18;
+
+for (let columna of [
+    "F","G","H","I","J",
+    "K","L","M","N","O"
+]) {
+
+    hojaCompletarTextoListening.getColumn(columna).width = 14;
+
+}
+
+
+//-----------------------------------------------------
+// ENCABEZADOS
+//-----------------------------------------------------
+
+for (let celda of [
+    "A1",
+    "A3",
+    "D3",
+    "E2",
+    "F2",
+    "G2",
+    "H2",
+    "I2",
+    "J2",
+    "K2",
+    "L2",
+    "M2",
+    "N2",
+    "O2"
+]) {
+
+    hojaCompletarTextoListening.getCell(celda).font = {
+        bold: true
+    };
+
+}
+
 
     /*=====================================================
 HOJA IDENTIFICAR-IMAGENES
