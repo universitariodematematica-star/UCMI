@@ -15,7 +15,8 @@ async function descargarPlantilla(){
     const hojaTraduccion = libro.addWorksheet("Traducción");
     const hojaTranscripcion = libro.addWorksheet("Transcripción");
     const hojaIdentificarImagenes = libro.addWorksheet("Identificar-imagenes");
-    const hojaEstructuras = libro.addWorksheet("Estructuras");    
+    const hojaEstructuras = libro.addWorksheet("Estructuras");
+    const hojaCompletarTextoListening = libro.addWorksheet("Completar-texto-listening");
     const hojaMostrar = libro.addWorksheet("Mostrar");
    
     console.log("CREANDO HOJA MOSTRAR");
