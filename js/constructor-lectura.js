@@ -94,6 +94,8 @@ if (hojaImagenes){
     const hojaTranscripcion = libro.getWorksheet("Transcripción");
     const hojaIdentificarImagenes = libro.getWorksheet("Identificar-imagenes");
     const hojaEstructuras = libro.getWorksheet("Estructuras");
+    const hojaCompletarTextoListening =
+    libro.getWorksheet("Completar texto listening");
 
 if (hojaEstructuras) {
 
@@ -817,6 +819,160 @@ ejerciciosTranscripcion = {
 };
 
 }
+
+/*=====================================================*
+*COMPLETAR TEXTO LISTENING*
+*=====================================================*/
+
+let ejercicioCompletarTextoListening = {
+
+    audio: "",
+
+    parrafos: [],
+
+    referencias: []
+
+};
+
+
+if(hojaCompletarTextoListening){
+
+    //========================================
+    // B1 = RUTA DEL AUDIO
+    //========================================
+
+    ejercicioCompletarTextoListening.audio =
+    leerCelda(
+        hojaCompletarTextoListening.getCell("B1")
+    );
+
+
+    //========================================
+    // B3:B32 = PÁRRAFOS
+    //
+    // E3:E32 = NÚMERO DE PÁRRAFO
+    //
+    // F:O = POSICIONES DE PALABRAS
+    //========================================
+
+    for(let fila = 3; fila <= 32; fila++){
+
+        const parrafo =
+        leerCelda(
+            hojaCompletarTextoListening.getCell(
+                "B" + fila
+            )
+        );
+
+
+        const numeroParrafoTexto =
+        leerCelda(
+            hojaCompletarTextoListening.getCell(
+                "E" + fila
+            )
+        ).trim();
+
+
+        //====================================
+        // LEER F:O
+        //====================================
+
+        const posicionesPalabras = [];
+
+
+        for(let columna = 6; columna <= 15; columna++){
+
+            const posicionTexto =
+            leerCelda(
+                hojaCompletarTextoListening.getCell(
+                    fila,
+                    columna
+                )
+            ).trim();
+
+
+            if(posicionTexto !== ""){
+
+                const posicion =
+                parseInt(posicionTexto, 10);
+
+
+                if(
+                    Number.isInteger(posicion) &&
+                    posicion > 0
+                ){
+
+                    posicionesPalabras.push(
+                        posicion
+                    );
+
+                }
+
+            }
+
+        }
+
+
+        //====================================
+        // GUARDAR EL PÁRRAFO
+        //====================================
+
+        if(parrafo.trim() !== ""){
+
+            ejercicioCompletarTextoListening.parrafos.push({
+
+                fila: fila,
+
+                texto: parrafo
+
+            });
+
+        }
+
+
+        //====================================
+        // GUARDAR LA REFERENCIA
+        //
+        // Solo si E tiene un número de párrafo
+        // y existe al menos una posición.
+        //====================================
+
+        if(
+            numeroParrafoTexto !== "" &&
+            posicionesPalabras.length > 0
+        ){
+
+            const numeroParrafo =
+            parseInt(
+                numeroParrafoTexto,
+                10
+            );
+
+
+            if(
+                Number.isInteger(numeroParrafo) &&
+                numeroParrafo > 0
+            ){
+
+                ejercicioCompletarTextoListening.referencias.push({
+
+                    fila: fila,
+
+                    parrafo:
+                    numeroParrafo,
+
+                    posiciones:
+                    posicionesPalabras
+
+                });
+
+            }
+
+        }
+
+    }
+
+}    
 
 /*=====================================================
 IDENTIFICAR IMÁGENES
