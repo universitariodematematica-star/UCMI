@@ -142,10 +142,10 @@ datos.parrafos.forEach(
 
 
         bloque.style.width = "90%";
-        bloque.style.margin = "1px auto";
-        bloque.style.padding = "25px";
+        bloque.style.margin = "0 auto 12px auto";
+        bloque.style.padding = "4px 25px";
         bloque.style.fontSize = "20px";
-        bloque.style.lineHeight = "2";
+        bloque.style.lineHeight = "1.6";
         bloque.style.textAlign = "justify";
 
 
