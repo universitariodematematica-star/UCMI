@@ -35,8 +35,10 @@ const UCMIMotorCompletarListening = {
 
 
 //========================================
-// ENUNCIADO
+// ENUNCIADO DEL EJERCICIO
 //========================================
+
+contadorEjercicios++;
 
 const instruccionEjercicio =
     document.createElement("div");
@@ -48,24 +50,6 @@ instruccionEjercicio.textContent =
     `${contadorEjercicios}. Lee el texto mientras escuchas y coloca las palabras faltantes.`;
 
 contenedor.appendChild(instruccionEjercicio);
-
-
-        //========================================
-        // ENUNCIADO DEL EJERCICIO
-        //========================================
-
-        contadorEjercicios++;
-
-        const instruccion =
-            document.createElement("div");
-
-        instruccion.className =
-            "instruccion-ejercicio";
-
-        instruccion.textContent =
-            `${contadorEjercicios}. Lee el texto mientras escuchas y coloca las palabras faltantes.`;
-
-        contenedor.appendChild(instruccion);
 
 
         //========================================
@@ -198,9 +182,6 @@ datos.parrafos.forEach(
     }
 
 };
-
-window.UCMIMotorCompletarListening =
-    UCMIMotorCompletarListening;
 
 window.UCMIMotorCompletarListening =
     UCMIMotorCompletarListening;
