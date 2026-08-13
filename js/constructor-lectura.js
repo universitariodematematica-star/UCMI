@@ -871,6 +871,13 @@ if(hojaCompletarTextoListening){
             )
         ).trim();
 
+        console.log(
+            "FILA:",
+            fila,
+            "E:",
+            numeroParrafoTexto
+        );
+
 
         //====================================
         // LEER F:O
@@ -888,6 +895,17 @@ if(hojaCompletarTextoListening){
                     columna
                 )
             ).trim();
+
+            if(posicionTexto !== ""){
+                console.log(
+                    "FILA:",
+                    fila,
+                    "COLUMNA:",
+                    columna,
+                    "POSICIÓN:",
+                    posicionTexto
+                );
+            }
 
 
             if(posicionTexto !== ""){
