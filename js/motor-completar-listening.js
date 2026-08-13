@@ -35,6 +35,22 @@ const UCMIMotorCompletarListening = {
 
 
 //========================================
+// ENUNCIADO
+//========================================
+
+const instruccion =
+    document.createElement("div");
+
+instruccion.className =
+    "instruccion-ejercicio";
+
+instruccion.textContent =
+    "Lee el texto mientras escuchas y coloca las palabras faltantes.";
+
+contenedor.appendChild(instruccion);
+
+
+//========================================
 // GENERAR TODOS LOS PÁRRAFOS
 //========================================
 
