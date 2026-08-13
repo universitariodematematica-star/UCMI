@@ -61,7 +61,9 @@ const codigoEjerciciosResueltos =
 
 const codigoEjerciciosPropuestos =
 `EPG.${unidad}.${tema}.${nivel}`;
-    
+
+const mostrarCompletarTextoListening =
+configuracionMostrar["Completar texto listening"] || "No";    
     
 const codigo = `<!DOCTYPE html>
 <html lang="es">
