@@ -1126,6 +1126,7 @@ function lanzarGeneracion(){
         ejerciciosTranscripcion,
         ejercicioIdentificarImagenes,
         estructurasGlobal,
+        ejercicioCompletarTextoListening,
         configuracionMostrar
     );
 
