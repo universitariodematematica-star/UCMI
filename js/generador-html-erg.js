@@ -22,6 +22,7 @@ ejerciciosTraduccion=[],
 ejerciciosTranscripcion=[],
 ejercicioIdentificarImagenes=[],
 estructurasGlobal={},
+ejercicioCompletarTextoListening={},
 configuracionMostrar={}
 ){
 
@@ -623,6 +624,9 @@ UCMIEncabezado.iniciar({
     skill:"Grammar"
 });
 
+const ejercicioCompletarTextoListening =
+${JSON.stringify(ejercicioCompletarTextoListening)};
+
 UCMIMotorEjercicios.generar({
 
     contenedor:"zona-ejercicios",
@@ -654,11 +658,14 @@ UCMIMotorEjercicios.generar({
     identificarImagenes:
     ${JSON.stringify(ejercicioIdentificarImagenes)},
     
-    estructuras:
-    ${JSON.stringify(estructurasGlobal)},
+estructuras:
+${JSON.stringify(estructurasGlobal)},
 
-    completarTextoListening:
-    ${JSON.stringify(ejercicioCompletarTextoListening)},
+completarTextoListening:
+${JSON.stringify(ejercicioCompletarTextoListening)},
+
+mostrarSeleccionSimple:
+"${configuracionMostrar["Selección simple"] || "No"}",
     
 mostrarSeleccionSimple:
 "${configuracionMostrar["Selección simple"] || "No"}",
