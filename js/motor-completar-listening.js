@@ -39,7 +39,15 @@ const UCMIMotorCompletarListening = {
 //========================================
 
 datos.parrafos.forEach(
-    parrafo => {
+    (parrafo, indiceParrafo) => {
+
+        //====================================
+        // NÚMERO DEL PÁRRAFO
+        //====================================
+
+        const numeroParrafo =
+            indiceParrafo + 1;
+
 
         //====================================
         // BUSCAR REFERENCIA DEL PÁRRAFO
@@ -49,7 +57,7 @@ datos.parrafos.forEach(
             datos.referencias.find(
                 ref =>
                     ref.parrafo ===
-                    parrafo.fila - 2
+                    numeroParrafo
             );
 
 
@@ -91,7 +99,7 @@ datos.parrafos.forEach(
                         `<input
                             type="text"
                             class="completar-listening-input"
-                            data-parrafo="${parrafo.fila - 2}"
+                            data-parrafo="${numeroParrafo}"
                             data-posicion="${posicion}"
                             style="
                                 width:100px;
