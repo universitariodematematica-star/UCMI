@@ -38,16 +38,16 @@ const UCMIMotorCompletarListening = {
 // ENUNCIADO
 //========================================
 
-const instruccion =
+const instruccionEjercicio =
     document.createElement("div");
 
-instruccion.className =
+instruccionEjercicio.className =
     "instruccion-ejercicio";
 
-instruccion.textContent =
-    "Lee el texto mientras escuchas y coloca las palabras faltantes.";
+instruccionEjercicio.textContent =
+    `${contadorEjercicios}. Lee el texto mientras escuchas y coloca las palabras faltantes.`;
 
-contenedor.appendChild(instruccion);
+contenedor.appendChild(instruccionEjercicio);
 
 
         //========================================
