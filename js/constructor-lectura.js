@@ -94,6 +94,7 @@ if (hojaImagenes){
     const hojaTranscripcion = libro.getWorksheet("Transcripción");
     const hojaIdentificarImagenes = libro.getWorksheet("Identificar-imagenes");
     const hojaEstructuras = libro.getWorksheet("Estructuras");
+    const hojaCompletarTextoListening = libro.getWorksheet("Completar-texto-listening");
     const hojaCompletarTextoListening =
     libro.getWorksheet("Completar texto listening");
 
@@ -769,6 +770,161 @@ ejerciciosTraduccion.push({
 });
 
 }
+
+/*=====================================================*
+* COMPLETAR TEXTO LISTENING
+*=====================================================*/
+
+let ejercicioCompletarTextoListening = {
+
+    audio: "",
+
+    parrafos: []
+
+};
+
+if (hojaCompletarTextoListening) {
+
+    //========================================
+    // RUTA DEL AUDIO
+    // B1
+    //========================================
+
+    ejercicioCompletarTextoListening.audio =
+        leerCelda(
+            hojaCompletarTextoListening.getCell("B1")
+        );
+
+
+    //========================================
+    // LEER PÁRRAFOS
+    // B3:B32
+    //========================================
+
+    const parrafosExcel = {};
+
+    for (let fila = 3; fila <= 32; fila++) {
+
+        const texto =
+            leerCelda(
+                hojaCompletarTextoListening.getCell(
+                    "B" + fila
+                )
+            );
+
+        if (!texto.trim()) {
+            continue;
+        }
+
+        const numeroParrafo = fila - 2;
+
+        parrafosExcel[numeroParrafo] = {
+
+            numero: numeroParrafo,
+
+            texto: texto,
+
+            palabrasOcultas: []
+
+        };
+
+    }
+
+
+    //========================================
+    // LEER CONFIGURACIÓN DE PALABRAS
+    //
+    // E3:E32 = número del párrafo
+    // F3:O32 = posiciones de palabras
+    //========================================
+
+    for (let fila = 3; fila <= 32; fila++) {
+
+        const numeroParrafoTexto =
+            leerCelda(
+                hojaCompletarTextoListening.getCell(
+                    "E" + fila
+                )
+            ).trim();
+
+
+        if (!numeroParrafoTexto) {
+            continue;
+        }
+
+
+        const numeroParrafo =
+            parseInt(
+                numeroParrafoTexto,
+                10
+            );
+
+
+        if (
+            !Number.isInteger(numeroParrafo)
+        ) {
+            continue;
+        }
+
+
+        if (
+            !parrafosExcel[numeroParrafo]
+        ) {
+            continue;
+        }
+
+
+        // F hasta O = posiciones de palabras
+
+        for (let columna = 6; columna <= 15; columna++) {
+
+            const posicionTexto =
+                leerCelda(
+                    hojaCompletarTextoListening.getCell(
+                        fila,
+                        columna
+                    )
+                ).trim();
+
+
+            if (!posicionTexto) {
+                continue;
+            }
+
+
+            const posicion =
+                parseInt(
+                    posicionTexto,
+                    10
+                );
+
+
+            if (
+                Number.isInteger(posicion) &&
+                posicion > 0
+            ) {
+
+                parrafosExcel[
+                    numeroParrafo
+                ].palabrasOcultas.push(
+                    posicion
+                );
+
+            }
+
+        }
+
+    }
+
+
+    //========================================
+    // CONVERTIR A ARRAY
+    //========================================
+
+    ejercicioCompletarTextoListening.parrafos =
+        Object.values(parrafosExcel);
+
+}    
 
 /*=====================================================
 TRANSCRIPCIÓN
