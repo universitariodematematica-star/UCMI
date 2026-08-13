@@ -50,9 +50,27 @@ instruccion.textContent =
 contenedor.appendChild(instruccion);
 
 
-//========================================
-// GENERAR TODOS LOS PÁRRAFOS
-//========================================
+        //========================================
+        // ENUNCIADO DEL EJERCICIO
+        //========================================
+
+        contadorEjercicios++;
+
+        const instruccion =
+            document.createElement("div");
+
+        instruccion.className =
+            "instruccion-ejercicio";
+
+        instruccion.textContent =
+            `${contadorEjercicios}. Lee el texto mientras escuchas y coloca las palabras faltantes.`;
+
+        contenedor.appendChild(instruccion);
+
+
+        //========================================
+        // GENERAR TODOS LOS PÁRRAFOS
+        //========================================
 
 datos.parrafos.forEach(
     (parrafo, indiceParrafo) => {
