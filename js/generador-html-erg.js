@@ -696,6 +696,15 @@ mostrarEstructuras:
 
 });
 
+UCMIMotorCompletarListening.generar({
+
+    contenedor:"zona-ejercicios",
+
+    completarTextoListening:
+    ejercicioCompletarTextoListening
+
+});
+
 
 document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
 
