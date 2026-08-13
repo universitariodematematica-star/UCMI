@@ -658,6 +658,9 @@ UCMIMotorEjercicios.generar({
     
     estructuras:
     ${JSON.stringify(estructurasGlobal)},
+
+    completarTextoListening:
+    ${JSON.stringify(ejercicioCompletarTextoListening)},
     
 mostrarSeleccionSimple:
 "${configuracionMostrar["Selección simple"] || "No"}",
