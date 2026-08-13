@@ -1,35 +1,41 @@
-/*=====================================================
-    MOTOR - COMPLETAR TEXTO LISTENING
-    UCMI
-=====================================================*/
+/*=====================================================*
+*MOTOR - COMPLETAR TEXTO LISTENING*
+*=====================================================*/
 
 const UCMIMotorCompletarListening = {
 
-    generar: function(datos){
+    generar(config){
 
-        if(!datos){
-
-            console.error(
-                "No se recibieron datos para Completar texto listening."
+        const contenedor =
+            document.getElementById(
+                config.contenedor
             );
 
+        if(!contenedor){
+            console.error(
+                "NO SE ENCONTRÓ EL CONTENEDOR"
+            );
             return;
+        }
 
+        const datos =
+            config.completarTextoListening;
+
+        if(!datos){
+            console.error(
+                "NO EXISTEN DATOS DE COMPLETAR TEXTO LISTENING"
+            );
+            return;
         }
 
         console.log(
-            "Datos Completar texto listening:",
+            "DATOS COMPLETAR TEXTO LISTENING:",
             datos
         );
 
     }
 
 };
-
-
-/*=====================================================
-    EXPONER MOTOR
-=====================================================*/
 
 window.UCMIMotorCompletarListening =
     UCMIMotorCompletarListening;
