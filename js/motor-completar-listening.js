@@ -34,25 +34,22 @@ const UCMIMotorCompletarListening = {
         );
 
 
-        //========================================
-        // PRUEBA: PRIMER PÁRRAFO
-        //========================================
+//========================================
+// GENERAR TODOS LOS PÁRRAFOS
+//========================================
 
-        const parrafo =
-            datos.parrafos[0];
+datos.parrafos.forEach(
+    parrafo => {
 
-        if(!parrafo){
-            console.warn(
-                "NO EXISTE EL PRIMER PÁRRAFO"
-            );
-            return;
-        }
+        //====================================
+        // BUSCAR REFERENCIA DEL PÁRRAFO
+        //====================================
 
-
-        // Buscar las posiciones que deben ocultarse
         const referencia =
             datos.referencias.find(
-                ref => ref.parrafo === 1
+                ref =>
+                    ref.parrafo ===
+                    parrafo.fila - 2
             );
 
 
@@ -62,12 +59,18 @@ const UCMIMotorCompletarListening = {
                 : [];
 
 
-        // Dividir el párrafo en palabras
+        //====================================
+        // DIVIDIR EL PÁRRAFO EN PALABRAS
+        //====================================
+
         const palabras =
             parrafo.texto.split(/\s+/);
 
 
-        // Construir el HTML del párrafo
+        //====================================
+        // CONSTRUIR HTML
+        //====================================
+
         let html = "";
 
 
@@ -88,6 +91,7 @@ const UCMIMotorCompletarListening = {
                         `<input
                             type="text"
                             class="completar-listening-input"
+                            data-parrafo="${parrafo.fila - 2}"
                             data-posicion="${posicion}"
                             style="
                                 width:100px;
@@ -105,7 +109,8 @@ const UCMIMotorCompletarListening = {
 
 
                 if(
-                    indice < palabras.length - 1
+                    indice <
+                    palabras.length - 1
                 ){
 
                     html += " ";
@@ -116,12 +121,17 @@ const UCMIMotorCompletarListening = {
         );
 
 
-        // Mostrar el resultado
+        //====================================
+        // CREAR BLOQUE DEL PÁRRAFO
+        //====================================
+
         const bloque =
             document.createElement("div");
 
+
         bloque.className =
             "ejercicio-completar-listening";
+
 
         bloque.style.width = "90%";
         bloque.style.margin = "30px auto";
@@ -129,9 +139,18 @@ const UCMIMotorCompletarListening = {
         bloque.style.fontSize = "20px";
         bloque.style.lineHeight = "2";
 
+
         bloque.innerHTML = html;
 
+
+        //====================================
+        // INSERTAR PÁRRAFO
+        //====================================
+
         contenedor.appendChild(bloque);
+
+    }
+);
 
     }
 
