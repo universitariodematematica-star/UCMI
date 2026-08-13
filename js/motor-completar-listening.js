@@ -142,7 +142,7 @@ datos.parrafos.forEach(
 
 
         bloque.style.width = "90%";
-        bloque.style.margin = "3px auto";
+        bloque.style.margin = "1px auto";
         bloque.style.padding = "25px";
         bloque.style.fontSize = "20px";
         bloque.style.lineHeight = "2";
