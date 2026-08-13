@@ -604,16 +604,12 @@ onclick="UCMIRestaurarEjercicios.reiniciar()">
 <canvas id="drawingCanvas"></canvas>
 
 <script src="${rutaJS}pizarra.js"><\/script>
-
 <script src="${rutaJS}navegacion.js"><\/script>
-
 <script src="${rutaJS}encabezado.js"><\/script>
-
 <script src="${rutaJS}reproductor.js"><\/script>
-
 <script src="${rutaJS}motor-ejercicios.js"><\/script>
-
 <script src="${rutaJS}motor-estructuras.js"><\/script>
+<script src="${rutaJS}motor-completar-listening.js"><\/script>
 
 <script>
 
