@@ -35,4 +35,5 @@ const MODOS = {
 };
 
 // Cambia este valor cuando quieras exportar
-let modoExportacion = MODOS.GITHUB;
+let modoExportacion = MODOS.LOCAL;
+
