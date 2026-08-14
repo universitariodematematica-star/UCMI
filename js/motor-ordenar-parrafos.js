@@ -240,6 +240,22 @@ const UCMIMotorOrdenarParrafos = {
             }
         );
 
+     /*=================================================
+BOTÓN EVALUAR
+=================================================*/
+
+const botonEvaluar =
+    document.createElement("button");
+
+botonEvaluar.className =
+    "boton-evaluar-ordenar-parrafos";
+
+botonEvaluar.textContent =
+    "Evaluar";
+
+bloque.appendChild(
+    botonEvaluar
+);
 
         /*=================================================
         INSERTAR BLOQUE EN EL DOM
