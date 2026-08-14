@@ -2,6 +2,63 @@
 *MOTOR - COMPLETAR TEXTO LISTENING*
 *=====================================================*/
 
+function evaluarCompletarListening(){
+
+    const entradas =
+        document.querySelectorAll(
+            ".completar-listening-input"
+        );
+
+    let correctas = 0;
+    let total = entradas.length;
+
+    entradas.forEach(entrada => {
+
+        const correcta =
+            (entrada.dataset.correcta || "")
+            .trim()
+            .toLowerCase();
+
+        const respuesta =
+            (entrada.value || "")
+            .trim()
+            .toLowerCase();
+
+        if(respuesta === correcta){
+
+            correctas++;
+
+            entrada.style.border =
+                "2px solid green";
+
+        }else{
+
+            entrada.style.border =
+                "2px solid red";
+
+        }
+
+    });
+
+    const resultado =
+        document.getElementById(
+            "resultado-completar-listening"
+        );
+
+    if(resultado){
+
+        resultado.innerHTML =
+            `Resultado: ${correctas} de ${total} respuestas correctas.`;
+
+        resultado.style.color =
+            correctas === total
+                ? "green"
+                : "red";
+
+    }
+
+}
+
 const UCMIMotorCompletarListening = {
 
     generar(config){
