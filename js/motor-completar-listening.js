@@ -87,26 +87,49 @@ function evaluarCompletarListening(){
             .trim()
             .toLowerCase();
 
+
+        //========================================
+        // LIMPIAR ESTADO ANTERIOR
+        //========================================
+
+        entrada.classList.remove(
+            "respuesta-correcta",
+            "respuesta-incorrecta"
+        );
+
+
+        //========================================
+        // EVALUAR RESPUESTA
+        //========================================
+
         if(respuesta === correcta){
 
             correctas++;
 
-            entrada.style.border =
-                "2px solid green";
+            entrada.classList.add(
+                "respuesta-correcta"
+            );
 
         }else{
 
-            entrada.style.border =
-                "2px solid red";
+            entrada.classList.add(
+                "respuesta-incorrecta"
+            );
 
         }
 
     });
 
+
+    //========================================
+    // MOSTRAR RESULTADO
+    //========================================
+
     const resultado =
         document.getElementById(
             "resultado-completar-listening"
         );
+
 
     if(resultado){
 
