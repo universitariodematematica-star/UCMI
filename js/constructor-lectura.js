@@ -694,38 +694,6 @@ for(let fila = 3; fila <= 32; fila++){
 }
 
 
-//===========================================
-// EXPONER LOS DATOS LEÍDOS
-//===========================================
-
-console.log(
-    "========== COMPLETAR TEXTO - LISTENING =========="
-);
-
-console.log(
-    "MOSTRAR:",
-    configuracionMostrar
-);
-
-console.log(
-    "AUDIO:",
-    completarTextoListening.audio
-);
-
-console.log(
-    "PÁRRAFOS:",
-    completarTextoListening.parrafos
-);
-
-console.log(
-    "OCULTAMIENTOS:",
-    completarTextoListening.ocultamientos
-);
-
-console.log(
-    "========== FIN COMPLETAR TEXTO - LISTENING =========="
-);
-
   ejerciciosCompletar = [];
 
 for(let fila = 2; fila <= hojaCompletar.rowCount; fila++){
@@ -1021,13 +989,6 @@ if(hojaCompletarTextoListening){
             )
         ).trim();
 
-        console.log(
-            "FILA:",
-            fila,
-            "E:",
-            numeroParrafoTexto
-        );
-
 
         //====================================
         // LEER F:O
@@ -1047,16 +1008,8 @@ if(hojaCompletarTextoListening){
             ).trim();
 
             if(posicionTexto !== ""){
-                console.log(
-                    "FILA:",
-                    fila,
-                    "COLUMNA:",
-                    columna,
-                    "POSICIÓN:",
-                    posicionTexto
-                );
-            }
 
+            }
 
             if(posicionTexto !== ""){
 
