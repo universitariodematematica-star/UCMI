@@ -146,18 +146,19 @@ datos.parrafos.forEach(
                     )
                 ){
 
-                    html +=
-                        `<input
-                            type="text"
-                            class="completar-listening-input"
-                            data-parrafo="${numeroParrafo}"
-                            data-posicion="${posicion}"
-                            style="
-                                width:100px;
-                                margin:0 4px;
-                                padding:6px;
-                            "
-                        >`;
+                html +=
+                    `<input
+                        type="text"
+                        class="completar-listening-input"
+                        data-parrafo="${numeroParrafo}"
+                        data-posicion="${posicion}"
+                        data-correcta="${escaparTexto(palabra)}"
+                        style="
+                            width:100px;
+                            margin:0 4px;
+                            padding:6px;
+                        "
+                    >`;
 
                 }else{
 
