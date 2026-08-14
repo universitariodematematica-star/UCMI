@@ -701,15 +701,6 @@ mostrarEstructuras:
 
 });
 
-UCMIMotorOrdenarParrafos.generar({
-
-    contenedor:"zona-ejercicios",
-
-    ordenarParrafos:
-    ${JSON.stringify(ejerciciosOrdenarParrafos)}
-
-});
-
 
 if(
     "${configuracionMostrar["Completar-texto-listening"] || "No"}"
@@ -731,6 +722,16 @@ if(
     });
 
 }
+
+
+UCMIMotorOrdenarParrafos.generar({
+
+    contenedor:"zona-ejercicios",
+
+    ordenarParrafos:
+    ${JSON.stringify(ejerciciosOrdenarParrafos)}
+
+});
 
 
 document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
