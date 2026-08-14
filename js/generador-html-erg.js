@@ -612,6 +612,7 @@ onclick="UCMIRestaurarEjercicios.reiniciar()">
 <script src="${rutaJS}motor-ejercicios.js"><\/script>
 <script src="${rutaJS}motor-estructuras.js"><\/script>
 <script src="${rutaJS}motor-completar-listening.js"><\/script>
+<script src="${rutaJS}motor-ordenar-parrafos.js"><\/script>
 
 <script>
 
