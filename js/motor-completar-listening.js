@@ -24,19 +24,25 @@ function evaluarCompletarListening(){
             .trim()
             .toLowerCase();
 
-        if(respuesta === correcta){
+if(respuesta === correcta){
 
-            correctas++;
+    correctas++;
 
-            entrada.style.border =
-                "2px solid green";
+    entrada.style.border =
+        "2px solid #4CAF50";
 
-        }else{
+    entrada.style.backgroundColor =
+        "#E8F5E9";
 
-            entrada.style.border =
-                "2px solid red";
+}else{
 
-        }
+    entrada.style.border =
+        "2px solid #E57373";
+
+    entrada.style.backgroundColor =
+        "#FFEBEE";
+
+}
 
     });
 
@@ -271,6 +277,9 @@ datos.parrafos.forEach(
                             width:100px;
                             margin:0 4px;
                             padding:6px;
+                            border:2px solid #BDBDBD;
+                            border-radius:8px;
+                            box-sizing:border-box;
                         "
                     >`;
 
