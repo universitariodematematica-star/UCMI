@@ -696,14 +696,26 @@ mostrarEstructuras:
 
 });
 
-UCMIMotorCompletarListening.generar({
+if(
+    "${configuracionMostrar["Completar-texto-listening"] || "No"}"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "${configuracionMostrar["Completar-texto-listening"] || "No"}"
+    .trim()
+    .toLowerCase() === "si"
+){
 
-    contenedor:"zona-ejercicios",
+    UCMIMotorCompletarListening.generar({
 
-    completarTextoListening:
-    ejercicioCompletarTextoListening
+        contenedor:"zona-ejercicios",
 
-});
+        completarTextoListening:
+        ejercicioCompletarTextoListening
+
+    });
+
+}
 
 
 document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
