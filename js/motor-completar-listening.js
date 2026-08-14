@@ -171,7 +171,6 @@ const UCMIMotorCompletarListening = {
             return;
         }
 
-
 //========================================
 // ENUNCIADO DEL EJERCICIO
 //========================================
