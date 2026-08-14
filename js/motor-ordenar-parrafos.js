@@ -54,17 +54,7 @@ const UCMIMotorOrdenarParrafos = {
         INSTRUCCIÓN DEL EJERCICIO
         =================================================*/
 
-        console.log(
-            "CONTADOR ANTES DE ORDENAR PÁRRAFOS:",
-            contadorEjercicios
-        );
-
         contadorEjercicios++;
-
-        console.log(
-            "CONTADOR DESPUÉS DE ORDENAR PÁRRAFOS:",
-            contadorEjercicios
-        );
 
         const instruccion =
             document.createElement("div");
