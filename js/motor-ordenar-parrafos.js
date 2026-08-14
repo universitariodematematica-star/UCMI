@@ -51,8 +51,10 @@ const UCMIMotorOrdenarParrafos = {
 
 
         /*=================================================
-        INSTRUCCIÓN
+        INSTRUCCIÓN DEL EJERCICIO
         =================================================*/
+
+        contadorEjercicios++;
 
         const instruccion =
             document.createElement("div");
@@ -61,7 +63,7 @@ const UCMIMotorOrdenarParrafos = {
             "instruccion-ejercicio";
 
         instruccion.textContent =
-            "Arrastra los párrafos para colocarlos en el orden correcto.";
+            `${contadorEjercicios}. Arrastra los párrafos para colocarlos en el orden correcto.`;
 
         bloque.appendChild(instruccion);
 
