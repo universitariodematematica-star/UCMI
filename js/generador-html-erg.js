@@ -23,6 +23,7 @@ ejerciciosTranscripcion=[],
 ejercicioIdentificarImagenes=[],
 estructurasGlobal={},
 ejercicioCompletarTextoListening={},
+ejerciciosOrdenarParrafos=[],
 configuracionMostrar={}
 ){
 
@@ -658,11 +659,14 @@ UCMIMotorEjercicios.generar({
     identificarImagenes:
     ${JSON.stringify(ejercicioIdentificarImagenes)},
     
-estructuras:
-${JSON.stringify(estructurasGlobal)},
-
-completarTextoListening:
-${JSON.stringify(ejercicioCompletarTextoListening)},
+    estructuras:
+    ${JSON.stringify(estructurasGlobal)},
+    
+    completarTextoListening:
+    ${JSON.stringify(ejercicioCompletarTextoListening)},
+    
+    ordenarParrafos:
+    ${JSON.stringify(ejerciciosOrdenarParrafos)},
 
 mostrarSeleccionSimple:
 "${configuracionMostrar["Selección simple"] || "No"}",
