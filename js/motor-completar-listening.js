@@ -35,6 +35,26 @@ console.log(
 
 
 //========================================
+// ENUNCIADO DEL EJERCICIO
+//========================================
+
+contadorEjercicios++;
+
+const instruccionEjercicio =
+    document.createElement("div");
+
+instruccionEjercicio.className =
+    "instruccion-ejercicio";
+
+instruccionEjercicio.textContent =
+    `${contadorEjercicios}. Lee el texto mientras escuchas y coloca las palabras faltantes.`;
+
+contenedor.appendChild(
+    instruccionEjercicio
+);
+
+
+//========================================
 // AUDIO DEL EJERCICIO
 //========================================
 
@@ -63,25 +83,6 @@ contenedorAudio.appendChild(
 contenedor.appendChild(
     contenedorAudio
 );
-
-
-//========================================
-// ENUNCIADO DEL EJERCICIO
-//========================================
-
-contadorEjercicios++;
-
-const instruccionEjercicio =
-    document.createElement("div");
-
-
-instruccionEjercicio.className =
-    "instruccion-ejercicio";
-
-instruccionEjercicio.textContent =
-    `${contadorEjercicios}. Lee el texto mientras escuchas y coloca las palabras faltantes.`;
-
-contenedor.appendChild(instruccionEjercicio);
 
 
         //========================================
