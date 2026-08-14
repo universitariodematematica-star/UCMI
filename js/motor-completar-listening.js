@@ -255,6 +255,11 @@ contenedor.appendChild(
     resultado
 );
 
+console.log(
+    "EVALUAR COMPLETAR LISTENING:",
+    typeof evaluarCompletarListening
+);        
+
     }
 
 };
