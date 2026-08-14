@@ -1125,6 +1125,30 @@ if(!esperaImagenesBlogger){
 
 function lanzarGeneracion(){
 
+    //========================================
+    // CONTROLAR COMPLETAR TEXTO - LISTENING
+    // SEGÚN LA HOJA "Mostrar"
+    //========================================
+
+    const mostrarCompletarTextoListening =
+        String(
+            configuracionMostrar["Completar-texto-listening"] || ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const datosCompletarTextoListening =
+        mostrarCompletarTextoListening === "sí" ||
+        mostrarCompletarTextoListening === "si"
+            ? ejercicioCompletarTextoListening
+            : {
+                audio: "",
+                parrafos: [],
+                referencias: []
+            };
+
+
     generarCodigo(   // ← VIENE DE: js/generador-html-erg.js
         datosPagina.nivel,
         datosPagina.unidad,
@@ -1143,7 +1167,7 @@ function lanzarGeneracion(){
         ejerciciosTranscripcion,
         ejercicioIdentificarImagenes,
         estructurasGlobal,
-        ejercicioCompletarTextoListening,
+        datosCompletarTextoListening,
         configuracionMostrar
     );
 
