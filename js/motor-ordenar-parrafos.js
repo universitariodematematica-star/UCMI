@@ -240,7 +240,7 @@ const UCMIMotorOrdenarParrafos = {
             }
         );
 
-     /*=================================================
+/*=================================================
 BOTÓN EVALUAR
 =================================================*/
 
@@ -253,10 +253,99 @@ botonEvaluar.className =
 botonEvaluar.textContent =
     "Evaluar";
 
+
+/*=================================================
+RESULTADO DE EVALUACIÓN
+=================================================*/
+
+const resultado =
+    document.createElement("div");
+
+resultado.className =
+    "resultado-ordenar-parrafos";
+
+
+/*=================================================
+EVENTO EVALUAR
+=================================================*/
+
+botonEvaluar.addEventListener(
+    "click",
+    () => {
+
+        const elementos =
+            [
+                ...zona.querySelectorAll(
+                    ".parrafo-arrastrable"
+                )
+            ];
+
+        let correcto = true;
+
+
+        elementos.forEach(
+            (elemento, indice) => {
+
+                const ordenEsperado =
+                    indice + 1;
+
+                const ordenReal =
+                    Number(
+                        elemento.dataset.orden
+                    );
+
+                if (
+                    ordenReal !==
+                    ordenEsperado
+                ) {
+
+                    correcto = false;
+
+                }
+
+            }
+        );
+
+
+        if (correcto) {
+
+            resultado.textContent =
+                "✓ ¡Correcto! Los párrafos están en el orden correcto.";
+
+            resultado.classList.remove(
+                "resultado-ordenar-incorrecto"
+            );
+
+            resultado.classList.add(
+                "resultado-ordenar-correcto"
+            );
+
+        } else {
+
+            resultado.textContent =
+                "✗ El orden de los párrafos no es correcto.";
+
+            resultado.classList.remove(
+                "resultado-ordenar-correcto"
+            );
+
+            resultado.classList.add(
+                "resultado-ordenar-incorrecto"
+            );
+
+        }
+
+    }
+);
+
+
 bloque.appendChild(
     botonEvaluar
 );
 
+bloque.appendChild(
+    resultado
+);
         /*=================================================
         INSERTAR BLOQUE EN EL DOM
         =================================================*/
