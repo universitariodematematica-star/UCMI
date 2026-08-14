@@ -1271,6 +1271,7 @@ function lanzarGeneracion(){
         ejercicioIdentificarImagenes,
         estructurasGlobal,
         datosCompletarTextoListening,
+        ejerciciosOrdenarParrafos,
         configuracionMostrar
     );
 
