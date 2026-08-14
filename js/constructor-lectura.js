@@ -205,64 +205,151 @@ for (let fila = 8; fila <= 19; fila++) {
 }
 
 
-    //===========================================
-    // CONSTRUIR LAS TABLAS DE ESTRUCTURAS
-    //===========================================
+//===========================================
+// CONSTRUIR LAS TABLAS DE ESTRUCTURAS
+//===========================================
+//
+// Cada estructura ocupa exactamente
+// tres filas en Excel:
+//
+// Estructura 1 → filas 8, 9, 10
+// Estructura 2 → filas 11, 12, 13
+// Estructura 3 → filas 14, 15, 16
+// Estructura 4 → filas 17, 18, 19
+//
+// Una estructura solo se genera si
+// al menos una de sus tres filas
+// contiene elementos.
+//===========================================
 
-    let tablasEstructuras = [];
+let tablasEstructuras = [];
 
-    infoEstructural.forEach(
-        (estructura, indice) => {
+infoEstructural.forEach(
+    (estructura, indice) => {
 
-            const componentes =
-                estructura.componentes.filter(
-                    componente =>
-                        componente.trim() !== ""
-                );
+        const componentes =
+            estructura.componentes.filter(
+                componente =>
+                    componente.trim() !== ""
+            );
 
 
-            // Las tres filas de oraciones
-            // correspondientes a esta estructura
+        //====================================
+        // DETERMINAR LAS TRES FILAS
+        // DE ESTA ESTRUCTURA
+        //====================================
 
-            const inicio =
-                indice * 3;
+        const filaInicial =
+            8 + (indice * 3);
 
-            const oraciones =
-                oracionesEstructuradas
-                    .slice(
-                        inicio,
-                        inicio + 3
+
+        const oracionesEstructura = [];
+
+
+        //====================================
+        // LEER LAS TRES FILAS DIRECTAMENTE
+        // DESDE EXCEL
+        //====================================
+
+        for(
+            let fila = filaInicial;
+            fila < filaInicial + 3;
+            fila++
+        ){
+
+            let elementosFila = [];
+
+
+            for(
+                let col = 2;
+                col <= 10;
+                col++
+            ){
+
+                const letraColumna =
+                    String.fromCharCode(
+                        64 + col
                     );
 
 
-            tablasEstructuras.push({
+                const valorCelda =
+                    leerCelda(
+                        hojaEstructuras.getCell(
+                            letraColumna + fila
+                        )
+                    );
 
-                numero:
-                    indice + 1,
 
-                tipo:
-                    estructura.tipo,
+                elementosFila.push(
+                    valorCelda
+                );
 
-                encabezados:
-                    componentes,
+            }
 
-                oraciones:
-                    oraciones.map(
-                        oracion => {
 
-                            return oracion.elementos
-                                .slice(
-                                    0,
-                                    componentes.length
-                                );
+            //================================
+            // COMPROBAR SI LA FILA TIENE
+            // AL MENOS UN ELEMENTO
+            //================================
 
-                        }
-                    )
+            const tieneElementos =
+                elementosFila.some(
+                    elemento =>
+                        elemento.trim() !== ""
+                );
 
-            });
+
+            if(!tieneElementos){
+                continue;
+            }
+
+
+            oracionesEstructura.push(
+
+                elementosFila.slice(
+                    0,
+                    componentes.length
+                )
+
+            );
 
         }
-    );
+
+
+        //====================================
+        // SI NO EXISTE NINGUNA ORACIÓN,
+        // NO CREAR LA TABLA
+        //====================================
+
+        if(
+            oracionesEstructura.length === 0
+        ){
+            return;
+        }
+
+
+        //====================================
+        // CREAR LA TABLA
+        //====================================
+
+        tablasEstructuras.push({
+
+            numero:
+                indice + 1,
+
+            tipo:
+                estructura.tipo,
+
+            encabezados:
+                componentes,
+
+            oraciones:
+                oracionesEstructura
+
+        });
+
+    }
+);
 
 
     estructurasGlobal = {
