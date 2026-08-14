@@ -146,18 +146,6 @@ if (hojaOrdenarParrafos) {
 
 }
 
-console.log(
-    "========== ORDENAR PÁRRAFOS =========="
-);
-
-console.log(
-    "DATOS ORDENAR PÁRRAFOS:",
-    ejerciciosOrdenarParrafos
-);
-
-console.log(
-    "========== FIN ORDENAR PÁRRAFOS =========="
-);    
     
 if (hojaEstructuras) {
 
