@@ -19,6 +19,95 @@ async function descargarPlantilla(){
     const hojaCompletarTextoListening = libro.addWorksheet("Completar-texto-listening");
     const hojaOrdenarParrafos = libro.addWorksheet("ordenar-parrafos");
     const hojaMostrar = libro.addWorksheet("Mostrar");
+
+    //=====================================================
+// HOJA: ordenar-parrafos
+//=====================================================
+
+//-----------------------------------------------------
+// ENCABEZADOS
+//-----------------------------------------------------
+
+hojaOrdenarParrafos.getCell("A1").value =
+    "Orden correcto";
+
+hojaOrdenarParrafos.getCell("B1").value =
+    "Párrafo correspondiente al orden";
+
+
+//-----------------------------------------------------
+// EJEMPLO
+//-----------------------------------------------------
+
+hojaOrdenarParrafos.getCell("A2").value =
+    1;
+
+hojaOrdenarParrafos.getCell("B2").value =
+    "Este es el primer párrafo del texto.";
+
+
+hojaOrdenarParrafos.getCell("A3").value =
+    2;
+
+hojaOrdenarParrafos.getCell("B3").value =
+    "Este es el segundo párrafo del texto.";
+
+
+hojaOrdenarParrafos.getCell("A4").value =
+    3;
+
+hojaOrdenarParrafos.getCell("B4").value =
+    "Este es el tercer párrafo del texto.";
+
+
+//-----------------------------------------------------
+// FILA DE ORIENTACIÓN
+//-----------------------------------------------------
+
+hojaOrdenarParrafos.getCell("A5").value =
+    "Puedes colocar más números";
+
+hojaOrdenarParrafos.getCell("B5").value =
+    "Puedes colocar más párrafos";
+
+
+//-----------------------------------------------------
+// ANCHOS DE COLUMNAS
+//-----------------------------------------------------
+
+hojaOrdenarParrafos.getColumn("A").width = 22;
+
+hojaOrdenarParrafos.getColumn("B").width = 100;
+
+
+//-----------------------------------------------------
+// ENCABEZADOS EN NEGRITA
+//-----------------------------------------------------
+
+for(let celda of ["A1","B1"]){
+
+    hojaOrdenarParrafos.getCell(celda).font = {
+        bold:true
+    };
+
+}
+
+
+//-----------------------------------------------------
+// ORIENTACIÓN EN GRIS
+//-----------------------------------------------------
+
+hojaOrdenarParrafos.getCell("A5").font = {
+    color:{
+        argb:"FF808080"
+    }
+};
+
+hojaOrdenarParrafos.getCell("B5").font = {
+    color:{
+        argb:"FF808080"
+    }
+};
    
     console.log("CREANDO HOJA MOSTRAR");
     console.log("CREANDO HOJA ESTRUCTURAS");
