@@ -28,10 +28,42 @@ const UCMIMotorCompletarListening = {
             return;
         }
 
-        console.log(
-            "DATOS COMPLETAR TEXTO LISTENING:",
-            datos
-        );
+```javascript
+console.log(
+    "DATOS COMPLETAR TEXTO LISTENING:",
+    datos
+);
+
+
+//========================================
+// AUDIO DEL EJERCICIO
+//========================================
+
+const contenedorAudio =
+    document.createElement("div");
+
+contenedorAudio.className =
+    "audioUCMI";
+
+const datosAudio =
+    document.createElement("div");
+
+datosAudio.className =
+    "audio-data";
+
+datosAudio.dataset.titulo =
+    "Listening";
+
+datosAudio.dataset.audio =
+    datos.audio || "";
+
+contenedorAudio.appendChild(
+    datosAudio
+);
+
+contenedor.appendChild(
+    contenedorAudio
+);
 
 
 //========================================
@@ -42,6 +74,8 @@ contadorEjercicios++;
 
 const instruccionEjercicio =
     document.createElement("div");
+```
+
 
 instruccionEjercicio.className =
     "instruccion-ejercicio";
