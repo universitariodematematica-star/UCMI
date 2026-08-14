@@ -28,7 +28,6 @@ const UCMIMotorCompletarListening = {
             return;
         }
 
-```javascript
 console.log(
     "DATOS COMPLETAR TEXTO LISTENING:",
     datos
@@ -74,7 +73,6 @@ contadorEjercicios++;
 
 const instruccionEjercicio =
     document.createElement("div");
-```
 
 
 instruccionEjercicio.className =
