@@ -344,8 +344,14 @@ botonEvaluar.className =
 botonEvaluar.textContent =
     "Evaluar";
 
-botonEvaluar.onclick =
-    evaluarCompletarListening;
+botonEvaluar.addEventListener(
+    "click",
+    function(){
+
+        evaluarCompletarListening();
+
+    }
+);
 
 contenedor.appendChild(
     botonEvaluar
