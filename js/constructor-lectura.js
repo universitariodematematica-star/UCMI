@@ -97,6 +97,55 @@ if (hojaImagenes){
     const hojaCompletarTextoListening = libro.getWorksheet("Completar-texto-listening");
     const hojaOrdenarParrafos = libro.getWorksheet("ordenar-parrafos");
 
+//===========================================
+// ORDENAR PÁRRAFOS
+//===========================================
+
+let ejerciciosOrdenarParrafos = [];
+
+if (hojaOrdenarParrafos) {
+
+    for (
+        let fila = 2;
+        fila <= hojaOrdenarParrafos.rowCount;
+        fila++
+    ) {
+
+        const orden =
+            leerCelda(
+                hojaOrdenarParrafos.getCell("A" + fila)
+            ).trim();
+
+        const parrafo =
+            leerCelda(
+                hojaOrdenarParrafos.getCell("B" + fila)
+            ).trim();
+
+        // Ignorar filas sin datos
+        if (!orden || !parrafo) {
+            continue;
+        }
+
+        const numeroOrden =
+            Number(orden);
+
+        // Solo aceptar números enteros
+        if (!Number.isInteger(numeroOrden)) {
+            continue;
+        }
+
+        ejerciciosOrdenarParrafos.push({
+
+            orden: numeroOrden,
+
+            parrafo: parrafo
+
+        });
+
+    }
+
+}
+    
 if (hojaEstructuras) {
 
     let infoEstructural = [];
