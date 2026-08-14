@@ -208,9 +208,51 @@ datos.parrafos.forEach(
         // INSERTAR PÁRRAFO
         //====================================
 
-        contenedor.appendChild(bloque);
+contenedor.appendChild(bloque);
 
     }
+);
+
+
+//========================================
+// BOTÓN EVALUAR
+//========================================
+
+const botonEvaluar =
+    document.createElement("button");
+
+botonEvaluar.type =
+    "button";
+
+botonEvaluar.className =
+    "verificar";
+
+botonEvaluar.textContent =
+    "Evaluar";
+
+botonEvaluar.onclick =
+    evaluarCompletarListening;
+
+contenedor.appendChild(
+    botonEvaluar
+);
+
+
+//========================================
+// RESULTADO
+//========================================
+
+const resultado =
+    document.createElement("div");
+
+resultado.className =
+    "resultado";
+
+resultado.id =
+    "resultado-completar-listening";
+
+contenedor.appendChild(
+    resultado
 );
 
     }
