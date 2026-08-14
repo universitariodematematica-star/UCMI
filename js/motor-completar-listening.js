@@ -171,11 +171,6 @@ const UCMIMotorCompletarListening = {
             return;
         }
 
-console.log(
-    "DATOS COMPLETAR TEXTO LISTENING:",
-    datos
-);
-
 
 //========================================
 // ENUNCIADO DEL EJERCICIO
@@ -405,12 +400,7 @@ resultado.id =
 
 contenedor.appendChild(
     resultado
-);
-
-console.log(
-    "EVALUAR COMPLETAR LISTENING:",
-    typeof evaluarCompletarListening
-);        
+);    
 
     }
 
