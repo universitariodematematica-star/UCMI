@@ -21,6 +21,146 @@ const hojaOrdenarParrafos = libro.addWorksheet("ordenar-parrafos");
 const hojaComprensionTexto = libro.addWorksheet("Comprension-texto");
 const hojaMostrar = libro.addWorksheet("Mostrar");
 
+//=====================================================
+// HOJA: Comprension-texto
+//=====================================================
+
+//-----------------------------------------------------
+// TEXTO
+//-----------------------------------------------------
+
+hojaComprensionTexto.getCell("A1").value =
+    "Texto";
+
+
+//-----------------------------------------------------
+// PÁRRAFOS
+//-----------------------------------------------------
+
+for(let fila = 2; fila <= 11; fila++){
+
+    hojaComprensionTexto.getCell(fila, 1).value =
+        "Párrafo " + (fila - 1);
+
+}
+
+
+//-----------------------------------------------------
+// PREGUNTAS Y OPCIONES
+//-----------------------------------------------------
+
+for(let n = 1; n <= 10; n++){
+
+    const filaInicio =
+        6 * (n - 1) + 1;
+
+
+    //-------------------------------------------------
+    // PREGUNTA
+    //-------------------------------------------------
+
+    hojaComprensionTexto.getCell(
+        filaInicio,
+        3
+    ).value =
+        "Pregunta " + n;
+
+
+    //-------------------------------------------------
+    // ENUNCIADO DE LA PREGUNTA
+    //-------------------------------------------------
+
+    hojaComprensionTexto.getCell(
+        filaInicio,
+        4
+    ).value =
+        n === 1
+        ? "Enunciado primera pregunta"
+        : "";
+
+
+    //-------------------------------------------------
+    // OPCIÓN CORRECTA
+    //-------------------------------------------------
+
+    hojaComprensionTexto.getCell(
+        filaInicio + 1,
+        3
+    ).value =
+        "Opción correcta";
+
+    hojaComprensionTexto.getCell(
+        filaInicio + 1,
+        4
+    ).value =
+        n === 1
+        ? "Enunciado opción correcta"
+        : "";
+
+
+    //-------------------------------------------------
+    // OPCIONES FALSAS
+    //-------------------------------------------------
+
+    for(let i = 2; i <= 4; i++){
+
+        hojaComprensionTexto.getCell(
+            filaInicio + i,
+            3
+        ).value =
+            "Opción falsa";
+
+
+        hojaComprensionTexto.getCell(
+            filaInicio + i,
+            4
+        ).value =
+            n === 1
+            ? "Enunciado opción falsa"
+            : "";
+
+    }
+
+}
+
+
+//-----------------------------------------------------
+// ANCHOS DE COLUMNAS
+//-----------------------------------------------------
+
+hojaComprensionTexto.getColumn("A").width = 100;
+
+hojaComprensionTexto.getColumn("B").width = 5;
+
+hojaComprensionTexto.getColumn("C").width = 25;
+
+hojaComprensionTexto.getColumn("D").width = 80;
+
+
+//-----------------------------------------------------
+// ENCABEZADOS EN NEGRITA
+//-----------------------------------------------------
+
+hojaComprensionTexto.getCell("A1").font = {
+    bold:true
+};
+
+
+for(let n = 1; n <= 10; n++){
+
+    const filaInicio =
+        6 * (n - 1) + 1;
+
+
+    hojaComprensionTexto.getCell(
+        filaInicio,
+        3
+    ).font = {
+        bold:true
+    };
+
+}    
+
     //=====================================================
 // HOJA: ordenar-parrafos
 //=====================================================
