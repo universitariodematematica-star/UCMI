@@ -763,7 +763,7 @@ hojaMostrar.getCell("A3").value =
 "Completar espacios";
 
 hojaMostrar.getCell("B3").value =
-"No";
+"Sí";
 
 hojaMostrar.getCell("A4").value =
 "Drag and drop blanco";
@@ -813,9 +813,17 @@ hojaMostrar.getCell("A11").value =
 hojaMostrar.getCell("B11").value =
 "Sí";
 
+
+hojaMostrar.getCell("A12").value =
+"Ordenar párrafos";
+
+hojaMostrar.getCell("B12").value =
+"Sí";
+
+
 // Lista desplegable Sí / No
 
-for(let fila = 2; fila <= 11; fila++){
+for(let fila = 2; fila <= 12; fila++){
 
     hojaMostrar.getCell("B"+fila).dataValidation = {
 
