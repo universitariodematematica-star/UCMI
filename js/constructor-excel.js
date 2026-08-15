@@ -6,19 +6,20 @@ async function descargarPlantilla(){
 
     const libro = new ExcelJS.Workbook();
 
-    const hojaDatos = libro.addWorksheet("Datos");
-    const hojaSelSimple = libro.addWorksheet("Sel-simp-op");
-    const hojaCompletar = libro.addWorksheet("Completar");
-    const hojaDragDrop = libro.addWorksheet("Drag-drop-blanco");
-    const hojaOrdenarOracion = libro.addWorksheet("Ordenar-oracion");
-    const hojaRelacionar = libro.addWorksheet("Relacionar");
-    const hojaTraduccion = libro.addWorksheet("Traducción");
-    const hojaTranscripcion = libro.addWorksheet("Transcripción");
-    const hojaIdentificarImagenes = libro.addWorksheet("Identificar-imagenes");
-    const hojaEstructuras = libro.addWorksheet("Estructuras");
-    const hojaCompletarTextoListening = libro.addWorksheet("Completar-texto-listening");
-    const hojaOrdenarParrafos = libro.addWorksheet("ordenar-parrafos");
-    const hojaMostrar = libro.addWorksheet("Mostrar");
+const hojaDatos = libro.addWorksheet("Datos");
+const hojaSelSimple = libro.addWorksheet("Sel-simp-op");
+const hojaCompletar = libro.addWorksheet("Completar");
+const hojaDragDrop = libro.addWorksheet("Drag-drop-blanco");
+const hojaOrdenarOracion = libro.addWorksheet("Ordenar-oracion");
+const hojaRelacionar = libro.addWorksheet("Relacionar");
+const hojaTraduccion = libro.addWorksheet("Traducción");
+const hojaTranscripcion = libro.addWorksheet("Transcripción");
+const hojaIdentificarImagenes = libro.addWorksheet("Identificar-imagenes");
+const hojaEstructuras = libro.addWorksheet("Estructuras");
+const hojaCompletarTextoListening = libro.addWorksheet("Completar-texto-listening");
+const hojaOrdenarParrafos = libro.addWorksheet("ordenar-parrafos");
+const hojaComprensionTexto = libro.addWorksheet("Comprension-texto");
+const hojaMostrar = libro.addWorksheet("Mostrar");
 
     //=====================================================
 // HOJA: ordenar-parrafos
