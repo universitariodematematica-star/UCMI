@@ -724,14 +724,26 @@ if(
 }
 
 
-UCMIMotorOrdenarParrafos.generar({
+if(
+    "${configuracionMostrar["Ordenar párrafos"] || "No"}"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "${configuracionMostrar["Ordenar párrafos"] || "No"}"
+    .trim()
+    .toLowerCase() === "si"
+){
 
-    contenedor:"zona-ejercicios",
+    UCMIMotorOrdenarParrafos.generar({
 
-    ordenarParrafos:
-    ${JSON.stringify(ejerciciosOrdenarParrafos)}
+        contenedor:"zona-ejercicios",
 
-});
+        ordenarParrafos:
+        ${JSON.stringify(ejerciciosOrdenarParrafos)}
+
+    });
+
+}
 
 
 document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
