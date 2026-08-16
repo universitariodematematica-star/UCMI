@@ -1520,6 +1520,7 @@ function lanzarGeneracion(){
         estructurasGlobal,
         datosCompletarTextoListening,
         ejerciciosOrdenarParrafos,
+        ejercicioComprensionTexto,
         configuracionMostrar
     );
 
