@@ -143,6 +143,10 @@ if (hojaImagenes){
 
 let ejercicioComprensionTexto = {
 
+    titulo: leerCelda(
+        hojaComprensionTexto.getCell("A14")
+    ).trim(),
+
     parrafos: [],
 
     preguntas: []
