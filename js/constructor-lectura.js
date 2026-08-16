@@ -296,6 +296,24 @@ if (hojaComprensionTexto) {
     }
 
 }
+
+console.log(
+    "========== DIAGNÓSTICO COMPRENSIÓN DE TEXTO =========="
+);
+
+console.log(
+    "PÁRRAFOS:",
+    ejercicioComprensionTexto.parrafos
+);
+
+console.log(
+    "PREGUNTAS:",
+    ejercicioComprensionTexto.preguntas
+);
+
+console.log(
+    "======================================================"
+);    
     
 //===========================================
 // ORDENAR PÁRRAFOS
