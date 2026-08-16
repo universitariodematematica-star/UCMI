@@ -46,6 +46,17 @@ for(let fila = 2; fila <= 11; fila++){
 
 
 //-----------------------------------------------------
+// TÍTULO
+//-----------------------------------------------------
+
+hojaComprensionTexto.getCell("A13").value =
+    "Título";
+
+hojaComprensionTexto.getCell("A14").value =
+    "Nombre del título";
+
+
+//-----------------------------------------------------
 // PREGUNTAS Y OPCIONES
 //-----------------------------------------------------
 
@@ -142,6 +153,10 @@ hojaComprensionTexto.getColumn("D").width = 80;
 //-----------------------------------------------------
 
 hojaComprensionTexto.getCell("A1").font = {
+    bold:true
+};
+
+hojaComprensionTexto.getCell("A13").font = {
     bold:true
 };
 
