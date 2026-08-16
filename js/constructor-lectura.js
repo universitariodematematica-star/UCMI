@@ -98,6 +98,177 @@ if (hojaImagenes){
     const hojaOrdenarParrafos = libro.getWorksheet("ordenar-parrafos");
     const hojaComprensionTexto = libro.getWorksheet("Comprension-texto");
 
+
+//===========================================
+// COMPRENSIÓN DE TEXTO
+//===========================================
+//
+// A2:A11 = párrafos
+//
+// Cada pregunta ocupa 5 filas:
+//
+// B:F = estructura de referencia
+// C:F = contenido
+//
+// Fila inicial:
+// B = Pregunta N
+// C = Enunciado
+//
+// Fila +1:
+// B = Opción correcta
+// C = Respuesta correcta
+//
+// Fila +2:
+// B = Opción falsa
+// C = Respuesta falsa
+//
+// Fila +3:
+// B = Opción falsa
+// C = Respuesta falsa
+//
+// Fila +4:
+// B = Opción falsa
+// C = Respuesta falsa
+//
+// Máximo:
+// 10 párrafos
+// 10 preguntas
+//===========================================
+
+let ejercicioComprensionTexto = {
+
+    parrafos: [],
+
+    preguntas: []
+
+};
+
+
+//===========================================
+// LEER PÁRRAFOS
+//===========================================
+
+if (hojaComprensionTexto) {
+
+    for (
+        let fila = 2;
+        fila <= 11;
+        fila++
+    ) {
+
+        const parrafo =
+            leerCelda(
+                hojaComprensionTexto.getCell(
+                    "A" + fila
+                )
+            ).trim();
+
+
+        if (!parrafo) {
+            continue;
+        }
+
+
+        ejercicioComprensionTexto.parrafos.push(
+            parrafo
+        );
+
+    }
+
+
+    //=======================================
+    // LEER PREGUNTAS
+    //=======================================
+    //
+    // Pregunta 1 → filas 1 a 5
+    // Pregunta 2 → filas 6 a 10
+    // ...
+    // Pregunta 10 → filas 46 a 50
+    //
+    //=======================================
+
+    for (
+        let numeroPregunta = 1;
+        numeroPregunta <= 10;
+        numeroPregunta++
+    ) {
+
+        const filaInicial =
+            1 + ((numeroPregunta - 1) * 5);
+
+
+        const pregunta =
+            leerCelda(
+                hojaComprensionTexto.getCell(
+                    "C" + filaInicial
+                )
+            ).trim();
+
+
+        if (!pregunta) {
+            continue;
+        }
+
+
+        const correcta =
+            leerCelda(
+                hojaComprensionTexto.getCell(
+                    "C" + (filaInicial + 1)
+                )
+            ).trim();
+
+
+        const falsa1 =
+            leerCelda(
+                hojaComprensionTexto.getCell(
+                    "C" + (filaInicial + 2)
+                )
+            ).trim();
+
+
+        const falsa2 =
+            leerCelda(
+                hojaComprensionTexto.getCell(
+                    "C" + (filaInicial + 3)
+                )
+            ).trim();
+
+
+        const falsa3 =
+            leerCelda(
+                hojaComprensionTexto.getCell(
+                    "C" + (filaInicial + 4)
+                )
+            ).trim();
+
+
+        ejercicioComprensionTexto.preguntas.push({
+
+            numero:
+                numeroPregunta,
+
+            pregunta:
+                pregunta,
+
+            correcta:
+                correcta,
+
+            opciones: [
+
+                falsa1,
+
+                falsa2,
+
+                falsa3
+
+            ]
+
+        });
+
+    }
+
+}
+    
 //===========================================
 // ORDENAR PÁRRAFOS
 //===========================================
