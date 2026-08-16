@@ -744,11 +744,11 @@ if(
 }
 
 if(
-    "${configuracionMostrar["Comprension-texto"] || "No"}"
+    "${configuracionMostrar["Comprensión de texto"] || "No"}"
     .trim()
     .toLowerCase() === "sí"
     ||
-    "${configuracionMostrar["Comprension-texto"] || "No"}"
+    "${configuracionMostrar["Comprensión de texto"] || "No"}"
     .trim()
     .toLowerCase() === "si"
 ){
