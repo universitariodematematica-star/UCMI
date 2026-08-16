@@ -103,32 +103,38 @@ if (hojaImagenes){
 // COMPRENSIÓN DE TEXTO
 //===========================================
 //
-// A2:A11 = párrafos
+// HOJA: "Comprension-texto"
 //
-// Cada pregunta ocupa 5 filas:
+// PÁRRAFOS
 //
-// B:F = estructura de referencia
-// C:F = contenido
+// A2:A11 = hasta 10 párrafos.
 //
-// Fila inicial:
-// B = Pregunta N
-// C = Enunciado
+// El número de párrafos depende de los datos
+// existentes en el Excel.
 //
-// Fila +1:
-// B = Opción correcta
-// C = Respuesta correcta
+// Un párrafo puede tener varias preguntas.
+// Un párrafo puede no tener preguntas.
 //
-// Fila +2:
-// B = Opción falsa
-// C = Respuesta falsa
+// Las preguntas NO se asignan aquí a párrafos.
+// La distribución de preguntas es independiente.
 //
-// Fila +3:
-// B = Opción falsa
-// C = Respuesta falsa
+// PREGUNTAS
 //
-// Fila +4:
-// B = Opción falsa
-// C = Respuesta falsa
+// Cada pregunta ocupa 6 filas.
+//
+// Pregunta 1 → filas 1 a 6
+// Pregunta 2 → filas 7 a 12
+// Pregunta 3 → filas 13 a 18
+// ...
+// Pregunta 10 → filas 55 a 60
+//
+// D[F]     = enunciado de la pregunta
+// D[F+1]   = opción correcta
+// D[F+2]   = opción falsa
+// D[F+3]   = opción falsa
+// D[F+4]   = opción falsa
+//
+// F = fila inicial del bloque de la pregunta.
 //
 // Máximo:
 // 10 párrafos
@@ -169,9 +175,15 @@ if (hojaComprensionTexto) {
         }
 
 
-        ejercicioComprensionTexto.parrafos.push(
-            parrafo
-        );
+        ejercicioComprensionTexto.parrafos.push({
+
+            numero:
+                fila - 1,
+
+            texto:
+                parrafo
+
+        });
 
     }
 
@@ -180,10 +192,13 @@ if (hojaComprensionTexto) {
     // LEER PREGUNTAS
     //=======================================
     //
-    // Pregunta 1 → filas 1 a 5
-    // Pregunta 2 → filas 6 a 10
+    // Pregunta 1  → fila 1
+    // Pregunta 2  → fila 7
+    // Pregunta 3  → fila 13
     // ...
-    // Pregunta 10 → filas 46 a 50
+    // Pregunta 10 → fila 55
+    //
+    // Cada pregunta ocupa 6 filas.
     //
     //=======================================
 
@@ -193,14 +208,18 @@ if (hojaComprensionTexto) {
         numeroPregunta++
     ) {
 
-        const filaInicial =
-            1 + ((numeroPregunta - 1) * 5);
+        const filaInicio =
+            6 * (numeroPregunta - 1) + 1;
 
+
+        //===================================
+        // ENUNCIADO DE LA PREGUNTA
+        //===================================
 
         const pregunta =
             leerCelda(
                 hojaComprensionTexto.getCell(
-                    "C" + filaInicial
+                    "D" + filaInicio
                 )
             ).trim();
 
@@ -210,37 +229,53 @@ if (hojaComprensionTexto) {
         }
 
 
+        //===================================
+        // OPCIÓN CORRECTA
+        //===================================
+
         const correcta =
             leerCelda(
                 hojaComprensionTexto.getCell(
-                    "C" + (filaInicial + 1)
+                    "D" + (filaInicio + 1)
                 )
             ).trim();
 
 
-        const falsa1 =
-            leerCelda(
-                hojaComprensionTexto.getCell(
-                    "C" + (filaInicial + 2)
-                )
-            ).trim();
+        //===================================
+        // OPCIONES FALSAS
+        //===================================
+
+        const incorrectas = [];
 
 
-        const falsa2 =
-            leerCelda(
-                hojaComprensionTexto.getCell(
-                    "C" + (filaInicial + 3)
-                )
-            ).trim();
+        for (
+            let i = 2;
+            i <= 4;
+            i++
+        ) {
+
+            const incorrecta =
+                leerCelda(
+                    hojaComprensionTexto.getCell(
+                        "D" + (filaInicio + i)
+                    )
+                ).trim();
 
 
-        const falsa3 =
-            leerCelda(
-                hojaComprensionTexto.getCell(
-                    "C" + (filaInicial + 4)
-                )
-            ).trim();
+            if (incorrecta) {
 
+                incorrectas.push(
+                    incorrecta
+                );
+
+            }
+
+        }
+
+
+        //===================================
+        // GUARDAR PREGUNTA
+        //===================================
 
         ejercicioComprensionTexto.preguntas.push({
 
@@ -253,15 +288,8 @@ if (hojaComprensionTexto) {
             correcta:
                 correcta,
 
-            opciones: [
-
-                falsa1,
-
-                falsa2,
-
-                falsa3
-
-            ]
+            incorrectas:
+                incorrectas
 
         });
 
