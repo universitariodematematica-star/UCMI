@@ -273,10 +273,25 @@ for (let fila = 8; fila <= 19; fila++) {
 // contiene elementos.
 //===========================================
 
+//===========================================
+// CONSTRUIR LAS TABLAS DE ESTRUCTURAS
+//===========================================
+//
+// Cada estructura definida en:
+//
+// fila 2 → sus oraciones están en 8, 9, 10
+// fila 3 → sus oraciones están en 11, 12, 13
+// fila 4 → sus oraciones están en 14, 15, 16
+// fila 5 → sus oraciones están en 17, 18, 19
+//
+// Se utiliza la FILA REAL de Excel de la
+// estructura y no el índice del array.
+//===========================================
+
 let tablasEstructuras = [];
 
 infoEstructural.forEach(
-    (estructura, indice) => {
+    (estructura) => {
 
         const componentes =
             estructura.componentes.filter(
@@ -287,11 +302,11 @@ infoEstructural.forEach(
 
         //====================================
         // DETERMINAR LAS TRES FILAS
-        // DE ESTA ESTRUCTURA
+        // SEGÚN LA FILA REAL DE LA ESTRUCTURA
         //====================================
 
         const filaInicial =
-            8 + (indice * 3);
+            8 + ((estructura.fila - 2) * 3);
 
 
         const oracionesEstructura = [];
@@ -386,7 +401,7 @@ infoEstructural.forEach(
         tablasEstructuras.push({
 
             numero:
-                indice + 1,
+                estructura.fila - 1,
 
             tipo:
                 estructura.tipo,
