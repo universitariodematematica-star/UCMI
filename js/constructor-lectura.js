@@ -431,6 +431,29 @@ infoEstructural.forEach(
 
     };
 
+    console.log(
+    "========== DIAGNÓSTICO ESTRUCTURAS =========="
+);
+
+console.log(
+    "INFORMACIÓN ESTRUCTURAL:",
+    estructurasGlobal.informacion
+);
+
+console.log(
+    "ORACIONES ESTRUCTURADAS:",
+    estructurasGlobal.oraciones
+);
+
+console.log(
+    "TABLAS DE ESTRUCTURAS:",
+    estructurasGlobal.tablas
+);
+
+console.log(
+    "=============================================="
+);
+
 oracionesEstructuradas.forEach(
     (oracion, indice) => {
 
