@@ -1466,9 +1466,9 @@ Object.entries(configuracionMostrar).forEach(
 );
 
 console.log(
-    "BUSQUEDA Comprension-texto:",
+    "BUSQUEDA Comprensión de texto:",
     JSON.stringify(
-        configuracionMostrar["Comprension-texto"]
+        configuracionMostrar["Comprensión de texto"]
     )
 );
 
