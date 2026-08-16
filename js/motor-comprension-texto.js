@@ -23,6 +23,35 @@ const UCMIMotorComprensionTexto = {
             configuracion.comprensionTexto;
 
 
+        console.log(
+            "========== MOTOR COMPRENSIÓN DE TEXTO =========="
+        );
+
+        console.log(
+            "CONFIGURACIÓN RECIBIDA:",
+            configuracion
+        );
+
+        console.log(
+            "DATOS RECIBIDOS:",
+            datos
+        );
+
+        console.log(
+            "PÁRRAFOS RECIBIDOS:",
+            datos ? datos.parrafos : null
+        );
+
+        console.log(
+            "PREGUNTAS RECIBIDAS:",
+            datos ? datos.preguntas : null
+        );
+
+        console.log(
+            "===============================================" 
+        );
+
+
         if(!datos){
             console.error(
                 "UCMIMotorComprensionTexto: no se recibieron datos."
