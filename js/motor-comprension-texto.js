@@ -82,37 +82,54 @@ const UCMIMotorComprensionTexto = {
             "ejercicio-comprension-texto";
 
 
-        /*
-        =================================================
-        TÍTULO
-        =================================================
-        */
+/*
+=================================================
+TÍTULO
+=================================================
+*/
 
-        const titulo =
-            document.createElement("h2");
+const titulo =
+    document.createElement("h2");
 
-        titulo.textContent =
-            "Comprensión de texto";
+titulo.textContent =
+    "Comprensión de texto";
 
-        zona.appendChild(titulo);
+zona.appendChild(titulo);
 
 
-        /*
-        =================================================
-        TEXTO
-        =================================================
-        */
+/*
+=================================================
+INSTRUCCIÓN
+=================================================
+*/
 
-        const tituloTexto =
-            document.createElement("h3");
+const instruccion =
+    document.createElement("div");
 
-        tituloTexto.textContent =
-            datos.titulo || "";
+instruccion.className =
+    "instruccion-ejercicio";
 
-        tituloTexto.style.textAlign =
-            "center";
+instruccion.textContent =
+    "Lee el siguiente texto y responde las preguntas relacionadas";
 
-        zona.appendChild(tituloTexto);
+zona.appendChild(
+    instruccion
+);
+
+
+/*
+=================================================
+TEXTO
+=================================================
+*/
+
+const tituloTexto =
+    document.createElement("h3");
+
+tituloTexto.textContent =
+    "Texto";
+
+zona.appendChild(tituloTexto);
 
 
         const contenedorTexto =
