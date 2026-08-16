@@ -672,9 +672,6 @@ UCMIMotorEjercicios.generar({
 
 mostrarSeleccionSimple:
 "${configuracionMostrar["Selección simple"] || "No"}",
-    
-mostrarSeleccionSimple:
-"${configuracionMostrar["Selección simple"] || "No"}",
 
 mostrarCompletar:
 "${configuracionMostrar["Completar espacios"] || "No"}",
