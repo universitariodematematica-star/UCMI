@@ -746,6 +746,27 @@ if(
 
 }
 
+if(
+    "${configuracionMostrar["Comprension-texto"] || "No"}"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "${configuracionMostrar["Comprension-texto"] || "No"}"
+    .trim()
+    .toLowerCase() === "si"
+){
+
+    UCMIMotorComprensionTexto.generar({
+
+        contenedor:"zona-ejercicios",
+
+        comprensionTexto:
+        ${JSON.stringify(ejercicioComprensionTexto)}
+
+    });
+
+}
+
 
 document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
 
