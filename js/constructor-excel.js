@@ -961,10 +961,16 @@ hojaMostrar.getCell("A12").value =
 hojaMostrar.getCell("B12").value =
 "Sí";
 
+hojaMostrar.getCell("A13").value =
+"Comprensión de texto";
+
+hojaMostrar.getCell("B13").value =
+"Sí";    
+
 
 // Lista desplegable Sí / No
 
-for(let fila = 2; fila <= 12; fila++){
+for(let fila = 2; fila <= 13; fila++){
 
     hojaMostrar.getCell("B"+fila).dataValidation = {
 
