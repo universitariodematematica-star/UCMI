@@ -1442,6 +1442,23 @@ for(let fila = 2; fila <= hojaMostrar.rowCount; fila++){
     configuracionMostrar[tipo] = mostrar;
 
 }
+
+console.log(
+    "========== CONFIGURACIÓN MOSTRAR =========="
+);
+
+console.log(
+    configuracionMostrar
+);
+
+console.log(
+    "Comprension-texto:",
+    configuracionMostrar["Comprension-texto"]
+);
+
+console.log(
+    "============================================"
+);    
     
 
     datosPagina = {
