@@ -347,19 +347,6 @@ if (hojaOrdenarParrafos) {
 }
 
 //===========================================
-// COMPRENSIÓN DE TEXTO
-//===========================================
-
-let ejercicioComprensionTexto = {
-
-    parrafos: [],
-
-    preguntas: []
-
-};
-
-
-//===========================================
 // LEER COMPRENSIÓN DE TEXTO
 //===========================================
 
