@@ -48,6 +48,15 @@ const UCMIMotorComprensionTexto = {
         );
 
         console.log(
+    "PRIMERA PREGUNTA DETALLADA:",
+    datos &&
+    Array.isArray(datos.preguntas) &&
+    datos.preguntas.length > 0
+        ? JSON.stringify(datos.preguntas[0], null, 2)
+        : null
+);
+
+        console.log(
             "===============================================" 
         );
 
