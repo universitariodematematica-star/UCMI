@@ -107,7 +107,10 @@ const UCMIMotorComprensionTexto = {
             document.createElement("h3");
 
         tituloTexto.textContent =
-            "Texto";
+            datos.titulo || "";
+
+        tituloTexto.style.textAlign =
+            "center";
 
         zona.appendChild(tituloTexto);
 
