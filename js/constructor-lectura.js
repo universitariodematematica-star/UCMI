@@ -1448,12 +1448,32 @@ console.log(
 );
 
 console.log(
-    configuracionMostrar
+    "CLAVES:",
+    Object.keys(configuracionMostrar)
+);
+
+Object.entries(configuracionMostrar).forEach(
+    ([clave, valor]) => {
+
+        console.log(
+            "CLAVE:",
+            JSON.stringify(clave),
+            "VALOR:",
+            JSON.stringify(valor)
+        );
+
+    }
 );
 
 console.log(
-    "Comprension-texto:",
-    configuracionMostrar["Comprension-texto"]
+    "BUSQUEDA Comprension-texto:",
+    JSON.stringify(
+        configuracionMostrar["Comprension-texto"]
+    )
+);
+
+console.log(
+    "============================================"
 );
 
 console.log(
