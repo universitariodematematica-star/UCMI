@@ -24,6 +24,7 @@ ejercicioIdentificarImagenes=[],
 estructurasGlobal={},
 ejercicioCompletarTextoListening={},
 ejerciciosOrdenarParrafos=[],
+ejercicioComprensionTexto={},    
 configuracionMostrar={}
 ){
     Object.keys(localStorage)
