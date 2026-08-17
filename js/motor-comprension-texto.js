@@ -241,11 +241,20 @@ const UCMIMotorComprensionTexto = {
             datos.preguntas.forEach(
                 (pregunta, indice) => {
 
-                    const bloque =
-                        document.createElement("div");
+const bloque =
+    document.createElement("div");
 
-                    bloque.className =
-                        "pregunta-comprension";
+bloque.className =
+    "pregunta-comprension";
+
+bloque.style.marginBottom =
+    "28px";
+
+bloque.style.paddingBottom =
+    "20px";
+
+bloque.style.borderBottom =
+    "1px solid #e5e7eb";
 
 
                     /*
@@ -259,6 +268,15 @@ const UCMIMotorComprensionTexto = {
 
                     enunciado.className =
                         "enunciado-comprension";
+
+                    enunciado.style.fontWeight =
+    "600";
+
+enunciado.style.marginBottom =
+    "14px";
+
+enunciado.style.lineHeight =
+    "1.5";
 
                     enunciado.textContent =
                         (
@@ -296,6 +314,9 @@ opciones.style.flexDirection =
 
 opciones.style.gap =
     "10px";
+
+opciones.style.marginTop =
+    "8px";                    
 
 
 /*
@@ -406,6 +427,24 @@ label.style.display =
 
 label.style.width =
     "100%";
+
+label.style.padding =
+    "10px 14px";
+
+label.style.border =
+    "1px solid #d9e2ec";
+
+label.style.borderRadius =
+    "8px";
+
+label.style.boxSizing =
+    "border-box";
+
+label.style.cursor =
+    "pointer";
+
+label.style.backgroundColor =
+    "#f8fafc";        
 
 
         const radio =
@@ -525,19 +564,31 @@ botonEvaluar.addEventListener(
                     );
 
 
-                if(!resultado){
+if(!resultado){
 
-                    resultado =
-                        document.createElement("div");
+    resultado =
+        document.createElement("div");
 
-                    resultado.className =
-                        "resultado-comprension";
+    resultado.className =
+        "resultado-comprension";
 
-                    bloquePregunta.appendChild(
-                        resultado
-                    );
+    resultado.style.marginTop =
+        "14px";
 
-                }
+    resultado.style.padding =
+        "8px 12px";
+
+    resultado.style.fontWeight =
+        "bold";
+
+    resultado.style.borderRadius =
+        "6px";
+
+    bloquePregunta.appendChild(
+        resultado
+    );
+
+}
 
 
                 if(!radioSeleccionado){
@@ -581,21 +632,38 @@ botonEvaluar.addEventListener(
                 }
 
 
-                if(
-                    radioSeleccionado.value ===
-                    pregunta.correcta
-                ){
+if(
+    radioSeleccionado.value ===
+    pregunta.correcta
+){
 
-                    resultado.textContent =
-                        "✓ Respuesta correcta.";
+    resultado.textContent =
+        "✓ Respuesta correcta.";
 
-                }else{
+    resultado.style.color =
+        "#15803d";
 
-                    resultado.textContent =
-                        "✗ Respuesta incorrecta.";
+    resultado.style.backgroundColor =
+        "#f0fdf4";
 
-                }
+    resultado.style.border =
+        "1px solid #bbf7d0";
 
+}else{
+
+    resultado.textContent =
+        "✗ Respuesta incorrecta.";
+
+    resultado.style.color =
+        "#b91c1c";
+
+    resultado.style.backgroundColor =
+        "#fef2f2";
+
+    resultado.style.border =
+        "1px solid #fecaca";
+
+}
             }
         );
 
