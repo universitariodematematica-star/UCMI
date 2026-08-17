@@ -71,79 +71,89 @@ const UCMIMotorComprensionTexto = {
 
         /*
         =================================================
-        LIMPIAR CONTENIDO PREVIO
+        CREAR CONTENEDOR DEL EJERCICIO
         =================================================
         */
 
-const contenedorTexto =
-    document.createElement("div");
+        const zona =
+            document.createElement("div");
 
-contenedorTexto.className =
-    "texto-comprension";
-
-contenedorTexto.style.textAlign =
-    "justify";
-
-/*
-=================================================
-TÍTULO
-=================================================
-*/
-
-const titulo =
-    document.createElement("h2");
-
-titulo.textContent =
-    "Comprensión de texto";
-
-zona.appendChild(titulo);
-
-/*
-=================================================
-INSTRUCCIÓN
-=================================================
-*/
-
-const instruccion =
-    document.createElement("div");
-
-instruccion.className =
-    "instruccion-ejercicio";
-
-instruccion.textContent =
-    (++contadorEjercicios) +
-    ". Lee el siguiente texto y responde las preguntas relacionadas";
-
-zona.appendChild(
-    instruccion
-);
+        zona.className =
+            "ejercicio-comprension-texto";
 
 
-/*
-=================================================
-TÍTULO DE LA LECTURA
-=================================================
-*/
+        /*
+        =================================================
+        TÍTULO
+        =================================================
+        */
 
-const tituloTexto =
-    document.createElement("h3");
+        const titulo =
+            document.createElement("h2");
 
-tituloTexto.textContent =
-    datos.titulo || "";
+        titulo.textContent =
+            "Comprensión de texto";
 
-tituloTexto.style.textAlign =
-    "center";
+        zona.appendChild(
+            titulo
+        );
 
-zona.appendChild(
-    tituloTexto
-);
 
+        /*
+        =================================================
+        INSTRUCCIÓN
+        =================================================
+        */
+
+        const instruccion =
+            document.createElement("div");
+
+        instruccion.className =
+            "instruccion-ejercicio";
+
+        instruccion.textContent =
+            (++contadorEjercicios) +
+            ". Lee el siguiente texto y responde las preguntas relacionadas";
+
+        zona.appendChild(
+            instruccion
+        );
+
+
+        /*
+        =================================================
+        TÍTULO DE LA LECTURA
+        =================================================
+        */
+
+        const tituloTexto =
+            document.createElement("h3");
+
+        tituloTexto.textContent =
+            datos.titulo || "";
+
+        tituloTexto.style.textAlign =
+            "center";
+
+        zona.appendChild(
+            tituloTexto
+        );
+
+
+        /*
+        =================================================
+        TEXTO
+        =================================================
+        */
 
         const contenedorTexto =
             document.createElement("div");
 
         contenedorTexto.className =
             "texto-comprension";
+
+        contenedorTexto.style.textAlign =
+            "justify";
 
 
         if(
