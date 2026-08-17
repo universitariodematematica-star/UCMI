@@ -81,13 +81,6 @@ const UCMIMotorComprensionTexto = {
         zona.className =
             "ejercicio-comprension-texto";
 
-
-        /*
-        =================================================
-        ESTILOS DEL EJERCICIO
-        =================================================
-        */
-
         zona.style.maxWidth =
             "900px";
 
@@ -111,23 +104,6 @@ const UCMIMotorComprensionTexto = {
 
         zona.style.boxSizing =
             "border-box";
-
-
-        /*
-        =================================================
-        TÍTULOS
-        =================================================
-        */
-
-        zona.querySelectorAll("h2,h3").forEach(
-            elemento => {
-
-                elemento.style.color =
-                    "#071426";
-
-            }
-        );
-
 
         /*
         =================================================
@@ -254,6 +230,9 @@ const UCMIMotorComprensionTexto = {
         contenedorPreguntas.className =
             "preguntas-comprension";
 
+        contenedorPreguntas.style.marginTop =
+            "25px";
+
 
         if(
             Array.isArray(datos.preguntas)
@@ -297,113 +276,180 @@ const UCMIMotorComprensionTexto = {
                     );
 
 
-                    /*
-                    =====================================
-                    OPCIONES
-                    =====================================
-                    */
+/*
+=====================================
+OPCIONES
+=====================================
+*/
 
-                    const opciones =
-                        document.createElement("div");
+const opciones =
+    document.createElement("div");
 
-                    opciones.className =
-                        "opciones-comprension";
-
-
-                    const listaOpciones = [];
+opciones.className =
+    "opciones-comprension";
 
 
-                    if(
-                        pregunta.correcta
-                    ){
+/*
+=====================================
+CREAR LISTA DE OPCIONES
+=====================================
+*/
 
-                        listaOpciones.push(
-                            pregunta.correcta
-                        );
-
-                    }
+const listaOpciones = [];
 
 
-                    if(
-                        Array.isArray(
-                            pregunta.incorrectas
-                        )
-                    ){
+/*
+-------------------------------------
+RESPUESTA CORRECTA
+-------------------------------------
+*/
 
-                        pregunta.incorrectas.forEach(
-                            incorrecta => {
+if(
+    pregunta.correcta
+){
 
-                                if(incorrecta){
+    listaOpciones.push({
+        texto: pregunta.correcta,
+        correcta: true
+    });
 
-                                    listaOpciones.push(
-                                        incorrecta
-                                    );
-
-                                }
-
-                            }
-                        );
-
-                    }
+}
 
 
-                    listaOpciones.forEach(
-                        (opcion, indiceOpcion) => {
+/*
+-------------------------------------
+RESPUESTAS INCORRECTAS
+-------------------------------------
+*/
 
-                            const label =
-                                document.createElement(
-                                    "label"
-                                );
+if(
+    Array.isArray(
+        pregunta.incorrectas
+    )
+){
 
-                            label.className =
-                                "opcion-comprension";
+    pregunta.incorrectas.forEach(
+        incorrecta => {
 
+            if(incorrecta){
 
-                            const radio =
-                                document.createElement(
-                                    "input"
-                                );
+                listaOpciones.push({
+                    texto: incorrecta,
+                    correcta: false
+                });
 
-                            radio.type =
-                                "radio";
+            }
 
-                            radio.name =
-                                "comprension-pregunta-" +
-                                (
-                                    pregunta.numero ||
-                                    indice
-                                );
+        }
+    );
 
-                            radio.value =
-                                opcion;
-
-
-                            label.appendChild(
-                                radio
-                            );
+}
 
 
-                            const texto =
-                                document.createTextNode(
-                                    " " + opcion
-                                );
+/*
+=====================================
+ALEATORIZAR OPCIONES
+=====================================
+*/
 
-                            label.appendChild(
-                                texto
-                            );
+for(
+    let i = listaOpciones.length - 1;
+    i > 0;
+    i--
+){
+
+    const j =
+        Math.floor(
+            Math.random() * (i + 1)
+        );
+
+    [
+        listaOpciones[i],
+        listaOpciones[j]
+    ] =
+    [
+        listaOpciones[j],
+        listaOpciones[i]
+    ];
+
+}
 
 
-                            opciones.appendChild(
-                                label
-                            );
+/*
+=====================================
+GENERAR OPCIONES
+=====================================
+*/
 
-                        }
-                    );
+listaOpciones.forEach(
+    (opcion, indiceOpcion) => {
+
+        const label =
+            document.createElement(
+                "label"
+            );
+
+        label.className =
+            "opcion-comprension";
 
 
-                    bloque.appendChild(
-                        opciones
-                    );
+        const radio =
+            document.createElement(
+                "input"
+            );
+
+        radio.type =
+            "radio";
+
+        radio.name =
+            "comprension-pregunta-" +
+            (
+                pregunta.numero ||
+                indice
+            );
+
+        radio.value =
+            opcion.texto;
+
+
+/*
+-------------------------------------
+LETRA DE LA OPCIÓN
+-------------------------------------
+*/
+
+        const letra =
+            String.fromCharCode(
+                97 + indiceOpcion
+            );
+
+
+        const texto =
+            document.createTextNode(
+                letra + ") " + opcion.texto
+            );
+
+
+        label.appendChild(
+            radio
+        );
+
+        label.appendChild(
+            texto
+        );
+
+
+        opciones.appendChild(
+            label
+        );
+
+    }
+);
+
+
+bloque.appendChild(
+    opciones
+);
 
 
                     contenedorPreguntas.appendChild(
