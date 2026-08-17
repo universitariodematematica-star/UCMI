@@ -499,6 +499,110 @@ botonEvaluar.className =
 botonEvaluar.textContent =
     "Evaluar";
 
+
+botonEvaluar.addEventListener(
+    "click",
+    function(){
+
+        const preguntas =
+            contenedorPreguntas.querySelectorAll(
+                ".pregunta-comprension"
+            );
+
+
+        preguntas.forEach(
+            (bloquePregunta) => {
+
+                const radioSeleccionado =
+                    bloquePregunta.querySelector(
+                        'input[type="radio"]:checked'
+                    );
+
+
+                let resultado =
+                    bloquePregunta.querySelector(
+                        ".resultado-comprension"
+                    );
+
+
+                if(!resultado){
+
+                    resultado =
+                        document.createElement("div");
+
+                    resultado.className =
+                        "resultado-comprension";
+
+                    bloquePregunta.appendChild(
+                        resultado
+                    );
+
+                }
+
+
+                if(!radioSeleccionado){
+
+                    resultado.textContent =
+                        "Seleccione una opción.";
+
+                    return;
+
+                }
+
+
+                const preguntaNumero =
+                    radioSeleccionado.name
+                        .replace(
+                            "comprension-pregunta-",
+                            ""
+                        );
+
+
+                const pregunta =
+                    datos.preguntas.find(
+                        p =>
+                            String(
+                                p.numero ||
+                                ""
+                            ) ===
+                            String(
+                                preguntaNumero
+                            )
+                    );
+
+
+                if(!pregunta){
+
+                    resultado.textContent =
+                        "No se pudo evaluar esta pregunta.";
+
+                    return;
+
+                }
+
+
+                if(
+                    radioSeleccionado.value ===
+                    pregunta.correcta
+                ){
+
+                    resultado.textContent =
+                        "✓ Respuesta correcta.";
+
+                }else{
+
+                    resultado.textContent =
+                        "✗ Respuesta incorrecta.";
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
 zona.appendChild(
     botonEvaluar
 );
