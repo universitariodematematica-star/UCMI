@@ -119,7 +119,7 @@ zona.appendChild(
 
 /*
 =================================================
-TEXTO
+TÍTULO DE LA LECTURA
 =================================================
 */
 
@@ -127,9 +127,14 @@ const tituloTexto =
     document.createElement("h3");
 
 tituloTexto.textContent =
-    "Texto";
+    datos.titulo || "";
 
-zona.appendChild(tituloTexto);
+tituloTexto.style.textAlign =
+    "center";
+
+zona.appendChild(
+    tituloTexto
+);
 
 
         const contenedorTexto =
