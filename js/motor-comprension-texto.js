@@ -96,7 +96,6 @@ titulo.textContent =
 
 zona.appendChild(titulo);
 
-
 /*
 =================================================
 INSTRUCCIÓN
@@ -110,7 +109,8 @@ instruccion.className =
     "instruccion-ejercicio";
 
 instruccion.textContent =
-    "Lee el siguiente texto y responde las preguntas relacionadas";
+    (++contadorEjercicios) +
+    ". Lee el siguiente texto y responde las preguntas relacionadas";
 
 zona.appendChild(
     instruccion
