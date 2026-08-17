@@ -288,6 +288,15 @@ const opciones =
 opciones.className =
     "opciones-comprension";
 
+opciones.style.display =
+    "flex";
+
+opciones.style.flexDirection =
+    "column";
+
+opciones.style.gap =
+    "10px";
+
 
 /*
 =====================================
@@ -390,7 +399,13 @@ listaOpciones.forEach(
             );
 
         label.className =
-            "opcion-comprension";
+    "opcion-comprension";
+
+label.style.display =
+    "block";
+
+label.style.width =
+    "100%";
 
 
         const radio =
