@@ -75,12 +75,14 @@ const UCMIMotorComprensionTexto = {
         =================================================
         */
 
-        const zona =
-            document.createElement("div");
+const contenedorTexto =
+    document.createElement("div");
 
-        zona.className =
-            "ejercicio-comprension-texto";
+contenedorTexto.className =
+    "texto-comprension";
 
+contenedorTexto.style.textAlign =
+    "justify";
 
 /*
 =================================================
@@ -361,6 +363,28 @@ zona.appendChild(
             contenedorPreguntas
         );
 
+/*
+=================================================
+BOTÓN DE EVALUACIÓN
+=================================================
+*/
+
+const botonEvaluar =
+    document.createElement("button");
+
+botonEvaluar.type =
+    "button";
+
+botonEvaluar.className =
+    "verificar";
+
+botonEvaluar.textContent =
+    "Evaluar";
+
+zona.appendChild(
+    botonEvaluar
+);
+        
 
         /*
         =================================================
