@@ -84,6 +84,53 @@ const UCMIMotorComprensionTexto = {
 
         /*
         =================================================
+        ESTILOS DEL EJERCICIO
+        =================================================
+        */
+
+        zona.style.maxWidth =
+            "900px";
+
+        zona.style.margin =
+            "30px auto";
+
+        zona.style.padding =
+            "30px";
+
+        zona.style.backgroundColor =
+            "#ffffff";
+
+        zona.style.border =
+            "1px solid #d9e2ec";
+
+        zona.style.borderRadius =
+            "12px";
+
+        zona.style.boxShadow =
+            "0 4px 12px rgba(0,0,0,0.08)";
+
+        zona.style.boxSizing =
+            "border-box";
+
+
+        /*
+        =================================================
+        TÍTULOS
+        =================================================
+        */
+
+        zona.querySelectorAll("h2,h3").forEach(
+            elemento => {
+
+                elemento.style.color =
+                    "#071426";
+
+            }
+        );
+
+
+        /*
+        =================================================
         TÍTULO
         =================================================
         */
