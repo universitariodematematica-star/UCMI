@@ -97,6 +97,7 @@ if (hojaImagenes){
     const hojaCompletarTextoListening = libro.getWorksheet("Completar-texto-listening");
     const hojaOrdenarParrafos = libro.getWorksheet("ordenar-parrafos");
     const hojaComprensionTexto = libro.getWorksheet("Comprension-texto");
+    const hojaComprensionAuditiva = libro.getWorksheet("Comprension-auditiva");
 
 
 //===========================================
