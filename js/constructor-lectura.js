@@ -119,6 +119,188 @@ console.log(
     "======================================================"
 );
 
+//===========================================
+// COMPRENSIÓN AUDITIVA
+//===========================================
+//
+// A2  = ruta del audio
+// A5  = título
+//
+// Pregunta 1 → filas 7 a 12
+// Pregunta 2 → filas 13 a 18
+// Pregunta 3 → filas 19 a 24
+// ...
+// Pregunta 10 → filas 61 a 66
+//
+// C[F]     = etiqueta "Pregunta n"
+// D[F]     = enunciado
+// D[F+1]   = opción correcta
+// D[F+2]   = opción falsa
+// D[F+3]   = opción falsa
+// D[F+4]   = opción falsa
+//
+// F = fila inicial del bloque
+//===========================================
+
+let ejercicioComprensionAuditiva = {
+
+    audio: "",
+
+    titulo: "",
+
+    preguntas: []
+
+};
+
+
+if (hojaComprensionAuditiva) {
+
+    //=======================================
+    // RUTA DEL AUDIO
+    //=======================================
+
+    ejercicioComprensionAuditiva.audio =
+        leerCelda(
+            hojaComprensionAuditiva.getCell("A2")
+        ).trim();
+
+
+    //=======================================
+    // TÍTULO
+    //=======================================
+
+    ejercicioComprensionAuditiva.titulo =
+        leerCelda(
+            hojaComprensionAuditiva.getCell("A5")
+        ).trim();
+
+
+    //=======================================
+    // LEER PREGUNTAS
+    //=======================================
+
+    for (
+        let numeroPregunta = 1;
+        numeroPregunta <= 10;
+        numeroPregunta++
+    ) {
+
+        const filaInicio =
+            6 * (numeroPregunta - 1) + 7;
+
+
+        //===================================
+        // ENUNCIADO
+        //===================================
+
+        const pregunta =
+            leerCelda(
+                hojaComprensionAuditiva.getCell(
+                    "D" + filaInicio
+                )
+            ).trim();
+
+
+        if (!pregunta) {
+            continue;
+        }
+
+
+        //===================================
+        // OPCIÓN CORRECTA
+        //===================================
+
+        const correcta =
+            leerCelda(
+                hojaComprensionAuditiva.getCell(
+                    "D" + (filaInicio + 1)
+                )
+            ).trim();
+
+
+        //===================================
+        // OPCIONES FALSAS
+        //===================================
+
+        const incorrectas = [];
+
+
+        for (
+            let i = 2;
+            i <= 4;
+            i++
+        ) {
+
+            const incorrecta =
+                leerCelda(
+                    hojaComprensionAuditiva.getCell(
+                        "D" + (filaInicio + i)
+                    )
+                ).trim();
+
+
+            if (incorrecta) {
+
+                incorrectas.push(
+                    incorrecta
+                );
+
+            }
+
+        }
+
+
+        //===================================
+        // GUARDAR PREGUNTA
+        //===================================
+
+        ejercicioComprensionAuditiva.preguntas.push({
+
+            numero:
+                numeroPregunta,
+
+            pregunta:
+                pregunta,
+
+            correcta:
+                correcta,
+
+            incorrectas:
+                incorrectas
+
+        });
+
+    }
+
+}
+
+
+//===========================================
+// DIAGNÓSTICO
+//===========================================
+
+console.log(
+    "========== DIAGNÓSTICO COMPRENSIÓN AUDITIVA =========="
+);
+
+console.log(
+    "AUDIO:",
+    ejercicioComprensionAuditiva.audio
+);
+
+console.log(
+    "TÍTULO:",
+    ejercicioComprensionAuditiva.titulo
+);
+
+console.log(
+    "PREGUNTAS:",
+    ejercicioComprensionAuditiva.preguntas
+);
+
+console.log(
+    "======================================================"
+);    
 
 //===========================================
 // COMPRENSIÓN DE TEXTO
