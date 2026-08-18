@@ -23,6 +23,152 @@ const hojaComprensionAuditiva = libro.addWorksheet("Comprension-auditiva");
 const hojaMostrar = libro.addWorksheet("Mostrar");
 
 //=====================================================
+// HOJA: Comprension-auditiva
+//=====================================================
+
+//-----------------------------------------------------
+// RUTA DEL AUDIO
+//-----------------------------------------------------
+
+hojaComprensionAuditiva.getCell("A1").value =
+    "Ruta del audio";
+
+hojaComprensionAuditiva.getCell("A2").value =
+    "audios/A1/Unidad_01/Tema_01/Grammar/AG.1.1.1.A1.mp3";
+
+
+//-----------------------------------------------------
+// TÍTULO
+//-----------------------------------------------------
+
+hojaComprensionAuditiva.getCell("A4").value =
+    "Título";
+
+hojaComprensionAuditiva.getCell("A5").value =
+    "Nombre del título";
+
+
+//-----------------------------------------------------
+// PREGUNTAS Y OPCIONES
+//-----------------------------------------------------
+
+for(let n = 1; n <= 10; n++){
+
+    const filaInicio =
+        6 * (n - 1) + 7;
+
+
+    //-------------------------------------------------
+    // PREGUNTA
+    //-------------------------------------------------
+
+    hojaComprensionAuditiva.getCell(
+        filaInicio,
+        3
+    ).value =
+        "Pregunta " + n;
+
+
+    //-------------------------------------------------
+    // ENUNCIADO DE LA PREGUNTA
+    //-------------------------------------------------
+
+    hojaComprensionAuditiva.getCell(
+        filaInicio,
+        4
+    ).value =
+        n === 1
+        ? "Enunciado primera pregunta"
+        : "";
+
+
+    //-------------------------------------------------
+    // OPCIÓN CORRECTA
+    //-------------------------------------------------
+
+    hojaComprensionAuditiva.getCell(
+        filaInicio + 1,
+        3
+    ).value =
+        "Opción correcta";
+
+    hojaComprensionAuditiva.getCell(
+        filaInicio + 1,
+        4
+    ).value =
+        n === 1
+        ? "Enunciado opción correcta"
+        : "";
+
+
+    //-------------------------------------------------
+    // OPCIONES FALSAS
+    //-------------------------------------------------
+
+    for(let i = 2; i <= 4; i++){
+
+        hojaComprensionAuditiva.getCell(
+            filaInicio + i,
+            3
+        ).value =
+            "Opción falsa";
+
+
+        hojaComprensionAuditiva.getCell(
+            filaInicio + i,
+            4
+        ).value =
+            n === 1
+            ? "Enunciado opción falsa"
+            : "";
+
+    }
+
+}
+
+
+//-----------------------------------------------------
+// ANCHOS DE COLUMNAS
+//-----------------------------------------------------
+
+hojaComprensionAuditiva.getColumn("A").width = 25;
+
+hojaComprensionAuditiva.getColumn("B").width = 5;
+
+hojaComprensionAuditiva.getColumn("C").width = 25;
+
+hojaComprensionAuditiva.getColumn("D").width = 80;
+
+
+//-----------------------------------------------------
+// ENCABEZADOS EN NEGRITA
+//-----------------------------------------------------
+
+for(let celda of ["A1","A4"]){
+
+    hojaComprensionAuditiva.getCell(celda).font = {
+        bold:true
+    };
+
+}
+
+
+for(let n = 1; n <= 10; n++){
+
+    const filaInicio =
+        6 * (n - 1) + 7;
+
+
+    hojaComprensionAuditiva.getCell(
+        filaInicio,
+        3
+    ).font = {
+        bold:true
+    };
+
+}    
+
+//=====================================================
 // HOJA: Comprension-texto
 //=====================================================
 
