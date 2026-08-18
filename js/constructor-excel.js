@@ -19,6 +19,7 @@ const hojaEstructuras = libro.addWorksheet("Estructuras");
 const hojaCompletarTextoListening = libro.addWorksheet("Completar-texto-listening");
 const hojaOrdenarParrafos = libro.addWorksheet("ordenar-parrafos");
 const hojaComprensionTexto = libro.addWorksheet("Comprension-texto");
+const hojaComprensionAuditiva = libro.addWorksheet("Comprension-auditiva");    
 const hojaMostrar = libro.addWorksheet("Mostrar");
 
 //=====================================================
