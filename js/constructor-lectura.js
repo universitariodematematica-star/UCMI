@@ -1765,6 +1765,7 @@ function lanzarGeneracion(){
         datosCompletarTextoListening,
         ejerciciosOrdenarParrafos,
         ejercicioComprensionTexto,
+        ejercicioComprensionAuditiva,
         configuracionMostrar
     );
 
