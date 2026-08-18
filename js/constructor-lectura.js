@@ -99,6 +99,26 @@ if (hojaImagenes){
     const hojaComprensionTexto = libro.getWorksheet("Comprension-texto");
     const hojaComprensionAuditiva = libro.getWorksheet("Comprension-auditiva");
 
+    console.log(
+    "========== DIAGNÓSTICO COMPRENSIÓN AUDITIVA =========="
+);
+
+console.log(
+    "HOJA:",
+    hojaComprensionAuditiva
+);
+
+console.log(
+    "NOMBRE:",
+    hojaComprensionAuditiva
+        ? hojaComprensionAuditiva.name
+        : "NO ENCONTRADA"
+);
+
+console.log(
+    "======================================================"
+);
+
 
 //===========================================
 // COMPRENSIÓN DE TEXTO
