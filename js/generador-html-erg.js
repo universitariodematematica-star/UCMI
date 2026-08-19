@@ -618,6 +618,7 @@ onclick="UCMIRestaurarEjercicios.reiniciar()">
 <script src="${rutaJS}motor-ordenar-parrafos.js"><\/script>
 <script src="${rutaJS}motor-comprension-texto.js"><\/script>
 <script src="${rutaJS}motor-comprension-auditiva.js"><\/script>
+<script src="${rutaJS}motor-sustitucion-contextual.js"><\/script>
 
 <script>
 
@@ -790,6 +791,27 @@ if(
 
         comprensionAuditiva:
         ejercicioComprensionAuditiva
+
+    });
+
+}
+
+if(
+    "${configuracionMostrar["Sustitución contextual"] || "No"}"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "${configuracionMostrar["Sustitución contextual"] || "No"}"
+    .trim()
+    .toLowerCase() === "si"
+){
+
+    UCMIMotorSustitucionContextual.generar({
+
+        contenedor:"zona-ejercicios",
+
+        sustitucionContextual:
+        ${JSON.stringify(ejercicioSustitucionContextual)}
 
     });
 
