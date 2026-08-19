@@ -637,6 +637,9 @@ ${JSON.stringify(ejercicioCompletarTextoListening)};
 const ejercicioComprensionAuditiva =
 ${JSON.stringify(ejercicioComprensionAuditiva)};
 
+const ejercicioSustitucionContextual =
+${JSON.stringify(ejercicioSustitucionContextual)};
+
 UCMIMotorEjercicios.generar({
 
     contenedor:"zona-ejercicios",
