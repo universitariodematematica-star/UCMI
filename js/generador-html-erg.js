@@ -644,6 +644,7 @@ onclick="UCMIRestaurarEjercicios.reiniciar()">
 <script src="${rutaJS}motor-completar-listening.js"><\/script>
 <script src="${rutaJS}motor-ordenar-parrafos.js"><\/script>
 <script src="${rutaJS}motor-comprension-texto.js"><\/script>
+<script src="${rutaJS}motor-comprension-auditiva.js"><\/script>
 
 <script>
 
@@ -797,6 +798,26 @@ if(
 
 }
 
+if(
+    "${configuracionMostrar["Comprensión auditiva"] || "No"}"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "${configuracionMostrar["Comprensión auditiva"] || "No"}"
+    .trim()
+    .toLowerCase() === "si"
+){
+
+    UCMIMotorComprensionAuditiva.generar({
+
+        contenedor:"zona-ejercicios",
+
+        comprensionAuditiva:
+        ejercicioComprensionAuditiva
+
+    });
+
+}
 
 document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
 
