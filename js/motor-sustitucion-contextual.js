@@ -60,16 +60,63 @@ const UCMIMotorSustitucionContextual = {
 
             .ucmi-sustitucion-contextual{
                 width:94%;
-                max-width:1100px;
+                max-width:1200px;
                 margin:30px auto;
+            }
+
+
+            /*=============================================
+                DOS PANELES INDEPENDIENTES
+            =============================================*/
+
+            .sc-columnas{
+                width:100%;
+                display:grid;
+                grid-template-columns:minmax(0, 1.7fr) minmax(280px, 1fr);
+                gap:25px;
+                align-items:start;
+            }
+
+
+            /*=============================================
+                PANEL DE LECTURA
+            =============================================*/
+
+            .sc-panel-lectura{
+                height:70vh;
+                overflow-y:auto;
+                padding:10px 18px 30px 5px;
+                box-sizing:border-box;
+                background:#f8f9fa;
+                border-radius:18px;
+                box-shadow:
+                    0 6px 16px rgba(0,0,0,.12);
+            }
+
+
+            /*=============================================
+                PANEL DEL BANCO
+            =============================================*/
+
+            .sc-panel-banco{
+                height:70vh;
+                overflow-y:auto;
+                padding:20px;
+                box-sizing:border-box;
+                background:#ffffff;
+                border-radius:18px;
+                box-shadow:
+                    0 6px 16px rgba(0,0,0,.15);
+
+                position:sticky;
+                top:20px;
             }
 
 
             .sc-parrafo-contenedor{
                 width:100%;
-                margin:35px auto;
+                margin:0 auto 30px auto;
             }
-
 
             .sc-numero-parrafo{
                 font-size:1.15em;
@@ -215,6 +262,21 @@ const UCMIMotorSustitucionContextual = {
                 user-select:none;
             }
 
+            @media (max-width:800px){
+
+                .sc-columnas{
+                    grid-template-columns:1fr;
+                }
+
+
+                .sc-panel-lectura,
+                .sc-panel-banco{
+                    height:60vh;
+                    position:static;
+                }
+
+            }
+
         `;
 
         bloque.appendChild(estilos);
@@ -254,7 +316,40 @@ const UCMIMotorSustitucionContextual = {
 
 
         /*=================================================
-            BANCO GLOBAL
+            ESTRUCTURA DE DOS PANELES
+        =================================================*/
+
+        const columnas =
+            document.createElement("div");
+
+        columnas.className =
+            "sc-columnas";
+
+
+        /*=================================================
+            PANEL DE LECTURA
+        =================================================*/
+
+        const panelLectura =
+            document.createElement("div");
+
+        panelLectura.className =
+            "sc-panel-lectura";
+
+
+        /*=================================================
+            PANEL DEL BANCO
+        =================================================*/
+
+        const panelBanco =
+            document.createElement("div");
+
+        panelBanco.className =
+            "sc-panel-banco";
+
+
+        /*=================================================
+            TÍTULO DEL BANCO
         =================================================*/
 
         const bancoTitulo =
@@ -301,7 +396,9 @@ const UCMIMotorSustitucionContextual = {
                 parrafo.numero ||
                 `Párrafo ${indiceParrafo + 1}`;
 
-            contenedorParrafo.appendChild(numero);
+            contenedorParrafo.appendChild(
+                numero
+            );
 
 
             /*---------------------------------------------
@@ -332,12 +429,8 @@ const UCMIMotorSustitucionContextual = {
                 Excel utiliza posiciones de palabras
                 comenzando desde 1 y con FIN incluido.
 
-                JavaScript utiliza índices comenzando desde 0
-                y slice() excluye el segundo límite.
-
-                Por eso:
-                inicio - 1
-                fin se mantiene igual.
+                JavaScript utiliza índices comenzando
+                desde 0 y slice() excluye el segundo límite.
             */
 
             if(!Number.isFinite(inicio)){
@@ -373,6 +466,7 @@ const UCMIMotorSustitucionContextual = {
             const indiceFin =
                 fin;
 
+
             /*=================================================
                 PARTE ANTERIOR A LA FRASE
             =================================================*/
@@ -390,6 +484,7 @@ const UCMIMotorSustitucionContextual = {
 
             }
 
+
             /*=================================================
                 ÚNICO SEGMENTO NARANJA
             =================================================*/
@@ -401,17 +496,11 @@ const UCMIMotorSustitucionContextual = {
                 "sc-segmento-original";
 
 
-            /*
-                AQUÍ ESTÁ LA CORRECCIÓN PRINCIPAL:
-
-                TODA la frase entre inicio y fin
-                pertenece a UN SOLO contenedor naranja.
-            */
-
             segmento.textContent =
                 palabras
                     .slice(indiceInicio, indiceFin)
                     .join(" ");
+
 
             segmento.dataset.parrafo =
                 indiceParrafo;
@@ -423,7 +512,9 @@ const UCMIMotorSustitucionContextual = {
                 fin;
 
 
-            texto.appendChild(segmento);
+            texto.appendChild(
+                segmento
+            );
 
 
             /*=================================================
@@ -444,9 +535,16 @@ const UCMIMotorSustitucionContextual = {
             }
 
 
-            contenedorParrafo.appendChild(texto);
+            contenedorParrafo.appendChild(
+                texto
+            );
 
-            bloque.appendChild(
+
+            /*=================================================
+                PÁRRAFO AL PANEL DE LECTURA
+            =================================================*/
+
+            panelLectura.appendChild(
                 contenedorParrafo
             );
 
@@ -621,12 +719,30 @@ const UCMIMotorSustitucionContextual = {
             BANCO
         =================================================*/
 
-        bloque.appendChild(
+        panelBanco.appendChild(
             bancoTitulo
         );
 
-        bloque.appendChild(
+        panelBanco.appendChild(
             banco
+        );
+
+
+        /*=================================================
+            ARMAR LAS DOS COLUMNAS
+        =================================================*/
+
+        columnas.appendChild(
+            panelLectura
+        );
+
+        columnas.appendChild(
+            panelBanco
+        );
+
+
+        bloque.appendChild(
+            columnas
         );
 
 
