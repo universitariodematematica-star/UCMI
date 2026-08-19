@@ -25,6 +25,7 @@ estructurasGlobal={},
 ejercicioCompletarTextoListening={},
 ejerciciosOrdenarParrafos=[],
 ejercicioComprensionTexto={},
+ejercicioComprensionAuditiva={},    
 configuracionMostrar={}
 ){
     Object.keys(localStorage)
