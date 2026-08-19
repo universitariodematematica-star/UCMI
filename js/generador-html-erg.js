@@ -28,34 +28,6 @@ ejercicioComprensionTexto={},
 ejercicioComprensionAuditiva={},    
 configuracionMostrar={}
 ){
-
-console.log(
-    "========== GENERADOR - COMPRENSIÓN AUDITIVA =========="
-);
-
-console.log(
-    "DATOS RECIBIDOS:",
-    ejercicioComprensionAuditiva
-);
-
-console.log(
-    "AUDIO:",
-    ejercicioComprensionAuditiva.audio
-);
-
-console.log(
-    "TÍTULO:",
-    ejercicioComprensionAuditiva.titulo
-);
-
-console.log(
-    "PREGUNTAS:",
-    ejercicioComprensionAuditiva.preguntas
-);
-
-console.log(
-    "======================================================="
-);
     
     Object.keys(localStorage)
     .forEach(key=>{
