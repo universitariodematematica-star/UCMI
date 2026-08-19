@@ -25,40 +25,6 @@ const UCMIMotorComprensionAuditiva = {
             configuracion.comprensionAuditiva;
 
 
-        console.log(
-            "========== MOTOR COMPRENSIÓN AUDITIVA =========="
-        );
-
-        console.log(
-            "CONFIGURACIÓN RECIBIDA:",
-            configuracion
-        );
-
-        console.log(
-            "DATOS RECIBIDOS:",
-            datos
-        );
-
-        console.log(
-            "AUDIO:",
-            datos ? datos.audio : null
-        );
-
-        console.log(
-            "TÍTULO:",
-            datos ? datos.titulo : null
-        );
-
-        console.log(
-            "PREGUNTAS:",
-            datos ? datos.preguntas : null
-        );
-
-        console.log(
-            "================================================="
-        );
-
-
         if(!datos){
 
             console.error(
