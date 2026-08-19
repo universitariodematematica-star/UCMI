@@ -1862,6 +1862,7 @@ function lanzarGeneracion(){
         ejerciciosOrdenarParrafos,
         ejercicioComprensionTexto,
         ejercicioComprensionAuditiva,
+        ejercicioSustitucionContextual,
         configuracionMostrar
     );
 
