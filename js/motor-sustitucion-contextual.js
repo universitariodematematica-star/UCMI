@@ -5,6 +5,13 @@
 
 const UCMIMotorSustitucionContextual = {
 
+    elementoArrastrado: null,
+
+
+    /*=====================================================
+        GENERAR
+    =====================================================*/
+
     generar(configuracion = {}){
 
         const contenedor =
@@ -20,8 +27,10 @@ const UCMIMotorSustitucionContextual = {
 
         }
 
+
         const ejercicio =
             configuracion.sustitucionContextual || {};
+
 
         console.log(
             "MOTOR MODELO 14 - SUSTITUCIÓN CONTEXTUAL:",
@@ -30,7 +39,7 @@ const UCMIMotorSustitucionContextual = {
 
 
         /*=================================================
-            LIMPIAR CONTENEDOR
+            CONTENEDOR PRINCIPAL
         =================================================*/
 
         const bloque =
@@ -41,30 +50,7 @@ const UCMIMotorSustitucionContextual = {
 
 
         /*=================================================
-            TÍTULO
-        =================================================*/
-
-        if(ejercicio.nombre){
-
-            const titulo =
-                document.createElement("h2");
-
-            titulo.textContent =
-                ejercicio.nombre;
-
-            titulo.style.textAlign =
-                "center";
-
-            titulo.style.margin =
-                "30px auto";
-
-            bloque.appendChild(titulo);
-
-        }
-
-
-        /*=================================================
-            ESTILOS DEL MODELO 14
+            ESTILOS
         =================================================*/
 
         const estilos =
@@ -106,9 +92,9 @@ const UCMIMotorSustitucionContextual = {
             }
 
 
-            /*---------------------------------------------
-                SEGMENTO ORIGINAL
-            ---------------------------------------------*/
+            /*=============================================
+                FRASE ORIGINAL COMPLETA
+            =============================================*/
 
             .sc-segmento-original{
                 display:inline-block;
@@ -119,21 +105,19 @@ const UCMIMotorSustitucionContextual = {
                 border:2px solid #d68910;
                 border-radius:8px;
                 font-weight:bold;
-                min-width:20px;
                 cursor:pointer;
-                transition:.2s;
             }
 
 
-            .sc-segmento-original.sc-destino-activo{
-                box-shadow:
-                    0 0 0 4px rgba(243,156,18,.25);
+            .sc-segmento-original.sc-destino-hover{
+                outline:4px solid rgba(243,156,18,.30);
+                outline-offset:2px;
             }
 
 
-            /*---------------------------------------------
-                SUSTITUCIÓN COLOCADA EN EL PÁRRAFO
-            ---------------------------------------------*/
+            /*=============================================
+                FRASE AZUL YA COLOCADA
+            =============================================*/
 
             .sc-sustitucion-colocada{
                 display:inline-block;
@@ -144,13 +128,12 @@ const UCMIMotorSustitucionContextual = {
                 border:2px solid #0d47a1;
                 border-radius:8px;
                 font-weight:bold;
-                cursor:default;
             }
 
 
-            /*---------------------------------------------
-                BANCO DE OPCIONES
-            ---------------------------------------------*/
+            /*=============================================
+                TÍTULO DEL BANCO
+            =============================================*/
 
             .sc-banco-titulo{
                 margin-top:35px;
@@ -161,15 +144,20 @@ const UCMIMotorSustitucionContextual = {
             }
 
 
+            /*=============================================
+                BANCO
+            =============================================*/
+
             .sc-banco{
                 width:100%;
-                box-sizing:border-box;
                 min-height:90px;
+                box-sizing:border-box;
                 padding:20px;
                 background:#f8f9fa;
                 border-radius:18px;
                 box-shadow:
                     0 6px 16px rgba(0,0,0,.12);
+
                 display:flex;
                 flex-wrap:wrap;
                 justify-content:center;
@@ -178,9 +166,9 @@ const UCMIMotorSustitucionContextual = {
             }
 
 
-            /*---------------------------------------------
+            /*=============================================
                 OPCIONES AZULES
-            ---------------------------------------------*/
+            =============================================*/
 
             .sc-opcion-azul{
                 display:inline-block;
@@ -194,12 +182,14 @@ const UCMIMotorSustitucionContextual = {
                 user-select:none;
                 box-shadow:
                     0 5px 12px rgba(0,0,0,.18);
+
                 transition:.2s;
             }
 
 
             .sc-opcion-azul:hover{
                 transform:translateY(-2px);
+
                 box-shadow:
                     0 8px 16px rgba(0,0,0,.25);
             }
@@ -210,9 +200,9 @@ const UCMIMotorSustitucionContextual = {
             }
 
 
-            /*---------------------------------------------
-                ORIGINAL QUE REGRESA AL BANCO
-            ---------------------------------------------*/
+            /*=============================================
+                FRASE ORIGINAL QUE REGRESA AL BANCO
+            =============================================*/
 
             .sc-original-banco{
                 display:inline-block;
@@ -222,33 +212,7 @@ const UCMIMotorSustitucionContextual = {
                 border:2px solid #d68910;
                 border-radius:12px;
                 font-weight:bold;
-                cursor:default;
                 user-select:none;
-            }
-
-
-            /*---------------------------------------------
-                DESTINO DURANTE DRAG
-            ---------------------------------------------*/
-
-            .sc-destino-hover{
-                outline:4px solid rgba(243,156,18,.35);
-                outline-offset:2px;
-            }
-
-
-            /*---------------------------------------------
-                EXPLICACIÓN
-            ---------------------------------------------*/
-
-            .sc-explicacion{
-                margin-top:20px;
-                padding:16px 20px;
-                background:#eef6ff;
-                border-left:7px solid #3949AB;
-                border-radius:12px;
-                line-height:1.6;
-                color:#071426;
             }
 
         `;
@@ -257,7 +221,30 @@ const UCMIMotorSustitucionContextual = {
 
 
         /*=================================================
-            VARIABLES
+            TÍTULO
+        =================================================*/
+
+        if(ejercicio.nombre){
+
+            const titulo =
+                document.createElement("h2");
+
+            titulo.textContent =
+                ejercicio.nombre;
+
+            titulo.style.textAlign =
+                "center";
+
+            titulo.style.margin =
+                "30px auto";
+
+            bloque.appendChild(titulo);
+
+        }
+
+
+        /*=================================================
+            PÁRRAFOS
         =================================================*/
 
         const parrafos =
@@ -266,12 +253,19 @@ const UCMIMotorSustitucionContextual = {
                 : [];
 
 
-        /*
-            Banco global del ejercicio.
+        /*=================================================
+            BANCO GLOBAL
+        =================================================*/
 
-            Cada opción azul pertenece a un segmento
-            original determinado mediante su índice.
-        */
+        const bancoTitulo =
+            document.createElement("div");
+
+        bancoTitulo.className =
+            "sc-banco-titulo";
+
+        bancoTitulo.textContent =
+            "Arrastra una opción azul sobre la frase naranja que deseas sustituir:";
+
 
         const banco =
             document.createElement("div");
@@ -281,7 +275,7 @@ const UCMIMotorSustitucionContextual = {
 
 
         /*=================================================
-            CONSTRUIR PÁRRAFOS
+            CONSTRUIR CADA PÁRRAFO
         =================================================*/
 
         parrafos.forEach((parrafo, indiceParrafo)=>{
@@ -294,7 +288,7 @@ const UCMIMotorSustitucionContextual = {
 
 
             /*---------------------------------------------
-                NÚMERO DEL PÁRRAFO
+                NÚMERO
             ---------------------------------------------*/
 
             const numero =
@@ -311,7 +305,7 @@ const UCMIMotorSustitucionContextual = {
 
 
             /*---------------------------------------------
-                CONTENEDOR DEL TEXTO
+                TEXTO DEL PÁRRAFO
             ---------------------------------------------*/
 
             const texto =
@@ -323,107 +317,151 @@ const UCMIMotorSustitucionContextual = {
 
             const palabras =
                 String(parrafo.texto || "")
-                .split(/\s+/);
+                    .trim()
+                    .split(/\s+/);
 
 
-            const inicio =
-                Number.isFinite(Number(parrafo.inicio))
-                    ? Number(parrafo.inicio)
-                    : 0;
+            let inicio =
+                Number(parrafo.inicio);
 
-
-            const fin =
-                Number.isFinite(Number(parrafo.fin))
-                    ? Number(parrafo.fin)
-                    : inicio;
+            let fin =
+                Number(parrafo.fin);
 
 
             /*
-                El segmento original se obtiene mediante
-                inicio / fin.
+                Validación básica.
 
-                fin se interpreta como límite exclusivo.
+                inicio y fin representan el rango
+                COMPLETO de la frase a sustituir.
             */
 
-            palabras.forEach((palabra, indicePalabra)=>{
+            if(!Number.isFinite(inicio)){
 
-                const espacio =
-                    document.createTextNode(
-                        indicePalabra === 0
-                            ? ""
-                            : " "
-                    );
+                inicio = 0;
 
-                texto.appendChild(espacio);
+            }
 
+            if(!Number.isFinite(fin)){
 
-                if(
-                    indicePalabra >= inicio &&
-                    indicePalabra < fin
-                ){
-
-                    const segmento =
-                        document.createElement("span");
-
-                    segmento.className =
-                        "sc-segmento-original";
-
-                    segmento.textContent =
-                        palabra;
-
-
-                    segmento.dataset.parrafo =
-                        indiceParrafo;
-
-                    segmento.dataset.inicio =
-                        indicePalabra;
-
-                    segmento.dataset.fin =
-                        indicePalabra + 1;
-
-
-                    texto.appendChild(segmento);
-
-                }else{
-
-                    texto.appendChild(
-                        document.createTextNode(palabra)
-                    );
-
-                }
-
-            });
-
-
-            contenedorParrafo.appendChild(texto);
-
-            bloque.appendChild(contenedorParrafo);
-
-
-            /*=================================================
-                CREAR BANCO DE OPCIONES DEL PÁRRAFO
-            =================================================*/
-
-            const opciones = [];
-
-            if(parrafo.correcta){
-
-                opciones.push({
-                    texto: parrafo.correcta,
-                    correcta: true
-                });
+                fin = inicio;
 
             }
 
 
-            if(Array.isArray(parrafo.incorrectas)){
+            inicio =
+                Math.max(
+                    0,
+                    Math.min(inicio, palabras.length)
+                );
 
-                parrafo.incorrectas.forEach(opcion=>{
 
-                    opciones.push({
-                        texto: opcion,
-                        correcta: false
-                    });
+            fin =
+                Math.max(
+                    inicio,
+                    Math.min(fin, palabras.length)
+                );
+
+
+            /*=================================================
+                PARTE ANTERIOR A LA FRASE
+            =================================================*/
+
+            if(inicio > 0){
+
+                texto.appendChild(
+                    document.createTextNode(
+                        palabras
+                            .slice(0, inicio)
+                            .join(" ")
+                        + " "
+                    )
+                );
+
+            }
+
+
+            /*=================================================
+                ÚNICO SEGMENTO NARANJA
+            =================================================*/
+
+            const segmento =
+                document.createElement("span");
+
+            segmento.className =
+                "sc-segmento-original";
+
+
+            /*
+                AQUÍ ESTÁ LA CORRECCIÓN PRINCIPAL:
+
+                TODA la frase entre inicio y fin
+                pertenece a UN SOLO contenedor naranja.
+            */
+
+            segmento.textContent =
+                palabras
+                    .slice(inicio, fin)
+                    .join(" ");
+
+
+            segmento.dataset.parrafo =
+                indiceParrafo;
+
+            segmento.dataset.inicio =
+                inicio;
+
+            segmento.dataset.fin =
+                fin;
+
+
+            texto.appendChild(segmento);
+
+
+            /*=================================================
+                PARTE POSTERIOR A LA FRASE
+            =================================================*/
+
+            if(fin < palabras.length){
+
+                texto.appendChild(
+                    document.createTextNode(
+                        " " +
+                        palabras
+                            .slice(fin)
+                            .join(" ")
+                    )
+                );
+
+            }
+
+
+            contenedorParrafo.appendChild(texto);
+
+            bloque.appendChild(
+                contenedorParrafo
+            );
+
+
+            /*=================================================
+                OPCIONES DEL PÁRRAFO
+            =================================================*/
+
+            const opciones = [];
+
+
+            /*---------------------------------------------
+                CORRECTA
+            ---------------------------------------------*/
+
+            if(parrafo.correcta){
+
+                opciones.push({
+
+                    texto:
+                        parrafo.correcta,
+
+                    correcta:
+                        true
 
                 });
 
@@ -431,8 +469,37 @@ const UCMIMotorSustitucionContextual = {
 
 
             /*---------------------------------------------
-                MEZCLAR OPCIONES
+                INCORRECTAS
             ---------------------------------------------*/
+
+            if(
+                Array.isArray(
+                    parrafo.incorrectas
+                )
+            ){
+
+                parrafo.incorrectas.forEach(
+                    opcion=>{
+
+                        opciones.push({
+
+                            texto:
+                                opcion,
+
+                            correcta:
+                                false
+
+                        });
+
+                    }
+                );
+
+            }
+
+
+            /*=================================================
+                MEZCLAR OPCIONES
+            =================================================*/
 
             for(
                 let i = opciones.length - 1;
@@ -444,6 +511,7 @@ const UCMIMotorSustitucionContextual = {
                     Math.floor(
                         Math.random() * (i + 1)
                     );
+
 
                 [
                     opciones[i],
@@ -457,20 +525,23 @@ const UCMIMotorSustitucionContextual = {
             }
 
 
-            /*---------------------------------------------
-                CREAR BOTONES AZULES
-            ---------------------------------------------*/
+            /*=================================================
+                CREAR OPCIONES AZULES
+            =================================================*/
 
             opciones.forEach(opcion=>{
 
                 const boton =
                     document.createElement("div");
 
+
                 boton.className =
                     "sc-opcion-azul";
 
+
                 boton.textContent =
                     opcion.texto;
+
 
                 boton.draggable =
                     true;
@@ -479,36 +550,42 @@ const UCMIMotorSustitucionContextual = {
                 boton.dataset.parrafo =
                     indiceParrafo;
 
+
                 boton.dataset.correcta =
                     opcion.correcta
                         ? "true"
                         : "false";
 
 
+                /*-----------------------------------------
+                    DRAG START
+                -----------------------------------------*/
+
                 boton.addEventListener(
                     "dragstart",
                     evento=>{
-
-                        evento.dataTransfer.effectAllowed =
-                            "move";
-
-                        evento.dataTransfer.setData(
-                            "text/plain",
-                            "sc-opcion"
-                        );
-
-                        /*
-                            Guardamos directamente la referencia
-                            al botón que se está arrastrando.
-                        */
 
                         UCMIMotorSustitucionContextual
                             .elementoArrastrado =
                             boton;
 
+
+                        evento.dataTransfer.effectAllowed =
+                            "move";
+
+
+                        evento.dataTransfer.setData(
+                            "text/plain",
+                            "sustitucion-contextual"
+                        );
+
                     }
                 );
 
+
+                /*-----------------------------------------
+                    DRAG END
+                -----------------------------------------*/
 
                 boton.addEventListener(
                     "dragend",
@@ -522,7 +599,9 @@ const UCMIMotorSustitucionContextual = {
                 );
 
 
-                banco.appendChild(boton);
+                banco.appendChild(
+                    boton
+                );
 
             });
 
@@ -530,210 +609,215 @@ const UCMIMotorSustitucionContextual = {
 
 
         /*=================================================
-            TÍTULO DEL BANCO
+            BANCO
         =================================================*/
 
-        const bancoTitulo =
-            document.createElement("div");
+        bloque.appendChild(
+            bancoTitulo
+        );
 
-        bancoTitulo.className =
-            "sc-banco-titulo";
-
-        bancoTitulo.textContent =
-            "Arrastra una opción azul sobre la parte naranja que deseas sustituir:";
-
-        bloque.appendChild(bancoTitulo);
-
-        bloque.appendChild(banco);
+        bloque.appendChild(
+            banco
+        );
 
 
         /*=================================================
-            DRAG OVER
+            DESTINOS DE DROP
         =================================================*/
 
-        bloque.querySelectorAll(
-            ".sc-segmento-original"
-        ).forEach(destino=>{
-
-            destino.addEventListener(
-                "dragover",
-                evento=>{
-
-                    evento.preventDefault();
-
-                    destino.classList.add(
-                        "sc-destino-hover"
-                    );
-
-                }
-            );
+        bloque
+            .querySelectorAll(
+                ".sc-segmento-original"
+            )
+            .forEach(destino=>{
 
 
-            destino.addEventListener(
-                "dragleave",
-                ()=>{
+                /*-----------------------------------------
+                    DRAG OVER
+                -----------------------------------------*/
 
-                    destino.classList.remove(
-                        "sc-destino-hover"
-                    );
+                destino.addEventListener(
+                    "dragover",
+                    evento=>{
 
-                }
-            );
+                        evento.preventDefault();
 
+                        destino.classList.add(
+                            "sc-destino-hover"
+                        );
 
-            /*=================================================
-                DROP
-            =================================================*/
-
-            destino.addEventListener(
-                "drop",
-                evento=>{
-
-                    evento.preventDefault();
-
-                    destino.classList.remove(
-                        "sc-destino-hover"
-                    );
+                    }
+                );
 
 
-                    const opcion =
+                /*-----------------------------------------
+                    DRAG LEAVE
+                -----------------------------------------*/
+
+                destino.addEventListener(
+                    "dragleave",
+                    ()=>{
+
+                        destino.classList.remove(
+                            "sc-destino-hover"
+                        );
+
+                    }
+                );
+
+
+                /*-----------------------------------------
+                    DROP
+                -----------------------------------------*/
+
+                destino.addEventListener(
+                    "drop",
+                    evento=>{
+
+                        evento.preventDefault();
+
+
+                        destino.classList.remove(
+                            "sc-destino-hover"
+                        );
+
+
+                        const opcion =
+                            UCMIMotorSustitucionContextual
+                                .elementoArrastrado;
+
+
+                        if(!opcion){
+
+                            return;
+
+                        }
+
+
+                        /*
+                            Solo aceptamos opciones azules
+                            provenientes del banco.
+                        */
+
+                        if(
+                            !opcion.classList.contains(
+                                "sc-opcion-azul"
+                            )
+                        ){
+
+                            return;
+
+                        }
+
+
+                        /*=================================
+                            GUARDAR FRASE NARANJA COMPLETA
+                        =================================*/
+
+                        const textoOriginal =
+                            destino.textContent;
+
+
+                        /*=================================
+                            DEVOLVER NARANJA AL BANCO
+                        =================================*/
+
+                        const originalBanco =
+                            document.createElement("div");
+
+
+                        originalBanco.className =
+                            "sc-original-banco";
+
+
+                        originalBanco.textContent =
+                            textoOriginal;
+
+
+                        originalBanco.dataset.parrafo =
+                            destino.dataset.parrafo;
+
+
+                        originalBanco.dataset.inicio =
+                            destino.dataset.inicio;
+
+
+                        originalBanco.dataset.fin =
+                            destino.dataset.fin;
+
+
+                        banco.appendChild(
+                            originalBanco
+                        );
+
+
+                        /*=================================
+                            CREAR AZUL DENTRO DEL PÁRRAFO
+                        =================================*/
+
+                        const sustitucion =
+                            document.createElement("span");
+
+
+                        sustitucion.className =
+                            "sc-sustitucion-colocada";
+
+
+                        sustitucion.textContent =
+                            opcion.textContent;
+
+
+                        sustitucion.dataset.parrafo =
+                            destino.dataset.parrafo;
+
+
+                        sustitucion.dataset.correcta =
+                            opcion.dataset.correcta;
+
+
+                        /*
+                            IMPORTANTE:
+
+                            El nuevo elemento sigue siendo
+                            visualmente AZUL.
+                        */
+
+
+                        /*=================================
+                            REEMPLAZAR EL NARANJA
+                        =================================*/
+
+                        destino.replaceWith(
+                            sustitucion
+                        );
+
+
+                        /*=================================
+                            QUITAR AZUL DEL BANCO
+                        =================================*/
+
+                        opcion.remove();
+
+
                         UCMIMotorSustitucionContextual
-                            .elementoArrastrado;
-
-
-                    if(!opcion){
-
-                        return;
+                            .elementoArrastrado =
+                            null;
 
                     }
+                );
 
-
-                    /*
-                        Solo permitimos que una opción azul
-                        se coloque sobre un segmento naranja.
-                    */
-
-                    if(
-                        !opcion.classList.contains(
-                            "sc-opcion-azul"
-                        )
-                    ){
-
-                        return;
-
-                    }
-
-
-                    /*-----------------------------------------
-                        CREAR EL ORIGINAL NARANJA PARA EL BANCO
-                    -----------------------------------------*/
-
-                    const originalBanco =
-                        document.createElement("div");
-
-                    originalBanco.className =
-                        "sc-original-banco";
-
-                    originalBanco.textContent =
-                        destino.textContent;
-
-
-                    originalBanco.dataset.parrafo =
-                        destino.dataset.parrafo;
-
-                    originalBanco.dataset.inicio =
-                        destino.dataset.inicio;
-
-                    originalBanco.dataset.fin =
-                        destino.dataset.fin;
-
-
-                    /*
-                        El original naranja vuelve al banco.
-                    */
-
-                    banco.appendChild(
-                        originalBanco
-                    );
-
-
-                    /*-----------------------------------------
-                        CONVERTIR LA OPCIÓN AZUL EN ELEMENTO
-                        COLOCADO DENTRO DEL PÁRRAFO
-                    -----------------------------------------*/
-
-                    const sustitucion =
-                        document.createElement("span");
-
-                    sustitucion.className =
-                        "sc-sustitucion-colocada";
-
-                    sustitucion.textContent =
-                        opcion.textContent;
-
-
-                    sustitucion.dataset.parrafo =
-                        destino.dataset.parrafo;
-
-
-                    sustitucion.dataset.correcta =
-                        opcion.dataset.correcta;
-
-
-                    /*
-                        Conservamos el color azul.
-                    */
-
-                    /*-----------------------------------------
-                        REEMPLAZAR NARANJA POR AZUL
-                    -----------------------------------------*/
-
-                    destino.replaceWith(
-                        sustitucion
-                    );
-
-
-                    /*-----------------------------------------
-                        QUITAR EL AZUL DEL BANCO
-                    -----------------------------------------*/
-
-                    opcion.remove();
-
-
-                    /*
-                        El elemento azul ya está colocado
-                        dentro del párrafo y permanece azul.
-
-                        El elemento naranja original queda
-                        nuevamente disponible en el banco.
-                    */
-
-                    UCMIMotorSustitucionContextual
-                        .elementoArrastrado =
-                        null;
-
-                }
-            );
-
-        });
+            });
 
 
         /*=================================================
-            COLOCAR EL BLOQUE EN LA PÁGINA
+            INSERTAR MOTOR EN LA PÁGINA
         =================================================*/
 
         contenedor.appendChild(
             bloque
         );
 
-    },
-
-
-    /*=====================================================
-        REFERENCIA AL ELEMENTO QUE SE ESTÁ ARRASTRANDO
-    =====================================================*/
-
-    elementoArrastrado:null
+    }
 
 };
 
