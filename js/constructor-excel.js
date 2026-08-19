@@ -1124,20 +1124,19 @@ hojaSustitucionContextual.getCell("F3").value =
     10;
 
 hojaSustitucionContextual.getCell("G3").value =
-    "the supermarket because she needed some food";
+    "supermarket because she needed some food";
 
 hojaSustitucionContextual.getCell("H3").value =
-    "the supermarket because she wanted something to eat";
+    "supermarket because she wanted something to eat";
 
 hojaSustitucionContextual.getCell("I3").value =
-    "the park because she wanted to relax";
+    "park because she wanted to relax";
 
 hojaSustitucionContextual.getCell("J3").value =
-    "the restaurant because she had already eaten";
+    "restaurant because she had already eaten";
 
 hojaSustitucionContextual.getCell("K3").value =
     "La frase correcta puede sustituir al segmento original porque mantiene la idea esencial del contexto.";
-
 
 //-----------------------------------------------------
 // ANCHOS DE COLUMNAS
