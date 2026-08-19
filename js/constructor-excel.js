@@ -19,7 +19,8 @@ const hojaEstructuras = libro.addWorksheet("Estructuras");
 const hojaCompletarTextoListening = libro.addWorksheet("Completar-texto-listening");
 const hojaOrdenarParrafos = libro.addWorksheet("ordenar-parrafos");
 const hojaComprensionTexto = libro.addWorksheet("Comprension-texto");
-const hojaComprensionAuditiva = libro.addWorksheet("Comprension-auditiva");    
+const hojaComprensionAuditiva = libro.addWorksheet("Comprension-auditiva");
+const hojaSustitucionContextual = libro.addWorksheet("Sustitucion-contextual");    
 const hojaMostrar = libro.addWorksheet("Mostrar");
 
 //=====================================================
@@ -414,6 +415,7 @@ hojaOrdenarParrafos.getCell("B5").font = {
    
     console.log("CREANDO HOJA MOSTRAR");
     console.log("CREANDO HOJA ESTRUCTURAS");
+    console.log("CREANDO HOJA SUSTITUCION-CONTEXTUAL");
 
     //=====================================================
 // HOJA: Completar-texto-listening
@@ -1048,6 +1050,214 @@ hojaTranscripcion.getCell("B1").font = {
 };    
 
 //=====================================================
+// HOJA: Sustitucion-contextual
+//=====================================================
+
+//-----------------------------------------------------
+// ENCABEZADOS SUPERIORES
+//-----------------------------------------------------
+
+hojaSustitucionContextual.getCell("A1").value =
+    "Título";
+
+hojaSustitucionContextual.getCell("B1").value =
+    "Nombre";
+
+hojaSustitucionContextual.mergeCells("E1:F1");
+
+hojaSustitucionContextual.getCell("E1").value =
+    "Elementos sustituibles";
+
+hojaSustitucionContextual.getCell("G1").value =
+    "Frase correcta";
+
+hojaSustitucionContextual.getCell("H1").value =
+    "Frase falsa 1";
+
+hojaSustitucionContextual.getCell("I1").value =
+    "Frase falsa 2";
+
+hojaSustitucionContextual.getCell("J1").value =
+    "Frase falsa 3";
+
+
+//-----------------------------------------------------
+// SEGUNDA FILA
+//-----------------------------------------------------
+
+hojaSustitucionContextual.getCell("D2").value =
+    "Inicio";
+
+hojaSustitucionContextual.getCell("E2").value =
+    "Fin";
+
+hojaSustitucionContextual.getCell("K2").value =
+    "Justificación contextual";
+
+
+//-----------------------------------------------------
+// PÁRRAFOS
+//-----------------------------------------------------
+
+for(let fila = 3; fila <= 12; fila++){
+
+    hojaSustitucionContextual.getCell(
+        fila,
+        3
+    ).value =
+        "Párrafo " + (fila - 2);
+
+}
+
+
+//-----------------------------------------------------
+// EJEMPLO DEL PRIMER PÁRRAFO
+//-----------------------------------------------------
+
+hojaSustitucionContextual.getCell("D3").value =
+    "She went to the supermarket because she needed some food for dinner.";
+
+hojaSustitucionContextual.getCell("E3").value =
+    5;
+
+hojaSustitucionContextual.getCell("F3").value =
+    10;
+
+hojaSustitucionContextual.getCell("G3").value =
+    "the supermarket because she needed some food";
+
+hojaSustitucionContextual.getCell("H3").value =
+    "the supermarket because she wanted something to eat";
+
+hojaSustitucionContextual.getCell("I3").value =
+    "the park because she wanted to relax";
+
+hojaSustitucionContextual.getCell("J3").value =
+    "the restaurant because she had already eaten";
+
+hojaSustitucionContextual.getCell("K3").value =
+    "La frase correcta puede sustituir al segmento original porque mantiene la idea esencial del contexto.";
+
+
+//-----------------------------------------------------
+// ANCHOS DE COLUMNAS
+//-----------------------------------------------------
+
+hojaSustitucionContextual.getColumn("A").width = 20;
+hojaSustitucionContextual.getColumn("B").width = 25;
+hojaSustitucionContextual.getColumn("C").width = 18;
+hojaSustitucionContextual.getColumn("D").width = 70;
+hojaSustitucionContextual.getColumn("E").width = 12;
+hojaSustitucionContextual.getColumn("F").width = 12;
+hojaSustitucionContextual.getColumn("G").width = 45;
+hojaSustitucionContextual.getColumn("H").width = 45;
+hojaSustitucionContextual.getColumn("I").width = 45;
+hojaSustitucionContextual.getColumn("J").width = 45;
+hojaSustitucionContextual.getColumn("K").width = 60;
+
+
+//-----------------------------------------------------
+// ENCABEZADOS EN NEGRITA
+//-----------------------------------------------------
+
+for(let celda of [
+    "A1",
+    "B1",
+    "E1",
+    "G1",
+    "H1",
+    "I1",
+    "J1",
+    "D2",
+    "E2",
+    "K2"
+]){
+
+    hojaSustitucionContextual.getCell(celda).font = {
+        bold:true
+    };
+
+}
+
+
+//-----------------------------------------------------
+// ALINEACIÓN DE E1:F1
+//-----------------------------------------------------
+
+hojaSustitucionContextual.getCell("E1").alignment = {
+    horizontal: "center",
+    vertical: "middle"
+};
+
+
+//-----------------------------------------------------
+// BORDE DE B1
+//-----------------------------------------------------
+
+hojaSustitucionContextual.getCell("B1").border = {
+    top: {
+        style: "thin"
+    },
+    left: {
+        style: "thin"
+    },
+    bottom: {
+        style: "thin"
+    },
+    right: {
+        style: "thin"
+    }
+};
+
+
+//-----------------------------------------------------
+// TODOS LOS BORDES C3:K12
+//-----------------------------------------------------
+
+for(let fila = 3; fila <= 12; fila++){
+
+    for(let columna = 3; columna <= 11; columna++){
+
+        hojaSustitucionContextual.getCell(
+            fila,
+            columna
+        ).border = {
+            top: {
+                style: "thin"
+            },
+            left: {
+                style: "thin"
+            },
+            bottom: {
+                style: "thin"
+            },
+            right: {
+                style: "thin"
+            }
+        };
+
+    }
+
+}
+
+
+//-----------------------------------------------------
+// PÁRRAFOS EN NEGRITA
+//-----------------------------------------------------
+
+for(let fila = 3; fila <= 12; fila++){
+
+    hojaSustitucionContextual.getCell(
+        fila,
+        3
+    ).font = {
+        bold:true
+    };
+
+}
+
+
+//=====================================================
 // HOJA: Mostrar
 //=====================================================
 
@@ -1133,12 +1343,19 @@ hojaMostrar.getCell("A14").value =
 "Comprensión auditiva";
 
 hojaMostrar.getCell("B14").value =
-"Sí";    
+"Sí";
+
+
+hojaMostrar.getCell("A15").value =
+"Sustitución contextual";
+
+hojaMostrar.getCell("B15").value =
+"Sí";
 
 
 // Lista desplegable Sí / No
 
-for(let fila = 2; fila <= 14; fila++){
+for(let fila = 2; fila <= 15; fila++){
 
     hojaMostrar.getCell("B"+fila).dataValidation = {
 
