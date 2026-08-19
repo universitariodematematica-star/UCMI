@@ -41,7 +41,7 @@ const UCMIMotorSustitucionContextual = {
 
 
         /*=================================================
-            ESTILOS DEL MODELO 14
+            ESTILOS
         =================================================*/
 
         const estilo =
@@ -139,21 +139,6 @@ const UCMIMotorSustitucionContextual = {
                 transform:scale(.97);
             }
 
-            .modelo14-instruccion{
-                width:92%;
-                margin:0 auto 30px auto;
-                padding:18px 22px;
-                box-sizing:border-box;
-                background:#eef6ff;
-                border-left:8px solid #3949AB;
-                border-radius:14px;
-                box-shadow:0 6px 14px rgba(0,0,0,.15);
-                font-size:1.15em;
-                line-height:1.6;
-                color:#071426;
-                font-weight:bold;
-            }
-
         `;
 
         bloque.appendChild(estilo);
@@ -166,8 +151,41 @@ const UCMIMotorSustitucionContextual = {
         const instruccion =
             document.createElement("div");
 
-        instruccion.className =
-            "modelo14-instruccion";
+        instruccion.style.width =
+            "92%";
+
+        instruccion.style.margin =
+            "0 auto 30px auto";
+
+        instruccion.style.padding =
+            "18px 22px";
+
+        instruccion.style.boxSizing =
+            "border-box";
+
+        instruccion.style.background =
+            "#eef6ff";
+
+        instruccion.style.borderLeft =
+            "8px solid #3949AB";
+
+        instruccion.style.borderRadius =
+            "14px";
+
+        instruccion.style.boxShadow =
+            "0 6px 14px rgba(0,0,0,.15)";
+
+        instruccion.style.fontSize =
+            "1.15em";
+
+        instruccion.style.lineHeight =
+            "1.6";
+
+        instruccion.style.color =
+            "#071426";
+
+        instruccion.style.fontWeight =
+            "bold";
 
         instruccion.textContent =
             "Arrastra una opción azul sobre la parte naranja que deseas sustituir.";
@@ -228,7 +246,7 @@ const UCMIMotorSustitucionContextual = {
 
 
             /*=============================================
-                PALABRAS DEL TEXTO
+                PALABRAS
             =============================================*/
 
             const palabras =
@@ -244,26 +262,20 @@ const UCMIMotorSustitucionContextual = {
                 Number(parrafo.fin);
 
 
-            console.log(
-                "MODELO 14 - POSICIONES:",
-                {
-                    parrafo: indice + 1,
-                    palabras,
-                    inicio,
-                    fin,
-                    segmento:
-                        palabras.slice(inicio, fin).join(" ")
-                }
-            );
+            const segmentoOriginal =
+                palabras
+                .slice(inicio, fin)
+                .join(" ");
 
 
             /*=============================================
-                PARTE ANTERIOR AL SEGMENTO
+                PARTE ANTERIOR
             =============================================*/
 
             for(
                 let i = 0;
-                i < inicio && i < palabras.length;
+                i < inicio &&
+                i < palabras.length;
                 i++
             ){
 
@@ -273,26 +285,16 @@ const UCMIMotorSustitucionContextual = {
                     )
                 );
 
-                if(i < palabras.length - 1){
-
-                    texto.appendChild(
-                        document.createTextNode(" ")
-                    );
-
-                }
+                texto.appendChild(
+                    document.createTextNode(" ")
+                );
 
             }
 
 
             /*=============================================
-                SEGMENTO QUE SE PUEDE SUSTITUIR
+                ZONA NARANJA
             =============================================*/
-
-            const segmento =
-                palabras
-                .slice(inicio, fin)
-                .join(" ");
-
 
             const zonaDrop =
                 document.createElement("span");
@@ -301,112 +303,20 @@ const UCMIMotorSustitucionContextual = {
                 "modelo14-zona-drop";
 
             zonaDrop.textContent =
-                segmento;
+                segmentoOriginal;
 
             zonaDrop.dataset.original =
-                segmento;
+                segmentoOriginal;
+
+            zonaDrop.dataset.actual =
+                segmentoOriginal;
 
             zonaDrop.dataset.parrafo =
                 indice;
 
 
             /*=============================================
-                DRAGOVER
-
-                La zona naranja NO es draggable.
-                Solamente recibe elementos.
-            =============================================*/
-
-            zonaDrop.addEventListener(
-                "dragover",
-                evento=>{
-
-                    evento.preventDefault();
-
-                    evento.dataTransfer.dropEffect =
-                        "move";
-
-                    zonaDrop.classList.add(
-                        "activa"
-                    );
-
-                }
-            );
-
-
-            /*=============================================
-                DRAGLEAVE
-            =============================================*/
-
-            zonaDrop.addEventListener(
-                "dragleave",
-                ()=>{
-
-                    zonaDrop.classList.remove(
-                        "activa"
-                    );
-
-                }
-            );
-
-
-            /*=============================================
-                DROP
-
-                POR AHORA SOLO COMPROBAMOS QUE
-                EL DROP ESTÁ FUNCIONANDO.
-            =============================================*/
-
-            zonaDrop.addEventListener(
-                "drop",
-                evento=>{
-
-                    evento.preventDefault();
-
-                    zonaDrop.classList.remove(
-                        "activa"
-                    );
-
-
-                    const textoRecibido =
-                        evento.dataTransfer.getData(
-                            "text/plain"
-                        );
-
-
-                    console.log(
-                        "DROP MODELO 14:",
-                        textoRecibido
-                    );
-
-
-                    /*
-                        NO hacemos todavía el intercambio.
-
-                        Esta prueba solamente confirma que:
-
-                        AZUL
-                          ↓
-                        DRAG
-                          ↓
-                        NARANJA
-                          ↓
-                        DROP
-                          ↓
-                        TEXTO RECIBIDO
-                    */
-
-                }
-            );
-
-
-            texto.appendChild(
-                zonaDrop
-            );
-
-
-            /*=============================================
-                PARTE POSTERIOR AL SEGMENTO
+                PARTE POSTERIOR
             =============================================*/
 
             for(
@@ -415,17 +325,7 @@ const UCMIMotorSustitucionContextual = {
                 i++
             ){
 
-                if(
-                    texto.lastChild &&
-                    texto.lastChild.nodeType ===
-                    Node.TEXT_NODE
-                ){
-
-                    texto.appendChild(
-                        document.createTextNode(" ")
-                    );
-
-                }else{
+                if(i > fin){
 
                     texto.appendChild(
                         document.createTextNode(" ")
@@ -442,14 +342,9 @@ const UCMIMotorSustitucionContextual = {
             }
 
 
-            contenedorParrafo.appendChild(
-                texto
-            );
-
-
-            /*=============================================
+            /*=================================================
                 BANCO DE OPCIONES
-            =============================================*/
+            =================================================*/
 
             const banco =
                 document.createElement("div");
@@ -458,14 +353,90 @@ const UCMIMotorSustitucionContextual = {
                 "modelo14-banco";
 
 
-            /*=============================================
-                CONSTRUIR LAS OPCIONES
+            /*=================================================
+                FUNCIÓN PARA CREAR UNA OPCIÓN AZUL
+            =================================================*/
 
-                1 correcta
-                3 incorrectas
+            function crearOpcion(
+                textoOpcion,
+                correcta = false,
+                esOriginal = false
+            ){
 
-                TODAS JUNTAS.
-            =============================================*/
+                const elemento =
+                    document.createElement("div");
+
+                elemento.className =
+                    "modelo14-opcion";
+
+                elemento.textContent =
+                    textoOpcion;
+
+                elemento.draggable =
+                    true;
+
+                elemento.dataset.texto =
+                    textoOpcion;
+
+                elemento.dataset.correcta =
+                    correcta
+                        ? "true"
+                        : "false";
+
+                elemento.dataset.original =
+                    esOriginal
+                        ? "true"
+                        : "false";
+
+
+                /*=========================================
+                    DRAGSTART
+                =========================================*/
+
+                elemento.addEventListener(
+                    "dragstart",
+                    evento=>{
+
+                        evento.dataTransfer.setData(
+                            "text/plain",
+                            textoOpcion
+                        );
+
+                        evento.dataTransfer.effectAllowed =
+                            "move";
+
+                        elemento.classList.add(
+                            "modelo14-arrastrando"
+                        );
+
+                    }
+                );
+
+
+                /*=========================================
+                    DRAGEND
+                =========================================*/
+
+                elemento.addEventListener(
+                    "dragend",
+                    ()=>{
+
+                        elemento.classList.remove(
+                            "modelo14-arrastrando"
+                        );
+
+                    }
+                );
+
+
+                return elemento;
+
+            }
+
+
+            /*=================================================
+                OPCIONES INICIALES
+            =================================================*/
 
             const opciones = [
 
@@ -486,18 +457,18 @@ const UCMIMotorSustitucionContextual = {
             ];
 
 
-            /*=============================================
+            /*=================================================
                 MEZCLAR OPCIONES
-            =============================================*/
+            =================================================*/
 
             opciones.sort(
                 ()=>Math.random() - 0.5
             );
 
 
-            /*=============================================
-                CREAR OPCIONES AZULES
-            =============================================*/
+            /*=================================================
+                CREAR BANCO INICIAL
+            =================================================*/
 
             opciones.forEach(opcion=>{
 
@@ -507,89 +478,213 @@ const UCMIMotorSustitucionContextual = {
 
                 }
 
-
-                const elemento =
-                    document.createElement("div");
-
-                elemento.className =
-                    "modelo14-opcion";
-
-                elemento.textContent =
-                    opcion.texto;
-
-                elemento.draggable =
-                    true;
-
-                elemento.dataset.texto =
-                    opcion.texto;
-
-                elemento.dataset.correcta =
-                    opcion.correcta
-                        ? "true"
-                        : "false";
-
-
-                /*=========================================
-                    DRAGSTART
-                =========================================*/
-
-                elemento.addEventListener(
-                    "dragstart",
-                    evento=>{
-
-                        evento.dataTransfer.setData(
-                            "text/plain",
-                            opcion.texto
-                        );
-
-                        evento.dataTransfer.effectAllowed =
-                            "move";
-
-                        console.log(
-                            "DRAG MODELO 14:",
-                            opcion.texto
-                        );
-
-                    }
-                );
-
-
-                /*=========================================
-                    DRAGEND
-                =========================================*/
-
-                elemento.addEventListener(
-                    "dragend",
-                    ()=>{
-
-                        console.log(
-                            "FIN DRAG MODELO 14:",
-                            opcion.texto
-                        );
-
-                    }
-                );
-
-
                 banco.appendChild(
-                    elemento
+                    crearOpcion(
+                        opcion.texto,
+                        opcion.correcta,
+                        false
+                    )
                 );
 
             });
 
 
-            /*=============================================
-                AGREGAR BANCO AL PÁRRAFO
-            =============================================*/
+            /*=================================================
+                DRAGOVER SOBRE ZONA NARANJA
+            =================================================*/
+
+            zonaDrop.addEventListener(
+                "dragover",
+                evento=>{
+
+                    evento.preventDefault();
+
+                    evento.dataTransfer.dropEffect =
+                        "move";
+
+                    zonaDrop.classList.add(
+                        "activa"
+                    );
+
+                }
+            );
+
+
+            /*=================================================
+                DRAGLEAVE
+            =================================================*/
+
+            zonaDrop.addEventListener(
+                "dragleave",
+                ()=>{
+
+                    zonaDrop.classList.remove(
+                        "activa"
+                    );
+
+                }
+            );
+
+
+            /*=================================================
+                DROP SOBRE ZONA NARANJA
+            =================================================*/
+
+            zonaDrop.addEventListener(
+                "drop",
+                evento=>{
+
+                    evento.preventDefault();
+
+                    zonaDrop.classList.remove(
+                        "activa"
+                    );
+
+
+                    const textoArrastrado =
+                        evento.dataTransfer.getData(
+                            "text/plain"
+                        );
+
+
+                    if(!textoArrastrado){
+
+                        return;
+
+                    }
+
+
+                    /*=========================================
+                        BUSCAR LA OPCIÓN AZUL UTILIZADA
+                    =========================================*/
+
+                    const opcionesBanco =
+                        banco.querySelectorAll(
+                            ".modelo14-opcion"
+                        );
+
+
+                    let opcionUtilizada =
+                        null;
+
+
+                    opcionesBanco.forEach(opcion=>{
+
+                        if(
+                            opcion.dataset.texto ===
+                            textoArrastrado
+                        ){
+
+                            opcionUtilizada =
+                                opcion;
+
+                        }
+
+                    });
+
+
+                    if(!opcionUtilizada){
+
+                        return;
+
+                    }
+
+
+                    /*=========================================
+                        GUARDAR EL TEXTO QUE ESTABA EN NARANJA
+                    =========================================*/
+
+                    const textoAnterior =
+                        zonaDrop.textContent;
+
+
+                    /*=========================================
+                        CREAR NUEVA OPCIÓN AZUL
+                        CON EL TEXTO ANTERIOR
+                    =========================================*/
+
+                    const opcionAnterior =
+                        crearOpcion(
+                            textoAnterior,
+                            false,
+                            true
+                        );
+
+
+                    banco.appendChild(
+                        opcionAnterior
+                    );
+
+
+                    /*=========================================
+                        COLOCAR LA NUEVA OPCIÓN
+                        EN LA ZONA NARANJA
+                    =========================================*/
+
+                    zonaDrop.textContent =
+                        textoArrastrado;
+
+                    zonaDrop.dataset.actual =
+                        textoArrastrado;
+
+
+                    /*=========================================
+                        ELIMINAR DEL BANCO
+                        LA OPCIÓN UTILIZADA
+                    =========================================*/
+
+                    opcionUtilizada.remove();
+
+
+                    console.log(
+                        "MODELO 14 - SUSTITUCIÓN:",
+                        {
+                            anterior:textoAnterior,
+                            nueva:textoArrastrado
+                        }
+                    );
+
+                }
+            );
+
+
+            /*=================================================
+                PERMITIR DEVOLVER EL TEXTO NARANJA
+                AL BANCO
+            =================================================*/
+
+            banco.addEventListener(
+                "dragover",
+                evento=>{
+
+                    evento.preventDefault();
+
+                    evento.dataTransfer.dropEffect =
+                        "move";
+
+                }
+            );
+
+
+            /*=================================================
+                CONSTRUIR EL PÁRRAFO
+            =================================================*/
+
+            texto.insertBefore(
+                zonaDrop,
+                texto.childNodes[inicio] || null
+            );
+
+
+            contenedorParrafo.appendChild(
+                texto
+            );
+
 
             contenedorParrafo.appendChild(
                 banco
             );
 
-
-            /*=============================================
-                AGREGAR PÁRRAFO AL MODELO
-            =============================================*/
 
             bloque.appendChild(
                 contenedorParrafo
@@ -599,7 +694,7 @@ const UCMIMotorSustitucionContextual = {
 
 
         /*=================================================
-            AGREGAR MODELO AL CONTENEDOR
+            INSERTAR MODELO EN LA PÁGINA
         =================================================*/
 
         contenedor.appendChild(
