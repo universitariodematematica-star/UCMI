@@ -25,7 +25,8 @@ estructurasGlobal={},
 ejercicioCompletarTextoListening={},
 ejerciciosOrdenarParrafos=[],
 ejercicioComprensionTexto={},
-ejercicioComprensionAuditiva={},    
+ejercicioComprensionAuditiva={},
+ejercicioSustitucionContextual={},    
 configuracionMostrar={}
 ){
     
