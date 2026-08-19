@@ -400,24 +400,6 @@ const UCMIMotorSustitucionContextual = {
                 "sc-parrafo-contenedor";
 
 
-            /*---------------------------------------------
-                NÚMERO
-            ---------------------------------------------*/
-
-            const numero =
-                document.createElement("div");
-
-            numero.className =
-                "sc-numero-parrafo";
-
-            numero.textContent =
-                parrafo.numero ||
-                `Párrafo ${indiceParrafo + 1}`;
-
-            contenedorParrafo.appendChild(
-                numero
-            );
-
 
             /*---------------------------------------------
                 TEXTO DEL PÁRRAFO
@@ -950,6 +932,77 @@ const UCMIMotorSustitucionContextual = {
                 );
 
             });
+
+
+        /*=================================================
+            BOTÓN ÚNICO DE EVALUACIÓN
+        =================================================*/
+
+        const botonEvaluar =
+            document.createElement("button");
+
+        botonEvaluar.type =
+            "button";
+
+        botonEvaluar.className =
+            "verificar";
+
+        botonEvaluar.textContent =
+            "Evaluar";
+
+
+        botonEvaluar.addEventListener(
+            "click",
+            function(){
+
+                const segmentos =
+                    bloque.querySelectorAll(
+                        ".sc-sustitucion-colocada"
+                    );
+
+
+                segmentos.forEach(
+                    sustitucion => {
+
+                        const resultadoCorrecto =
+                            sustitucion.dataset.correcta ===
+                            "true";
+
+
+                        if(resultadoCorrecto){
+
+                            sustitucion.style.background =
+                                "#c8f7c5";
+
+                            sustitucion.style.color =
+                                "#15803d";
+
+                            sustitucion.style.border =
+                                "2px solid #15803d";
+
+                        }else{
+
+                            sustitucion.style.background =
+                                "#ffcdd2";
+
+                            sustitucion.style.color =
+                                "#b71c1c";
+
+                            sustitucion.style.border =
+                                "2px solid #b71c1c";
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+
+        bloque.appendChild(
+            botonEvaluar
+        );
 
 
         /*=================================================
