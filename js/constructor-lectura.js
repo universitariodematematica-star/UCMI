@@ -99,25 +99,6 @@ if (hojaImagenes){
     const hojaComprensionTexto = libro.getWorksheet("Comprension-texto");
     const hojaComprensionAuditiva = libro.getWorksheet("Comprension-auditiva");
 
-    console.log(
-    "========== DIAGNÓSTICO COMPRENSIÓN AUDITIVA =========="
-);
-
-console.log(
-    "HOJA:",
-    hojaComprensionAuditiva
-);
-
-console.log(
-    "NOMBRE:",
-    hojaComprensionAuditiva
-        ? hojaComprensionAuditiva.name
-        : "NO ENCONTRADA"
-);
-
-console.log(
-    "======================================================"
-);
 
 //===========================================
 // COMPRENSIÓN AUDITIVA
@@ -279,28 +260,6 @@ if (hojaComprensionAuditiva) {
 // DIAGNÓSTICO
 //===========================================
 
-console.log(
-    "========== DIAGNÓSTICO COMPRENSIÓN AUDITIVA =========="
-);
-
-console.log(
-    "AUDIO:",
-    ejercicioComprensionAuditiva.audio
-);
-
-console.log(
-    "TÍTULO:",
-    ejercicioComprensionAuditiva.titulo
-);
-
-console.log(
-    "PREGUNTAS:",
-    ejercicioComprensionAuditiva.preguntas
-);
-
-console.log(
-    "======================================================"
-);    
 
 //===========================================
 // COMPRENSIÓN DE TEXTO
@@ -504,23 +463,7 @@ if (hojaComprensionTexto) {
 
 }
 
-console.log(
-    "========== DIAGNÓSTICO COMPRENSIÓN DE TEXTO =========="
-);
-
-console.log(
-    "PÁRRAFOS:",
-    ejercicioComprensionTexto.parrafos
-);
-
-console.log(
-    "PREGUNTAS:",
-    ejercicioComprensionTexto.preguntas
-);
-
-console.log(
-    "======================================================"
-);    
+  
     
 //===========================================
 // ORDENAR PÁRRAFOS
@@ -857,28 +800,6 @@ infoEstructural.forEach(
 
     };
 
-    console.log(
-    "========== DIAGNÓSTICO ESTRUCTURAS =========="
-);
-
-console.log(
-    "INFORMACIÓN ESTRUCTURAL:",
-    estructurasGlobal.informacion
-);
-
-console.log(
-    "ORACIONES ESTRUCTURADAS:",
-    estructurasGlobal.oraciones
-);
-
-console.log(
-    "TABLAS DE ESTRUCTURAS:",
-    estructurasGlobal.tablas
-);
-
-console.log(
-    "=============================================="
-);
 
 oracionesEstructuradas.forEach(
     (oracion, indice) => {
@@ -1650,42 +1571,13 @@ for(let fila = 2; fila <= hojaMostrar.rowCount; fila++){
 
 }
 
-console.log(
-    "========== CONFIGURACIÓN MOSTRAR =========="
-);
-
-console.log(
-    "CLAVES:",
-    Object.keys(configuracionMostrar)
-);
 
 Object.entries(configuracionMostrar).forEach(
     ([clave, valor]) => {
 
-        console.log(
-            "CLAVE:",
-            JSON.stringify(clave),
-            "VALOR:",
-            JSON.stringify(valor)
-        );
 
     }
 );
-
-console.log(
-    "BUSQUEDA Comprensión de texto:",
-    JSON.stringify(
-        configuracionMostrar["Comprensión de texto"]
-    )
-);
-
-console.log(
-    "============================================"
-);
-
-console.log(
-    "============================================"
-);    
     
 
     datosPagina = {
