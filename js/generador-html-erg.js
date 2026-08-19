@@ -660,6 +660,9 @@ UCMIEncabezado.iniciar({
 const ejercicioCompletarTextoListening =
 ${JSON.stringify(ejercicioCompletarTextoListening)};
 
+const ejercicioComprensionAuditiva =
+${JSON.stringify(ejercicioComprensionAuditiva)};
+
 UCMIMotorEjercicios.generar({
 
     contenedor:"zona-ejercicios",
