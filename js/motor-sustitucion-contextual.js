@@ -304,6 +304,24 @@ const UCMIMotorSustitucionContextual = {
 
         }
 
+                /*=================================================
+            INSTRUCCIÓN DEL EJERCICIO
+        =================================================*/
+
+        const instruccion =
+            document.createElement("div");
+
+        instruccion.className =
+            "instruccion-ejercicio";
+
+        instruccion.textContent =
+            (++contadorEjercicios) +
+            ". Arrastra una opción azul sobre la frase naranja que deseas sustituir para que la lectura mantenga el mismo sentido lo más posible.";
+
+        bloque.appendChild(
+            instruccion
+        );
+
 
         /*=================================================
             PÁRRAFOS
