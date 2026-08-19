@@ -102,6 +102,205 @@ if (hojaImagenes){
 
 
 //===========================================
+// SUSTITUCIÓN CONTEXTUAL
+//===========================================
+//
+// HOJA: "Sustitucion-contextual"
+//
+// B1 = Nombre
+//
+// C3:C12 = número de párrafo
+// D3:D12 = contenido del párrafo
+// E3:E12 = número inicial
+// F3:F12 = número final
+//
+// G3:G12 = frase correcta
+// H3:H12 = frase falsa 1
+// I3:I12 = frase falsa 2
+// J3:J12 = frase falsa 3
+//
+// K3:K12 = explicación gramatical
+//
+// E y F representan posiciones de palabras
+// dentro del párrafo.
+//
+// Ejemplo:
+// E = 3
+// F = 5
+//
+// El segmento sustituible está formado
+// por las palabras 3, 4 y 5.
+//
+//===========================================
+
+let ejercicioSustitucionContextual = {
+
+    nombre: "",
+
+    parrafos: []
+
+};
+
+
+if (hojaSustitucionContextual) {
+
+    //=======================================
+    // NOMBRE
+    //=======================================
+
+    ejercicioSustitucionContextual.nombre =
+        leerCelda(
+            hojaSustitucionContextual.getCell("B1")
+        ).trim();
+
+
+    //=======================================
+    // LEER PÁRRAFOS
+    //=======================================
+
+    for (
+        let fila = 3;
+        fila <= 12;
+        fila++
+    ) {
+
+        const numeroParrafo =
+            leerCelda(
+                hojaSustitucionContextual.getCell(
+                    "C" + fila
+                )
+            ).trim();
+
+
+        const texto =
+            leerCelda(
+                hojaSustitucionContextual.getCell(
+                    "D" + fila
+                )
+            ).trim();
+
+
+        const inicioTexto =
+            leerCelda(
+                hojaSustitucionContextual.getCell(
+                    "E" + fila
+                )
+            ).trim();
+
+
+        const finTexto =
+            leerCelda(
+                hojaSustitucionContextual.getCell(
+                    "F" + fila
+                )
+            ).trim();
+
+
+        const correcta =
+            leerCelda(
+                hojaSustitucionContextual.getCell(
+                    "G" + fila
+                )
+            ).trim();
+
+
+        const falsa1 =
+            leerCelda(
+                hojaSustitucionContextual.getCell(
+                    "H" + fila
+                )
+            ).trim();
+
+
+        const falsa2 =
+            leerCelda(
+                hojaSustitucionContextual.getCell(
+                    "I" + fila
+                )
+            ).trim();
+
+
+        const falsa3 =
+            leerCelda(
+                hojaSustitucionContextual.getCell(
+                    "J" + fila
+                )
+            ).trim();
+
+
+        const explicacion =
+            leerCelda(
+                hojaSustitucionContextual.getCell(
+                    "K" + fila
+                )
+            ).trim();
+
+
+        //===================================
+        // IGNORAR FILAS SIN PÁRRAFO
+        //===================================
+
+        if (!texto) {
+            continue;
+        }
+
+
+        const inicio =
+            Number(inicioTexto);
+
+
+        const fin =
+            Number(finTexto);
+
+
+        //===================================
+        // GUARDAR PÁRRAFO
+        //===================================
+
+        ejercicioSustitucionContextual.parrafos.push({
+
+            numero:
+                numeroParrafo,
+
+            texto:
+                texto,
+
+            inicio:
+                Number.isInteger(inicio)
+                    ? inicio
+                    : 0,
+
+            fin:
+                Number.isInteger(fin)
+                    ? fin
+                    : 0,
+
+            correcta:
+                correcta,
+
+            incorrectas: [
+
+                falsa1,
+
+                falsa2,
+
+                falsa3
+
+            ].filter(
+                opcion => opcion !== ""
+            ),
+
+            explicacion:
+                explicacion
+
+        });
+
+    }
+
+}
+
+
+//===========================================
 // COMPRENSIÓN AUDITIVA
 //===========================================
 //
@@ -1636,6 +1835,10 @@ function lanzarGeneracion(){
                 referencias: []
             };
 
+    console.log(
+    "MODELO 14 - SUSTITUCIÓN CONTEXTUAL:",
+    ejercicioSustitucionContextual
+    );
 
     generarCodigo(   // ← VIENE DE: js/generador-html-erg.js
         datosPagina.nivel,
