@@ -329,15 +329,20 @@ const UCMIMotorSustitucionContextual = {
 
 
             /*
-                Validación básica.
+                Excel utiliza posiciones de palabras
+                comenzando desde 1 y con FIN incluido.
 
-                inicio y fin representan el rango
-                COMPLETO de la frase a sustituir.
+                JavaScript utiliza índices comenzando desde 0
+                y slice() excluye el segundo límite.
+
+                Por eso:
+                inicio - 1
+                fin se mantiene igual.
             */
 
             if(!Number.isFinite(inicio)){
 
-                inicio = 0;
+                inicio = 1;
 
             }
 
@@ -350,7 +355,7 @@ const UCMIMotorSustitucionContextual = {
 
             inicio =
                 Math.max(
-                    0,
+                    1,
                     Math.min(inicio, palabras.length)
                 );
 
@@ -362,23 +367,28 @@ const UCMIMotorSustitucionContextual = {
                 );
 
 
+            const indiceInicio =
+                inicio - 1;
+
+            const indiceFin =
+                fin;
+
             /*=================================================
                 PARTE ANTERIOR A LA FRASE
             =================================================*/
 
-            if(inicio > 0){
+            if(indiceInicio > 0){
 
                 texto.appendChild(
                     document.createTextNode(
                         palabras
-                            .slice(0, inicio)
+                            .slice(0, indiceInicio)
                             .join(" ")
                         + " "
                     )
                 );
 
             }
-
 
             /*=================================================
                 ÚNICO SEGMENTO NARANJA
@@ -400,9 +410,8 @@ const UCMIMotorSustitucionContextual = {
 
             segmento.textContent =
                 palabras
-                    .slice(inicio, fin)
+                    .slice(indiceInicio, indiceFin)
                     .join(" ");
-
 
             segmento.dataset.parrafo =
                 indiceParrafo;
@@ -421,13 +430,13 @@ const UCMIMotorSustitucionContextual = {
                 PARTE POSTERIOR A LA FRASE
             =================================================*/
 
-            if(fin < palabras.length){
+            if(indiceFin < palabras.length){
 
                 texto.appendChild(
                     document.createTextNode(
                         " " +
                         palabras
-                            .slice(fin)
+                            .slice(indiceFin)
                             .join(" ")
                     )
                 );
