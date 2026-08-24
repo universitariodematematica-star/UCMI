@@ -100,7 +100,7 @@
 
 
         /* =====================================================
-           NAVEGACIÓN A B C D E
+           NAVEGACIÓN
         ===================================================== */
 
         .nav-letters {
@@ -245,7 +245,7 @@
 
 
         /* =====================================================
-           TEXTOS
+           TEXTO
         ===================================================== */
 
         p,
@@ -266,7 +266,7 @@
 
 
         /* =====================================================
-           INPUTS
+           CAMPOS
         ===================================================== */
 
         .blank-line {
@@ -295,13 +295,22 @@
 
 
         /* =====================================================
-           RESULTADOS INDIVIDUALES
+           ESTADO DE RESPUESTA
         ===================================================== */
 
-        .evaluation-result {
+        .input-correct {
+            border-bottom: 2px solid #178a75 !important;
+        }
+
+        .input-incorrect {
+            border-bottom: 2px solid #b3261e !important;
+        }
+
+        .answer-result {
+            display: inline-block;
+            margin-left: 4px;
             font-size: 8.5px;
             font-weight: bold;
-            margin-left: 4px;
         }
 
         .correct {
@@ -312,31 +321,80 @@
             color: #b3261e;
         }
 
-        .input-correct {
-            border-bottom: 2px solid #178a75 !important;
+
+        /* =====================================================
+           EVALUACIÓN
+        ===================================================== */
+
+        .evaluation-panel {
+            background: white;
+            border: 1px solid #dcdfe4;
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 8px;
+            text-align: center;
         }
 
-        .input-incorrect {
-            border-bottom: 2px solid #b3261e !important;
+        .attempts-result {
+            font-size: 10px;
+            font-weight: bold;
+            color: #5c1d53;
+            margin-bottom: 4px;
+        }
+
+        .score-result {
+            font-size: 11px;
+            font-weight: bold;
+            color: #178a75;
+            margin-top: 3px;
+        }
+
+        .evaluation-message {
+            font-size: 9px;
+            margin-top: 4px;
         }
 
 
         /* =====================================================
-           BOTÓN DE EVALUACIÓN
+           RESPUESTAS MOSTRADAS
         ===================================================== */
 
-        .evaluation-area {
+        .correct-answers {
+            display: none;
+            background-color: #fff9e6;
+            border: 2px solid #d99b26;
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 8px;
+            text-align: left;
+        }
+
+        .correct-answers h3 {
+            color: #8c6312;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .correct-answers p {
+            font-size: 9px;
+            margin-bottom: 3px;
+        }
+
+
+        /* =====================================================
+           BOTÓN CHECK
+        ===================================================== */
+
+        .check-button-container {
             text-align: center;
-            margin-top: 12px;
-            padding-top: 8px;
-            border-top: 1px solid #d8dde2;
+            margin-top: 8px;
         }
 
         .btn-check {
             background-color: #178a75;
             color: white;
             border: none;
-            padding: 6px 16px;
+            padding: 5px 14px;
             border-radius: 4px;
             font-size: 10px;
             font-weight: bold;
@@ -347,36 +405,9 @@
             background-color: #106856;
         }
 
-        .attempt-result {
-            margin-top: 5px;
-            font-size: 9.5px;
-            font-weight: bold;
-            color: #5c1d53;
-        }
-
-
-        /* =====================================================
-           RESPUESTAS REVELADAS
-        ===================================================== */
-
-        .answers-revealed {
-            display: none;
-            margin-top: 10px;
-            padding: 8px;
-            background-color: #fff9e6;
-            border: 1px solid #d99b26;
-            border-radius: 5px;
-        }
-
-        .answers-revealed h3 {
-            color: #8c6312;
-            font-size: 10px;
-            margin-bottom: 5px;
-        }
-
-        .answers-revealed p {
-            font-size: 9px;
-            margin-bottom: 3px;
+        .btn-check:disabled {
+            background-color: #999;
+            cursor: not-allowed;
         }
 
 
@@ -403,7 +434,7 @@
 
 
         /* =====================================================
-           MODAL PIZARRA
+           MODAL
         ===================================================== */
 
         .modal-overlay {
@@ -500,7 +531,8 @@
 
             .print-btn-container,
             .modal-overlay,
-            .evaluation-area {
+            .check-button-container,
+            .evaluation-panel {
                 display: none !important;
             }
 
@@ -517,28 +549,6 @@
                 border-bottom: 1px solid #000 !important;
                 color: #000 !important;
             }
-
-            .answers-revealed {
-                display: block !important;
-            }
-        }
-
-
-        /* =====================================================
-           RESPONSIVE
-        ===================================================== */
-
-        @media (max-width: 700px) {
-
-            .content-grid-2 {
-                grid-template-columns: 1fr;
-            }
-
-            .top-header {
-                flex-direction: column;
-                gap: 3px;
-            }
-
         }
 
     </style>
@@ -585,9 +595,9 @@
     <div class="main-container">
 
 
-        <!-- =================================================
+        <!-- =====================================================
              TÍTULO
-        ================================================= -->
+        ===================================================== -->
 
         <div class="lesson-title-area">
 
@@ -656,10 +666,9 @@
         </div>
 
 
-
-        <!-- =================================================
-             FILA A + B
-        ================================================= -->
+        <!-- =====================================================
+             A + B
+        ===================================================== -->
 
         <div class="content-grid-2">
 
@@ -676,7 +685,6 @@
                     A. Use the Language
                 </span>
 
-
                 <p style="margin-bottom: 4px;">
                     Complete the personal name card.
                 </p>
@@ -684,113 +692,89 @@
 
                 <ol>
 
-                    <!-- PERSONAL: NO SE EVALÚA -->
-
                     <li>
                         1. My first name
-
                         <input
                             type="text"
                             class="blank-line"
                             id="a1">
-
                         .
+                        <span
+                            id="resultA1"
+                            class="answer-result">
+                        </span>
                     </li>
 
 
-                    <!-- PERSONAL: NO SE EVALÚA -->
-
                     <li>
                         2. My last name
-
                         <input
                             type="text"
                             class="blank-line"
                             id="a2">
-
                         .
+                        <span
+                            id="resultA2"
+                            class="answer-result">
+                        </span>
                     </li>
 
 
-                    <!-- EVALUABLE -->
-
                     <li>
                         3. My family name
-
                         <input
                             type="text"
                             class="blank-line"
                             id="a3">
-
                         important to me.
-
                         <span
                             id="resultA3"
-                            class="evaluation-result">
+                            class="answer-result">
                         </span>
-
                     </li>
 
 
-                    <!-- EVALUABLE -->
-
                     <li>
                         4. My name
-
                         <input
                             type="text"
                             class="blank-line"
                             id="a4">
-
                         part of my identity.
-
                         <span
                             id="resultA4"
-                            class="evaluation-result">
+                            class="answer-result">
                         </span>
-
                     </li>
 
-
-                    <!-- EVALUABLE -->
 
                     <li>
                         5. What
-
                         <input
                             type="text"
                             class="blank-line"
-                            id="a5"
-                            style="width: 80px;">
-
+                            style="width: 80px;"
+                            id="a5">
                         your first name?
-
                         <span
                             id="resultA5"
-                            class="evaluation-result">
+                            class="answer-result">
                         </span>
-
                     </li>
 
 
-                    <!-- EVALUABLE -->
-
                     <li>
                         6. What
-
                         <input
                             type="text"
                             class="blank-line"
-                            id="a6"
-                            style="width: 80px;">
-
+                            style="width: 80px;"
+                            id="a6">
                         your last name?
-
                         <span
                             id="resultA6"
-                            class="evaluation-result">
+                            class="answer-result">
                         </span>
-
                     </li>
 
                 </ol>
@@ -801,8 +785,6 @@
                 </p>
 
 
-                <!-- PERSONAL: NO SE EVALÚA -->
-
                 <p>
 
                     My first name is
@@ -810,15 +792,18 @@
                     <input
                         type="text"
                         class="blank-line"
-                        id="a7"
-                        style="width: 140px;">
+                        style="width: 140px;"
+                        id="a7">
 
                     .
 
+                    <span
+                        id="resultA7"
+                        class="answer-result">
+                    </span>
+
                 </p>
 
-
-                <!-- PERSONAL: NO SE EVALÚA -->
 
                 <p>
 
@@ -830,10 +815,14 @@
                         id="a8"
                         placeholder="_ - _ - _ - _ - _">
 
+                    <span
+                        id="resultA8"
+                        class="answer-result">
+                    </span>
+
                 </p>
 
             </div>
-
 
 
             <!-- =================================================
@@ -862,122 +851,104 @@
 
 
                 <p
-                    style="margin-top: 6px; text-align: justify;">
-
-
-                    My
-
-                    <input
-                        type="text"
-                        class="blank-line"
-                        id="b1"
-                        style="width: 70px;">
-
-                    name is
-
-
-                    <input
-                        type="text"
-                        class="blank-line"
-                        id="b2"
-                        style="width: 110px;">
-
-                    .
-
+                    style="
+                        margin-top: 6px;
+                        text-align: justify;
+                    ">
 
                     My
 
                     <input
                         type="text"
                         class="blank-line"
-                        id="b3"
-                        style="width: 70px;">
+                        style="width: 70px;"
+                        id="b1">
 
                     name is
 
+                    <input
+                        type="text"
+                        class="blank-line"
+                        style="width: 110px;"
+                        id="b2">
+
+                    . My
 
                     <input
                         type="text"
                         class="blank-line"
-                        id="b4"
-                        style="width: 110px;">
+                        style="width: 70px;"
+                        id="b3">
 
-                    .
-
-
-                    In
+                    name is
 
                     <input
                         type="text"
                         class="blank-line"
-                        id="b5"
-                        style="width: 70px;">
+                        style="width: 110px;"
+                        id="b4">
+
+                    . In
+
+                    <input
+                        type="text"
+                        class="blank-line"
+                        style="width: 70px;"
+                        id="b5">
 
                     , names can show family and
 
+                    <input
+                        type="text"
+                        class="blank-line"
+                        style="width: 80px;"
+                        id="b6">
+
+                    . A family name can connect a person with
 
                     <input
                         type="text"
                         class="blank-line"
-                        id="b6"
-                        style="width: 80px;">
-
-                    .
-
-
-                    A family name can connect a person with
-
-
-                    <input
-                        type="text"
-                        class="blank-line"
-                        id="b7"
-                        style="width: 70px;">
+                        style="width: 70px;"
+                        id="b7">
 
                     , grandparents, and family stories.
 
-
                     Some names come from relatives or
-
 
                     <input
                         type="text"
                         class="blank-line"
-                        id="b8"
-                        style="width: 70px;">
+                        style="width: 70px;"
+                        id="b8">
 
                     .
 
-
                     In English class, it is
-
 
                     <input
                         type="text"
                         class="blank-line"
-                        id="b9"
-                        style="width: 70px;">
+                        style="width: 70px;"
+                        id="b9">
 
                     to say and
 
-
                     <input
                         type="text"
                         class="blank-line"
-                        id="b10"
-                        style="width: 70px;">
+                        style="width: 70px;"
+                        id="b10">
 
                     your name clearly.
 
-
                     My
-
 
                     <input
                         type="text"
                         class="blank-line"
-                        id="b11"
-                        style="width: 70px;">
+                        style="width: 70px;"
+                        id="b11">
 
                     is part of who I am.
 
@@ -988,10 +959,9 @@
         </div>
 
 
-
-        <!-- =================================================
+        <!-- =====================================================
              SECCIÓN C
-        ================================================= -->
+        ===================================================== -->
 
         <div
             class="card card-c"
@@ -1008,101 +978,91 @@
             </p>
 
 
-            <!-- C1 -->
+            <ol>
 
-            <p style="margin-top: 5px;">
+                <li>
 
-                1. Listen and write the first name:
+                    1. Listen and write the first name:
 
-                <input
-                    type="text"
-                    class="blank-line"
-                    id="c1"
-                    style="width: 200px;">
+                    <input
+                        type="text"
+                        class="blank-line"
+                        style="width: 200px;"
+                        id="c1">
 
-                .
+                    .
 
-                <span
-                    id="resultC1"
-                    class="evaluation-result">
-                </span>
+                    <span
+                        id="resultC1"
+                        class="answer-result">
+                    </span>
 
-            </p>
-
-
-            <!-- C2 -->
-
-            <p style="margin-top: 5px;">
-
-                2. Listen again and write the last name:
-
-                <input
-                    type="text"
-                    class="blank-line"
-                    id="c2"
-                    style="width: 200px;">
-
-                .
-
-                <span
-                    id="resultC2"
-                    class="evaluation-result">
-                </span>
-
-            </p>
+                </li>
 
 
-            <!-- C3 -->
+                <li>
 
-            <p style="margin-top: 5px;">
+                    2. Listen again and write the last name:
 
-                3. Listen one more time and write the spelling:
+                    <input
+                        type="text"
+                        class="blank-line"
+                        style="width: 200px;"
+                        id="c2">
 
-                <input
-                    type="text"
-                    class="blank-line"
-                    id="c3"
-                    style="width: 220px;"
-                    placeholder="_ - _ - _ - _ - _ - _">
+                    .
 
-                .
+                    <span
+                        id="resultC2"
+                        class="answer-result">
+                    </span>
 
-                <span
-                    id="resultC3"
-                    class="evaluation-result">
-                </span>
-
-            </p>
+                </li>
 
 
-            <p style="margin-top: 6px;">
+                <li>
 
-                <strong>
-                    Interaction
-                </strong>
+                    3. Listen one more time and write the spelling:
 
+                    <input
+                        type="text"
+                        class="blank-line"
+                        style="width: 220px;"
+                        id="c3"
+                        placeholder="_ - _ - _ - _ - _ - _">
+
+                    .
+
+                    <span
+                        id="resultC3"
+                        class="answer-result">
+                    </span>
+
+                </li>
+
+            </ol>
+
+
+            <p style="margin-top: 4px;">
+                <strong>Interaction</strong>
             </p>
 
 
             <p>
-
                 Ask a partner:
-
                 <em>
                     What is your first name?
                     What is your last name?
                     How do you spell it?
                 </em>
-
             </p>
 
         </div>
 
 
-
-        <!-- =================================================
-             FILA D + E
-        ================================================= -->
+        <!-- =====================================================
+             D + E
+        ===================================================== -->
 
         <div class="content-grid-2">
 
@@ -1121,7 +1081,10 @@
 
 
                 <p
-                    style="text-align: justify; margin-bottom: 4px;">
+                    style="
+                        text-align: justify;
+                        margin-bottom: 4px;
+                    ">
 
                     Create a name identity card.
                     Write 6-8 sentences.
@@ -1147,7 +1110,6 @@
 
                     .
 
-
                     My last name is
 
                     <input
@@ -1157,7 +1119,6 @@
 
                     .
 
-
                     It is spelled
 
                     <input
@@ -1166,7 +1127,6 @@
                         style="width: 90px;">
 
                     .
-
 
                     My name is part of my identity.
 
@@ -1179,7 +1139,6 @@
                     placeholder="Escribe aquí tu texto adicional...">
 
             </div>
-
 
 
             <!-- =================================================
@@ -1203,7 +1162,10 @@
 
 
                 <ol
-                    style="padding-left: 12px; margin-top: 2px;">
+                    style="
+                        padding-left: 12px;
+                        margin-top: 2px;
+                    ">
 
                     <li>
                         1. Open Unit 2, Lesson 6:
@@ -1241,36 +1203,59 @@
         </div>
 
 
+        <!-- =====================================================
+             PANEL DE EVALUACIÓN
+        ===================================================== -->
 
-        <!-- =================================================
-             EVALUACIÓN
-        ================================================= -->
+        <div class="evaluation-panel">
 
-        <div class="evaluation-area">
+            <div
+                id="attemptsResult"
+                class="attempts-result">
 
-            <button
-                class="btn-check"
-                onclick="checkAnswers()">
+                Attempts: 0 / 5
 
-                ✓ Check Answers
-
-            </button>
+            </div>
 
 
             <div
-                id="attemptResult"
-                class="attempt-result">
+                id="scoreResult"
+                class="score-result">
+
+            </div>
+
+
+            <div
+                id="evaluationMessage"
+                class="evaluation-message">
+
+                Complete A, B and C and click
+                "Check Answers".
+
+            </div>
+
+
+            <div class="check-button-container">
+
+                <button
+                    id="checkButton"
+                    class="btn-check"
+                    onclick="checkAllAnswers()">
+
+                    ✓ Check Answers
+
+                </button>
 
             </div>
 
 
             <!-- =================================================
-                 RESPUESTAS QUE APARECEN DESPUÉS DE 5 INTENTOS
+                 RESPUESTAS CORRECTAS
             ================================================= -->
 
             <div
-                id="answersRevealed"
-                class="answers-revealed">
+                id="correctAnswers"
+                class="correct-answers">
 
                 <h3>
                     Correct Answers
@@ -1278,79 +1263,81 @@
 
 
                 <p>
-                    <strong>A3:</strong>
-                    is
+                    <strong>A1:</strong> any personal first name
                 </p>
 
                 <p>
-                    <strong>A4:</strong>
-                    is
+                    <strong>A2:</strong> any personal last name
                 </p>
 
                 <p>
-                    <strong>A5:</strong>
-                    is
+                    <strong>A3:</strong> is
                 </p>
 
                 <p>
-                    <strong>A6:</strong>
-                    is
+                    <strong>A4:</strong> is
+                </p>
+
+                <p>
+                    <strong>A5:</strong> is
+                </p>
+
+                <p>
+                    <strong>A6:</strong> is
+                </p>
+
+                <p>
+                    <strong>A7:</strong> any personal first name
+                </p>
+
+                <p>
+                    <strong>A8:</strong>
+                    spelling of the student's first name
                 </p>
 
 
                 <p>
-                    <strong>B1:</strong>
-                    first
+                    <strong>B1:</strong> first
                 </p>
 
                 <p>
-                    <strong>B2:</strong>
-                    name
+                    <strong>B2:</strong> personal first name
                 </p>
 
                 <p>
-                    <strong>B3:</strong>
-                    last
+                    <strong>B3:</strong> last
                 </p>
 
                 <p>
-                    <strong>B4:</strong>
-                    name
+                    <strong>B4:</strong> personal last name
                 </p>
 
                 <p>
-                    <strong>B5:</strong>
-                    Latin America
+                    <strong>B5:</strong> Latin America
                 </p>
 
                 <p>
-                    <strong>B6:</strong>
-                    identity
+                    <strong>B6:</strong> identity
                 </p>
 
                 <p>
-                    <strong>B7:</strong>
-                    parents
+                    <strong>B7:</strong> parents
                 </p>
 
                 <p>
-                    <strong>B8:</strong>
-                    traditions
+                    <strong>B8:</strong> traditions
                 </p>
 
                 <p>
-                    <strong>B9:</strong>
-                    important
+                    <strong>B9:</strong> important
                 </p>
 
                 <p>
-                    <strong>B10:</strong>
-                    spell
+                    <strong>B10:</strong> spell
                 </p>
 
                 <p>
-                    <strong>B11:</strong>
-                    name
+                    <strong>B11:</strong> name
                 </p>
 
 
@@ -1369,15 +1356,21 @@
                     A-N-D-R-É-S
                 </p>
 
+                <p style="margin-top: 5px;">
+                    <strong>Nota:</strong>
+                    C1-C3 son respuestas provisionales.
+                    Se reemplazarán cuando se establezcan
+                    las respuestas reales del audio.
+                </p>
+
             </div>
 
         </div>
 
 
-
-        <!-- =================================================
-             PIE DE PÁGINA
-        ================================================= -->
+        <!-- =====================================================
+             PIE
+        ===================================================== -->
 
         <div class="lesson-footer">
 
@@ -1394,13 +1387,11 @@
     </div>
 
 
-
     <!-- =====================================================
          FRANJA FINAL
     ===================================================== -->
 
     <div class="bottom-bar"></div>
-
 
 
     <!-- =====================================================
@@ -1415,13 +1406,11 @@
             class="modal-container"
             onclick="event.stopPropagation()">
 
-
             <div class="modal-header">
 
                 <h3>
                     💡 Pizarra Interactiva: Clase U2 - L6
                 </h3>
-
 
                 <button
                     class="close-modal-btn"
@@ -1457,9 +1446,8 @@
     </div>
 
 
-
     <!-- =====================================================
-         SCRIPT
+         JAVASCRIPT
     ===================================================== -->
 
     <script>
@@ -1503,15 +1491,45 @@
         };
 
 
-
         /* =====================================================
            VARIABLES DE EVALUACIÓN
         ===================================================== */
 
-        let attemptCount = 0;
+        let attempts = 0;
 
-        let hadIncorrectAnswer = false;
+        const maxAttempts = 5;
 
+        let exerciseFinished = false;
+
+
+        /* =====================================================
+           RESPUESTAS PROVISIONALES DE C
+           
+           IMPORTANTE:
+           ESTAS SON LAS ÚNICAS RESPUESTAS QUE
+           CAMBIAREMOS CUANDO NOS DES EL AUDIO REAL.
+        ===================================================== */
+
+        const provisionalCAnswers = {
+
+            c1: [
+                "Andrés",
+                "Andres"
+            ],
+
+            c2: [
+                "Pérez",
+                "Perez"
+            ],
+
+            c3: [
+                "A-N-D-R-É-S",
+                "A-N-D-R-E-S",
+                "ANDRÉS",
+                "ANDRES"
+            ]
+
+        };
 
 
         /* =====================================================
@@ -1526,20 +1544,39 @@
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "")
                 .replace(/[.,!?;:"“”‘’]/g, "")
+                .replace(/[-–—]/g, "")
                 .replace(/\s+/g, " ");
 
         }
 
 
-
         /* =====================================================
-           EVALUAR UN INPUT
+           COMPARAR RESPUESTA
         ===================================================== */
 
-        function evaluateInput(
+        function isCorrect(answer, validAnswers) {
+
+            const normalizedAnswer =
+                normalizeAnswer(answer);
+
+            return validAnswers.some(function(validAnswer) {
+
+                return normalizedAnswer ===
+                    normalizeAnswer(validAnswer);
+
+            });
+
+        }
+
+
+        /* =====================================================
+           MOSTRAR RESULTADO
+        ===================================================== */
+
+        function showFieldResult(
             inputId,
             resultId,
-            correctAnswers
+            correct
         ) {
 
             const input =
@@ -1549,331 +1586,469 @@
                 document.getElementById(resultId);
 
 
-            const userAnswer =
-                normalizeAnswer(input.value);
-
-
-            const valid =
-                correctAnswers.some(function(answer) {
-
-                    return userAnswer ===
-                        normalizeAnswer(answer);
-
-                });
-
-
             input.classList.remove(
                 "input-correct",
                 "input-incorrect"
             );
 
 
-            if (valid) {
-
-                result.textContent =
-                    "✓ Correct";
-
-                result.className =
-                    "evaluation-result correct";
+            if (correct) {
 
                 input.classList.add(
                     "input-correct"
                 );
 
-            } else {
-
                 result.textContent =
-                    "✗ Incorrect";
+                    "✓";
 
                 result.className =
-                    "evaluation-result incorrect";
+                    "answer-result correct";
+
+            } else {
 
                 input.classList.add(
                     "input-incorrect"
                 );
 
+                result.textContent =
+                    "✗";
+
+                result.className =
+                    "answer-result incorrect";
+
             }
-
-
-            return valid;
 
         }
 
 
-
         /* =====================================================
-           EVALUACIÓN PRINCIPAL
+           EVALUAR UN CAMPO
         ===================================================== */
 
-        function checkAnswers() {
+        function evaluateField(
+            inputId,
+            resultId,
+            validAnswers
+        ) {
 
-            attemptCount++;
+            const answer =
+                document.getElementById(
+                    inputId
+                ).value;
+
+            const correct =
+                isCorrect(
+                    answer,
+                    validAnswers
+                );
+
+            showFieldResult(
+                inputId,
+                resultId,
+                correct
+            );
+
+            return correct;
+
+        }
 
 
-            let correctCount = 0;
+        /* =====================================================
+           EVALUACIÓN COMPLETA
+           
+           SE EVALÚAN:
+           
+           A = 8 respuestas
+           B = 11 respuestas
+           C = 3 respuestas
 
-            const totalEvaluable = 18;
+           TOTAL = 22
+           
+           D y E NO SE EVALÚAN.
+        ===================================================== */
+
+        function checkAllAnswers() {
+
+
+            if (exerciseFinished) {
+
+                return;
+
+            }
+
+
+            attempts++;
+
+
+            let score = 0;
+
+            const total = 22;
 
 
             /* =================================================
-               A. USE THE LANGUAGE
-               
-               A1 y A2 NO SE EVALÚAN
-               A7 y A8 NO SE EVALÚAN
+               SECCIÓN A
             ================================================= */
 
 
+            /*
+             * A1 y A2 son información personal.
+             * No se pueden evaluar automáticamente.
+             *
+             * Por tanto, se consideran correctos si
+             * el estudiante escribió algo.
+             */
+
+            const a1 =
+                document.getElementById("a1").value.trim();
+
+            const validA1 =
+                a1.length > 0;
+
+            showFieldResult(
+                "a1",
+                "resultA1",
+                validA1
+            );
+
+            if (validA1) score++;
+
+
+            const a2 =
+                document.getElementById("a2").value.trim();
+
+            const validA2 =
+                a2.length > 0;
+
+            showFieldResult(
+                "a2",
+                "resultA2",
+                validA2
+            );
+
+            if (validA2) score++;
+
+
+            /* A3 */
+
             if (
-                evaluateInput(
+                evaluateField(
                     "a3",
                     "resultA3",
                     ["is"]
                 )
-            ) {
+            ) score++;
 
-                correctCount++;
 
-            }
-
+            /* A4 */
 
             if (
-                evaluateInput(
+                evaluateField(
                     "a4",
                     "resultA4",
                     ["is"]
                 )
-            ) {
+            ) score++;
 
-                correctCount++;
 
-            }
-
+            /* A5 */
 
             if (
-                evaluateInput(
+                evaluateField(
                     "a5",
                     "resultA5",
                     ["is"]
                 )
-            ) {
+            ) score++;
 
-                correctCount++;
 
-            }
-
+            /* A6 */
 
             if (
-                evaluateInput(
+                evaluateField(
                     "a6",
                     "resultA6",
                     ["is"]
                 )
-            ) {
-
-                correctCount++;
-
-            }
+            ) score++;
 
 
+            /* A7 = información personal */
 
-            /* =================================================
-               B. BUILD THE TEXT
-            ================================================= */
+            const a7 =
+                document.getElementById("a7").value.trim();
 
+            const validA7 =
+                a7.length > 0;
 
-            const bAnswers = [
+            showFieldResult(
+                "a7",
+                "resultA7",
+                validA7
+            );
 
-                ["b1", ["first"]],
-                ["b2", ["name"]],
-                ["b3", ["last"]],
-                ["b4", ["name"]],
-                ["b5", ["latin america"]],
-                ["b6", ["identity"]],
-                ["b7", ["parents"]],
-                ["b8", ["traditions"]],
-                ["b9", ["important"]],
-                ["b10", ["spell"]],
-                ["b11", ["name"]]
-
-            ];
+            if (validA7) score++;
 
 
-            bAnswers.forEach(function(item) {
+            /*
+             * A8 es spelling personal.
+             * Se considera correcto si el estudiante
+             * escribió una respuesta.
+             */
 
-                const inputId = item[0];
+            const a8 =
+                document.getElementById("a8").value.trim();
 
-                const valid =
-                    evaluateInput(
-                        inputId,
-                        "",
-                        item[1]
-                    );
+            const validA8 =
+                a8.length > 0;
 
+            showFieldResult(
+                "a8",
+                "resultA8",
+                validA8
+            );
 
-                const input =
-                    document.getElementById(
-                        inputId
-                    );
-
-
-                if (valid) {
-
-                    correctCount++;
-
-                }
-
-
-                /*
-                   B no tiene resultId visible.
-                   Por eso aquí solo se colorea
-                   el input.
-                */
-
-                input.classList.remove(
-                    "input-correct",
-                    "input-incorrect"
-                );
-
-
-                if (valid) {
-
-                    input.classList.add(
-                        "input-correct"
-                    );
-
-                } else {
-
-                    input.classList.add(
-                        "input-incorrect"
-                    );
-
-                }
-
-            });
-
+            if (validA8) score++;
 
 
             /* =================================================
-               C. LISTEN AND SPEAK
-
-               RESPUESTAS PROVISIONALES
-
-               Posteriormente serán reemplazadas por
-               las respuestas reales del audio.
+               SECCIÓN B
             ================================================= */
 
 
             if (
-                evaluateInput(
+                evaluateField(
+                    "b1",
+                    "resultB1",
+                    ["first"]
+                )
+            ) score++;
+
+
+            /*
+             * B2 = información personal.
+             * Se considera correcta si hay contenido.
+             */
+
+            const b2 =
+                document.getElementById("b2").value.trim();
+
+            const validB2 =
+                b2.length > 0;
+
+            if (validB2) score++;
+
+
+            if (
+                evaluateField(
+                    "b3",
+                    "resultB3",
+                    ["last"]
+                )
+            ) score++;
+
+
+            /*
+             * B4 = información personal.
+             */
+
+            const b4 =
+                document.getElementById("b4").value.trim();
+
+            const validB4 =
+                b4.length > 0;
+
+            if (validB4) score++;
+
+
+            if (
+                evaluateField(
+                    "b5",
+                    "resultB5",
+                    ["Latin America"]
+                )
+            ) score++;
+
+
+            if (
+                evaluateField(
+                    "b6",
+                    "resultB6",
+                    ["identity"]
+                )
+            ) score++;
+
+
+            if (
+                evaluateField(
+                    "b7",
+                    "resultB7",
+                    ["parents"]
+                )
+            ) score++;
+
+
+            if (
+                evaluateField(
+                    "b8",
+                    "resultB8",
+                    ["traditions"]
+                )
+            ) score++;
+
+
+            if (
+                evaluateField(
+                    "b9",
+                    "resultB9",
+                    ["important"]
+                )
+            ) score++;
+
+
+            if (
+                evaluateField(
+                    "b10",
+                    "resultB10",
+                    ["spell"]
+                )
+            ) score++;
+
+
+            if (
+                evaluateField(
+                    "b11",
+                    "resultB11",
+                    ["name"]
+                )
+            ) score++;
+
+
+            /* =================================================
+               SECCIÓN C
+            ================================================= */
+
+
+            if (
+                evaluateField(
                     "c1",
                     "resultC1",
-                    ["Andrés", "Andres"]
+                    provisionalCAnswers.c1
                 )
-            ) {
-
-                correctCount++;
-
-            }
+            ) score++;
 
 
             if (
-                evaluateInput(
+                evaluateField(
                     "c2",
                     "resultC2",
-                    ["Pérez", "Perez"]
+                    provisionalCAnswers.c2
                 )
-            ) {
-
-                correctCount++;
-
-            }
+            ) score++;
 
 
             if (
-                evaluateInput(
+                evaluateField(
                     "c3",
                     "resultC3",
-                    [
-                        "A-N-D-R-E-S",
-                        "A N D R E S",
-                        "A-N-D-R-É-S",
-                        "A N D R É S"
-                    ]
+                    provisionalCAnswers.c3
                 )
-            ) {
-
-                correctCount++;
-
-            }
-
+            ) score++;
 
 
             /* =================================================
-               COMPROBAR SI HUBO ERROR
-            ================================================= */
-
-            if (correctCount < totalEvaluable) {
-
-                hadIncorrectAnswer = true;
-
-            }
-
-
-
-            /* =================================================
-               RESULTADO DEL INTENTO
+               ACTUALIZAR CONTADOR
             ================================================= */
 
             document.getElementById(
-                "attemptResult"
+                "attemptsResult"
             ).textContent =
-                "Intento " +
-                attemptCount +
-                " · Resultado: " +
-                correctCount +
+                "Attempts: " +
+                attempts +
                 " / " +
-                totalEvaluable;
-
+                maxAttempts;
 
 
             /* =================================================
-               REGLA DE LOS 5 INTENTOS
-               
-               Si llega al quinto intento y durante los
-               intentos hubo al menos una respuesta incorrecta,
-               se muestran las respuestas.
+               MOSTRAR PUNTAJE
             ================================================= */
 
-            if (
-                attemptCount >= 5 &&
-                hadIncorrectAnswer
-            ) {
+            document.getElementById(
+                "scoreResult"
+            ).textContent =
+                "Score: " +
+                score +
+                " / " +
+                total;
+
+
+            /* =================================================
+               TODO CORRECTO
+            ================================================= */
+
+            if (score === total) {
+
+                exerciseFinished = true;
 
                 document.getElementById(
-                    "answersRevealed"
-                ).style.display = "block";
+                    "evaluationMessage"
+                ).textContent =
+                    "✓ Excellent! All evaluable answers are correct.";
 
                 document.getElementById(
-                    "attemptResult"
-                ).textContent +=
-                    " · Se muestran las respuestas correctas.";
+                    "checkButton"
+                ).disabled = true;
+
+                return;
 
             }
 
 
-
             /* =================================================
-               SI TODO ESTÁ CORRECTO
+               MENSAJE CON INTENTOS RESTANTES
             ================================================= */
 
-            if (
-                correctCount === totalEvaluable
-            ) {
+            if (attempts < maxAttempts) {
+
+                const remaining =
+                    maxAttempts - attempts;
 
                 document.getElementById(
-                    "attemptResult"
+                    "evaluationMessage"
                 ).textContent =
-                    "¡Excelente! Todas las respuestas evaluables son correctas.";
+                    "There are incorrect answers. " +
+                    "You have " +
+                    remaining +
+                    " attempt(s) remaining.";
+
+            }
+
+
+            /* =================================================
+               QUINTO INTENTO
+               
+               SI TODAVÍA HAY ERRORES,
+               MOSTRAR RESPUESTAS.
+            ================================================= */
+
+            if (attempts >= maxAttempts) {
+
+                document.getElementById(
+                    "correctAnswers"
+                ).style.display = "block";
+
+
+                document.getElementById(
+                    "evaluationMessage"
+                ).textContent =
+                    "The maximum number of attempts has been reached. " +
+                    "The correct answers are shown below.";
+
+
+                document.getElementById(
+                    "checkButton"
+                ).disabled = true;
+
+                exerciseFinished = true;
 
             }
 
