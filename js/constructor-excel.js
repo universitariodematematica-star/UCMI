@@ -413,6 +413,73 @@ hojaOrdenarParrafos.getCell("B5").font = {
         argb:"FF808080"
     }
 };
+
+    //=====================================================
+// HOJA: Mineria
+//=====================================================
+
+//-----------------------------------------------------
+// ENCABEZADOS
+//-----------------------------------------------------
+
+hojaMineria.getCell("A1").value =
+    "N°";
+
+hojaMineria.getCell("B1").value =
+    "Estructura";
+
+
+//-----------------------------------------------------
+// NÚMEROS
+//-----------------------------------------------------
+
+for(let fila = 2; fila <= 11; fila++){
+
+    hojaMineria.getCell(fila, 1).value =
+        fila - 1;
+
+}
+
+
+//-----------------------------------------------------
+// ESTRUCTURAS DE EJEMPLO
+//-----------------------------------------------------
+
+hojaMineria.getCell("B2").value =
+    "Sujeto + will + forma base + complemento";
+
+hojaMineria.getCell("B3").value =
+    "Estructura 2";
+
+hojaMineria.getCell("B4").value =
+    "Estructura 3";
+
+
+//-----------------------------------------------------
+// B5:B11 PERMANECEN VACÍAS
+//-----------------------------------------------------
+
+
+//-----------------------------------------------------
+// ANCHOS DE COLUMNAS
+//-----------------------------------------------------
+
+hojaMineria.getColumn("A").width = 10;
+
+hojaMineria.getColumn("B").width = 60;
+
+
+//-----------------------------------------------------
+// ENCABEZADOS EN NEGRITA
+//-----------------------------------------------------
+
+for(let celda of ["A1","B1"]){
+
+    hojaMineria.getCell(celda).font = {
+        bold:true
+    };
+
+}
    
     console.log("CREANDO HOJA MOSTRAR");
     console.log("CREANDO HOJA ESTRUCTURAS");
