@@ -20,7 +20,8 @@ const hojaCompletarTextoListening = libro.addWorksheet("Completar-texto-listenin
 const hojaOrdenarParrafos = libro.addWorksheet("ordenar-parrafos");
 const hojaComprensionTexto = libro.addWorksheet("Comprension-texto");
 const hojaComprensionAuditiva = libro.addWorksheet("Comprension-auditiva");
-const hojaSustitucionContextual = libro.addWorksheet("Sustitucion-contextual");    
+const hojaSustitucionContextual = libro.addWorksheet("Sustitucion-contextual");
+const hojaMineria = libro.addWorksheet("mineria");
 const hojaMostrar = libro.addWorksheet("Mostrar");
 
 //=====================================================
