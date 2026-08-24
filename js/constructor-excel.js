@@ -1420,10 +1420,16 @@ hojaMostrar.getCell("B15").value =
 "Sí";
 
 
+hojaMostrar.getCell("A16").value =
+"Mineria";
+
+hojaMostrar.getCell("B16").value =
+"Sí";
+
+
 // Lista desplegable Sí / No
 
-for(let fila = 2; fila <= 15; fila++){
-
+for(let fila = 2; fila <= 16; fila++){
     hojaMostrar.getCell("B"+fila).dataValidation = {
 
         type: "list",
