@@ -826,11 +826,11 @@ if(
 
 
 if(
-    "${configuracionMostrar["Minería"] || "No"}"
+    "${configuracionMostrar["Mineria"] || "No"}"
     .trim()
     .toLowerCase() === "sí"
     ||
-    "${configuracionMostrar["Minería"] || "No"}"
+    "${configuracionMostrar["Mineria"] || "No"}"
     .trim()
     .toLowerCase() === "si"
 ){
