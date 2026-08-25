@@ -187,7 +187,18 @@ if (hojaMineria) {
 console.log(
     "MODELO 15 - MINERIA:",
     ejercicioMineria
-);   
+);
+
+ejercicioMineria.estructuras.forEach(
+    estructura => {
+
+        console.log(
+            "MINERIA ESTRUCTURA:",
+            estructura
+        );
+
+    }
+);    
 
 //===========================================
 // SUSTITUCIÓN CONTEXTUAL
