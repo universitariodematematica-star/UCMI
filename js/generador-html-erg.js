@@ -30,6 +30,11 @@ ejercicioSustitucionContextual={},
 ejercicioMineria={},    
 configuracionMostrar={}
 ){
+
+        console.log(
+        "MODELO 15 - MINERIA EN GENERADOR:",
+        ejercicioMineria
+    );
     
     Object.keys(localStorage)
     .forEach(key=>{
