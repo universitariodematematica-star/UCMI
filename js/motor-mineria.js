@@ -45,8 +45,8 @@ const UCMIMotorMineria = {
         }
 
 
-        let contador =
-            Number(config.numeroInicial) || 1;
+const numeroEjercicio =
+    ++contadorEjercicios;
 
 
         let html = "";
@@ -60,12 +60,12 @@ const UCMIMotorMineria = {
 
 <div class="ejercicio-mineria">
 
-    <div class="instruccion-ejercicio">
+<div class="instruccion-ejercicio">
 
-        Escriba tres oraciones que satisfagan
-        la estructura correspondiente
+    ${numeroEjercicio}. Escriba tres oraciones que satisfagan
+    la estructura correspondiente
 
-    </div>
+</div>
 
 `;
 
@@ -78,10 +78,6 @@ const UCMIMotorMineria = {
             (estructura) => {
 
 
-                const numeroEjercicio =
-                    contador++;
-
-
                 html += `
 
     <div
@@ -89,12 +85,12 @@ const UCMIMotorMineria = {
         data-estructura="${estructura.numero}"
     >
 
-        <h3>
+<h3>
 
-            ${numeroEjercicio}. Estructura
-            ${estructura.numero}
+    Estructura
+    ${estructura.numero}
 
-        </h3>
+</h3>
 
 
 <div class="estructura-mineria">
