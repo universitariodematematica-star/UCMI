@@ -824,6 +824,28 @@ if(
 
 }
 
+
+if(
+    "${configuracionMostrar["Minería"] || "No"}"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "${configuracionMostrar["Minería"] || "No"}"
+    .trim()
+    .toLowerCase() === "si"
+){
+
+    UCMIMotorMineria.generar({
+
+        contenedor:"zona-ejercicios",
+
+        mineria:
+        ${JSON.stringify(ejercicioMineria)}
+
+    });
+
+}
+
 document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
 
     const datos = contenedor.querySelector(".audio-data");
