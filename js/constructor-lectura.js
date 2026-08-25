@@ -131,7 +131,7 @@ for(let fila = 1; fila <= hojaMineria.rowCount; fila++){
     hojaMineria
 );
 
- //===========================================
+//===========================================
 // MINERIA - MODELO 15
 //===========================================
 
@@ -139,7 +139,55 @@ let ejercicioMineria = {
 
     estructuras: []
 
-};   
+};
+
+if (hojaMineria) {
+
+    for (
+        let fila = 2;
+        fila <= hojaMineria.rowCount;
+        fila++
+    ) {
+
+        const numero =
+            leerCelda(
+                hojaMineria.getCell("A" + fila)
+            ).trim();
+
+        const estructura =
+            leerCelda(
+                hojaMineria.getCell("B" + fila)
+            ).trim();
+
+        if (!numero || !estructura) {
+            continue;
+        }
+
+        const numeroEstructura =
+            Number(numero);
+
+        if (!Number.isInteger(numeroEstructura)) {
+            continue;
+        }
+
+        ejercicioMineria.estructuras.push({
+
+            numero:
+                numeroEstructura,
+
+            estructura:
+                estructura
+
+        });
+
+    }
+
+}
+
+console.log(
+    "MODELO 15 - MINERIA:",
+    ejercicioMineria
+);   
 
 //===========================================
 // SUSTITUCIÓN CONTEXTUAL
