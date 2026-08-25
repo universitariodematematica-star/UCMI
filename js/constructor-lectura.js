@@ -1962,6 +1962,7 @@ function lanzarGeneracion(){
         ejercicioComprensionTexto,
         ejercicioComprensionAuditiva,
         ejercicioSustitucionContextual,
+        ejercicioMineria,
         configuracionMostrar
     );
 
