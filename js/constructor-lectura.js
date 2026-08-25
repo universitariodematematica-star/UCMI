@@ -101,6 +101,31 @@ if (hojaImagenes){
     const hojaSustitucionContextual = libro.getWorksheet("Sustitucion-contextual");
     const hojaMineria = libro.getWorksheet("Mineria");
 
+    console.log("===========================================");
+console.log("DIAGNÓSTICO HOJA MINERIA");
+console.log("===========================================");
+
+for(let fila = 1; fila <= hojaMineria.rowCount; fila++){
+
+    let datosFila = [];
+
+    for(let columna = 1; columna <= hojaMineria.columnCount; columna++){
+
+        datosFila.push(
+            leerCelda(
+                hojaMineria.getCell(fila, columna)
+            )
+        );
+
+    }
+
+    console.log(
+        "FILA " + fila + ":",
+        datosFila
+    );
+
+}
+
     console.log(
     "HOJA MINERIA:",
     hojaMineria
