@@ -22,6 +22,7 @@ const hojaComprensionTexto = libro.addWorksheet("Comprension-texto");
 const hojaComprensionAuditiva = libro.addWorksheet("Comprension-auditiva");
 const hojaSustitucionContextual = libro.addWorksheet("Sustitucion-contextual");
 const hojaMineria = libro.addWorksheet("Mineria");
+const hojaEscrituraGuiada = libro.addWorksheet("Escritura-guiada");    
 const hojaMostrar = libro.addWorksheet("Mostrar");
 
 //=====================================================
@@ -1322,6 +1323,105 @@ for(let fila = 3; fila <= 12; fila++){
     };
 
 }
+
+//=====================================================
+// HOJA: Escritura-guiada
+//=====================================================
+
+//-----------------------------------------------------
+// ENCABEZADOS
+//-----------------------------------------------------
+
+hojaEscrituraGuiada.getCell("A1").value =
+    "N°";
+
+hojaEscrituraGuiada.getCell("B1").value =
+    "Palabra";
+
+
+//-----------------------------------------------------
+// NÚMEROS
+//-----------------------------------------------------
+
+for(let fila = 2; fila <= 6; fila++){
+
+    hojaEscrituraGuiada.getCell(fila, 1).value =
+        fila - 1;
+
+}
+
+
+//-----------------------------------------------------
+// PALABRAS DE EJEMPLO
+//-----------------------------------------------------
+
+for(let fila = 2; fila <= 6; fila++){
+
+    hojaEscrituraGuiada.getCell(fila, 2).value =
+        "Palabra " + (fila - 1);
+
+}
+
+
+//-----------------------------------------------------
+// CONTINUACIÓN
+//-----------------------------------------------------
+
+hojaEscrituraGuiada.getCell("A7").value =
+    "...";
+
+hojaEscrituraGuiada.getCell("B7").value =
+    "...";
+
+
+//-----------------------------------------------------
+// COMENTARIO EN A2
+//-----------------------------------------------------
+
+hojaEscrituraGuiada.getCell("A2").note = {
+    texts: [
+        {
+            text:
+                "Si quieres escribir más palabras, continúa la numeración hasta la cantidad de palabras que quieres que aparezcan en el texto."
+        }
+    ]
+};
+
+
+//-----------------------------------------------------
+// COMENTARIO EN B2
+//-----------------------------------------------------
+
+hojaEscrituraGuiada.getCell("B2").note = {
+    texts: [
+        {
+            text:
+                "Escribe aquí las palabras que quieres que el estudiante utilice en su escrito."
+        }
+    ]
+};
+
+
+//-----------------------------------------------------
+// ANCHOS DE COLUMNAS
+//-----------------------------------------------------
+
+hojaEscrituraGuiada.getColumn("A").width = 10;
+
+hojaEscrituraGuiada.getColumn("B").width = 40;
+
+
+//-----------------------------------------------------
+// ENCABEZADOS EN NEGRITA
+//-----------------------------------------------------
+
+for(let celda of ["A1","B1"]){
+
+    hojaEscrituraGuiada.getCell(celda).font = {
+        bold:true
+    };
+
+}    
 
 
 //=====================================================
