@@ -26,7 +26,8 @@ ejercicioCompletarTextoListening={},
 ejerciciosOrdenarParrafos=[],
 ejercicioComprensionTexto={},
 ejercicioComprensionAuditiva={},
-ejercicioSustitucionContextual={},    
+ejercicioSustitucionContextual={},
+ejercicioMineria={},    
 configuracionMostrar={}
 ){
     
