@@ -747,182 +747,199 @@ const UCMIMotorSustitucionContextual = {
 
 
         /*=================================================
-            DESTINOS DE DROP
-        =================================================*/
+    DESTINOS DE DROP
+=================================================*/
 
-        bloque
-            .querySelectorAll(
-                ".sc-segmento-original"
-            )
-            .forEach(destino=>{
+function activarDestinoDrop(destino){
+
+    /*---------------------------------------------
+        DRAG OVER
+    ---------------------------------------------*/
+
+    destino.addEventListener(
+        "dragover",
+        evento=>{
+
+            evento.preventDefault();
+
+            destino.classList.add(
+                "sc-destino-hover"
+            );
+
+        }
+    );
 
 
-                /*-----------------------------------------
-                    DRAG OVER
-                -----------------------------------------*/
+    /*---------------------------------------------
+        DRAG LEAVE
+    ---------------------------------------------*/
 
-                destino.addEventListener(
-                    "dragover",
+    destino.addEventListener(
+        "dragleave",
+        ()=>{
+
+            destino.classList.remove(
+                "sc-destino-hover"
+            );
+
+        }
+    );
+
+
+    /*---------------------------------------------
+        DROP
+    ---------------------------------------------*/
+
+    destino.addEventListener(
+        "drop",
+        evento=>{
+
+            evento.preventDefault();
+
+
+            destino.classList.remove(
+                "sc-destino-hover"
+            );
+
+
+            const opcion =
+                UCMIMotorSustitucionContextual
+                    .elementoArrastrado;
+
+
+            if(!opcion){
+
+                return;
+
+            }
+
+
+            /*-------------------------------------
+                SOLO ACEPTAMOS OPCIONES DEL BANCO
+            -------------------------------------*/
+
+            if(
+                !opcion.classList.contains(
+                    "sc-opcion-azul"
+                )
+            ){
+
+                return;
+
+            }
+
+
+            /*=====================================
+                GUARDAR EL CONTENIDO ACTUAL
+            =====================================*/
+
+            const textoAnterior =
+                destino.textContent;
+
+
+            /*=====================================
+                CREAR ELEMENTO PARA DEVOLVER
+                AL BANCO
+            =====================================*/
+
+            const elementoBanco =
+                document.createElement("div");
+
+
+            elementoBanco.textContent =
+                textoAnterior;
+
+
+            /*-------------------------------------
+                SI ERA LA FRASE ORIGINAL,
+                CONSERVA SU COLOR NARANJA
+            -------------------------------------*/
+
+            if(
+                destino.classList.contains(
+                    "sc-segmento-original"
+                )
+            ){
+
+                elementoBanco.className =
+                    "sc-original-banco";
+
+
+                elementoBanco.dataset.parrafo =
+                    destino.dataset.parrafo;
+
+
+                elementoBanco.dataset.inicio =
+                    destino.dataset.inicio;
+
+
+                elementoBanco.dataset.fin =
+                    destino.dataset.fin;
+
+            }
+
+
+            /*-------------------------------------
+                SI ERA UNA SUSTITUCIÓN AZUL,
+                REGRESA COMO OPCIÓN AZUL
+            -------------------------------------*/
+
+            else
+            if(
+                destino.classList.contains(
+                    "sc-sustitucion-colocada"
+                )
+            ){
+
+                elementoBanco.className =
+                    "sc-opcion-azul";
+
+
+                elementoBanco.draggable =
+                    true;
+
+
+                elementoBanco.dataset.parrafo =
+                    destino.dataset.parrafo;
+
+
+                elementoBanco.dataset.correcta =
+                    destino.dataset.correcta;
+
+
+                /*---------------------------------
+                    DRAG START
+                ---------------------------------*/
+
+                elementoBanco.addEventListener(
+                    "dragstart",
                     evento=>{
 
-                        evento.preventDefault();
+                        UCMIMotorSustitucionContextual
+                            .elementoArrastrado =
+                            elementoBanco;
 
-                        destino.classList.add(
-                            "sc-destino-hover"
+
+                        evento.dataTransfer.effectAllowed =
+                            "move";
+
+
+                        evento.dataTransfer.setData(
+                            "text/plain",
+                            "sustitucion-contextual"
                         );
 
                     }
                 );
 
 
-                /*-----------------------------------------
-                    DRAG LEAVE
-                -----------------------------------------*/
+                /*---------------------------------
+                    DRAG END
+                ---------------------------------*/
 
-                destino.addEventListener(
-                    "dragleave",
+                elementoBanco.addEventListener(
+                    "dragend",
                     ()=>{
-
-                        destino.classList.remove(
-                            "sc-destino-hover"
-                        );
-
-                    }
-                );
-
-
-                /*-----------------------------------------
-                    DROP
-                -----------------------------------------*/
-
-                destino.addEventListener(
-                    "drop",
-                    evento=>{
-
-                        evento.preventDefault();
-
-
-                        destino.classList.remove(
-                            "sc-destino-hover"
-                        );
-
-
-                        const opcion =
-                            UCMIMotorSustitucionContextual
-                                .elementoArrastrado;
-
-
-                        if(!opcion){
-
-                            return;
-
-                        }
-
-
-                        /*
-                            Solo aceptamos opciones azules
-                            provenientes del banco.
-                        */
-
-                        if(
-                            !opcion.classList.contains(
-                                "sc-opcion-azul"
-                            )
-                        ){
-
-                            return;
-
-                        }
-
-
-                        /*=================================
-                            GUARDAR FRASE NARANJA COMPLETA
-                        =================================*/
-
-                        const textoOriginal =
-                            destino.textContent;
-
-
-                        /*=================================
-                            DEVOLVER NARANJA AL BANCO
-                        =================================*/
-
-                        const originalBanco =
-                            document.createElement("div");
-
-
-                        originalBanco.className =
-                            "sc-original-banco";
-
-
-                        originalBanco.textContent =
-                            textoOriginal;
-
-
-                        originalBanco.dataset.parrafo =
-                            destino.dataset.parrafo;
-
-
-                        originalBanco.dataset.inicio =
-                            destino.dataset.inicio;
-
-
-                        originalBanco.dataset.fin =
-                            destino.dataset.fin;
-
-
-                        banco.appendChild(
-                            originalBanco
-                        );
-
-
-                        /*=================================
-                            CREAR AZUL DENTRO DEL PÁRRAFO
-                        =================================*/
-
-                        const sustitucion =
-                            document.createElement("span");
-
-
-                        sustitucion.className =
-                            "sc-sustitucion-colocada";
-
-
-                        sustitucion.textContent =
-                            opcion.textContent;
-
-
-                        sustitucion.dataset.parrafo =
-                            destino.dataset.parrafo;
-
-
-                        sustitucion.dataset.correcta =
-                            opcion.dataset.correcta;
-
-
-                        /*
-                            IMPORTANTE:
-
-                            El nuevo elemento sigue siendo
-                            visualmente AZUL.
-                        */
-
-
-                        /*=================================
-                            REEMPLAZAR EL NARANJA
-                        =================================*/
-
-                        destino.replaceWith(
-                            sustitucion
-                        );
-
-
-                        /*=================================
-                            QUITAR AZUL DEL BANCO
-                        =================================*/
-
-                        opcion.remove();
-
 
                         UCMIMotorSustitucionContextual
                             .elementoArrastrado =
@@ -931,8 +948,95 @@ const UCMIMotorSustitucionContextual = {
                     }
                 );
 
-            });
+            }
 
+
+            /*=====================================
+                DEVOLVER ELEMENTO AL BANCO
+            =====================================*/
+
+            banco.appendChild(
+                elementoBanco
+            );
+
+
+            /*=====================================
+                CREAR NUEVA SUSTITUCIÓN AZUL
+            =====================================*/
+
+            const sustitucion =
+                document.createElement("span");
+
+
+            sustitucion.className =
+                "sc-sustitucion-colocada";
+
+
+            sustitucion.textContent =
+                opcion.textContent;
+
+
+            sustitucion.dataset.parrafo =
+                destino.dataset.parrafo;
+
+
+            sustitucion.dataset.correcta =
+                opcion.dataset.correcta;
+
+
+            /*=====================================
+                ACTIVAR ESTE NUEVO ELEMENTO
+                COMO DESTINO DE DROP
+            =====================================*/
+
+            activarDestinoDrop(
+                sustitucion
+            );
+
+
+            /*=====================================
+                REEMPLAZAR EL DESTINO ACTUAL
+            =====================================*/
+
+            destino.replaceWith(
+                sustitucion
+            );
+
+
+            /*=====================================
+                QUITAR LA OPCIÓN DEL BANCO
+            =====================================*/
+
+            opcion.remove();
+
+
+            UCMIMotorSustitucionContextual
+                .elementoArrastrado =
+                null;
+
+        }
+    );
+
+}
+
+
+/*=================================================
+    ACTIVAR DESTINOS NARANJAS INICIALES
+=================================================*/
+
+bloque
+    .querySelectorAll(
+        ".sc-segmento-original"
+    )
+    .forEach(
+        destino=>{
+
+            activarDestinoDrop(
+                destino
+            );
+
+        }
+    );
 
         /*=================================================
             BOTÓN ÚNICO DE EVALUACIÓN
