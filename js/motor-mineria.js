@@ -97,13 +97,11 @@ const UCMIMotorMineria = {
         </h3>
 
 
-        <div class="estructura-mineria">
+<div class="estructura-mineria">
 
-            ${escaparTexto(
-                estructura.estructura
-            )}
+    ${estructura.estructura}
 
-        </div>
+</div>
 
 
         <div class="oraciones-mineria">
