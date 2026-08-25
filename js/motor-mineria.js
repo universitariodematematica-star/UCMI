@@ -1,4 +1,3 @@
-```javascript
 /*====================================================
         MOTOR MODELO 15 - MINERÍA
         Escritura de oraciones según estructura
@@ -165,4 +164,3 @@ const UCMIMotorMineria = {
 
 window.UCMIMotorMineria =
     UCMIMotorMineria;
-```
