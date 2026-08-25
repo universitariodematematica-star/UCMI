@@ -99,7 +99,22 @@ if (hojaImagenes){
     const hojaComprensionTexto = libro.getWorksheet("Comprension-texto");
     const hojaComprensionAuditiva = libro.getWorksheet("Comprension-auditiva");
     const hojaSustitucionContextual = libro.getWorksheet("Sustitucion-contextual");
+    const hojaMineria = libro.getWorksheet("Mineria");
 
+    console.log(
+    "HOJA MINERIA:",
+    hojaMineria
+);
+
+ //===========================================
+// MINERIA - MODELO 15
+//===========================================
+
+let ejercicioMineria = {
+
+    estructuras: []
+
+};   
 
 //===========================================
 // SUSTITUCIÓN CONTEXTUAL
