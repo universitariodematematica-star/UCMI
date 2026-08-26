@@ -108,6 +108,8 @@ bloque.innerHTML = `
 
     </ul>
 
+    </div>
+
 
     <div class="contenedor-escritura-guiada">
 
