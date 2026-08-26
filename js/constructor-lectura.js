@@ -120,6 +120,119 @@ for(let fila = 1; fila <= hojaMineria.rowCount; fila++){
 }
 
 //===========================================
+// ESCRITURA GUIADA - MODELO 16
+//===========================================
+
+let ejercicioEscrituraGuiada = {
+
+    ejercicios: []
+
+};
+
+//===========================================
+// LEER ESCRITURA GUIADA - MODELO 16
+//===========================================
+
+if (hojaEscrituraGuiada) {
+
+    for (
+        let fila = 2;
+        fila <= 6;
+        fila++
+    ) {
+
+        const numero =
+            leerCelda(
+                hojaEscrituraGuiada.getCell("A" + fila)
+            ).trim();
+
+
+        const palabra1 =
+            leerCelda(
+                hojaEscrituraGuiada.getCell("B2")
+            ).trim();
+
+
+        const palabra2 =
+            leerCelda(
+                hojaEscrituraGuiada.getCell("B3")
+            ).trim();
+
+
+        const palabra3 =
+            leerCelda(
+                hojaEscrituraGuiada.getCell("B4")
+            ).trim();
+
+
+        const numeroMinimo =
+            leerCelda(
+                hojaEscrituraGuiada.getCell("C2")
+            ).trim();
+
+
+        const estructura1 =
+            leerCelda(
+                hojaEscrituraGuiada.getCell("D2")
+            ).trim();
+
+
+        const estructura2 =
+            leerCelda(
+                hojaEscrituraGuiada.getCell("D3")
+            ).trim();
+
+
+        const estructura3 =
+            leerCelda(
+                hojaEscrituraGuiada.getCell("D4")
+            ).trim();
+
+
+        if (!numero) {
+            continue;
+        }
+
+
+        ejercicioEscrituraGuiada.ejercicios.push({
+
+            numero: Number(numero),
+
+            palabras: [
+
+                palabra1,
+                palabra2,
+                palabra3
+
+            ].filter(
+                palabra => palabra !== ""
+            ),
+
+            numeroMinimoPalabras:
+                Number(numeroMinimo),
+
+            estructuras: [
+
+                estructura1,
+                estructura2,
+                estructura3
+
+            ].filter(
+                estructura => estructura !== ""
+            )
+
+        });
+
+    }
+
+}
+
+console.log(
+    "MODELO 16 - ESCRITURA GUIADA:",
+    ejercicioEscrituraGuiada
+);    
+    
+//===========================================
 // MINERIA - MODELO 15
 //===========================================
 
