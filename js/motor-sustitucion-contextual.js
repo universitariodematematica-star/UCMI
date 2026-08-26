@@ -32,12 +32,6 @@ const UCMIMotorSustitucionContextual = {
             configuracion.sustitucionContextual || {};
 
 
-        console.log(
-            "MOTOR MODELO 14 - SUSTITUCIÓN CONTEXTUAL:",
-            ejercicio
-        );
-
-
         /*=================================================
             CONTENEDOR PRINCIPAL
         =================================================*/
