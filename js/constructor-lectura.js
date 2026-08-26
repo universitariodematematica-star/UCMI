@@ -229,8 +229,12 @@ if (hojaEscrituraGuiada) {
 
 console.log(
     "MODELO 16 - ESCRITURA GUIADA:",
-    ejercicioEscrituraGuiada
-);    
+    JSON.stringify(
+        ejercicioEscrituraGuiada,
+        null,
+        4
+    )
+);   
     
 //===========================================
 // MINERIA - MODELO 15
