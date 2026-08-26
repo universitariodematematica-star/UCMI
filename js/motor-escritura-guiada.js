@@ -68,35 +68,30 @@ const UCMIMotorEscrituraGuiada = {
                 estructuras.join(", ");
 
 
-            const bloque =
-                document.createElement("div");
+const bloque =
+    document.createElement("div");
 
+bloque.className =
+    "ejercicio-escritura-guiada";
 
-            bloque.className =
-                "ejercicio-escritura-guiada";
+bloque.innerHTML = `
 
+    <div class="instruccion-ejercicio">
 
-            bloque.innerHTML = `
+        ${numeroEjercicio}. Escriba un texto con
+        ${numeroPalabras}
+        palabras que tenga los siguientes
+        vocablos
+        ${conjuntoPalabras}
+        y oraciones formadas con las
+        estructuras
+        ${conjuntoEstructuras}.
 
-                <div class="instruccion-ejercicio">
+    </div>
 
-                    ${numeroEjercicio}. Escriba un texto con
-                    ${numeroPalabras}
-                    palabras que tenga los siguientes
-                    vocablos
-                    ${conjuntoPalabras}
-                    y oraciones formadas con las
-                    estructuras
-                    ${conjuntoEstructuras}.
+`;
 
-                </div>
-
-            `;
-
-
-            contenedor.appendChild(
-                bloque
-            );
+contenedor.appendChild(bloque);
 
         });
 
