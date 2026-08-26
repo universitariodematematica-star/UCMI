@@ -1526,10 +1526,16 @@ hojaMostrar.getCell("A16").value =
 hojaMostrar.getCell("B16").value =
 "Sí";
 
+hojaMostrar.getCell("A17").value =
+"Escritura guiada";
+
+hojaMostrar.getCell("B17").value =
+"Sí";    
+
 
 // Lista desplegable Sí / No
 
-for(let fila = 2; fila <= 16; fila++){
+for(let fila = 2; fila <= 17; fila++){
     hojaMostrar.getCell("B"+fila).dataValidation = {
 
         type: "list",
