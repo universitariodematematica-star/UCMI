@@ -88,19 +88,25 @@ bloque.innerHTML = `
         vocablos y oraciones formadas con las
         siguientes estructuras:
 
-        <ul>
+        <ul style="
+    list-style-type: disc;
+    padding-left: 35px;
+    margin-top: 15px;
+">
 
-            <li>
-                <strong>Vocablos:</strong>
-                ${conjuntoPalabras}
-            </li>
+    <li style="
+        margin-bottom: 10px;
+    ">
+        <strong>Vocablos:</strong>
+        ${conjuntoPalabras}
+    </li>
 
-            ${estructuras.map(
-                estructura =>
-                `<li>${estructura}</li>`
-            ).join("")}
+    ${estructuras.map(
+        estructura =>
+        `<li style="margin-bottom:10px;">${estructura}</li>`
+    ).join("")}
 
-        </ul>
+</ul>
 
     </div>
 
