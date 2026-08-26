@@ -4,7 +4,6 @@ MOTOR MODELO 16 - ESCRITURA GUIADA
 
 const UCMIMotorEscrituraGuiada = {
 
-```
 generar(datos){
 
     console.log(
@@ -45,7 +44,6 @@ generar(datos){
 
     ejercicios.forEach(ejercicio => {
 
-
         const bloque =
             document.createElement("div");
 
@@ -54,54 +52,55 @@ generar(datos){
             "ejercicio-escritura-guiada";
 
 
-        bloque.innerHTML = `
+        const numero =
+            ejercicio.numero || "";
 
-            <!--=====================================
-                ENUNCIADO
-            =====================================-->
+
+        const palabras =
+            ejercicio.palabras || [];
+
+
+        const estructuras =
+            ejercicio.estructuras || [];
+
+
+        const minimo =
+            Number(ejercicio.numeroMinimoPalabras) || 0;
+
+
+        bloque.innerHTML = `
 
             <div class="escritura-guiada-enunciado">
 
                 <strong>
-                    ${ejercicio.numero}. Enunciado
+                    ${numero}. Enunciado
                 </strong>
 
             </div>
 
 
-            <!--=====================================
-                ESTRUCTURAS
-            =====================================-->
-
-            <div class="escritura-guiada-estructuras">
-
-                ${ejercicio.estructuras
-                    .map(estructura => `
-
-                        <div class="escritura-guiada-estructura">
-
-                            ${estructura}
-
-                        </div>
-
-                    `)
-                    .join("")}
-
-            </div>
-
-
-            <!--=====================================
-                CONTENEDORES PRINCIPALES
-            =====================================-->
-
             <div class="escritura-guiada-contenido">
 
 
-                <!--=================================
-                    IZQUIERDA
-                =================================-->
-
                 <div class="escritura-guiada-izquierda">
+
+
+                    <div class="escritura-guiada-estructuras">
+
+                        <strong>
+                            Estructuras
+                        </strong>
+
+                        ${estructuras
+                            .map(estructura => `
+                                <div class="escritura-guiada-estructura">
+                                    ${estructura}
+                                </div>
+                            `)
+                            .join("")}
+
+                    </div>
+
 
                     <textarea
                         class="escritura-guiada-textarea"
@@ -109,23 +108,25 @@ generar(datos){
                         placeholder="Escribe tu texto aquí..."
                     ></textarea>
 
+
                 </div>
 
 
-                <!--=================================
-                    DERECHA
-                =================================-->
-
                 <div class="escritura-guiada-derecha">
 
-                    <h3>
-                        Palabras
-                    </h3>
+
+                    <div class="escritura-guiada-palabras-titulo">
+
+                        <strong>
+                            Palabras
+                        </strong>
+
+                    </div>
 
 
                     <div class="escritura-guiada-banco">
 
-                        ${ejercicio.palabras
+                        ${palabras
                             .map((palabra, indice) => `
 
                                 <span
@@ -141,52 +142,42 @@ generar(datos){
 
                     </div>
 
+
                 </div>
 
 
             </div>
 
 
-            <!--=====================================
-                INFORMACIÓN Y PROGRESO
-            =====================================-->
-
-            <div class="escritura-guiada-informacion">
-
-                <div class="escritura-guiada-contador">
-
-                    Palabras escritas:
-                    <strong class="escritura-guiada-numero-escritas">
-                        0
-                    </strong>
-
-                </div>
+            <div class="escritura-guiada-progreso">
 
 
-                <div class="escritura-guiada-faltantes">
+                <div class="escritura-guiada-contadores">
 
-                    Palabras faltantes:
-                    <strong class="escritura-guiada-numero-faltantes">
+                    <span>
+                        Palabras escritas:
+                        <strong class="contador-escritas">
+                            0
+                        </strong>
+                    </span>
 
-                        ${ejercicio.numeroMinimoPalabras}
 
-                    </strong>
+                    <span>
+                        Palabras faltantes:
+                        <strong class="contador-faltantes">
+                            ${minimo}
+                        </strong>
+                    </span>
 
                 </div>
 
 
-                <div class="escritura-guiada-progreso">
+                <div class="escritura-guiada-barra">
 
-                    <div class="escritura-guiada-barra">
-
-                        <div
-                            class="escritura-guiada-barra-relleno"
-                            style="width:0%;"
-                        ></div>
-
-                    </div>
+                    <div class="escritura-guiada-barra-relleno"></div>
 
                 </div>
+
 
             </div>
 
@@ -196,9 +187,119 @@ generar(datos){
         contenedor.appendChild(bloque);
 
 
+        const textarea =
+            bloque.querySelector(
+                ".escritura-guiada-textarea"
+            );
+
+
+        const contadorEscritas =
+            bloque.querySelector(
+                ".contador-escritas"
+            );
+
+
+        const contadorFaltantes =
+            bloque.querySelector(
+                ".contador-faltantes"
+            );
+
+
+        const barra =
+            bloque.querySelector(
+                ".escritura-guiada-barra-relleno"
+            );
+
+
+        const elementosPalabras =
+            bloque.querySelectorAll(
+                ".escritura-guiada-palabra"
+            );
+
+
+        textarea.addEventListener(
+            "input",
+            () => {
+
+                const texto =
+                    textarea.value.trim();
+
+
+                const palabrasEscritas =
+                    texto
+                        ? texto.split(/\s+/).length
+                        : 0;
+
+
+                const faltantes =
+                    Math.max(
+                        minimo - palabrasEscritas,
+                        0
+                    );
+
+
+                contadorEscritas.textContent =
+                    palabrasEscritas;
+
+
+                contadorFaltantes.textContent =
+                    faltantes;
+
+
+                elementosPalabras.forEach(
+                    elemento => {
+
+                        const palabra =
+                            elemento.dataset.palabra
+                                .trim()
+                                .toLowerCase();
+
+
+                        const textoActual =
+                            texto.toLowerCase();
+
+
+                        const expresion =
+                            new RegExp(
+                                `\\b${palabra.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`
+                            );
+
+
+                        if(expresion.test(textoActual)){
+
+                            elemento.classList.add(
+                                "palabra-escrita"
+                            );
+
+                        }else{
+
+                            elemento.classList.remove(
+                                "palabra-escrita"
+                            );
+
+                        }
+
+                    }
+                );
+
+
+                const porcentaje =
+                    minimo > 0
+                        ? Math.min(
+                            (palabrasEscritas / minimo) * 100,
+                            100
+                        )
+                        : 0;
+
+
+                barra.style.width =
+                    porcentaje + "%";
+
+            }
+        );
+
     });
 
 }
-```
 
 };
