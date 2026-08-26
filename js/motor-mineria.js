@@ -1,89 +1,160 @@
 /*====================================================
-MOTOR MODELO 16 - MINERIA
+        MOTOR MODELO 15 - MINERÍA
+        Escritura de oraciones según estructura
 ====================================================*/
+
 
 const UCMIMotorMineria = {
 
-generar(config){
+    generar(config){
 
-    const contenedor =
-        document.getElementById(
-            config.contenedor
+        const contenedor =
+            document.getElementById(
+                config.contenedor
+            );
+
+
+        if(!contenedor){
+
+            console.error(
+                "MINERÍA: no existe el contenedor:",
+                config.contenedor
+            );
+
+            return;
+
+        }
+
+
+        const mineria =
+            config.mineria;
+
+
+        if(
+            !mineria ||
+            !Array.isArray(mineria.estructuras) ||
+            mineria.estructuras.length === 0
+        ){
+
+            console.warn(
+                "MINERÍA: no existen estructuras para mostrar."
+            );
+
+            return;
+
+        }
+
+
+const numeroEjercicio =
+    ++contadorEjercicios;
+
+
+        let html = "";
+
+
+        /*================================================
+                ENUNCIADO GENERAL
+        ================================================*/
+
+        html += `
+
+<div class="ejercicio-mineria">
+
+<div class="instruccion-ejercicio">
+
+    ${numeroEjercicio}. Escriba tres oraciones que satisfagan
+    la estructura correspondiente
+
+</div>
+
+`;
+
+
+        /*================================================
+                ESTRUCTURAS
+        ================================================*/
+
+        mineria.estructuras.forEach(
+            (estructura) => {
+
+
+                html += `
+
+    <div
+        class="bloque-mineria"
+        data-estructura="${estructura.numero}"
+    >
+
+<h3>
+
+    Estructura
+    ${estructura.numero}
+
+</h3>
+
+
+<div class="estructura-mineria">
+
+    ${estructura.estructura}
+
+</div>
+
+
+        <div class="oraciones-mineria">
+
+
+            <input
+                type="text"
+                class="respuesta-mineria"
+                placeholder="Escriba una oración"
+            >
+
+
+            <input
+                type="text"
+                class="respuesta-mineria"
+                placeholder="Escriba una oración"
+            >
+
+
+            <input
+                type="text"
+                class="respuesta-mineria"
+                placeholder="Escriba una oración"
+            >
+
+
+        </div>
+
+
+    </div>
+
+`;
+
+            }
         );
 
 
-    if(!contenedor){
+        html += `
 
-        console.error(
-            "MINERIA: no existe el contenedor:",
-            config.contenedor
+</div>
+
+`;
+
+
+        contenedor.insertAdjacentHTML(
+            "beforeend",
+            html
         );
-
-        return;
 
     }
-
-
-    const mineria =
-        config.mineria;
-
-
-    if(
-        !mineria ||
-        !Array.isArray(mineria.ejercicios) ||
-        mineria.ejercicios.length === 0
-    ){
-
-        console.warn(
-            "MINERIA: no existen ejercicios."
-        );
-
-        return;
-
-    }
-
-
-    mineria.ejercicios.forEach(ejercicio => {
-
-        const numeroEjercicio =
-            ++contadorEjercicios;
-
-
-        const bloque =
-            document.createElement("div");
-
-
-        bloque.className =
-            "ejercicio-mineria";
-
-
-        bloque.innerHTML = `
-
-            <div class="instruccion-ejercicio">
-
-                <strong>
-                    ${numeroEjercicio}.
-                </strong>
-
-            </div>
-
-        `;
-
-
-        contenedor.appendChild(
-            bloque
-        );
-
-    });
-
-}
 
 };
 
 
 /*====================================================
-EXPORTAR MOTOR
+        EXPORTAR MOTOR
 ====================================================*/
 
 window.UCMIMotorMineria =
-UCMIMotorMineria;
+    UCMIMotorMineria;
