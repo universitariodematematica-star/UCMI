@@ -129,11 +129,17 @@ bloque.innerHTML = `
     </div>
 
 
-    <div class="barra-progreso-guiada">
+<div class="barra-progreso-guiada">
 
-        <div class="progreso-guiada"></div>
+    <div class="progreso-guiada"></div>
 
-    </div>
+</div>
+
+<div class="estado-escritura-guiada">
+    <span class="texto-estado-escritura-guiada">
+        INCOMPLETO
+    </span>
+</div>
 
 </div>
 
@@ -184,7 +190,10 @@ const progresoGuiada =
         ".progreso-guiada"
     );            
            
-
+const estadoEscritura =
+    bloque.querySelector(
+        ".texto-estado-escritura-guiada"
+    );
 
 const palabrasGuiadas =
     bloque.querySelectorAll(
@@ -421,6 +430,45 @@ if(progresoGuiada){
 
                 }
             );
+
+        /*================================================
+    ACTUALIZAR ESTADO DEL EJERCICIO
+================================================*/
+
+if(estadoEscritura){
+
+    const vocabularioCompleto =
+        [...palabrasGuiadas].every(
+            elemento =>
+                elemento.classList.contains(
+                    "palabra-utilizada"
+                )
+        );
+
+
+    if(
+        palabrasEscritas >= numeroPalabras &&
+        vocabularioCompleto
+    ){
+
+        estadoEscritura.textContent =
+            "COMPLETO";
+
+        estadoEscritura.style.color =
+            "#228B22";
+
+    }
+    else{
+
+        estadoEscritura.textContent =
+            "INCOMPLETO";
+
+        estadoEscritura.style.color =
+            "#e34234";
+
+    }
+
+}
 
         }
     );
