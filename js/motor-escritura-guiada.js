@@ -178,62 +178,7 @@ const contadorPalabras =
     bloque.querySelector(
         ".numero-palabras-guiada"
     );
-
-const progresoGuiada =
-    bloque.querySelector(
-        ".progreso-guiada"
-    );
-
- if(progresoGuiada){
-
-    const maximoProgreso =
-        numeroPalabras * 2;
-
-
-    const porcentaje =
-        maximoProgreso > 0
-        ? Math.min(
-            (palabrasEscritas / maximoProgreso) * 100,
-            100
-        )
-        : 0;
-
-
-    progresoGuiada.style.width =
-        porcentaje + "%";
-
-
-    if(palabrasEscritas === 0){
-
-        progresoGuiada.style.background =
-            "#e34234";
-
-    }
-    else if(
-        palabrasEscritas >= numeroPalabras &&
-        palabrasEscritas < maximoProgreso
-    ){
-
-        progresoGuiada.style.background =
-            "#228B22";
-
-    }
-    else if(
-        palabrasEscritas >= maximoProgreso
-    ){
-
-        progresoGuiada.style.background =
-            "#87CEEB";
-
-    }
-    else{
-
-        progresoGuiada.style.background =
-            "#e34234";
-
-    }
-
-}           
+           
 
 
 const palabrasGuiadas =
@@ -257,6 +202,60 @@ if(campoEscritura){
                 ? texto.split(/\s+/).length
                 : 0;
 
+             /*================================================
+                ACTUALIZAR BARRA DE PROGRESO
+            ================================================*/
+
+            if(progresoGuiada){
+
+                const maximoProgreso =
+                    numeroPalabras * 2;
+
+
+                const porcentaje =
+                    maximoProgreso > 0
+                    ? Math.min(
+                        (palabrasEscritas / maximoProgreso) * 100,
+                        100
+                    )
+                    : 0;
+
+
+                progresoGuiada.style.width =
+                    porcentaje + "%";
+
+
+                if(palabrasEscritas === 0){
+
+                    progresoGuiada.style.background =
+                        "#e34234";
+
+                }
+                else if(
+                    palabrasEscritas >= numeroPalabras &&
+                    palabrasEscritas < maximoProgreso
+                ){
+
+                    progresoGuiada.style.background =
+                        "#228B22";
+
+                }
+                else if(
+                    palabrasEscritas >= maximoProgreso
+                ){
+
+                    progresoGuiada.style.background =
+                        "#87CEEB";
+
+                }
+                else{
+
+                    progresoGuiada.style.background =
+                        "#e34234";
+
+                }
+
+            }           
 
             if(contadorPalabras){
 
