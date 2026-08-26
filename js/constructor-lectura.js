@@ -101,9 +101,6 @@ if (hojaImagenes){
     const hojaSustitucionContextual = libro.getWorksheet("Sustitucion-contextual");
     const hojaMineria = libro.getWorksheet("Mineria");
 
-    console.log("===========================================");
-console.log("DIAGNÓSTICO HOJA MINERIA");
-console.log("===========================================");
 
 for(let fila = 1; fila <= hojaMineria.rowCount; fila++){
 
@@ -119,17 +116,7 @@ for(let fila = 1; fila <= hojaMineria.rowCount; fila++){
 
     }
 
-    console.log(
-        "FILA " + fila + ":",
-        datosFila
-    );
-
 }
-
-    console.log(
-    "HOJA MINERIA:",
-    hojaMineria
-);
 
 //===========================================
 // MINERIA - MODELO 15
@@ -257,12 +244,7 @@ if (hojaMineria) {
     }
 
 }
-
-
-console.log(
-    "MODELO 15 - MINERIA:",
-    ejercicioMineria
-);    
+ 
 
 //===========================================
 // SUSTITUCIÓN CONTEXTUAL
@@ -1998,10 +1980,6 @@ function lanzarGeneracion(){
                 referencias: []
             };
 
-    console.log(
-    "MODELO 14 - SUSTITUCIÓN CONTEXTUAL:",
-    ejercicioSustitucionContextual
-    );
 
     generarCodigo(   // ← VIENE DE: js/generador-html-erg.js
         datosPagina.nivel,
