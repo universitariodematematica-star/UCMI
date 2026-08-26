@@ -178,6 +178,11 @@ const contadorPalabras =
     bloque.querySelector(
         ".numero-palabras-guiada"
     );
+
+const progresoGuiada =
+    bloque.querySelector(
+        ".progreso-guiada"
+    );            
            
 
 
