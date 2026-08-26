@@ -129,41 +129,56 @@ let ejercicioEscrituraGuiada = {
 
 };
 
+
 //===========================================
 // LEER ESCRITURA GUIADA - MODELO 16
 //===========================================
 
 if (hojaEscrituraGuiada) {
 
-    for (
-        let fila = 2;
-        fila <= 6;
-        fila++
-    ) {
-
-        const numero =
-            leerCelda(
-                hojaEscrituraGuiada.getCell("A" + fila)
-            ).trim();
+    const numero =
+        leerCelda(
+            hojaEscrituraGuiada.getCell("A2")
+        ).trim();
 
 
-        const palabra1 =
-            leerCelda(
-                hojaEscrituraGuiada.getCell("B2")
-            ).trim();
+    if (numero) {
+
+        const palabras = [];
 
 
-        const palabra2 =
-            leerCelda(
-                hojaEscrituraGuiada.getCell("B3")
-            ).trim();
+        //=======================================
+        // LEER PALABRAS
+        // B2:B4
+        //=======================================
+
+        for (
+            let fila = 2;
+            fila <= 4;
+            fila++
+        ) {
+
+            const palabra =
+                leerCelda(
+                    hojaEscrituraGuiada.getCell("B" + fila)
+                ).trim();
 
 
-        const palabra3 =
-            leerCelda(
-                hojaEscrituraGuiada.getCell("B4")
-            ).trim();
+            if (palabra) {
 
+                palabras.push(
+                    palabra
+                );
+
+            }
+
+        }
+
+
+        //=======================================
+        // NÚMERO MÍNIMO DE PALABRAS
+        // C2
+        //=======================================
 
         const numeroMinimo =
             leerCelda(
@@ -171,61 +186,61 @@ if (hojaEscrituraGuiada) {
             ).trim();
 
 
-        const estructura1 =
-            leerCelda(
-                hojaEscrituraGuiada.getCell("D2")
-            ).trim();
+        //=======================================
+        // LEER ESTRUCTURAS
+        // D2:D4
+        //=======================================
+
+        const estructuras = [];
 
 
-        const estructura2 =
-            leerCelda(
-                hojaEscrituraGuiada.getCell("D3")
-            ).trim();
+        for (
+            let fila = 2;
+            fila <= 4;
+            fila++
+        ) {
+
+            const estructura =
+                leerCelda(
+                    hojaEscrituraGuiada.getCell("D" + fila)
+                ).trim();
 
 
-        const estructura3 =
-            leerCelda(
-                hojaEscrituraGuiada.getCell("D4")
-            ).trim();
+            if (estructura) {
 
+                estructuras.push(
+                    estructura
+                );
 
-        if (!numero) {
-            continue;
+            }
+
         }
 
 
+        //=======================================
+        // GUARDAR UN SOLO EJERCICIO
+        //=======================================
+
         ejercicioEscrituraGuiada.ejercicios.push({
 
-            numero: Number(numero),
+            numero:
+                Number(numero),
 
-            palabras: [
-
-                palabra1,
-                palabra2,
-                palabra3
-
-            ].filter(
-                palabra => palabra !== ""
-            ),
+            palabras:
+                palabras,
 
             numeroMinimoPalabras:
                 Number(numeroMinimo),
 
-            estructuras: [
-
-                estructura1,
-                estructura2,
-                estructura3
-
-            ].filter(
-                estructura => estructura !== ""
-            )
+            estructuras:
+                estructuras
 
         });
 
     }
 
 }
+
 
 console.log(
     "MODELO 16 - ESCRITURA GUIADA:",
@@ -234,7 +249,7 @@ console.log(
         null,
         4
     )
-);   
+);  
     
 //===========================================
 // MINERIA - MODELO 15
