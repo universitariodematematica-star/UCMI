@@ -106,9 +106,41 @@ bloque.innerHTML = `
         `<li style="margin-bottom:10px;">${estructura}</li>`
     ).join("")}
 
-</ul>
+    </ul>
 
-    </div>
+
+    <div class="contenedor-escritura-guiada">
+
+        <div class="campo-escritura-guiada">
+
+            <textarea
+                class="texto-escritura-guiada"
+                placeholder="Escriba aquí su texto..."
+            ></textarea>
+
+        </div>
+
+
+        <div class="contenedor-palabras-guiada">
+
+            <div class="titulo-palabras-guiada">
+                Vocabulario requerido
+            </div>
+
+            <div class="palabras-guiada">
+
+                ${palabras.map(
+                    palabra =>
+                    `<span class="palabra-guiada">
+                        ${palabra}
+                    </span>`
+                ).join("")}
+
+            </div>
+
+        </div>
+
+</div>
 
 `;
 
