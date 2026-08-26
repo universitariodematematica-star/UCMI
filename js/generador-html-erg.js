@@ -622,6 +622,7 @@ onclick="UCMIRestaurarEjercicios.reiniciar()">
 <script src="${rutaJS}motor-comprension-auditiva.js"><\/script>
 <script src="${rutaJS}motor-sustitucion-contextual.js"><\/script>
 <script src="${rutaJS}motor-mineria.js"><\/script>
+<script src="${rutaJS}motor-escritura-guiada.js"><\/script>
 
 <script>
 
