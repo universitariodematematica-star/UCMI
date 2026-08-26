@@ -846,6 +846,27 @@ if(
 
 }
 
+if(
+    "${configuracionMostrar["Escritura guiada"] || "No"}"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "${configuracionMostrar["Escritura guiada"] || "No"}"
+    .trim()
+    .toLowerCase() === "si"
+){
+
+    UCMIMotorEscrituraGuiada.generar({
+
+        contenedor:"zona-ejercicios",
+
+        escrituraGuiada:
+        ejercicioEscrituraGuiada
+
+    });
+
+}
+
 document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
 
     const datos = contenedor.querySelector(".audio-data");
