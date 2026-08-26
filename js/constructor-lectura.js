@@ -2005,6 +2005,7 @@ function lanzarGeneracion(){
         ejercicioComprensionAuditiva,
         ejercicioSustitucionContextual,
         ejercicioMineria,
+        ejercicioEscrituraGuiada,
         configuracionMostrar
     );
 
