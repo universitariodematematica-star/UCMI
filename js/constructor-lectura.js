@@ -137,15 +137,84 @@ for(let fila = 1; fila <= hojaMineria.rowCount; fila++){
 
 let ejercicioMineria = {
 
+    palabras: [],
+
+    numeroMinimoPalabras: 0,
+
     estructuras: []
 
 };
 
+
 if (hojaMineria) {
+
+    //=======================================
+    // LEER PALABRAS
+    //
+    // B2:B4
+    //=======================================
 
     for (
         let fila = 2;
-        fila <= hojaMineria.rowCount;
+        fila <= 4;
+        fila++
+    ) {
+
+        const palabra =
+            leerCelda(
+                hojaMineria.getCell("B" + fila)
+            ).trim();
+
+
+        if (!palabra) {
+            continue;
+        }
+
+
+        ejercicioMineria.palabras.push(
+            palabra
+        );
+
+    }
+
+
+    //=======================================
+    // NÚMERO MÍNIMO DE PALABRAS
+    //
+    // C2
+    //=======================================
+
+    const numeroMinimo =
+        leerCelda(
+            hojaMineria.getCell("C2")
+        ).trim();
+
+
+    const numeroMinimoPalabras =
+        Number(numeroMinimo);
+
+
+    if (
+        Number.isInteger(numeroMinimoPalabras) &&
+        numeroMinimoPalabras > 0
+    ) {
+
+        ejercicioMineria.numeroMinimoPalabras =
+            numeroMinimoPalabras;
+
+    }
+
+
+    //=======================================
+    // LEER ESTRUCTURAS
+    //
+    // A2:A6 = número
+    // D2:D4 = estructura
+    //=======================================
+
+    for (
+        let fila = 2;
+        fila <= 6;
         fila++
     ) {
 
@@ -154,21 +223,26 @@ if (hojaMineria) {
                 hojaMineria.getCell("A" + fila)
             ).trim();
 
+
         const estructura =
             leerCelda(
-                hojaMineria.getCell("B" + fila)
+                hojaMineria.getCell("D" + fila)
             ).trim();
+
 
         if (!numero || !estructura) {
             continue;
         }
 
+
         const numeroEstructura =
             Number(numero);
+
 
         if (!Number.isInteger(numeroEstructura)) {
             continue;
         }
+
 
         ejercicioMineria.estructuras.push({
 
@@ -184,20 +258,10 @@ if (hojaMineria) {
 
 }
 
+
 console.log(
     "MODELO 15 - MINERIA:",
     ejercicioMineria
-);
-
-ejercicioMineria.estructuras.forEach(
-    estructura => {
-
-        console.log(
-            "MINERIA ESTRUCTURA:",
-            estructura
-        );
-
-    }
 );    
 
 //===========================================
