@@ -78,14 +78,29 @@ bloque.innerHTML = `
 
     <div class="instruccion-ejercicio">
 
-        ${numeroEjercicio}. Escriba un texto con
+        <strong>
+            ${numeroEjercicio}.
+        </strong>
+
+        Escriba un texto con
         ${numeroPalabras}
         palabras que tenga los siguientes
-        vocablos
-        ${conjuntoPalabras}
-        y oraciones formadas con las
-        estructuras
-        ${conjuntoEstructuras}.
+        vocablos y oraciones formadas con las
+        siguientes estructuras:
+
+        <ul>
+
+            <li>
+                <strong>Vocablos:</strong>
+                ${conjuntoPalabras}
+            </li>
+
+            ${estructuras.map(
+                estructura =>
+                `<li>${estructura}</li>`
+            ).join("")}
+
+        </ul>
 
     </div>
 
