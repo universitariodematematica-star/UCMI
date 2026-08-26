@@ -78,13 +78,9 @@ const UCMIMotorEscrituraGuiada = {
 
             bloque.innerHTML = `
 
-                <div class="escritura-guiada-enunciado">
+                <div class="instruccion-ejercicio">
 
-                    <strong>
-                        ${numeroEjercicio}.
-                    </strong>
-
-                    Escriba un texto con
+                    ${numeroEjercicio}. Escriba un texto con
                     ${numeroPalabras}
                     palabras que tenga los siguientes
                     vocablos
