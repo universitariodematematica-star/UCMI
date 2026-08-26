@@ -27,7 +27,8 @@ ejerciciosOrdenarParrafos=[],
 ejercicioComprensionTexto={},
 ejercicioComprensionAuditiva={},
 ejercicioSustitucionContextual={},
-ejercicioMineria={},    
+ejercicioMineria={},
+ejercicioEscrituraGuiada={},    
 configuracionMostrar={}
 ){
     
