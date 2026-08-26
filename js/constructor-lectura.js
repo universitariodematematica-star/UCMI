@@ -310,56 +310,54 @@ if (hojaMineria) {
     }
 
 
-    //=======================================
-    // LEER ESTRUCTURAS
-    //
-    // A2:A6 = número
-    // D2:D4 = estructura
-    //=======================================
+//=======================================
+// LEER ESTRUCTURAS
+//
+// A2:A6 = número
+// B2:B6 = estructura
+//=======================================
 
-    for (
-        let fila = 2;
-        fila <= 6;
-        fila++
-    ) {
+for (
+    let fila = 2;
+    fila <= 6;
+    fila++
+) {
 
-        const numero =
-            leerCelda(
-                hojaMineria.getCell("A" + fila)
-            ).trim();
-
-
-        const estructura =
-            leerCelda(
-                hojaMineria.getCell("D" + fila)
-            ).trim();
+    const numero =
+        leerCelda(
+            hojaMineria.getCell("A" + fila)
+        ).trim();
 
 
-        if (!numero || !estructura) {
-            continue;
-        }
+    const estructura =
+        leerCelda(
+            hojaMineria.getCell("B" + fila)
+        ).trim();
 
 
-        const numeroEstructura =
-            Number(numero);
-
-
-        if (!Number.isInteger(numeroEstructura)) {
-            continue;
-        }
-
-
-        ejercicioMineria.estructuras.push({
-
-            numero:
-                numeroEstructura,
-
-            estructura:
-                estructura
-
-        });
-
+    if (!numero || !estructura) {
+        continue;
     }
+
+
+    const numeroEstructura =
+        Number(numero);
+
+
+    if (!Number.isInteger(numeroEstructura)) {
+        continue;
+    }
+
+
+    ejercicioMineria.estructuras.push({
+
+        numero:
+            numeroEstructura,
+
+        estructura:
+            estructura
+
+    });
 
 }
  
