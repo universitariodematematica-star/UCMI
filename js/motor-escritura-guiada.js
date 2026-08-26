@@ -148,6 +148,68 @@ bloque.innerHTML = `
 
 contenedor.appendChild(bloque);
 
+
+/*================================================
+    DETECTAR VOCABULARIO UTILIZADO
+================================================*/
+
+const campoEscritura =
+    bloque.querySelector(
+        ".texto-escritura-guiada"
+    );
+
+
+const palabrasGuiadas =
+    bloque.querySelectorAll(
+        ".palabra-guiada"
+    );
+
+
+if(campoEscritura){
+
+    campoEscritura.addEventListener(
+        "input",
+        function(){
+
+            const texto =
+                campoEscritura.value.toLowerCase();
+
+
+            palabrasGuiadas.forEach(
+                elemento => {
+
+                    const palabra =
+                        elemento.textContent
+                        .trim()
+                        .toLowerCase();
+
+
+                    if(
+                        palabra &&
+                        texto.includes(palabra)
+                    ){
+
+                        elemento.classList.add(
+                            "palabra-utilizada"
+                        );
+
+                    }else{
+
+                        elemento.classList.remove(
+                            "palabra-utilizada"
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
         });
 
     }
