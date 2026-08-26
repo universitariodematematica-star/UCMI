@@ -1,3 +1,4 @@
+```javascript
 /*=====================================================
     MOTOR MODELO 16 - ESCRITURA GUIADA
 =====================================================*/
@@ -11,8 +12,10 @@ const UCMIMotorEscrituraGuiada = {
             datos
         );
 
+
         const contenedor =
             document.getElementById(datos.contenedor);
+
 
         if(!contenedor){
 
@@ -24,8 +27,10 @@ const UCMIMotorEscrituraGuiada = {
 
         }
 
+
         const ejercicios =
             datos.escrituraGuiada?.ejercicios || [];
+
 
         if(!ejercicios.length){
 
@@ -37,64 +42,119 @@ const UCMIMotorEscrituraGuiada = {
 
         }
 
+
         ejercicios.forEach(ejercicio => {
+
 
             const bloque =
                 document.createElement("div");
 
+
             bloque.className =
                 "ejercicio-escritura-guiada";
 
+
             bloque.innerHTML = `
 
-                <h3>
-                    Ejercicio ${ejercicio.numero}
-                </h3>
+                <div class="escritura-guiada-contenido">
 
-                <div class="escritura-guiada-palabras">
 
-                    <strong>Palabras:</strong>
+                    <div class="escritura-guiada-izquierda">
 
-                    ${ejercicio.palabras
-                        .map(palabra => `<span>${palabra}</span>`)
-                        .join(" ")}
 
-                </div>
+                        <div class="escritura-guiada-enunciado">
 
-                <div class="escritura-guiada-estructuras">
+                            <strong>
+                                Escribe un texto utilizando las siguientes estructuras:
+                            </strong>
 
-                    <strong>Estructuras:</strong>
 
-                    <ul>
+                            <div class="escritura-guiada-estructuras">
 
-                        ${ejercicio.estructuras
-                            .map(estructura =>
-                                `<li>${estructura}</li>`
-                            )
-                            .join("")}
+                                ${ejercicio.estructuras
+                                    .map(estructura => `
+                                        <div>
+                                            ${estructura}
+                                        </div>
+                                    `)
+                                    .join("")}
 
-                    </ul>
+                            </div>
 
-                </div>
+                        </div>
 
-                <textarea
-                    class="escritura-guiada-textarea"
-                    rows="8"
-                    placeholder="Escribe tu texto aquí..."
-                ></textarea>
 
-                <div class="escritura-guiada-contador">
+                        <textarea
+                            class="escritura-guiada-textarea"
+                            rows="12"
+                            placeholder="Escribe tu texto aquí..."
+                        ></textarea>
 
-                    Palabras escritas: <strong>0</strong>
+
+                        <div class="escritura-guiada-contador">
+
+                            Palabras escritas:
+                            <strong>0</strong>
+
+                        </div>
+
+
+                        <div class="escritura-guiada-faltantes">
+
+                            Palabras faltantes:
+                            <strong>
+                                ${ejercicio.numeroMinimoPalabras}
+                            </strong>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="escritura-guiada-derecha">
+
+
+                        <h3>
+                            Palabras
+                        </h3>
+
+
+                        <div class="escritura-guiada-banco">
+
+
+                            ${ejercicio.palabras
+                                .map((palabra, indice) => `
+
+                                    <span
+                                        class="escritura-guiada-palabra"
+                                        data-palabra="${palabra}"
+                                        data-indice="${indice}"
+                                    >
+                                        ${palabra}
+                                    </span>
+
+                                `)
+                                .join("")}
+
+
+                        </div>
+
+
+                    </div>
+
 
                 </div>
 
             `;
 
+
             contenedor.appendChild(bloque);
+
 
         });
 
     }
 
 };
+```
