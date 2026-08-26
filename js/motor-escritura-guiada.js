@@ -113,14 +113,22 @@ bloque.innerHTML = `
 
     <div class="contenedor-escritura-guiada">
 
-        <div class="campo-escritura-guiada">
+<div class="campo-escritura-guiada">
 
-            <textarea
-                class="texto-escritura-guiada"
-                placeholder="Escriba aquí su texto..."
-            ></textarea>
+    <textarea
+        class="texto-escritura-guiada"
+        placeholder="Escriba aquí su texto..."
+    ></textarea>
 
-        </div>
+
+    <div class="contador-palabras-guiada">
+        Palabras:
+        <span class="numero-palabras-guiada">0</span>
+        /
+        ${numeroPalabras}
+    </div>
+
+</div>
 
 
         <div class="contenedor-palabras-guiada">
@@ -159,6 +167,12 @@ const campoEscritura =
     );
 
 
+const contadorPalabras =
+    bloque.querySelector(
+        ".numero-palabras-guiada"
+    );
+
+
 const palabrasGuiadas =
     bloque.querySelectorAll(
         ".palabra-guiada"
@@ -172,7 +186,21 @@ if(campoEscritura){
         function(){
 
             const texto =
-                campoEscritura.value.toLowerCase();
+                campoEscritura.value.trim();
+
+
+            const palabrasEscritas =
+                texto
+                ? texto.split(/\s+/).length
+                : 0;
+
+
+            if(contadorPalabras){
+
+                contadorPalabras.textContent =
+                    palabrasEscritas;
+
+            }
 
 
             palabrasGuiadas.forEach(
@@ -186,7 +214,8 @@ if(campoEscritura){
 
                     if(
                         palabra &&
-                        texto.includes(palabra)
+                        texto.toLowerCase()
+                        .includes(palabra)
                     ){
 
                         elemento.classList.add(
