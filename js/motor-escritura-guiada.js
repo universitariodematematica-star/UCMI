@@ -207,60 +207,182 @@ if(campoEscritura){
                 ? texto.split(/\s+/).length
                 : 0;
 
-             /*================================================
-                ACTUALIZAR BARRA DE PROGRESO
-            ================================================*/
+/*================================================
+    ACTUALIZAR BARRA DE PROGRESO
+================================================*/
 
-            if(progresoGuiada){
+if(progresoGuiada){
 
-                const maximoProgreso =
-                    numeroPalabras * 2;
-
-
-                const porcentaje =
-                    maximoProgreso > 0
-                    ? Math.min(
-                        (palabrasEscritas / maximoProgreso) * 100,
-                        100
-                    )
-                    : 0;
+    const minimo =
+        numeroPalabras;
 
 
-                progresoGuiada.style.width =
-                    porcentaje + "%";
+    const maximoColor =
+        numeroPalabras * 2;
 
 
-                if(palabrasEscritas === 0){
+    /*--------------------------------------------
+        PROGRESO DE LA BARRA
 
-                    progresoGuiada.style.background =
-                        "#e34234";
+        La barra se completa al alcanzar
+        el mínimo requerido.
+    --------------------------------------------*/
 
-                }
-                else if(
-                    palabrasEscritas >= numeroPalabras &&
-                    palabrasEscritas < maximoProgreso
-                ){
+    const porcentajeBarra =
+        minimo > 0
+        ? Math.min(
+            (palabrasEscritas / minimo) * 100,
+            100
+        )
+        : 0;
 
-                    progresoGuiada.style.background =
-                        "#228B22";
 
-                }
-                else if(
-                    palabrasEscritas >= maximoProgreso
-                ){
+    progresoGuiada.style.width =
+        porcentajeBarra + "%";
 
-                    progresoGuiada.style.background =
-                        "#87CEEB";
 
-                }
-                else{
+    /*--------------------------------------------
+        PROGRESO CROMÁTICO
 
-                    progresoGuiada.style.background =
-                        "#e34234";
+        0 → mínimo:
+        rojo escarlata → verde
 
-                }
+        mínimo → doble del mínimo:
+        verde → azul cielo
+    --------------------------------------------*/
 
-            }           
+    let porcentajeColor = 0;
+
+
+    if(maximoColor > 0){
+
+        porcentajeColor =
+            Math.min(
+                (palabrasEscritas / maximoColor) * 100,
+                100
+            );
+
+    }
+
+
+    let colorInicio;
+    let colorFin;
+    let porcentajeTransicion;
+
+
+    if(
+        palabrasEscritas <= minimo
+    ){
+
+        /*----------------------------------------
+            ROJO → VERDE
+        ----------------------------------------*/
+
+        colorInicio = {
+            r:227,
+            g:66,
+            b:52
+        };
+
+
+        colorFin = {
+            r:34,
+            g:139,
+            b:34
+        };
+
+
+        porcentajeTransicion =
+            minimo > 0
+            ? palabrasEscritas / minimo
+            : 0;
+
+    }
+    else{
+
+        /*----------------------------------------
+            VERDE → AZUL CIELO
+        ----------------------------------------*/
+
+        colorInicio = {
+            r:34,
+            g:139,
+            b:34
+        };
+
+
+        colorFin = {
+            r:135,
+            g:206,
+            b:235
+        };
+
+
+        porcentajeTransicion =
+            numeroPalabras > 0
+            ? (
+                (palabrasEscritas - minimo)
+                / minimo
+            )
+            : 0;
+
+    }
+
+
+    porcentajeTransicion =
+        Math.max(
+            0,
+            Math.min(
+                porcentajeTransicion,
+                1
+            )
+        );
+
+
+    /*--------------------------------------------
+        INTERPOLACIÓN DEL COLOR
+
+        La transición se realiza de manera
+        progresiva entre los colores.
+    --------------------------------------------*/
+
+    const rojo =
+        Math.round(
+            colorInicio.r +
+            (
+                colorFin.r -
+                colorInicio.r
+            ) *
+            porcentajeTransicion
+        );
+
+
+    const verde =
+        Math.round(
+            colorInicio.g +
+            (
+                colorFin.g -
+                colorInicio.g
+            ) *
+            porcentajeTransicion
+        );
+
+
+    const azul =
+        Math.round(
+            colorInicio.b +
+            (
+                colorFin.b -
+                colorInicio.b
+            ) *
+            porcentajeTransicion
+        );
+
+
+    progresoGuiada.style.backgroundColor =
+        `rgb(${rojo}, ${verde}, ${azul})`;
+
+}          
 
             if(contadorPalabras){
 
