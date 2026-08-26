@@ -1333,10 +1333,16 @@ for(let fila = 3; fila <= 12; fila++){
 //-----------------------------------------------------
 
 hojaEscrituraGuiada.getCell("A1").value =
-    "N°";
+    "Número";
 
 hojaEscrituraGuiada.getCell("B1").value =
-    "Palabra";
+    "Palabras";
+
+hojaEscrituraGuiada.getCell("C1").value =
+    "Número mínimo de palabras";
+
+hojaEscrituraGuiada.getCell("D1").value =
+    "Estructuras";
 
 
 //-----------------------------------------------------
@@ -1352,10 +1358,10 @@ for(let fila = 2; fila <= 6; fila++){
 
 
 //-----------------------------------------------------
-// PALABRAS DE EJEMPLO
+// PALABRAS
 //-----------------------------------------------------
 
-for(let fila = 2; fila <= 6; fila++){
+for(let fila = 2; fila <= 4; fila++){
 
     hojaEscrituraGuiada.getCell(fila, 2).value =
         "Palabra " + (fila - 1);
@@ -1364,14 +1370,38 @@ for(let fila = 2; fila <= 6; fila++){
 
 
 //-----------------------------------------------------
-// CONTINUACIÓN
+// NÚMERO MÍNIMO DE PALABRAS
 //-----------------------------------------------------
 
-hojaEscrituraGuiada.getCell("A7").value =
-    "...";
+hojaEscrituraGuiada.getCell("C2").value =
+    1;
 
-hojaEscrituraGuiada.getCell("B7").value =
-    "...";
+hojaEscrituraGuiada.getCell("C2").border = {
+    top: {
+        style: "thin"
+    },
+    left: {
+        style: "thin"
+    },
+    bottom: {
+        style: "thin"
+    },
+    right: {
+        style: "thin"
+    }
+};
+
+
+//-----------------------------------------------------
+// ESTRUCTURAS
+//-----------------------------------------------------
+
+for(let fila = 2; fila <= 4; fila++){
+
+    hojaEscrituraGuiada.getCell(fila, 4).value =
+        "Estructura " + (fila - 1);
+
+}
 
 
 //-----------------------------------------------------
@@ -1410,19 +1440,22 @@ hojaEscrituraGuiada.getColumn("A").width = 10;
 
 hojaEscrituraGuiada.getColumn("B").width = 40;
 
+hojaEscrituraGuiada.getColumn("C").width = 30;
+
+hojaEscrituraGuiada.getColumn("D").width = 30;
+
 
 //-----------------------------------------------------
 // ENCABEZADOS EN NEGRITA
 //-----------------------------------------------------
 
-for(let celda of ["A1","B1"]){
+for(let celda of ["A1","B1","C1","D1"]){
 
     hojaEscrituraGuiada.getCell(celda).font = {
         bold:true
     };
 
-}    
-
+}
 
 //=====================================================
 // HOJA: Mostrar
