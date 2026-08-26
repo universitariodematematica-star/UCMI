@@ -1,3 +1,4 @@
+```javascript
 /*=====================================================
     MOTOR MODELO 16 - ESCRITURA GUIADA
 =====================================================*/
@@ -53,6 +54,29 @@ const UCMIMotorEscrituraGuiada = {
                 "ejercicio-escritura-guiada";
 
 
+            const estructurasHTML =
+                (ejercicio.estructuras || [])
+                .map(estructura =>
+                    "<div>" +
+                    estructura +
+                    "</div>"
+                )
+                .join("");
+
+
+            const palabrasHTML =
+                (ejercicio.palabras || [])
+                .map((palabra, indice) =>
+                    "<span " +
+                    "class=\"escritura-guiada-palabra\" " +
+                    "data-palabra=\"" + palabra + "\" " +
+                    "data-indice=\"" + indice + "\">" +
+                    palabra +
+                    "</span>"
+                )
+                .join("");
+
+
             bloque.innerHTML = `
 
                 <div class="escritura-guiada-contenido">
@@ -70,13 +94,7 @@ const UCMIMotorEscrituraGuiada = {
 
                             <div class="escritura-guiada-estructuras">
 
-                                ${ejercicio.estructuras
-                                    .map(estructura => `
-                                        <div>
-                                            ${estructura}
-                                        </div>
-                                    `)
-                                    .join("")}
+                                ${estructurasHTML}
 
                             </div>
 
@@ -121,21 +139,7 @@ const UCMIMotorEscrituraGuiada = {
 
                         <div class="escritura-guiada-banco">
 
-
-                            ${ejercicio.palabras
-                                .map((palabra, indice) => `
-
-                                    <span
-                                        class="escritura-guiada-palabra"
-                                        data-palabra="${palabra}"
-                                        data-indice="${indice}"
-                                    >
-                                        ${palabra}
-                                    </span>
-
-                                `)
-                                .join("")}
-
+                            ${palabrasHTML}
 
                         </div>
 
@@ -156,3 +160,4 @@ const UCMIMotorEscrituraGuiada = {
     }
 
 };
+```
