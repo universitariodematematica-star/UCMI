@@ -142,84 +142,63 @@ if (hojaEscrituraGuiada) {
         ).trim();
 
 
-    if (numero) {
+    const palabras = [];
 
-        const palabras = [];
+    for (
+        let fila = 2;
+        fila <= 6;
+        fila++
+    ) {
 
-
-        //=======================================
-        // LEER PALABRAS
-        // B2:B4
-        //=======================================
-
-        for (
-            let fila = 2;
-            fila <= 4;
-            fila++
-        ) {
-
-            const palabra =
-                leerCelda(
-                    hojaEscrituraGuiada.getCell("B" + fila)
-                ).trim();
-
-
-            if (palabra) {
-
-                palabras.push(
-                    palabra
-                );
-
-            }
-
-        }
-
-
-        //=======================================
-        // NÚMERO MÍNIMO DE PALABRAS
-        // C2
-        //=======================================
-
-        const numeroMinimo =
+        const palabra =
             leerCelda(
-                hojaEscrituraGuiada.getCell("C2")
+                hojaEscrituraGuiada.getCell("B" + fila)
             ).trim();
 
 
-        //=======================================
-        // LEER ESTRUCTURAS
-        // D2:D4
-        //=======================================
+        if (palabra) {
 
-        const estructuras = [];
-
-
-        for (
-            let fila = 2;
-            fila <= 4;
-            fila++
-        ) {
-
-            const estructura =
-                leerCelda(
-                    hojaEscrituraGuiada.getCell("D" + fila)
-                ).trim();
-
-
-            if (estructura) {
-
-                estructuras.push(
-                    estructura
-                );
-
-            }
+            palabras.push(
+                palabra
+            );
 
         }
 
+    }
 
-        //=======================================
-        // GUARDAR UN SOLO EJERCICIO
-        //=======================================
+
+    const numeroMinimo =
+        leerCelda(
+            hojaEscrituraGuiada.getCell("C2")
+        ).trim();
+
+
+    const estructuras = [];
+
+    for (
+        let fila = 2;
+        fila <= 6;
+        fila++
+    ) {
+
+        const estructura =
+            leerCelda(
+                hojaEscrituraGuiada.getCell("D" + fila)
+            ).trim();
+
+
+        if (estructura) {
+
+            estructuras.push(
+                estructura
+            );
+
+        }
+
+    }
+
+
+    if (numero) {
 
         ejercicioEscrituraGuiada.ejercicios.push({
 
