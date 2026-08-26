@@ -100,6 +100,7 @@ if (hojaImagenes){
     const hojaComprensionAuditiva = libro.getWorksheet("Comprension-auditiva");
     const hojaSustitucionContextual = libro.getWorksheet("Sustitucion-contextual");
     const hojaMineria = libro.getWorksheet("Mineria");
+    const hojaEscrituraGuiada = libro.getWorksheet("Escritura-guiada");
 
 
 for(let fila = 1; fila <= hojaMineria.rowCount; fila++){
