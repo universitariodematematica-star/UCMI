@@ -1,8 +1,8 @@
 /*====================================================
-MOTOR MODELO 16 - ESCRITURA GUIADA
+MOTOR MODELO 16 - MINERIA
 ====================================================*/
 
-const UCMIMotorEscrituraGuiada = {
+const UCMIMotorMineria = {
 
 generar(config){
 
@@ -15,7 +15,7 @@ generar(config){
     if(!contenedor){
 
         console.error(
-            "ESCRITURA GUIADA: no existe el contenedor:",
+            "MINERIA: no existe el contenedor:",
             config.contenedor
         );
 
@@ -24,18 +24,18 @@ generar(config){
     }
 
 
-    const escrituraGuiada =
-        config.escrituraGuiada;
+    const mineria =
+        config.mineria;
 
 
     if(
-        !escrituraGuiada ||
-        !Array.isArray(escrituraGuiada.ejercicios) ||
-        escrituraGuiada.ejercicios.length === 0
+        !mineria ||
+        !Array.isArray(mineria.ejercicios) ||
+        mineria.ejercicios.length === 0
     ){
 
         console.warn(
-            "ESCRITURA GUIADA: no existen ejercicios."
+            "MINERIA: no existen ejercicios."
         );
 
         return;
@@ -43,65 +43,47 @@ generar(config){
     }
 
 
-    const ejercicio =
-        escrituraGuiada.ejercicios[0];
+    mineria.ejercicios.forEach(ejercicio => {
+
+        const numeroEjercicio =
+            ++contadorEjercicios;
 
 
-    const numeroEjercicio =
-        ++contadorEjercicios;
+        const bloque =
+            document.createElement("div");
 
 
-    const numeroPalabras =
-        ejercicio.numeroMinimoPalabras || 0;
+        bloque.className =
+            "ejercicio-mineria";
 
 
-    const palabras =
-        ejercicio.palabras || [];
+        bloque.innerHTML = `
+
+            <div class="instruccion-ejercicio">
+
+                <strong>
+                    ${numeroEjercicio}.
+                </strong>
+
+            </div>
+
+        `;
 
 
-    const estructuras =
-        ejercicio.estructuras || [];
+        contenedor.appendChild(
+            bloque
+        );
 
-
-    const conjuntoPalabras =
-        palabras.join(", ");
-
-
-    const conjuntoEstructuras =
-        estructuras.join(", ");
-
-
-    const html = `
-
-<div class="ejercicio-escritura-guiada">
-
-<div class="instruccion-ejercicio">
-
-    ${numeroEjercicio}. Escriba un texto con
-    ${numeroPalabras}
-    palabras que tenga los siguientes vocablos
-    ${conjuntoPalabras}
-    y oraciones formadas con las estructuras
-    ${conjuntoEstructuras}.
-
-</div>
-
-</div>
-
-`;
-
-    contenedor.insertAdjacentHTML(
-        "beforeend",
-        html
-    );
+    });
 
 }
 
 };
 
+
 /*====================================================
 EXPORTAR MOTOR
 ====================================================*/
 
-window.UCMIMotorEscrituraGuiada =
-UCMIMotorEscrituraGuiada;
+window.UCMIMotorMineria =
+UCMIMotorMineria;
