@@ -1431,6 +1431,27 @@ for(let celda of ["A1","B1"]){
 hojaMostrar.getCell("A1").value = "Tipo de ejercicio";
 hojaMostrar.getCell("B1").value = "Mostrar";
 
+hojaMostrar.getCell("C1").value =
+    "Número mínimo de palabras";
+
+hojaMostrar.getCell("C2").value =
+    1;
+
+hojaMostrar.getCell("C2").border = {
+    top: {
+        style: "thin"
+    },
+    left: {
+        style: "thin"
+    },
+    bottom: {
+        style: "thin"
+    },
+    right: {
+        style: "thin"
+    }
+};    
+
 
 hojaMostrar.getCell("A2").value =
 "Selección simple";
