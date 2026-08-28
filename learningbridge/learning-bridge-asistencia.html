@@ -32,6 +32,23 @@
             margin-bottom: 8px;
         }
 
+                .btn-enviar-mensaje {
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .mensaje-no-enviado {
+            background-color: #28a745;
+        }
+
+        .mensaje-enviado {
+            background-color: #e91e63;
+        }
+
     </style>
 </head>
 
@@ -64,7 +81,9 @@
         <option value="todos">Todos</option>
     </select>
 
-    <button type="button" id="btnFiltrar">Filtrar</button>
+        <button type="button" id="btnFiltrar">Filtrar</button>
+    <button type="button" id="btnPrepararInforme">Preparar informe</button>
+    
 </div>
 
 <div id="resultadoAsistencia"></div>
@@ -414,6 +433,23 @@ function mostrarAlumnos(lista, fechaInicioFiltro = "", fechaFinFiltro = "") {
 
     });
 
+    /*
+     * --------------------------------------------------
+     * COLUMNA PARA MENSAJES
+     * --------------------------------------------------
+     */
+
+    const thMensaje = document.createElement("th");
+
+    thMensaje.textContent = "Mensaje";
+
+    thMensaje.style.border = "1px solid #ccc";
+    thMensaje.style.padding = "8px";
+    thMensaje.style.textAlign = "center";
+    thMensaje.style.whiteSpace = "nowrap";
+
+    filaEncabezado.appendChild(thMensaje);
+
     tabla.appendChild(filaEncabezado);
 
     /*
@@ -618,6 +654,37 @@ function mostrarAlumnos(lista, fechaInicioFiltro = "", fechaFinFiltro = "") {
             fila.appendChild(celda);
 
         });
+
+        /*
+         * --------------------------------------------------
+         * BOTÓN ENVIAR MENSAJE
+         * --------------------------------------------------
+         */
+
+        const celdaMensaje = document.createElement("td");
+
+        celdaMensaje.style.border = "1px solid #ccc";
+        celdaMensaje.style.padding = "8px";
+        celdaMensaje.style.textAlign = "center";
+
+        const botonMensaje = document.createElement("button");
+
+        botonMensaje.type = "button";
+        botonMensaje.textContent = "Enviar mensaje";
+
+        botonMensaje.classList.add(
+            "btn-enviar-mensaje",
+            "mensaje-no-enviado"
+        );
+
+        /*
+         * POR AHORA NO SE EJECUTA NINGUNA LÓGICA
+         * DE ENVÍO.
+         */
+
+        celdaMensaje.appendChild(botonMensaje);
+
+        fila.appendChild(celdaMensaje);
 
         tabla.appendChild(fila);
 
@@ -914,6 +981,102 @@ document.getElementById("btnFiltrar").addEventListener("click", function() {
     );
 
 });
+
+document.getElementById("btnPrepararInforme").addEventListener("click", function() {
+
+    /*
+     * --------------------------------------------------
+     * PREPARAR INFORME DE INASISTENTES
+     * --------------------------------------------------
+     */
+
+    /*
+     * Alumnos → Inasistentes
+     */
+
+    document.getElementById("filtroAsistencia").value = "inasistentes";
+
+
+    /*
+     * Grupo → Todos
+     */
+
+    document.getElementById("filtroGrupo").value = "todos";
+
+
+    /*
+     * Fecha de hoy
+     */
+
+    const hoy = new Date();
+
+    hoy.setHours(0, 0, 0, 0);
+
+
+    /*
+     * Buscar el lunes pasado más reciente.
+     *
+     * getDay():
+     * 0 = domingo
+     * 1 = lunes
+     * 2 = martes
+     * 3 = miércoles
+     * 4 = jueves
+     * 5 = viernes
+     * 6 = sábado
+     */
+
+    const lunes = new Date(hoy);
+
+    const diasDesdeLunes = hoy.getDay() === 0
+        ? 6
+        : hoy.getDay() - 1;
+
+    lunes.setDate(
+        hoy.getDate() - diasDesdeLunes
+    );
+
+
+    /*
+     * Convertir fechas a formato YYYY-MM-DD
+     */
+
+    const convertirFechaInput = function(fecha) {
+
+        const año = fecha.getFullYear();
+
+        const mes = String(
+            fecha.getMonth() + 1
+        ).padStart(2, "0");
+
+        const dia = String(
+            fecha.getDate()
+        ).padStart(2, "0");
+
+        return `${año}-${mes}-${dia}`;
+
+    };
+
+
+    /*
+     * Fecha de inicio → lunes
+     * Fecha de fin → hoy
+     */
+
+    document.getElementById("fechaInicio").value =
+        convertirFechaInput(lunes);
+
+    document.getElementById("fechaFin").value =
+        convertirFechaInput(hoy);
+
+
+    /*
+     * Ejecutar el filtrado
+     */
+
+    document.getElementById("btnFiltrar").click();
+
+});        
 
 document.getElementById("archivoAsistencia").addEventListener("change", async function() {
 
