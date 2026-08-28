@@ -261,35 +261,143 @@ function mostrarAlumnos(lista) {
 
     resultadoAsistencia.innerHTML = "";
 
+    if (lista.length === 0) {
+        return;
+    }
+
+    const tabla = document.createElement("table");
+
+    tabla.style.borderCollapse = "collapse";
+    tabla.style.width = "100%";
+
+    const encabezado = document.createElement("tr");
+
+    const encabezadoAlumno = document.createElement("th");
+
+    encabezadoAlumno.textContent = "Alumnos";
+
+    encabezadoAlumno.style.border = "1px solid #ccc";
+    encabezadoAlumno.style.padding = "8px";
+    encabezadoAlumno.style.whiteSpace = "nowrap";
+
+    encabezado.appendChild(encabezadoAlumno);
+
+    /*
+     * Obtener todas las fechas disponibles en los registros
+     */
+    const fechas = [];
+
     lista.forEach(alumno => {
-
-        const divAlumno = document.createElement("div");
-
-        const nombreAlumno = document.createElement("div");
-
-        nombreAlumno.textContent =
-            `${alumno.apellidos} ${alumno.nombres}`;
-
-        divAlumno.appendChild(nombreAlumno);
 
         if (alumno.sesiones) {
 
             alumno.sesiones.forEach(sesion => {
 
-                const sesionDiv = document.createElement("div");
-
-                sesionDiv.textContent =
-                    `${sesion.fecha}: ${sesion.asistencia}`;
-
-                divAlumno.appendChild(sesionDiv);
+                if (sesion.fecha && !fechas.includes(sesion.fecha)) {
+                    fechas.push(sesion.fecha);
+                }
 
             });
 
         }
 
-        resultadoAsistencia.appendChild(divAlumno);
+    });
+
+    /*
+     * Ordenar las fechas
+     */
+    fechas.sort((a, b) => {
+
+        const fechaA = new Date(a);
+        const fechaB = new Date(b);
+
+        return fechaA - fechaB;
 
     });
+
+    /*
+     * Crear encabezados de las fechas
+     */
+    fechas.forEach(fecha => {
+
+        const th = document.createElement("th");
+
+        const fechaObjeto = new Date(fecha);
+
+        const dia = String(fechaObjeto.getDate()).padStart(2, "0");
+        const mes = String(fechaObjeto.getMonth() + 1).padStart(2, "0");
+        const año = fechaObjeto.getFullYear();
+
+        th.textContent = `${dia}/${mes}/${año}`;
+
+        th.style.border = "1px solid #ccc";
+        th.style.padding = "8px";
+        th.style.textAlign = "center";
+        th.style.whiteSpace = "nowrap";
+
+        encabezado.appendChild(th);
+
+    });
+
+    tabla.appendChild(encabezado);
+
+    /*
+     * Crear una fila para cada alumno
+     */
+    lista.forEach(alumno => {
+
+        const fila = document.createElement("tr");
+
+        const celdaAlumno = document.createElement("td");
+
+        celdaAlumno.textContent =
+            `${alumno.apellidos} ${alumno.nombres}`;
+
+        celdaAlumno.style.border = "1px solid #ccc";
+        celdaAlumno.style.padding = "8px";
+        celdaAlumno.style.whiteSpace = "nowrap";
+
+        fila.appendChild(celdaAlumno);
+
+        /*
+         * Crear un mapa de asistencia por fecha
+         */
+        const asistenciaPorFecha = {};
+
+        if (alumno.sesiones) {
+
+            alumno.sesiones.forEach(sesion => {
+
+                asistenciaPorFecha[sesion.fecha] =
+                    sesion.asistencia;
+
+            });
+
+        }
+
+        /*
+         * Crear las celdas de asistencia
+         */
+        fechas.forEach(fecha => {
+
+            const celda = document.createElement("td");
+
+            celda.textContent =
+                asistenciaPorFecha[fecha] || "---";
+
+            celda.style.border = "1px solid #ccc";
+            celda.style.padding = "8px";
+            celda.style.textAlign = "center";
+
+            fila.appendChild(celda);
+
+        });
+
+        tabla.appendChild(fila);
+
+    });
+
+    resultadoAsistencia.appendChild(tabla);
 
 }
 
