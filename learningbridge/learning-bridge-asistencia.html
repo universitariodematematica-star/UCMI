@@ -630,15 +630,131 @@ function mostrarAlumnos(lista, fechaInicioFiltro = "", fechaFinFiltro = "") {
 document.getElementById("btnFiltrar").addEventListener("click", function() {
 
     const grupoSeleccionado = filtroGrupo.value;
+    const filtroAlumnos = document.getElementById("filtroAsistencia").value;
 
     const fechaInicio = document.getElementById("fechaInicio").value;
     const fechaFin = document.getElementById("fechaFin").value;
 
-    const alumnosFiltrados = grupoSeleccionado === "todos"
+    /*
+     * --------------------------------------------------
+     * FILTRAR POR GRUPO
+     * --------------------------------------------------
+     */
+
+    let alumnosFiltrados = grupoSeleccionado === "todos"
         ? registrosAsistencia
         : registrosAsistencia.filter(
             alumno => alumno.grupo === grupoSeleccionado
         );
+
+
+    /*
+     * --------------------------------------------------
+     * FILTRAR POR ASISTENCIA
+     * --------------------------------------------------
+     */
+
+    if (filtroAlumnos === "asistentes") {
+
+        alumnosFiltrados = alumnosFiltrados.filter(alumno => {
+
+            if (!alumno.sesiones) {
+                return false;
+            }
+
+            return alumno.sesiones.some(sesion => {
+
+                const asistencia =
+                    String(sesion.asistencia || "")
+                    .trim()
+                    .charAt(0);
+
+                return ["P", "L", "E"].includes(asistencia);
+
+            });
+
+        });
+
+    }
+    else if (filtroAlumnos === "inasistentes") {
+
+        alumnosFiltrados = alumnosFiltrados.filter(alumno => {
+
+            if (!alumno.sesiones) {
+                return true;
+            }
+
+            return !alumno.sesiones.some(sesion => {
+
+                const asistencia =
+                    String(sesion.asistencia || "")
+                    .trim()
+                    .charAt(0);
+
+                return ["P", "L", "E"].includes(asistencia);
+
+            });
+
+        });
+
+    }
+
+
+    /*
+     * --------------------------------------------------
+     * MENSAJES CUANDO NO HAY COINCIDENCIAS
+     * --------------------------------------------------
+     */
+
+    if (alumnosFiltrados.length === 0) {
+
+        resultadoAsistencia.innerHTML = "";
+
+        const mensaje = document.createElement("div");
+
+        mensaje.style.padding = "15px";
+        mensaje.style.fontWeight = "bold";
+
+        if (
+            grupoSeleccionado === "todos" &&
+            filtroAlumnos === "asistentes"
+        ) {
+
+            mensaje.textContent =
+                "Ningún grupo ha terminado su semana operativa.";
+
+        }
+        else if (grupoSeleccionado !== "todos") {
+
+            mensaje.textContent =
+                "El grupo seleccionado aún se encuentra en semana operativa.";
+
+        }
+        else if (filtroAlumnos === "inasistentes") {
+
+            mensaje.textContent =
+                "No se encontraron alumnos inasistentes.";
+
+        }
+        else {
+
+            mensaje.textContent =
+                "No se encontraron resultados.";
+
+        }
+
+        resultadoAsistencia.appendChild(mensaje);
+
+        return;
+
+    }
+
+
+    /*
+     * --------------------------------------------------
+     * MOSTRAR RESULTADOS
+     * --------------------------------------------------
+     */
 
     mostrarAlumnos(
         alumnosFiltrados,
