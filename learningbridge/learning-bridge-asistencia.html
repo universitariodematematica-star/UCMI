@@ -270,63 +270,132 @@ function mostrarAlumnos(lista) {
     tabla.style.borderCollapse = "collapse";
     tabla.style.width = "100%";
 
-    const encabezado = document.createElement("tr");
-
-    const encabezadoAlumno = document.createElement("th");
-
-    encabezadoAlumno.textContent = "Alumnos";
-
-    encabezadoAlumno.style.border = "1px solid #ccc";
-    encabezadoAlumno.style.padding = "8px";
-    encabezadoAlumno.style.whiteSpace = "nowrap";
-
-    encabezado.appendChild(encabezadoAlumno);
-
     /*
-     * Obtener todas las fechas disponibles en los registros
+     * --------------------------------------------------
+     * OBTENER LAS FECHAS REALES DEL EXCEL
+     * --------------------------------------------------
      */
-    const fechas = [];
+
+    const fechasRegistradas = [];
 
     lista.forEach(alumno => {
 
-        if (alumno.sesiones) {
-
-            alumno.sesiones.forEach(sesion => {
-
-                if (sesion.fecha && !fechas.includes(sesion.fecha)) {
-                    fechas.push(sesion.fecha);
-                }
-
-            });
-
+        if (!alumno.sesiones) {
+            return;
         }
 
+        alumno.sesiones.forEach(sesion => {
+
+            if (!sesion.fecha) {
+                return;
+            }
+
+            const textoFecha = String(sesion.fecha);
+
+            const coincidencia = textoFecha.match(
+                /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+            );
+
+            if (!coincidencia) {
+                return;
+            }
+
+            const dia = parseInt(coincidencia[1]);
+            const mesTexto = coincidencia[2];
+            const año = parseInt(coincidencia[3]);
+
+            const meses = {
+                Jan: 0,
+                Feb: 1,
+                Mar: 2,
+                Apr: 3,
+                May: 4,
+                Jun: 5,
+                Jul: 6,
+                Aug: 7,
+                Sep: 8,
+                Oct: 9,
+                Nov: 10,
+                Dec: 11
+            };
+
+            const mes = meses[mesTexto];
+
+            if (mes === undefined) {
+                return;
+            }
+
+            const fecha = new Date(año, mes, dia);
+
+            if (!fechasRegistradas.some(
+                fechaExistente =>
+                    fechaExistente.getTime() === fecha.getTime()
+            )) {
+                fechasRegistradas.push(fecha);
+            }
+
+        });
+
     });
 
-    /*
-     * Ordenar las fechas
-     */
-    fechas.sort((a, b) => {
-
-        const fechaA = new Date(a);
-        const fechaB = new Date(b);
-
-        return fechaA - fechaB;
-
-    });
+    if (fechasRegistradas.length === 0) {
+        return;
+    }
 
     /*
-     * Crear encabezados de las fechas
+     * Ordenar fechas
      */
+
+    fechasRegistradas.sort((a, b) => a - b);
+
+    /*
+     * --------------------------------------------------
+     * CREAR CALENDARIO CONTINUO
+     * --------------------------------------------------
+     */
+
+    const fechaInicial = new Date(fechasRegistradas[0]);
+    const fechaFinal = new Date(
+        fechasRegistradas[fechasRegistradas.length - 1]
+    );
+
+    const fechas = [];
+
+    const fechaActual = new Date(fechaInicial);
+
+    while (fechaActual <= fechaFinal) {
+
+        fechas.push(new Date(fechaActual));
+
+        fechaActual.setDate(fechaActual.getDate() + 1);
+
+    }
+
+    /*
+     * --------------------------------------------------
+     * ENCABEZADO
+     * --------------------------------------------------
+     */
+
+    const filaEncabezado = document.createElement("tr");
+
+    const thAlumno = document.createElement("th");
+
+    thAlumno.textContent = "Alumnos";
+
+    thAlumno.style.border = "1px solid #ccc";
+    thAlumno.style.padding = "8px";
+    thAlumno.style.whiteSpace = "nowrap";
+
+    filaEncabezado.appendChild(thAlumno);
+
     fechas.forEach(fecha => {
 
         const th = document.createElement("th");
 
-        const fechaObjeto = new Date(fecha);
-
-        const dia = String(fechaObjeto.getDate()).padStart(2, "0");
-        const mes = String(fechaObjeto.getMonth() + 1).padStart(2, "0");
-        const año = fechaObjeto.getFullYear();
+        const dia = String(fecha.getDate()).padStart(2, "0");
+        const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+        const año = fecha.getFullYear();
 
         th.textContent = `${dia}/${mes}/${año}`;
 
@@ -335,18 +404,25 @@ function mostrarAlumnos(lista) {
         th.style.textAlign = "center";
         th.style.whiteSpace = "nowrap";
 
-        encabezado.appendChild(th);
+        filaEncabezado.appendChild(th);
 
     });
 
-    tabla.appendChild(encabezado);
+    tabla.appendChild(filaEncabezado);
 
     /*
-     * Crear una fila para cada alumno
+     * --------------------------------------------------
+     * FILAS DE ALUMNOS
+     * --------------------------------------------------
      */
+
     lista.forEach(alumno => {
 
         const fila = document.createElement("tr");
+
+        /*
+         * Nombre completo en una sola línea
+         */
 
         const celdaAlumno = document.createElement("td");
 
@@ -360,30 +436,174 @@ function mostrarAlumnos(lista) {
         fila.appendChild(celdaAlumno);
 
         /*
-         * Crear un mapa de asistencia por fecha
+         * Crear mapa de asistencia
          */
+
         const asistenciaPorFecha = {};
 
         if (alumno.sesiones) {
 
             alumno.sesiones.forEach(sesion => {
 
-                asistenciaPorFecha[sesion.fecha] =
-                    sesion.asistencia;
+                if (!sesion.fecha) {
+                    return;
+                }
+
+                const textoFecha = String(sesion.fecha);
+
+                const coincidencia = textoFecha.match(
+                    /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+                );
+
+                if (!coincidencia) {
+                    return;
+                }
+
+                const dia = parseInt(coincidencia[1]);
+                const mesTexto = coincidencia[2];
+                const año = parseInt(coincidencia[3]);
+
+                const meses = {
+                    Jan: 0,
+                    Feb: 1,
+                    Mar: 2,
+                    Apr: 3,
+                    May: 4,
+                    Jun: 5,
+                    Jul: 6,
+                    Aug: 7,
+                    Sep: 8,
+                    Oct: 9,
+                    Nov: 10,
+                    Dec: 11
+                };
+
+                const mes = meses[mesTexto];
+
+                if (mes === undefined) {
+                    return;
+                }
+
+                const fecha = new Date(año, mes, dia);
+
+                const clave =
+                    `${fecha.getFullYear()}-${String(
+                        fecha.getMonth() + 1
+                    ).padStart(2, "0")}-${String(
+                        fecha.getDate()
+                    ).padStart(2, "0")}`;
+
+                /*
+                 * Solo guardar P, L, E o A
+                 */
+
+                const asistencia = String(
+                    sesion.asistencia || ""
+                ).trim();
+
+                const resultado = asistencia.charAt(0);
+
+                asistenciaPorFecha[clave] =
+                    ["P", "L", "E", "A"].includes(resultado)
+                        ? resultado
+                        : "?";
 
             });
 
         }
 
         /*
-         * Crear las celdas de asistencia
+         * --------------------------------------------------
+         * DETERMINAR DÍAS DE CLASE SEGÚN EL GRUPO
+         * --------------------------------------------------
          */
+
+        let tipoHorario = "";
+
+        if (alumno.grupo) {
+
+            if (/\bMJ\d/.test(alumno.grupo)) {
+                tipoHorario = "MJ";
+            }
+            else if (/\bL\d/.test(alumno.grupo)) {
+                tipoHorario = "L";
+            }
+            else if (/\bS\d/.test(alumno.grupo)) {
+                tipoHorario = "S";
+            }
+
+        }
+
+        /*
+         * --------------------------------------------------
+         * CREAR CELDAS
+         * --------------------------------------------------
+         */
+
         fechas.forEach(fecha => {
 
             const celda = document.createElement("td");
 
-            celda.textContent =
-                asistenciaPorFecha[fecha] || "---";
+            const diaSemana = fecha.getDay();
+
+            let correspondeClase = false;
+
+            /*
+             * getDay():
+             * 0 = domingo
+             * 1 = lunes
+             * 2 = martes
+             * 3 = miércoles
+             * 4 = jueves
+             * 5 = viernes
+             * 6 = sábado
+             */
+
+            if (tipoHorario === "L") {
+
+                correspondeClase =
+                    diaSemana === 1 ||
+                    diaSemana === 3 ||
+                    diaSemana === 5;
+
+            }
+            else if (tipoHorario === "MJ") {
+
+                correspondeClase =
+                    diaSemana === 2 ||
+                    diaSemana === 4;
+
+            }
+            else if (tipoHorario === "S") {
+
+                correspondeClase =
+                    diaSemana === 6;
+
+            }
+
+            const clave =
+                `${fecha.getFullYear()}-${String(
+                    fecha.getMonth() + 1
+                ).padStart(2, "0")}-${String(
+                    fecha.getDate()
+                ).padStart(2, "0")}`;
+
+            if (!correspondeClase) {
+
+                celda.textContent = "---";
+
+            }
+            else if (asistenciaPorFecha[clave]) {
+
+                celda.textContent =
+                    asistenciaPorFecha[clave];
+
+            }
+            else {
+
+                celda.textContent = "?";
+
+            }
 
             celda.style.border = "1px solid #ccc";
             celda.style.padding = "8px";
