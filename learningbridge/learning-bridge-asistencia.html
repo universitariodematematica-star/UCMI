@@ -654,24 +654,175 @@ document.getElementById("btnFiltrar").addEventListener("click", function() {
      * --------------------------------------------------
      */
 
-    if (filtroAlumnos === "asistentes") {
+    if (filtroAlumnos === "asistentes" ||
+        filtroAlumnos === "inasistentes") {
+
+        /*
+         * Fecha de hoy.
+         * Solo se evalúan los días operativos
+         * que ya han ocurrido.
+         */
+
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
 
         alumnosFiltrados = alumnosFiltrados.filter(alumno => {
 
-            if (!alumno.sesiones) {
+            /*
+             * Determinar los días de clase del grupo
+             */
+
+            let diasClase = [];
+
+            if (alumno.grupo) {
+
+                if (/\bMJ\d/.test(alumno.grupo)) {
+
+                    diasClase = [2, 4];
+
+                }
+                else if (/\bL\d/.test(alumno.grupo)) {
+
+                    diasClase = [1, 3, 5];
+
+                }
+                else if (/\bS\d/.test(alumno.grupo)) {
+
+                    diasClase = [6];
+
+                }
+
+            }
+
+            /*
+             * Si no conocemos el horario,
+             * no podemos determinar asistencia.
+             */
+
+            if (diasClase.length === 0) {
                 return false;
             }
 
-            return alumno.sesiones.some(sesion => {
+            /*
+             * Obtener las fechas de las sesiones
+             * que ya corresponden al horario del alumno.
+             */
 
-                const asistencia =
-                    String(sesion.asistencia || "")
-                    .trim()
-                    .charAt(0);
+            const fechasOperativas = [];
 
-                return ["P", "L", "E"].includes(asistencia);
+            if (alumno.sesiones) {
 
-            });
+                alumno.sesiones.forEach(sesion => {
+
+                    if (!sesion.fecha) {
+                        return;
+                    }
+
+                    const textoFecha = String(sesion.fecha);
+
+                    const coincidencia = textoFecha.match(
+                        /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+                    );
+
+                    if (!coincidencia) {
+                        return;
+                    }
+
+                    const dia = parseInt(coincidencia[1]);
+                    const mesTexto = coincidencia[2];
+                    const año = parseInt(coincidencia[3]);
+
+                    const meses = {
+                        Jan: 0,
+                        Feb: 1,
+                        Mar: 2,
+                        Apr: 3,
+                        May: 4,
+                        Jun: 5,
+                        Jul: 6,
+                        Aug: 7,
+                        Sep: 8,
+                        Oct: 9,
+                        Nov: 10,
+                        Dec: 11
+                    };
+
+                    const mes = meses[mesTexto];
+
+                    if (mes === undefined) {
+                        return;
+                    }
+
+                    const fecha = new Date(año, mes, dia);
+                    fecha.setHours(0, 0, 0, 0);
+
+                    /*
+                     * Solo incluir:
+                     *
+                     * 1. días que corresponden al horario
+                     * 2. días que ya ocurrieron
+                     */
+
+                    if (
+                        diasClase.includes(fecha.getDay()) &&
+                        fecha <= hoy
+                    ) {
+
+                        fechasOperativas.push({
+                            fecha,
+                            asistencia:
+                                String(
+                                    sesion.asistencia || ""
+                                )
+                                .trim()
+                                .charAt(0)
+                        });
+
+                    }
+
+                });
+
+            }
+
+            /*
+             * Si todavía no existe ningún día operativo
+             * para este alumno, no se considera asistente
+             * ni inasistente.
+             */
+
+            if (fechasOperativas.length === 0) {
+                return false;
+            }
+
+            /*
+             * ASISTENTES:
+             *
+             * Todas las fechas operativas ya ocurridas
+             * deben tener P.
+             */
+
+            const esAsistente =
+                fechasOperativas.every(
+                    sesion => sesion.asistencia === "P"
+                );
+
+            /*
+             * INASISTENTES:
+             *
+             * Basta con que una fecha operativa ya ocurrida
+             * no tenga P.
+             */
+
+            const esInasistente =
+                fechasOperativas.some(
+                    sesion => sesion.asistencia !== "P"
+                );
+
+            if (filtroAlumnos === "asistentes") {
+                return esAsistente;
+            }
+
+            return esInasistente;
 
         });
 
