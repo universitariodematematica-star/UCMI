@@ -1726,90 +1726,147 @@ function mostrarAlumnos(lista, fechaInicioFiltro = "", fechaFinFiltro = "") {
             "mensaje-no-enviado"
         );
 
-        /*
-         * --------------------------------------------------
-         * ENVIAR MENSAJE ALEATORIO
-         * --------------------------------------------------
-         */
-
-        botonMensaje.addEventListener("click", function() {
-
-            /*
-             * Evitar un segundo envío
-             */
-
-            if (botonMensaje.classList.contains("mensaje-enviado")) {
-                return;
-            }
-
-            /*
-             * Seleccionar uno de los 22 modelos
-             */
-
-            const indiceAleatorio =
-                Math.floor(
-                    Math.random() *
-                    modelosMensajeInasistencia.length
-                );
-
-            const modelo =
-                modelosMensajeInasistencia[indiceAleatorio];
-
 /*
- * Preparar datos del alumno
+ * --------------------------------------------------
+ * ENVIAR MENSAJE POR WHATSAPP
+ * --------------------------------------------------
  */
 
-const primerNombre =
-    String(alumno.nombres || "")
-    .trim()
-    .split(/\s+/)[0];
+botonMensaje.addEventListener("click", function() {
 
-const datosInasistencia =
-    calcularDatosInasistencia(alumno);
+    /*
+     * Evitar un segundo envío
+     */
 
-const datos = {
-    primerNombre: primerNombre,
-    textoDiasInasistencias:
-        datosInasistencia.textoDiasInasistencias,
-    porcentajeActual:
-        datosInasistencia.porcentajeActual,
-    porcentajeProyectado:
-        datosInasistencia.porcentajeProyectado
-};
-            /*
-             * Generar mensaje
-             */
+    if (botonMensaje.classList.contains("mensaje-enviado")) {
+        return;
+    }
 
-            const mensaje = modelo(datos);
+    /*
+     * Seleccionar uno de los modelos
+     */
 
-            console.log(
-                "MENSAJE SELECCIONADO:",
-                indiceAleatorio + 1
-            );
+    const indiceAleatorio =
+        Math.floor(
+            Math.random() *
+            modelosMensajeInasistencia.length
+        );
 
-            console.log(
-                "ALUMNO:",
-                `${alumno.apellidos} ${alumno.nombres}`
-            );
+    const modelo =
+        modelosMensajeInasistencia[indiceAleatorio];
 
-            console.log(
-                "MENSAJE:",
-                mensaje
-            );
 
-            /*
-             * Cambiar botón de verde a rosado
-             */
+    /*
+     * Preparar datos del alumno
+     */
 
-            botonMensaje.classList.remove(
-                "mensaje-no-enviado"
-            );
+    const primerNombre =
+        String(alumno.nombres || "")
+        .trim()
+        .split(/\s+/)[0];
 
-            botonMensaje.classList.add(
-                "mensaje-enviado"
-            );
+    const datosInasistencia =
+        calcularDatosInasistencia(alumno);
 
-        });
+    const datos = {
+        primerNombre: primerNombre,
+        textoDiasInasistencias:
+            datosInasistencia.textoDiasInasistencias,
+        porcentajeActual:
+            datosInasistencia.porcentajeActual,
+        porcentajeProyectado:
+            datosInasistencia.porcentajeProyectado
+    };
+
+
+    /*
+     * Generar mensaje
+     */
+
+    const mensaje = modelo(datos);
+
+
+    /*
+     * Preparar número de WhatsApp
+     */
+
+    const telefono =
+        String(alumno.telefono || "")
+        .replace(/\D/g, "");
+
+
+    /*
+     * Verificar que exista teléfono
+     */
+
+    if (!telefono) {
+
+        console.warn(
+            "El alumno no tiene número de teléfono:",
+            `${alumno.apellidos} ${alumno.nombres}`
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Crear enlace de WhatsApp
+     */
+
+    const urlWhatsApp =
+        `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+
+
+    /*
+     * Abrir WhatsApp con el mensaje precargado
+     */
+
+    window.open(
+        urlWhatsApp,
+        "_blank"
+    );
+
+
+    /*
+     * Registrar información
+     */
+
+    console.log(
+        "MENSAJE SELECCIONADO:",
+        indiceAleatorio + 1
+    );
+
+    console.log(
+        "ALUMNO:",
+        `${alumno.apellidos} ${alumno.nombres}`
+    );
+
+    console.log(
+        "TELÉFONO:",
+        telefono
+    );
+
+    console.log(
+        "MENSAJE:",
+        mensaje
+    );
+
+
+    /*
+     * Cambiar botón de verde a rosado
+     */
+
+    botonMensaje.classList.remove(
+        "mensaje-no-enviado"
+    );
+
+    botonMensaje.classList.add(
+        "mensaje-enviado"
+    );
+
+});
 
         celdaMensaje.appendChild(botonMensaje);
 
