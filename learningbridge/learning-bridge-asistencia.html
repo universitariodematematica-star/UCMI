@@ -1959,81 +1959,98 @@ document.getElementById("btnFiltrar").addEventListener("click", function() {
              * que ya corresponden al horario del alumno.
              */
 
-            const fechasOperativas = [];
+/*
+ * Obtener las fechas de las sesiones
+ * que corresponden al período seleccionado.
+ */
 
-            if (alumno.sesiones) {
+const fechasOperativas = [];
 
-                alumno.sesiones.forEach(sesion => {
+if (alumno.sesiones) {
 
-                    if (!sesion.fecha) {
-                        return;
-                    }
+    alumno.sesiones.forEach(sesion => {
 
-                    const textoFecha = String(sesion.fecha);
+        if (!sesion.fecha) {
+            return;
+        }
 
-                    const coincidencia = textoFecha.match(
-                        /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
-                    );
+        const textoFecha = String(sesion.fecha);
 
-                    if (!coincidencia) {
-                        return;
-                    }
+        const coincidencia = textoFecha.match(
+            /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+        );
 
-                    const dia = parseInt(coincidencia[1]);
-                    const mesTexto = coincidencia[2];
-                    const año = parseInt(coincidencia[3]);
+        if (!coincidencia) {
+            return;
+        }
 
-                    const meses = {
-                        Jan: 0,
-                        Feb: 1,
-                        Mar: 2,
-                        Apr: 3,
-                        May: 4,
-                        Jun: 5,
-                        Jul: 6,
-                        Aug: 7,
-                        Sep: 8,
-                        Oct: 9,
-                        Nov: 10,
-                        Dec: 11
-                    };
+        const dia = parseInt(coincidencia[1]);
+        const mesTexto = coincidencia[2];
+        const año = parseInt(coincidencia[3]);
 
-                    const mes = meses[mesTexto];
+        const meses = {
+            Jan: 0,
+            Feb: 1,
+            Mar: 2,
+            Apr: 3,
+            May: 4,
+            Jun: 5,
+            Jul: 6,
+            Aug: 7,
+            Sep: 8,
+            Oct: 9,
+            Nov: 10,
+            Dec: 11
+        };
 
-                    if (mes === undefined) {
-                        return;
-                    }
+        const mes = meses[mesTexto];
 
-                    const fecha = new Date(año, mes, dia);
-                    fecha.setHours(0, 0, 0, 0);
+        if (mes === undefined) {
+            return;
+        }
 
-                    /*
-                     * Solo incluir:
-                     *
-                     * 1. días que corresponden al horario
-                     * 2. días que ya ocurrieron
-                     */
+        const fecha = new Date(año, mes, dia);
 
-                    if (
-                        diasClase.includes(fecha.getDay()) &&
-                        fecha <= hoy
-                    ) {
+        fecha.setHours(0, 0, 0, 0);
 
-                        fechasOperativas.push({
-                            fecha,
-                            asistencia:
-                                String(
-                                    sesion.asistencia || ""
-                                )
-                                .trim()
-                                .charAt(0)
-                        });
+        /*
+         * Solo incluir:
+         *
+         * 1. días que corresponden al horario
+         * 2. fechas dentro del período seleccionado
+         * 3. días que ya ocurrieron
+         */
 
-                    }
+        const fechaInicioDate = fechaInicio
+            ? new Date(fechaInicio + "T00:00:00")
+            : null;
 
-                });
+        const fechaFinDate = fechaFin
+            ? new Date(fechaFin + "T00:00:00")
+            : hoy;
 
-            }
+        if (
+            diasClase.includes(fecha.getDay()) &&
+            (!fechaInicioDate || fecha >= fechaInicioDate) &&
+            fecha <= fechaFinDate &&
+            fecha <= hoy
+        ) {
+
+            fechasOperativas.push({
+                fecha,
+                asistencia:
+                    String(
+                        sesion.asistencia || ""
+                    )
+                    .trim()
+                    .charAt(0)
+            });
+
+        }
+
+    });
+
+}
 
             /*
              * Si todavía no existe ningún día operativo
