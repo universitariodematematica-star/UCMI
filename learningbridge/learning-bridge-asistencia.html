@@ -957,7 +957,361 @@ const modelosMensajeInasistencia = [
 ];
 
 console.log("MODELOS DE MENSAJE DE INASISTENCIA:", modelosMensajeInasistencia.length);
-console.log("MODELOS:", modelosMensajeInasistencia);        
+console.log("MODELOS:", modelosMensajeInasistencia);   
+
+/*
+ * ==================================================
+ * CALCULAR DATOS PARA MENSAJE DE INASISTENCIA
+ * ==================================================
+ */
+
+function calcularDatosInasistencia(alumno) {
+
+    /*
+     * ----------------------------------------------
+     * FECHA DE HOY
+     * ----------------------------------------------
+     */
+
+    const hoy = new Date();
+
+    hoy.setHours(0, 0, 0, 0);
+
+
+    /*
+     * ----------------------------------------------
+     * LUNES DE LA SEMANA CORRIENTE
+     * ----------------------------------------------
+     */
+
+    const lunesActual = new Date(hoy);
+
+    const diasDesdeLunes = hoy.getDay() === 0
+        ? 6
+        : hoy.getDay() - 1;
+
+    lunesActual.setDate(
+        hoy.getDate() - diasDesdeLunes
+    );
+
+    lunesActual.setHours(0, 0, 0, 0);
+
+
+    /*
+     * ----------------------------------------------
+     * DETERMINAR DÍAS DE CLASE DEL GRUPO
+     * ----------------------------------------------
+     */
+
+    let diasClase = [];
+
+    if (alumno.grupo) {
+
+        if (/\bMJ\d/.test(alumno.grupo)) {
+
+            diasClase = [2, 4];
+
+        }
+        else if (/\bL\d/.test(alumno.grupo)) {
+
+            diasClase = [1, 3, 5];
+
+        }
+        else if (/\bS\d/.test(alumno.grupo)) {
+
+            diasClase = [6];
+
+        }
+
+    }
+
+
+    /*
+     * ----------------------------------------------
+     * OBTENER TODAS LAS SESIONES VÁLIDAS
+     * ----------------------------------------------
+     */
+
+    const sesionesValidas = [];
+
+    if (alumno.sesiones) {
+
+        alumno.sesiones.forEach(sesion => {
+
+            if (!sesion.fecha) {
+                return;
+            }
+
+            const textoFecha = String(sesion.fecha);
+
+            const coincidencia = textoFecha.match(
+                /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+            );
+
+            if (!coincidencia) {
+                return;
+            }
+
+            const dia = parseInt(coincidencia[1]);
+            const mesTexto = coincidencia[2];
+            const año = parseInt(coincidencia[3]);
+
+            const meses = {
+                Jan: 0,
+                Feb: 1,
+                Mar: 2,
+                Apr: 3,
+                May: 4,
+                Jun: 5,
+                Jul: 6,
+                Aug: 7,
+                Sep: 8,
+                Oct: 9,
+                Nov: 10,
+                Dec: 11
+            };
+
+            const mes = meses[mesTexto];
+
+            if (mes === undefined) {
+                return;
+            }
+
+            const fecha = new Date(
+                año,
+                mes,
+                dia
+            );
+
+            fecha.setHours(0, 0, 0, 0);
+
+            /*
+             * Solo considerar días correspondientes
+             * al horario del alumno.
+             */
+
+            if (!diasClase.includes(fecha.getDay())) {
+                return;
+            }
+
+            sesionesValidas.push({
+                fecha,
+                asistencia: String(
+                    sesion.asistencia || ""
+                )
+                .trim()
+                .charAt(0)
+            });
+
+        });
+
+    }
+
+
+    /*
+     * ----------------------------------------------
+     * INASISTENCIAS HASTA LA SEMANA ANTERIOR
+     * ----------------------------------------------
+     */
+
+    const inasistenciasAcumuladas =
+        sesionesValidas.filter(sesion => {
+
+            return (
+                sesion.fecha < lunesActual &&
+                sesion.asistencia === "A"
+            );
+
+        }).length;
+
+
+    /*
+     * ----------------------------------------------
+     * INASISTENCIAS DE LA SEMANA CORRIENTE
+     * ----------------------------------------------
+     */
+
+    const inasistenciasSemana = sesionesValidas.filter(sesion => {
+
+        return (
+            sesion.fecha >= lunesActual &&
+            sesion.fecha <= hoy &&
+            sesion.asistencia === "A"
+        );
+
+    });
+
+
+    /*
+     * ----------------------------------------------
+     * TEXTO DE LOS DÍAS DE INASISTENCIA
+     * ----------------------------------------------
+     */
+
+    const nombresDias = [
+        "domingo",
+        "lunes",
+        "martes",
+        "miércoles",
+        "jueves",
+        "viernes",
+        "sábado"
+    ];
+
+    const textoDiasInasistencias =
+        inasistenciasSemana
+            .sort((a, b) => a.fecha - b.fecha)
+            .map(sesion => {
+
+                const dia = nombresDias[
+                    sesion.fecha.getDay()
+                ];
+
+                const numero = String(
+                    sesion.fecha.getDate()
+                ).padStart(2, "0");
+
+                const mes = String(
+                    sesion.fecha.getMonth() + 1
+                ).padStart(2, "0");
+
+                return `${dia} ${numero}/${mes}`;
+
+            })
+            .join(" y ");
+
+
+    /*
+     * ----------------------------------------------
+     * FECHA MÍNIMA DEL EXCEL
+     * ----------------------------------------------
+     */
+
+    if (!primeraFechaExcel) {
+
+        console.warn(
+            "No existe primeraFechaExcel."
+        );
+
+        return {
+            textoDiasInasistencias,
+            porcentajeActual: 0,
+            porcentajeProyectado: 0
+        };
+
+    }
+
+
+    /*
+     * ----------------------------------------------
+     * FIN DEL PERÍODO PROYECTADO
+     * 7 MESES DESDE LA PRIMERA FECHA DEL EXCEL
+     * ----------------------------------------------
+     */
+
+    const fechaFinProyeccion =
+        new Date(primeraFechaExcel);
+
+    fechaFinProyeccion.setMonth(
+        fechaFinProyeccion.getMonth() + 7
+    );
+
+    fechaFinProyeccion.setHours(0, 0, 0, 0);
+
+
+    /*
+     * ----------------------------------------------
+     * CONTAR TODAS LAS CLASES DEL PERÍODO
+     * ----------------------------------------------
+     */
+
+    let cantidadClasesPeriodo = 0;
+
+    const fechaPeriodo =
+        new Date(primeraFechaExcel);
+
+    fechaPeriodo.setHours(0, 0, 0, 0);
+
+    while (fechaPeriodo <= fechaFinProyeccion) {
+
+        if (
+            diasClase.includes(
+                fechaPeriodo.getDay()
+            )
+        ) {
+
+            cantidadClasesPeriodo++;
+
+        }
+
+        fechaPeriodo.setDate(
+            fechaPeriodo.getDate() + 1
+        );
+
+    }
+
+
+    /*
+     * ----------------------------------------------
+     * PORCENTAJE ACTUAL
+     * ----------------------------------------------
+     */
+
+    const porcentajeActual =
+        cantidadClasesPeriodo > 0
+            ? (
+                inasistenciasAcumuladas /
+                cantidadClasesPeriodo
+            ) * 100
+            : 0;
+
+
+    /*
+     * ----------------------------------------------
+     * PORCENTAJE PROYECTADO
+     * ----------------------------------------------
+     */
+
+    const totalInasistenciasProyectadas =
+        inasistenciasAcumuladas +
+        inasistenciasSemana.length;
+
+    const porcentajeProyectado =
+        cantidadClasesPeriodo > 0
+            ? (
+                totalInasistenciasProyectadas /
+                cantidadClasesPeriodo
+            ) * 100
+            : 0;
+
+
+    /*
+     * ----------------------------------------------
+     * RESULTADO
+     * ----------------------------------------------
+     */
+
+    const resultado = {
+
+        textoDiasInasistencias,
+
+        porcentajeActual,
+
+        porcentajeProyectado
+
+    };
+
+
+    console.log(
+        "DATOS CALCULADOS PARA INASISTENCIA:",
+        alumno.nombres,
+        resultado
+    );
+
+
+    return resultado;
+
+}        
         
 function mostrarAlumnos(lista, fechaInicioFiltro = "", fechaFinFiltro = "") {
 
@@ -1360,9 +1714,81 @@ function mostrarAlumnos(lista, fechaInicioFiltro = "", fechaFinFiltro = "") {
         );
 
         /*
-         * POR AHORA NO SE EJECUTA NINGUNA LÓGICA
-         * DE ENVÍO.
+         * --------------------------------------------------
+         * ENVIAR MENSAJE ALEATORIO
+         * --------------------------------------------------
          */
+
+        botonMensaje.addEventListener("click", function() {
+
+            /*
+             * Evitar un segundo envío
+             */
+
+            if (botonMensaje.classList.contains("mensaje-enviado")) {
+                return;
+            }
+
+            /*
+             * Seleccionar uno de los 22 modelos
+             */
+
+            const indiceAleatorio =
+                Math.floor(
+                    Math.random() *
+                    modelosMensajeInasistencia.length
+                );
+
+            const modelo =
+                modelosMensajeInasistencia[indiceAleatorio];
+
+            /*
+             * Preparar datos del alumno
+             */
+
+            const primerNombre =
+                String(alumno.nombres || "")
+                .trim()
+                .split(/\s+/)[0];
+
+            const datos = {
+                primerNombre: primerNombre
+            };
+
+            /*
+             * Generar mensaje
+             */
+
+            const mensaje = modelo(datos);
+
+            console.log(
+                "MENSAJE SELECCIONADO:",
+                indiceAleatorio + 1
+            );
+
+            console.log(
+                "ALUMNO:",
+                `${alumno.apellidos} ${alumno.nombres}`
+            );
+
+            console.log(
+                "MENSAJE:",
+                mensaje
+            );
+
+            /*
+             * Cambiar botón de verde a rosado
+             */
+
+            botonMensaje.classList.remove(
+                "mensaje-no-enviado"
+            );
+
+            botonMensaje.classList.add(
+                "mensaje-enviado"
+            );
+
+        });
 
         celdaMensaje.appendChild(botonMensaje);
 
