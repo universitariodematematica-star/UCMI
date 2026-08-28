@@ -3,481 +3,2469 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Introducing a Friend - Learning Bridge English</title>
+    <title>Learning Bridge - Control de Asistencia</title>
+
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+
+        body {
             font-family: Arial, sans-serif;
         }
 
-        body {
-            background-color: #f4f5f7;
-            color: #333;
+        #archivoAsistencia {
+            margin-bottom: 20px;
         }
 
-        /* Botón flotante para Imprimir / PDF */
-        .print-btn-container {
-            text-align: center;
-            margin: 8px 0;
+        #filtroAsistencia,
+        #fechaInicio,
+        #fechaFin,
+        #filtroGrupo,
+        #btnFiltrar {
+            margin-right: 10px;
+            margin-bottom: 15px;
         }
 
-        .btn-pdf {
-            background-color: #5c1d53;
-            color: white;
+        #resultadoAsistencia {
+            margin-top: 15px;
+        }
+
+        #resultadoAsistencia div {
+            margin-bottom: 8px;
+        }
+
+                .btn-enviar-mensaje {
             border: none;
-            padding: 6px 16px;
-            font-size: 13px;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .btn-pdf:hover {
-            background-color: #43133c;
-        }
-
-        /* Encabezado Superior */
-        .top-header {
-            background-color: #5c1d53;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 12px;
-            border-bottom: 2px solid #2872b9;
-        }
-
-        .top-header span {
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-
-        /* Contenedor Principal */
-        .main-container {
-            max-width: 960px;
-            margin: 4px auto;
-            padding: 0 10px;
-        }
-
-        /* Título de la Lección */
-        .lesson-title-area {
-            margin-bottom: 6px;
-        }
-
-        .lesson-title-area h1 {
-            color: #5c1d53;
-            font-size: 22px;
-            margin-bottom: 2px;
-        }
-
-        .lesson-title-area p {
-            color: #666;
-            font-size: 10px;
-        }
-
-        /* Layout en Grid (2 columnas) */
-        .content-grid {
-            display: grid;
-            grid-template-columns: 8fr 15fr;
-            gap: 8px;
-            align-items: start;
-        }
-
-        /* Estilo base para las tarjetas */
-        .card {
             border-radius: 6px;
-            padding: 6px 9px;
-            margin-bottom: 6px;
-        }
-
-        /* Colores exactos de contenedores */
-.card-learning-goal {
-    background-color: #f0f6fc;
-    border: 1px solid #cce0f5;
-}
-
-        .card-grammar-formula {
-            background-color: #fcf8eb;
-            border: 1px solid #f2e3be;
-            cursor: pointer;
-            position: relative;
-        }
-        .card-grammar-formula:hover {
-            box-shadow: 0 2px 5px rgba(217, 155, 38, 0.2);
-        }
-        .card-grammar-formula::after {
-            content: "💡 Abrir Pizarra";
-            display: block;
-            font-size: 9px;
-            color: #d99b26;
-            font-weight: bold;
-            margin-top: 2px;
-            text-align: right;
-        }
-
-        .card-key-vocab {
-            background-color: #f0f7f5;
-            border: 1px solid #d0e8e2;
-        }
-
-        .card-grammar-context {
-    background-color: #f0f6fc;
-    border: 1px solid #cce0f5;
-}
-
-        .card-before-reading {
-            background-color: #f0f6fc;
-            border: 1px solid #cce0f5;
-        }
-
-        .card-culture-reading {
-            background-color: #ffffff;
-            border: 1px solid #dcdfe4;
-        }
-
-        .card-reading-check {
-            background-color: #f0f5fc;
-            border: 1px solid #cfe0f5;
-        }
-
-        /* Etiquetas (Badges) */
-        .badge {
-            display: inline-block;
+            padding: 8px 12px;
             color: white;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 9px;
+            cursor: pointer;
             font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 3px;
-            letter-spacing: 0.3px;
         }
 
-        .badge-red { background-color: #b94a39; }
-        .badge-blue { background-color: #5c1d53; }
-        .badge-yellow { background-color: #d99b26; }
-        .badge-teal { background-color: #178a75; }
-        .badge-before { background-color: #6a2c42; }
-        .badge-purple { background-color: #5c1d53; }
-
-        /* Textos y Listas */
-        p, li {
-            font-size: 9.5px;
-            line-height: 1.25;
-            color: #333;
+        .mensaje-no-enviado {
+            background-color: #28a745;
         }
 
-        .vocab-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 3px;
-            margin-top: 3px;
+        .mensaje-enviado {
+            background-color: #e91e63;
         }
 
-        .vocab-tag {
-            background: white;
-            border: 1px solid #bce0d6;
-            padding: 1px 4px;
-            border-radius: 4px;
-            font-size: 8.5px;
-            color: #2c3e50;
-        }
-
-        /* Columna Derecha - Lectura */
-        .reading-box h2 {
-            color: #5c1d53;
-            font-size: 12.5px;
-            margin-bottom: 3px;
-        }
-
-        .reading-box p {
-            margin-bottom: 4px;
-            text-align: justify;
-            color: #333;
-        }
-
-        .reading-check-box ol {
-            padding-left: 14px;
-            margin-top: 3px;
-        }
-
-        /* Estructura en línea para preguntas y respuestas */
-        .reading-check-box li {
-            margin-bottom: 5px;
-            display: flex;
-            align-items: baseline;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-
-        /* Líneas de respuesta extensibles al lado exacta del texto */
-        .blank-input {
-            border: none;
-            border-bottom: 1px solid #2872b9;
-            background-color: transparent;
-            font-size: 9.5px;
-            padding: 0px 3px;
-            outline: none;
-            flex-grow: 1;
-            min-width: 150px;
-            color: #2c3e50;
-        }
-
-        .blank-input-inline {
-            border: none;
-            border-bottom: 1px solid #2872b9;
-            background-color: transparent;
-            font-size: 9.5px;
-            padding: 0px 2px;
-            outline: none;
-            width: 70px;
-            color: #2c3e50;
-            text-align: center;
-        }
-
-        .answer-input {
-            border: none;
-            border-bottom: 1px solid #2872b9;
-            background-color: transparent;
-            font-size: 9.5px;
-            padding: 0px 3px;
-            outline: none;
-            width: 100%;
-            margin-top: 2px;
-            color: #2c3e50;
-        }
-
-        /* Imagen final */
-        .image-section {
-            margin-top: 4px;
-            background: white;
-            border-radius: 6px;
-            padding: 3px;
-            border: 1px solid #e1e4e8;
-        }
-
-        .image-section img {
-            width: 100% !important;
-            height: auto !important;
-            display: block;
-            margin: 0 auto;
-        }
-
-        .lesson-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 3px;
-            font-size: 8.5px;
-            color: #666;
-            border-top: 1px solid #ddd;
-            padding-top: 2px;
-        }
-
-        .bottom-bar {
-            background-color: #5c1d53;
-            height: 6px;
-            margin-top: 4px;
-        }
-
-        /* Modal Pizarra Interactiva */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            z-index: 1000;
-            justify-content: center; align-items: center;
-        }
-
-        .modal-container {
-            background: #fff9e6;
-            border: 3px solid #d99b26;
-            border-radius: 10px;
-            width: 100%; max-width: 500px;
-            padding: 15px;
-        }
-
-        .modal-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 8px; border-bottom: 2px solid #e6d29c; padding-bottom: 5px;
-        }
-
-        .modal-header h3 { color: #8c6312; font-size: 15px; }
-        .close-modal-btn { background: #d99b26; color: white; border: none; width: 25px; height: 25px; border-radius: 50%; font-size: 14px; cursor: pointer; }
-        .board-textarea { width: 100%; height: 150px; border: 1px dashed #d99b26; padding: 8px; font-size: 12px; border-radius: 4px; outline: none; }
-        .modal-footer { display: flex; justify-content: flex-end; margin-top: 8px; }
-        .btn-board-action { background-color: #5c1d53; color: white; border: none; padding: 5px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
-
-        /* Estilos de Impresión */
-        @media print {
-            @page { size: A4; margin: 2mm; }
-            body { background-color: white; -webkit-print-color-adjust: exact; }
-            .print-btn-container, .modal-overlay { display: none !important; }
-            .card, .image-section { box-shadow: none; border: 1px solid #bbb; }
-            input { border-bottom: 1px solid #000 !important; color: #000 !important; }
-            .card-grammar-formula::after { display: none; }
-        }
-        
     </style>
 </head>
+
 <body>
 
-    <!-- Botón de Exportar a PDF / Imprimir -->
-    <div class="print-btn-container">
-        <button class="btn-pdf" onclick="window.print()">🖨️ Imprimir / Guardar Presentación</button>
-    </div>
+    <h1>Learning Bridge</h1>
+    <h2>Control de Asistencia</h2>
 
-    <!-- Encabezado Superior -->
-    <header class="top-header">
-        <span>UNIT 1 / LESSON 4</span>
-        <span>LEARNING BRIDGE ENGLISH · A1 CEFR</span>
-    </header>
+<div>
+    <label for="archivoAsistencia">Archivo de asistencias:</label>
+    <input type="file" id="archivoAsistencia" accept=".xlsx,.xls">
+</div>    
 
-    <div class="main-container">
-        
-        <!-- Título -->
-        <div class="lesson-title-area">
-            <h1>Introducing a Friend</h1>
-            <p>Latin American Edition · Culture-based language learning</p>
-        </div>
+<div>
+    <label for="filtroAsistencia">Alumnos:</label>
+    <select id="filtroAsistencia">
+        <option value="todos">Todos</option>
+        <option value="asistentes">Asistentes</option>
+        <option value="inasistentes">Inasistentes</option>
+    </select>
 
-        <!-- Contenedor en 2 Columnas -->
-        <div class="content-grid">
-            
-            <!-- COLUMNA IZQUIERDA -->
-            <div class="left-column">
-                
-                <!-- 1. Learning Goal -->
-                <div class="card card-learning-goal">
-                    <span class="badge badge-purple">Learning Goal</span>
-                    <p>I can use he, she, and this is to introduce another person or cultural topic.</p>
-                </div>
+    <label for="fechaInicio">Fecha de inicio:</label>
+    <input type="date" id="fechaInicio">
 
-                <!-- 2. Grammar Formula (Con Pizarra Interactiva) -->
-                <div class="card card-grammar-formula" onclick="openWhiteboard()">
-                    <span class="badge badge-yellow">Grammar Formula</span>
-                    <p>
-                        This + is + person/topic<br>
-                        This + is + Cantuña.<br>
-                        Subject pronoun + be + complement<br>
-                        He + is + a builder.<br>
-                        She + is + important.<br>
-                        It + is + a legend.
-                    </p>
-                </div>
+    <label for="fechaFin">Fecha de fin:</label>
+    <input type="date" id="fechaFin">
 
-                <!-- 3. Key Vocabulary -->
-                <div class="card card-key-vocab">
-                    <span class="badge badge-teal">Key Vocabulary</span>
-                    <div class="vocab-tags">
-                        <span class="vocab-tag">legend</span>
-                        <span class="vocab-tag">church</span>
-                        <span class="vocab-tag">builder</span>
-                        <span class="vocab-tag">stone</span>
-                        <span class="vocab-tag">city</span>
-                        <span class="vocab-tag">story</span>
-                        <span class="vocab-tag">person</span>
-                        <span class="vocab-tag">man</span>
-                        <span class="vocab-tag">he</span>
-                        <span class="vocab-tag">she</span>
-                        <span class="vocab-tag">this is</span>
-                        <span class="vocab-tag">Quito</span>
-                    </div>
-                </div>
+    <label for="filtroGrupo">Grupo:</label>
+    <select id="filtroGrupo">
+        <option value="todos">Todos</option>
+    </select>
 
-                <!-- 4. Grammar in Context -->
-                <div class="card card-grammar-context">
-                    <span class="badge badge-purple">Grammar in Context</span>
-                    <p>Use this is to introduce a person, place, or topic. This is Cantuña. Use he for a man or boy, she for a woman or girl, and it for a thing or story.</p>
-                </div>
+        <button type="button" id="btnFiltrar">Filtrar</button>
+    <button type="button" id="btnPrepararInforme">Preparar informe</button>
+    
+</div>
 
-                <!-- 5. Before Reading -->
-                <div class="card card-before-reading">
-                    <span class="badge badge-before">Before Reading</span>
-                    <p>What is a legend? Do you know a legend from your city or country?</p>
-                </div>
+<div id="resultadoAsistencia"></div>
 
-            </div>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
-            <!-- COLUMNA DERECHA -->
-            <div class="right-column">
-                
-                <!-- 6. Culture Reading -->
-                <div class="card card-culture-reading reading-box">
-                    <span class="badge badge-red">Culture Reading</span>
-                    <h2>The Legend of Cantuña</h2>
-                    <p>The Legend of Cantuña is a famous story from Quito, Ecuador. It is connected with the old city and with the Church of San Francisco. This church is in the historic center of Quito. The legend is part of the oral tradition of the city. Oral tradition means that people tell a story from one generation to another.</p>
-                    <p>Cantuña is a man in the legend. He is a builder. The story says that he has to finish an important stone construction. The work is difficult, and the time is short. The legend has mystery, night, stones, and a problem that Cantuña must solve.</p>
-                    <p>In the story, one stone is missing. This detail is very important. Because one stone is missing, the work is not complete. The missing stone changes the ending of the legend. Many people remember this part because it shows intelligence and courage.</p>
-                    <p>The Legend of Cantuña is not only an old story. It is a cultural symbol of Quito. It connects a person, a church, a city, and the imagination of the people. Legends like this help communities remember their places, their values, and their history.</p>
-                </div>
-
-                <!-- 7. Reading Check (Líneas al lado) -->
-                <div class="card card-reading-check reading-check-box">
-                    <span class="badge badge-purple">Reading Check</span>
-                    <p style="font-size: 9px; margin-bottom: 4px;"><strong>A. Read and answer.</strong></p>
-                    <ol>
-                        <li><span>Where is the legend from?</span> <input type="text" class="blank-input" placeholder="..."></li>
-                        <li><span>What church is connected with the legend?</span> <input type="text" class="blank-input" placeholder="..."></li>
-                        <li><span>Who is Cantuña?</span> <input type="text" class="blank-input" placeholder="..."></li>
-                        <li><span>What is missing in the story?</span> <input type="text" class="blank-input" placeholder="..."></li>
-                        <li><span>Why are legends important for communities?</span> <input type="text" class="blank-input" placeholder="..."></li>
-                    </ol>
-                    <p style="margin-top: 6px; font-size: 9px;"><strong>B. Complete:</strong> This is <input type="text" class="blank-input-inline" placeholder="...">. He is a <input type="text" class="blank-input-inline" placeholder="...">.</p>
-                    <p style="margin-top: 6px; font-size: 9px;"><strong>C. Think:</strong> Write the name of one legend from your country.</p>
-                    <input type="text" class="answer-input" placeholder="Escribe aquí...">
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- Imagen Final y Pie de Página -->
-        <div class="image-section">
-            <div class="separator" style="clear: both;">
-                <a href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhNW1fetleGtPE6A318VKpX7dveGxHWPV4srxvGMntSewygmo9glJC1QeJxumJFIitITB8pF7xnW5uSaVesu1GS73f9WI1NntH4js1_HUw6BpnCwpMeFHEBpjOX6roVNXhIp7gEtkiZ96E6JN6hBOcnkWgXPjWyukNWK8Oq52e0IDpxkFi6qrvBrRSAuRAw/s1137/LB4.png" style="display: block; padding: 0.1em 0; text-align: center;">
-                    <img alt="" border="0" data-original-height="404" data-original-width="1137" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhNW1fetleGtPE6A318VKpX7dveGxHWPV4srxvGMntSewygmo9glJC1QeJxumJFIitITB8pF7xnW5uSaVesu1GS73f9WI1NntH4js1_HUw6BpnCwpMeFHEBpjOX6roVNXhIp7gEtkiZ96E6JN6hBOcnkWgXPjWyukNWK8Oq52e0IDpxkFi6qrvBrRSAuRAw/s320/LB4.png"/>
-                </a>
-            </div>
-            
-            <div class="lesson-footer">
-                <span>UNIT 1 | 14</span>
-                <span>LEARNING BRIDGE ENGLISH · A1 CEFR · LATIN AMERICAN EDITION</span>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Franja final -->
-    <div class="bottom-bar"></div>
-
-    <!-- VENTANA MODAL: Pizarra Interactiva -->
-    <div class="modal-overlay" id="whiteboardModal">
-        <div class="modal-container" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h3>💡 Pizarra Interactiva: Grammar Notes</h3>
-                <button class="close-modal-btn" onclick="closeWhiteboard()">×</button>
-            </div>
-            <textarea class="board-textarea" placeholder="Escribe aquí notas adicionales, ejemplos de la fórmula o explicaciones para la clase..."></textarea>
-            <div class="modal-footer">
-                <button class="btn-board-action" onclick="closeWhiteboard()">Guardar y Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Script de la Pizarra -->
     <script>
-        function openWhiteboard() { document.getElementById('whiteboardModal').style.display = 'flex'; }
-        function closeWhiteboard() { document.getElementById('whiteboardModal').style.display = 'none'; }
-        window.onclick = function(event) {
-            let modal = document.getElementById('whiteboardModal');
-            if (event.target == modal) { closeWhiteboard(); }
+
+        const alumnos = [
+
+            {apellidos:"CABASCANGO TANDAYAMO",nombres:"CARLOS ALBERTO",telefono:"593985064883",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"ALMEIDA ANDRADE",nombres:"DAYANA PAMELA",telefono:"593968347157",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"CHASIPANTA BRAVO",nombres:"HEYDI ESLENY",telefono:"593989412589",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"DELGADO CANDO",nombres:"NADIA TAHIS",telefono:"593994622051",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"ESPINOSA FLORES",nombres:"LEYDI BRIGITH",telefono:"593989895665",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"HIDALGO BENAVIDES",nombres:"JESSICA ESTEFANIA",telefono:"593998823674",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"LEIVA CARVAJAL",nombres:"FERNANDA LORENA",telefono:"593980965958",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"RUIZ FLORES",nombres:"JOSE ALEJANDRO",telefono:"593989503379",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"TIBANQUIZA REASCO",nombres:"LISBETH ALEXANDRA",telefono:"593985502167",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"TITUAÑA GUAJAN",nombres:"CRISTINA BELEN",telefono:"593979190736",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"CARRERA PESANTEZ",nombres:"JENNY ELIZABETH",telefono:"593990504827",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"MANTILLA AMAGUA",nombres:"ADRIANA PAOLA",telefono:"593987274212",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"CUASPA GELPUD",nombres:"ADRIANA ELIZABETH",telefono:"661406964",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"AULES AULES",nombres:"DINA MARIBEL",telefono:"593968177039",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"PEREZ ARELLANO",nombres:"JILTON ADRIAN",telefono:"593994688028",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"TITUAÑA TUQUEREZ",nombres:"YADIRA ANABEL",telefono:"593939094099",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"ORVES ARELLANO",nombres:"JENIFFER NICOL",telefono:"593984287574",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"CALVACHI DIAZ",nombres:"SANDRA JACQUELINE",telefono:"593987638219",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"DAVALOS GUADIR",nombres:"PATRICIA ELIZABETH",telefono:"593995312405",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"MERINO CARDENAS",nombres:"PATRICIA NICOLE",telefono:"593978866029",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"OCAÑA NARVAEZ",nombres:"KAREN JHOAN",telefono:"593962098175",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"RIVERA CABEZAS",nombres:"JOHANNA ARACELI",telefono:"593988724760",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"TUPIZA CUMBAL",nombres:"EVELIN JOHANA",telefono:"593994145937",grupo:"CONAPICH (2) A1 A L5PM"},
+            {apellidos:"VELOZ ANDAGOYA",nombres:"ALAN MATIAS",telefono:"593969720827",grupo:"CONAPICH (2) A1 A L5PM"},
+
+            {apellidos:"CABASCANGO AULES",nombres:"WILMER GUSTAVO",telefono:"593989891904",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"GUERRERO PILLAJO",nombres:"ELIANA ALEJANDRA",telefono:"593988310169",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"HIDALGO MOYA",nombres:"ROSA PAULINA",telefono:"593992078049",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"LOPEZ OCHOA",nombres:"CHRISTIAN ALBERTO",telefono:"593988473419",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"NASIMBA GUALOTUÑA",nombres:"ANTHONY JOSUE",telefono:"593995407200",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"PAREDES ANDRANGO",nombres:"MARITZA MERCEDES",telefono:"593987443260",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"SANCHEZ FLORES",nombres:"SAMANTHA CAROLINA",telefono:"593984920095",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"TONGUINO TOCAGON",nombres:"HELEN MALENA",telefono:"593988439468",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"RODRIGUEZ CAMPAÑA",nombres:"TANIA BELEN",telefono:"593980796693",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"MORA SIMBAÑA",nombres:"CHRISTIAN ALEXANDER",telefono:"593983123699",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"PERINGUEZA CUMBAL",nombres:"NATALY SILVANA",telefono:"593979781038",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"JAUREGUI GALARZA",nombres:"CRISTIAN DANIEL",telefono:"593991104683",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"LUGMAÑA REA",nombres:"MELANIE MIREYA",telefono:"593987680547",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"BORJA VARGAS",nombres:"DANIELA ALEJANDRA",telefono:"593984437760",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"CANIZARES ARIAS",nombres:"CRISTINA ANABEL",telefono:"593961026388",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"CASTILLO CUASES",nombres:"JORGE ARNULFO",telefono:"593996634460",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"CUMBA ANRANGO",nombres:"ERIKA PAOLA",telefono:"593997829711",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"GONZALEZ BRACHO",nombres:"MARIANGELA JOSE",telefono:"593984136818",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"GRANDA ORTIZ",nombres:"MANUEL DE JESUS",telefono:"593999116824",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"LUPERA MACIAS",nombres:"ALEX FABRICIO",telefono:"593981369471",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"MOURGHUEYTTIO AGUAYO",nombres:"PAUL ALEJANDRO",telefono:"593979418756",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"PACHANO TORREALBA",nombres:"ROSSYBELL MARILIN",telefono:"99262737",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"PINCAY TRIANA",nombres:"LISSETH VANESSA",telefono:"593968421329",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"RUIZ HEREDIA",nombres:"DIEGO PATRICIO",telefono:"593984480203",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+            {apellidos:"TAPIA ARAUJO",nombres:"NAYELI ESTEFANIA",telefono:"593962613316",grupo:"CONAPICH (2) A1 A L7PM (A)"},
+
+            {apellidos:"CHIPANTASI PAEZ",nombres:"NATHALIE NO DATO",telefono:"593979779547",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"AREVALO DELGADO",nombres:"LADY CAROLINA",telefono:"593984437768",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"AIMARA SUNTAXI",nombres:"LESLIE DANIELA",telefono:"593997894350",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"BENAVIDES NAZARENO",nombres:"DIANA CAROLINA",telefono:"593993154630",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"BRAVO AGUAR",nombres:"ALEX ARIEL",telefono:"593968654100",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"CHAUCALA CHUMAÑA",nombres:"ANTONY DANIEL",telefono:"593982030292",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"CHAUCALA CHUMAÑA",nombres:"ISSAC NICOLAS",telefono:"593960804602",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"CHAUCALA PINTO",nombres:"ADRIANA RAQUEL",telefono:"593984585766",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"JIMENEZ YEPEZ",nombres:"BERSABE FRANCELINA",telefono:"593984491664",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"MOREIRA CUMBAL",nombres:"JOEL ISAAC",telefono:"593991289081",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"PACHACAMA PACHACAMA",nombres:"NATALIA ABIGAIL",telefono:"593988380343",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"PEREZ GARCIA",nombres:"LUIS NEPTALI",telefono:"593985141456",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"RIVERA ENRIQUEZ",nombres:"DAPHNE YIELENA",telefono:"593964169890",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"VILLAMARIN CUMBAL",nombres:"ZAMYA MISHELL",telefono:"593992703192",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"DUCHI CUENCA",nombres:"JHOSELIN NICOLE",telefono:"593984947237",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"MESA ORTIZ",nombres:"DANIELA",telefono:"573337097935",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"CALAGLAS IPIACO",nombres:"ROBIN CLEVER",telefono:"593999234156",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"CASA GUANO",nombres:"DIEGO VINICIO",telefono:"593962672658",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"CONDOR ALVARO",nombres:"AMBAR DANIELA",telefono:"593984864102",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"GUASTAY MUÑOZ",nombres:"DIANA ELIZABETH",telefono:"593991505456",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"LINCANGO TIPANTUÑA",nombres:"DAYANA MARICELA",telefono:"593998092099",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"MENESES MUESES",nombres:"DIEGO JAVIER",telefono:"593962741418",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"PACHACAMA LLUMIQUINGA",nombres:"JHON MICHAEL",telefono:"593982939321",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"PEREZ TACO",nombres:"JANETH JADIRA",telefono:"593988483361",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"PILICITA LLUMIQUINGA",nombres:"LESLY ANAHY",telefono:"593991107054",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"PILLAJO TIGSE",nombres:"ZAYLA ELIZABETH",telefono:"593987683234",grupo:"CONAPICH (2) A1 A S3PM"},
+            {apellidos:"URIBE HERRERA",nombres:"MARIANA MARIANA",telefono:"3246877720",grupo:"CONAPICH (2) A1 A S3PM"},
+
+            {apellidos:"CEPEDA ORTIZ",nombres:"SOFÍA ALEJANDRA",telefono:"593982387822",grupo:"CONAPICH (2) A1 D L3PM"},
+            {apellidos:"GONZALEZ ENRIQUEZ",nombres:"MARTIN ANDRES",telefono:"593979338060",grupo:"CONAPICH (2) A1 D L3PM"},
+            {apellidos:"PACHACAMA LLUMIQUINGA",nombres:"KAREN MILENA",telefono:"593992255885",grupo:"CONAPICH (2) A1 D L3PM"},
+            {apellidos:"CUERO JIMENEZ",nombres:"DENISSE LUCIA",telefono:"593969561181",grupo:"CONAPICH (2) A1 D L3PM"},
+            {apellidos:"PROCEL VALAREZO",nombres:"ANDREA ESTEFANIA",telefono:"9969465553",grupo:"CONAPICH (2) A1 D L3PM"},
+            {apellidos:"CANTUÑA PAZMIÑO",nombres:"VICTORIA ANAHI",telefono:"593968871679",grupo:"CONAPICH (2) A1 D L3PM"},
+            {apellidos:"CARRILLO CAHUEÑAS",nombres:"JAVIER ALEXANDER",telefono:"593992502242",grupo:"CONAPICH (2) A1 D L3PM"},
+            {apellidos:"CHOTO NACIMBA",nombres:"DAYANARA KRISTELL",telefono:"593985607851",grupo:"CONAPICH (2) A1 D L3PM"},
+            {apellidos:"LLUMIQUINGA PACHACAMA",nombres:"BRADLEY ISAAC",telefono:"593960848807",grupo:"CONAPICH (2) A1 D L3PM"},
+            {apellidos:"NIETO ALVEAR",nombres:"DIANA CRISTELL",telefono:"593995328566",grupo:"CONAPICH (2) A1 D L3PM"},
+            {apellidos:"SANCHEZ ROMERO",nombres:"SAMANTA RUBBI",telefono:"593960867322",grupo:"CONAPICH (2) A1 D L3PM"},
+            {apellidos:"VALDIVIESO HIDALGO",nombres:"IGNACIO DAVID",telefono:"593963604240",grupo:"CONAPICH (2) A1 D L3PM"},
+
+            {apellidos:"AMAGUAÑA ANGAMARCA",nombres:"JENNIFER ANAHI",telefono:"593982892271",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"AMAGUAÑA ANGAMARCA",nombres:"MELANY MARIANA",telefono:"593982892271",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"PADILLA RAMIREZ",nombres:"VICTORIA CHARLOTT",telefono:"593998028608",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"AGUIRRE PULLAS",nombres:"MADELINE ABIGAIL",telefono:"593986709314",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"AGUIRRE SUNTAXI",nombres:"TERESA DEL ROCIO",telefono:"593986698756",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"ANANGONO CHALA",nombres:"ANGIELA GABRIELA",telefono:"593959732575",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"BAEZ SANTILLAN",nombres:"EVELIN VANESSA",telefono:"593994945457",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"CASTELLANOS ZAMBRANO",nombres:"JUAN DAVID",telefono:"593984805906",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"GORDON LLUMIQUINGA",nombres:"BRITHANY DANIELA",telefono:"593988741574",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"PAEZ GUEVARA",nombres:"LYAN GAEL",telefono:"593988136632",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"QUISHPE TIPAN",nombres:"NICOLE VALENTINA",telefono:"593995205662",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"ALMEIDA MARTINEZ",nombres:"JUAN SEBASTIAN",telefono:"593969016160",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"CHILLAGANA FAJARDO",nombres:"MELANY PAULIANA",telefono:"593964069577",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"GUAMAN VELA",nombres:"JOHANNA ANAHI",telefono:"593988491785",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"MALDONADO CHALA",nombres:"ARIANNA DOMENICA",telefono:"1755682018",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"ZARATE AMBI",nombres:"DOMÉNICA MIRANDA",telefono:"593987376714",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"ALVAREZ LOACHAMIN",nombres:"LESLY ABIGAIL",telefono:"593993836780",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"CALDERON VASQUEZ",nombres:"SOLANGE FERNANDA",telefono:"593995510245",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"DURAN PACHANO",nombres:"SAMUEL DAVID",telefono:"593939824623",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"GORDON GORDON",nombres:"EMILY GABRIELA",telefono:"593967327068",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"GUANOCHANGA ROCHA",nombres:"JEFFERSON JAIR",telefono:"593939063836",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"LOACHAMIN RAMIREZ",nombres:"CAMILO ALEJANDRO",telefono:"593997737500",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"RIZZO LUCAS",nombres:"BIANCA JULIETH",telefono:"593991309284",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"RODRIGUEZ GALIANO",nombres:"EDISON SEBASTIAN",telefono:"593993785027",grupo:"CONAPICH (2) A1 D MJ6PM"},
+            {apellidos:"ALVAREZ LOACHAMIN",nombres:"JOSTIN ISMAEL",telefono:"593993836111",grupo:"CONAPICH (2) A1 D MJ6PM"},
+
+            {apellidos:"CHASIPANTA LLULLUNA",nombres:"SHIRLEY ARACELY",telefono:"593960483808",grupo:"CONAPICH (2) A1 J L10AM"},
+            {apellidos:"GUALLICHICO VILLEGAS",nombres:"ALISON DOMENICA",telefono:"593987779929",grupo:"CONAPICH (2) A1 J L10AM"},
+            {apellidos:"MALDONADO PAREDES",nombres:"TERRY JHOSUA",telefono:"593999934744",grupo:"CONAPICH (2) A1 J L10AM"},
+            {apellidos:"TUPIZA CUASQUEN",nombres:"LISBETH CAROLINA",telefono:"593968672166",grupo:"CONAPICH (2) A1 J L10AM"},
+            {apellidos:"ZAMBRANO BRAVO",nombres:"LICETH CAROLINA",telefono:"593988263187",grupo:"CONAPICH (2) A1 J L10AM"},
+            {apellidos:"BENITEZ LECHON",nombres:"MATIAS MARCELO",telefono:"593998312223",grupo:"CONAPICH (2) A1 J L10AM"},
+            {apellidos:"CHAVEZ FARINANGO",nombres:"YURI ESTEFANIA",telefono:"593988717757",grupo:"CONAPICH (2) A1 J L10AM"},
+            {apellidos:"TUTILLO SIMBAÑA",nombres:"ANGEL DAVID",telefono:"593969296548",grupo:"CONAPICH (2) A1 J L10AM"},
+            {apellidos:"AIGAJE REA",nombres:"ADRIANA BRIGGITTE",telefono:"593984829353",grupo:"CONAPICH (2) A1 J L10AM"},
+            {apellidos:"BONILLA CALPA",nombres:"ALINA FERNANDA",telefono:"593980643323",grupo:"CONAPICH (2) A1 J L10AM"},
+            {apellidos:"CATAGÑA ALOMOTO",nombres:"ARACELI MABEL",telefono:"593980124699",grupo:"CONAPICH (2) A1 J L10AM"},
+            {apellidos:"CHOLANGO COYAGO",nombres:"ANDREA ELIZABETH",telefono:"593989198206",grupo:"CONAPICH (2) A1 J L10AM"},
+            {apellidos:"RODRIGUEZ CEVALLOS",nombres:"ALISON DAYANA",telefono:"593987743689",grupo:"CONAPICH (2) A1 J L10AM"},
+
+            {apellidos:"ESTEVEZ SIMBAÑA",nombres:"ISIS SCARLETH",telefono:"593991556704",grupo:"CONAPICH (2) A1 K L8AM"},
+            {apellidos:"ACERO QUISHPE",nombres:"JEISBELLY MYKAELA",telefono:"593999778555",grupo:"CONAPICH (2) A1 K L8AM"},
+            {apellidos:"GANCHALA ALTAMIRANO",nombres:"ALEXIS FERNANDO",telefono:"593996024890",grupo:"CONAPICH (2) A1 K L8AM"},
+            {apellidos:"RAMIREZ LOACHAMIN",nombres:"MIGUEL ANTONIO",telefono:"593960039507",grupo:"CONAPICH (2) A1 K L8AM"},
+
+            {apellidos:"ALVAREZ VELA",nombres:"ANTONY MATEO",telefono:"593985995552",grupo:"CONAPICH (2) B1 L6PM"},
+            {apellidos:"SOTALIN PILLAJO",nombres:"GLADYS FERNANDA",telefono:"593995555730",grupo:"CONAPICH (2) B1 L6PM"},
+            {apellidos:"TOAPANTA QUINTANA",nombres:"MIKEYLA SALOME",telefono:"593963031469",grupo:"CONAPICH (2) B1 L6PM"},
+            {apellidos:"GUALOTUÑA LUGMAÑA",nombres:"KAREN ANDREA",telefono:"593983952534",grupo:"CONAPICH (2) B1 L6PM"},
+            {apellidos:"HENAO ALZATE",nombres:"JORGE IVAN",telefono:"573207850047",grupo:"CONAPICH (2) B1 L6PM"},
+            {apellidos:"LIBERIO PARRAGA",nombres:"LARISSA MAYERLY",telefono:"593990325236",grupo:"CONAPICH (2) B1 L6PM"},
+            {apellidos:"MACHASILLA QUIMCHIGUANO",nombres:"RITA ELIZABETH",telefono:"593997404479",grupo:"CONAPICH (2) B1 L6PM"},
+            {apellidos:"RAMIREZ LOACHAMIN",nombres:"LESLY LUCIA",telefono:"593960039507",grupo:"CONAPICH (2) B1 L6PM"},
+            {apellidos:"RODRIGUEZ CAZAR",nombres:"JOSUE ISMAEL",telefono:"593992908510",grupo:"CONAPICH (2) B1 L6PM"},
+            {apellidos:"CHASIPANTA RONQUILLO",nombres:"MARIA AUGUSTA",telefono:"593995242371",grupo:"CONAPICH (2) B1 L6PM"},
+            {apellidos:"PAILLACHO PROAÑO",nombres:"ALBA IVETTE",telefono:"9957770095",grupo:"CONAPICH (2) B1 L6PM"},
+            {apellidos:"ROGEL MARROQUIN",nombres:"ERICK ALEJANDRO",telefono:"593990458691",grupo:"CONAPICH (2) B1 L6PM"},
+
+            {apellidos:"TITUAÑA CUMBAL",nombres:"ERIKA TATIANA",telefono:"593980916880",grupo:"CONAPICH (2) B1 S9AM"},
+            {apellidos:"CARRILLO CARRILLO",nombres:"MARIA MONSERRATE",telefono:"593985855315",grupo:"CONAPICH (2) B1 S9AM"},
+            {apellidos:"CHANGOLUISA NUÑEZ",nombres:"DENNIS OMAR",telefono:"593996724902",grupo:"CONAPICH (2) B1 S9AM"},
+            {apellidos:"GUEVARA AGUILERA",nombres:"CAMILA SHAMILEX",telefono:"593990150055",grupo:"CONAPICH (2) B1 S9AM"},
+            {apellidos:"MORAN CHALAN",nombres:"RUTH STEFANIE",telefono:"593994612683",grupo:"CONAPICH (2) B1 S9AM"},
+            {apellidos:"SAENZ TROYA",nombres:"ANA MARIA",telefono:"593998638249",grupo:"CONAPICH (2) B1 S9AM"},
+            {apellidos:"POZO MORENO",nombres:"ROSA MICHELLE",telefono:"593978899891",grupo:"CONAPICH (2) B1 S9AM"},
+            {apellidos:"BASTIDAS CASTELLANOS",nombres:"ESTEFANI CAROLINA",telefono:"593981516293",grupo:"CONAPICH (2) B1 S9AM"},
+            {apellidos:"CACHIPUENDO CACUANGO",nombres:"JESSICA DAYANA",telefono:"593992757266",grupo:"CONAPICH (2) B1 S9AM"},
+            {apellidos:"CAIZA MORALES",nombres:"GEREMY SEBASTIAN",telefono:"593963126088",grupo:"CONAPICH (2) B1 S9AM"},
+            {apellidos:"GUERRA VALENCIA",nombres:"JHONATAN",telefono:"3016195257",grupo:"CONAPICH (2) B1 S9AM"},
+            {apellidos:"IBAÑEZ MALEZA",nombres:"KEVIN ANDRES",telefono:"593980236269",grupo:"CONAPICH (2) B1 S9AM"},
+            {apellidos:"MASABANDA GARCES",nombres:"ADAMARIS YAMILETH",telefono:"593990767798",grupo:"CONAPICH (2) B1 S9AM"},
+            {apellidos:"VELEZ VILLEGAS",nombres:"MILDREY GIOVANNA",telefono:"3054048543",grupo:"CONAPICH (2) B1 S9AM"}
+
+        ];
+
+         const filtroGrupo = document.getElementById("filtroGrupo");
+
+        const grupos = [...new Set(alumnos.map(alumno => alumno.grupo))].sort();
+
+        grupos.forEach(grupo => {
+            const opcion = document.createElement("option");
+            opcion.value = grupo;
+            opcion.textContent = grupo;
+            filtroGrupo.appendChild(opcion);
+        });
+
+
+const resultadoAsistencia = document.getElementById("resultadoAsistencia");
+
+let registrosAsistencia = [];
+
+let primeraFechaExcel = null;        
+
+/*
+ * ==================================================
+ * CALCULAR TOTAL PROYECTADO DE CLASES DEL GRUPO
+ * ==================================================
+ *
+ * Se toma la primera fecha registrada en el Excel
+ * como inicio del curso y se proyectan 7 meses.
+ *
+ * El total depende del horario del grupo:
+ *
+ * L  = lunes, miércoles y viernes
+ * MJ = martes y jueves
+ * S  = sábado
+ *
+ * No se cuentan otros días.
+ */
+
+function calcularTotalClasesProyectadas(
+    grupo,
+    primeraFecha
+) {
+
+    if (!grupo || !primeraFecha) {
+        return 0;
+    }
+
+    /*
+     * Determinar días de clase del grupo
+     */
+
+    let diasClase = [];
+
+    if (/\bMJ\d/.test(grupo)) {
+
+        diasClase = [2, 4];
+
+    }
+    else if (/\bL\d/.test(grupo)) {
+
+        diasClase = [1, 3, 5];
+
+    }
+    else if (/\bS\d/.test(grupo)) {
+
+        diasClase = [6];
+
+    }
+
+    /*
+     * Si no conocemos el horario,
+     * no podemos calcular el total.
+     */
+
+    if (diasClase.length === 0) {
+        return 0;
+    }
+
+    /*
+     * Fecha inicial
+     */
+
+    const inicio = new Date(primeraFecha);
+
+    inicio.setHours(0, 0, 0, 0);
+
+    /*
+     * Fecha final:
+     * exactamente 7 meses después.
+     */
+
+    const fin = new Date(inicio);
+
+    fin.setMonth(fin.getMonth() + 7);
+
+    /*
+     * Recorrer todos los días proyectados
+     * y contar solamente los días de clase.
+     */
+
+    let totalClases = 0;
+
+    const fechaActual = new Date(inicio);
+
+    while (fechaActual <= fin) {
+
+        if (diasClase.includes(fechaActual.getDay())) {
+
+            totalClases++;
+
         }
+
+        fechaActual.setDate(
+            fechaActual.getDate() + 1
+        );
+
+    }
+
+    return totalClases;
+}        
+
+function obtenerDatosInasistencia(alumno) {
+
+    const primerNombre =
+        String(alumno.nombres || "")
+        .trim()
+        .split(/\s+/)[0];
+
+    const diasInasistencias = [];
+
+    if (alumno.sesiones) {
+
+        alumno.sesiones.forEach(sesion => {
+
+            const asistencia =
+                String(sesion.asistencia || "")
+                .trim()
+                .charAt(0);
+
+            if (asistencia !== "A") {
+                return;
+            }
+
+            if (!sesion.fecha) {
+                return;
+            }
+
+            const textoFecha = String(sesion.fecha);
+
+            const coincidencia = textoFecha.match(
+                /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+            );
+
+            if (!coincidencia) {
+                return;
+            }
+
+            const dia = parseInt(coincidencia[1]);
+            const mesTexto = coincidencia[2];
+            const año = parseInt(coincidencia[3]);
+
+            const meses = {
+                Jan: 0,
+                Feb: 1,
+                Mar: 2,
+                Apr: 3,
+                May: 4,
+                Jun: 5,
+                Jul: 6,
+                Aug: 7,
+                Sep: 8,
+                Oct: 9,
+                Nov: 10,
+                Dec: 11
+            };
+
+            const mesesTexto = {
+                Jan: "enero",
+                Feb: "febrero",
+                Mar: "marzo",
+                Apr: "abril",
+                May: "mayo",
+                Jun: "junio",
+                Jul: "julio",
+                Aug: "agosto",
+                Sep: "septiembre",
+                Oct: "octubre",
+                Nov: "noviembre",
+                Dec: "diciembre"
+            };
+
+            if (meses[mesTexto] === undefined) {
+                return;
+            }
+
+            const fecha = new Date(
+                año,
+                meses[mesTexto],
+                dia
+            );
+
+            const diasSemana = [
+                "domingo",
+                "lunes",
+                "martes",
+                "miércoles",
+                "jueves",
+                "viernes",
+                "sábado"
+            ];
+
+            diasInasistencias.push(
+                `${diasSemana[fecha.getDay()]} ${dia} de ${mesesTexto[mesTexto]}`
+            );
+
+        });
+
+    }
+
+    return {
+        primerNombre,
+        diasInasistencias,
+        porcentajeActual: null,
+        porcentajeProyectado: null,
+        limiteInasistencia: 10
+    };
+
+}     
+
+/*
+ * ==================================================
+ * OBTENER DATOS PARA MENSAJE DE INASISTENCIA
+ * ==================================================
+ */
+
+/*
+ * ==================================================
+ * OBTENER DATOS PARA MENSAJE DE INASISTENCIA
+ * ==================================================
+ */
+
+function obtenerDatosInasistencia(
+    alumno,
+    fechaInicioSemana,
+    fechaFinSemana
+) {
+
+    /*
+     * --------------------------------------------------
+     * PRIMER NOMBRE
+     * --------------------------------------------------
+     */
+
+    const primerNombre =
+        String(alumno.nombres || "")
+        .trim()
+        .split(/\s+/)[0];
+
+    /*
+     * --------------------------------------------------
+     * TOTAL DE CLASES DEL CURSO
+     * --------------------------------------------------
+     */
+
+    const totalClasesCurso =
+        calcularTotalClasesProyectadas(
+            alumno.grupo,
+            primeraFechaExcel
+        );
+
+    /*
+     * --------------------------------------------------
+     * FECHAS DE LA SEMANA CORRIENTE
+     * --------------------------------------------------
+     */
+
+    const inicioSemana =
+        new Date(fechaInicioSemana + "T00:00:00");
+
+    const finSemana =
+        new Date(fechaFinSemana + "T00:00:00");
+
+    /*
+     * --------------------------------------------------
+     * CONTADORES
+     * --------------------------------------------------
+     */
+
+    let inasistenciasAntesSemana = 0;
+
+    let inasistenciasSemana = 0;
+
+    const diasInasistencias = [];
+
+    /*
+     * --------------------------------------------------
+     * RECORRER SESIONES
+     * --------------------------------------------------
+     */
+
+    if (alumno.sesiones) {
+
+        alumno.sesiones.forEach(sesion => {
+
+            /*
+             * Solo A = inasistencia
+             */
+
+            const asistencia =
+                String(sesion.asistencia || "")
+                .trim()
+                .charAt(0);
+
+            if (asistencia !== "A") {
+                return;
+            }
+
+            if (!sesion.fecha) {
+                return;
+            }
+
+            /*
+             * --------------------------------------------------
+             * INTERPRETAR FECHA DEL EXCEL
+             * --------------------------------------------------
+             */
+
+            const textoFecha =
+                String(sesion.fecha);
+
+            const coincidencia =
+                textoFecha.match(
+                    /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+                );
+
+            if (!coincidencia) {
+                return;
+            }
+
+            const dia =
+                parseInt(coincidencia[1]);
+
+            const mesTexto =
+                coincidencia[2];
+
+            const año =
+                parseInt(coincidencia[3]);
+
+            const meses = {
+
+                Jan: 0,
+                Feb: 1,
+                Mar: 2,
+                Apr: 3,
+                May: 4,
+                Jun: 5,
+                Jul: 6,
+                Aug: 7,
+                Sep: 8,
+                Oct: 9,
+                Nov: 10,
+                Dec: 11
+
+            };
+
+            const mesesTexto = {
+
+                Jan: "enero",
+                Feb: "febrero",
+                Mar: "marzo",
+                Apr: "abril",
+                May: "mayo",
+                Jun: "junio",
+                Jul: "julio",
+                Aug: "agosto",
+                Sep: "septiembre",
+                Oct: "octubre",
+                Nov: "noviembre",
+                Dec: "diciembre"
+
+            };
+
+            const mes =
+                meses[mesTexto];
+
+            if (mes === undefined) {
+                return;
+            }
+
+            const fecha =
+                new Date(año, mes, dia);
+
+            fecha.setHours(0, 0, 0, 0);
+
+            /*
+             * --------------------------------------------------
+             * INASISTENCIAS ANTERIORES A LA SEMANA
+             * --------------------------------------------------
+             */
+
+            if (fecha < inicioSemana) {
+
+                inasistenciasAntesSemana++;
+
+            }
+
+            /*
+             * --------------------------------------------------
+             * INASISTENCIAS DE LA SEMANA CORRIENTE
+             * --------------------------------------------------
+             */
+
+            else if (
+                fecha >= inicioSemana &&
+                fecha <= finSemana
+            ) {
+
+                inasistenciasSemana++;
+
+                const diasSemana = [
+
+                    "domingo",
+                    "lunes",
+                    "martes",
+                    "miércoles",
+                    "jueves",
+                    "viernes",
+                    "sábado"
+
+                ];
+
+                diasInasistencias.push({
+
+                    fecha,
+
+                    texto:
+                        `${diasSemana[fecha.getDay()]} ${dia} de ${mesesTexto[mesTexto]}`
+
+                });
+
+            }
+
+        });
+
+    }
+
+    /*
+     * --------------------------------------------------
+     * INASISTENCIAS ACUMULADAS DESPUÉS DE LA SEMANA
+     * --------------------------------------------------
+     */
+
+    const inasistenciasAcumuladas =
+        inasistenciasAntesSemana +
+        inasistenciasSemana;
+
+    /*
+     * --------------------------------------------------
+     * ORDENAR DÍAS
+     * --------------------------------------------------
+     */
+
+    diasInasistencias.sort(
+        (a, b) => a.fecha - b.fecha
+    );
+
+    /*
+     * --------------------------------------------------
+     * TEXTO DE LOS DÍAS
+     * --------------------------------------------------
+     */
+
+    const textoDiasInasistencias =
+        diasInasistencias
+        .map(item => item.texto)
+        .join(", ");
+
+    /*
+     * --------------------------------------------------
+     * PORCENTAJE ACTUAL
+     * --------------------------------------------------
+     *
+     * Se consideran solamente las A anteriores
+     * a la semana que se está notificando.
+     */
+
+    const porcentajeActual =
+        totalClasesCurso > 0
+            ? (
+                inasistenciasAntesSemana /
+                totalClasesCurso
+            ) * 100
+            : 0;
+
+    /*
+     * --------------------------------------------------
+     * PORCENTAJE SI NO JUSTIFICA
+     * --------------------------------------------------
+     *
+     * Se agregan las A de la semana corriente.
+     */
+
+    const porcentajeProyectado =
+        totalClasesCurso > 0
+            ? (
+                inasistenciasAcumuladas /
+                totalClasesCurso
+            ) * 100
+            : 0;
+
+    /*
+     * --------------------------------------------------
+     * RESULTADO
+     * --------------------------------------------------
+     */
+
+    return {
+
+        primerNombre,
+
+        diasInasistencias:
+            diasInasistencias.map(
+                item => item.texto
+            ),
+
+        textoDiasInasistencias,
+
+        inasistenciasAntesSemana,
+
+        inasistenciasSemana,
+
+        inasistenciasAcumuladas,
+
+        totalClasesCurso,
+
+        porcentajeActual,
+
+        porcentajeProyectado,
+
+        limiteInasistencia: 10
+
+    };
+
+}        
+
+/*
+ * ==================================================
+ * MODELOS DE MENSAJES DE INASISTENCIA
+ * ==================================================
+ *
+ * Cada modelo es una función que recibe "datos".
+ * Esto permite utilizar:
+ *
+ * datos.primerNombre
+ * datos.textoDiasInasistencias
+ * datos.porcentajeActual
+ * datos.porcentajeProyectado
+ *
+ * Posteriormente se seleccionará uno de estos
+ * modelos de forma aleatoria.
+ */
+
+const modelosMensajeInasistencia = [
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Hemos notado que esta semana tuviste inasistencias los días ${datos.textoDiasInasistencias}. Nos preocupa que estés perdiendo algunas de tus clases y queremos animarte a continuar asistiendo con regularidad. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Te pedimos que por favor **justifiques estas inasistencias**; una vez justificadas, dejarán de contabilizarse como inasistencias. Si no son justificadas, tu porcentaje acumulado subiría al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al alcanzar el **10 % de inasistencias se pierde el curso**. Tienes hasta el domingo a las 11 AM para justificar. Después de esa hora, el reporte de inasistencia se habrá enviado y te quedarás con las nuevas inasistencias. Esperamos contar contigo en las próximas clases y que continúes con nosotros.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos informarte que durante esta semana registramos inasistencias tuyas los días ${datos.textoDiasInasistencias}. Sabemos que pueden presentarse diferentes situaciones, pero nos gustaría que puedas mantener una asistencia constante para no perder el ritmo del curso. En este momento tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Por favor, **justifica las inasistencias correspondientes** antes del plazo establecido. Una vez justificadas, dejarán de contabilizarse como inasistencias. Si no las justificas, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten presente que al llegar al **10 % de inasistencias se pierde el curso**. Puedes justificar hasta el domingo a las 11 AM. Después de esa hora se enviará el reporte correspondiente y las nuevas inasistencias quedarán registradas. ¡Esperamos verte nuevamente en las próximas clases!`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Esta semana observamos que no pudiste asistir a las clases de los días ${datos.textoDiasInasistencias}. Queremos recordarte la importancia de mantener una asistencia regular, ya que cada clase es importante para avanzar en el curso. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si alguna de estas faltas tiene una justificación válida, por favor **realiza la justificación antes del domingo a las 11 AM**. Las inasistencias justificadas dejarán de contabilizarse. Si no se justifican, tu porcentaje podría pasar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que con un **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte de inasistencia y las nuevas faltas permanecerán contabilizadas. ¡Te esperamos en las próximas clases!`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Nos comunicamos contigo porque esta semana aparecen inasistencias correspondientes a los días ${datos.textoDiasInasistencias}. Queremos ayudarte a mantener tu curso al día y evitar que estas ausencias afecten tu proceso. Actualmente registras un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si las inasistencias se deben a una situación que puede ser justificada, por favor **presenta la justificación antes del domingo a las 11 AM**. Una vez aceptada, dejará de contabilizarse como inasistencia. Si no justificas estas faltas, podrías quedar con un **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} % de inasistencias**. Ten presente que el **10 % es el límite para conservar el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Esperamos seguir contando contigo.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos hacerte una pequeña alerta sobre tu asistencia. Esta semana registramos inasistencias los días ${datos.textoDiasInasistencias}. Actualmente tu porcentaje acumulado es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Todavía estás a tiempo de **justificar las inasistencias que correspondan**. Las faltas justificadas dejan de contabilizarse como inasistencias. Si no realizas la justificación, tu porcentaje podría aumentar hasta **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al alcanzar el **10 % de inasistencias se pierde el curso**. El plazo para justificar termina el domingo a las 11 AM. Una vez pasado ese horario, se enviará el reporte y las nuevas inasistencias quedarán contabilizadas. Queremos que puedas continuar tu curso sin inconvenientes, así que esperamos verte en las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Hemos revisado tu asistencia de esta semana y encontramos inasistencias los días ${datos.textoDiasInasistencias}. Queremos recordarte que la asistencia es fundamental para mantener el ritmo de aprendizaje y completar satisfactoriamente el curso. Por ahora tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de estas ausencias puede justificarse, te pedimos que **realices el proceso de justificación antes del domingo a las 11 AM**. Las inasistencias justificadas dejan de contabilizarse. Si permanecen sin justificar, tu porcentaje subiría al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias implica la pérdida del curso**. Después del domingo a las 11 AM se enviará el reporte correspondiente. ¡Ánimo y esperamos contar contigo en las siguientes clases!`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Esta semana tuvimos registro de inasistencias tuyas los días ${datos.textoDiasInasistencias}. Queremos avisarte con tiempo para que puedas revisar la situación y, si corresponde, **justificar estas inasistencias**. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Las ausencias que sean justificadas dejarán de contabilizarse. En caso de no justificarlas, tu porcentaje podría llegar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Es importante que tengas presente que al alcanzar el **10 % de inasistencias se pierde el curso**. Puedes realizar la justificación hasta el domingo a las 11 AM. Luego de ese momento se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que puedas acompañarnos con mayor regularidad en las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos compartir contigo una observación sobre tu asistencia. Durante esta semana registraste inasistencias los días ${datos.textoDiasInasistencias}. Actualmente cuentas con un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de estas ausencias fue por una razón justificable, todavía puedes **presentar la justificación hasta el domingo a las 11 AM**. Las inasistencias justificadas dejan de formar parte del porcentaje de inasistencia. Si no son justificadas, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el límite es del **10 % de inasistencias; al alcanzarlo se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas faltas permanecerán contabilizadas. Queremos verte avanzar, así que esperamos contar contigo en las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Notamos que esta semana no pudiste asistir a las clases de los días ${datos.textoDiasInasistencias}. Queremos aprovechar este mensaje para recordarte que aún puedes revisar y justificar las ausencias que correspondan. En este momento tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Las faltas que sean justificadas dejarán de contabilizarse. Si no se justifican, tu porcentaje aumentaría al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten mucho presente que el **10 % de inasistencias representa la pérdida del curso**. El plazo para justificar es hasta el domingo a las 11 AM. Después de esa hora se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que esta semana puedas retomar tus clases con normalidad.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos saber que estás bien y, al mismo tiempo, llamarte la atención sobre tu asistencia. Esta semana registramos inasistencias los días ${datos.textoDiasInasistencias}. Tu porcentaje actual de inasistencias es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} %**. Si las ausencias tienen una razón que pueda ser justificada, te recomendamos realizar la **justificación antes del domingo a las 11 AM**. Las inasistencias justificadas ya no se contabilizarán. Si no justificas estas faltas, tu porcentaje podría alcanzar el **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al llegar al **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte correspondiente. Esperamos que puedas continuar asistiendo regularmente y seguir avanzando con nosotros.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Revisamos los registros de asistencia y esta semana aparecen inasistencias correspondientes a ${datos.textoDiasInasistencias}. Queremos avisarte antes de cerrar el reporte para que tengas la oportunidad de revisar estas faltas. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de ellas debe ser justificada, puedes hacerlo hasta el domingo a las 11 AM. Una vez justificadas, dejarán de contabilizarse. Si no realizas la justificación, tu porcentaje acumulado subiría al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que alcanzar el **10 % de inasistencias significa perder el curso**. Después del plazo indicado se enviará el reporte de inasistencia. Esperamos que puedas acompañarnos en las próximas clases y mantener una asistencia constante.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Te escribimos porque durante esta semana registramos inasistencias tuyas los días ${datos.textoDiasInasistencias}. Sabemos que pueden existir circunstancias que impidan asistir, por eso queremos darte la oportunidad de **justificar las faltas que correspondan**. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Las inasistencias justificadas dejan de contabilizarse. Si no justificas las de esta semana, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el máximo permitido es el **10 % de inasistencias; al alcanzar este porcentaje se pierde el curso**. Puedes justificar hasta el domingo a las 11 AM. Después de esa hora se enviará el reporte y las nuevas inasistencias quedarán contabilizadas. ¡Esperamos verte nuevamente en clase!`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Esta semana tu registro muestra inasistencias los días ${datos.textoDiasInasistencias}. Queremos informarte para que puedas tomar las medidas necesarias y evitar que estas faltas afecten tu porcentaje de asistencia. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si corresponde, recuerda **justificar las inasistencias antes del domingo a las 11 AM**. Las faltas justificadas dejarán de contabilizarse. De no justificarlas, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten presente que al llegar al **10 % de inasistencias se pierde el curso**. Una vez cumplido el plazo, se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que puedas continuar asistiendo con regularidad y avanzar satisfactoriamente en tu curso.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos recordarte que esta semana aparecen inasistencias en tu registro correspondientes a los días ${datos.textoDiasInasistencias}. Actualmente tu porcentaje de inasistencias acumuladas es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} %**. Si alguna de estas faltas tiene una justificación, te pedimos que la presentes antes del domingo a las 11 AM. Una vez justificadas, las inasistencias dejan de contabilizarse. Si no se justifican, el porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias es el límite para conservar el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Estamos seguros de que puedes retomar el ritmo. ¡Te esperamos en las próximas clases!`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Durante esta semana registramos que no asististe los días ${datos.textoDiasInasistencias}. Queremos hacerte llegar esta información antes de que se cierre el reporte para que puedas revisar tu situación. En este momento acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si las faltas corresponden a situaciones justificables, puedes **presentar la justificación hasta el domingo a las 11 AM**. Las inasistencias justificadas dejarán de contabilizarse. Si no se justifican, el porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al alcanzar el **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte definitivo de inasistencia. Esperamos contar contigo nuevamente en las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Hemos revisado tu asistencia y queremos avisarte que esta semana se registraron inasistencias los días ${datos.textoDiasInasistencias}. Tu porcentaje actual es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de estas faltas debe ser justificada, recuerda hacerlo antes del domingo a las 11 AM. Las faltas justificadas dejarán de contabilizarse como inasistencias. Si no realizas la justificación, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Es importante recordar que al llegar al **10 % de inasistencias se pierde el curso**. Una vez terminado el plazo se enviará el reporte y las nuevas inasistencias permanecerán registradas. Queremos que sigas avanzando con nosotros, así que esperamos verte en las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos ponerte al tanto de tu asistencia esta semana. Se registraron inasistencias los días ${datos.textoDiasInasistencias}. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si existe alguna razón que permita justificar estas faltas, todavía estás a tiempo de hacerlo. El plazo termina el domingo a las 11 AM. Las inasistencias justificadas dejarán de contabilizarse; si no son justificadas, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que alcanzar el **10 % de inasistencias implica la pérdida del curso**. Después de las 11 AM del domingo se enviará el reporte correspondiente y las nuevas faltas quedarán registradas. Esperamos que puedas asistir regularmente a las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Esta semana tuvimos algunas inasistencias registradas a tu nombre, específicamente los días ${datos.textoDiasInasistencias}. Queremos informarte para que puedas revisar si alguna de ellas necesita ser justificada. Tu porcentaje actual de inasistencias es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} %**. Puedes presentar las justificaciones correspondientes hasta el domingo a las 11 AM; después de ese momento se enviará el reporte. Las inasistencias justificadas dejarán de contabilizarse. Si no justificas estas faltas, tu porcentaje podría quedar en **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que con un **10 % de inasistencias se pierde el curso**. Esperamos que esta información te ayude a tomar las medidas necesarias y que podamos contar contigo en las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos hacerte llegar un aviso relacionado con tu asistencia. Durante esta semana aparecen inasistencias los días ${datos.textoDiasInasistencias}. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si alguna de estas ausencias tiene una justificación, recuerda que puedes presentarla hasta el domingo a las 11 AM. Una vez justificadas, esas faltas dejarán de contabilizarse. Si permanecen sin justificar, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten presente que al alcanzar el **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Ojalá puedas acompañarnos regularmente en las próximas clases y continuar avanzando en tu proceso.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Notamos algunas ausencias en tu registro de esta semana: ${datos.textoDiasInasistencias}. Antes de cerrar el reporte queremos recordarte que puedes **justificar las inasistencias que correspondan hasta el domingo a las 11 AM**. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Las faltas justificadas dejarán de contabilizarse. Si no son justificadas, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias es el límite establecido y al alcanzarlo se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Esperamos que puedas regularizar tu asistencia y continuar participando en las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Esta semana registramos inasistencias correspondientes a los días ${datos.textoDiasInasistencias} y queremos avisarte antes de que se cierre el periodo de justificación. Actualmente tu porcentaje acumulado es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si alguna de estas faltas puede justificarse, tienes hasta el domingo a las 11 AM para hacerlo. Una vez justificadas, dejarán de contabilizarse como inasistencias. Si no realizas la justificación, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al alcanzar el **10 % de inasistencias se pierde el curso**. Después de las 11 AM del domingo se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que puedas estar presente en las próximas clases y seguir adelante con tu curso.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos llamar tu atención sobre un aspecto importante de esta semana: registramos inasistencias los días ${datos.textoDiasInasistencias}. En este momento tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si estas ausencias tienen una causa que pueda justificarse, te recomendamos presentar la justificación antes del domingo a las 11 AM. Las inasistencias justificadas dejarán de contabilizarse. Si no son justificadas, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias representa la pérdida del curso**. Una vez terminado el plazo, se enviará el reporte y las nuevas inasistencias quedarán registradas. Esperamos que puedas recuperar la regularidad en tu asistencia y que sigamos contando contigo.`;
+
+    }
+
+];
+
+console.log("MODELOS DE MENSAJE DE INASISTENCIA:", modelosMensajeInasistencia.length);
+console.log("MODELOS:", modelosMensajeInasistencia);   
+
+/*
+ * ==================================================
+ * CALCULAR DATOS PARA MENSAJE DE INASISTENCIA
+ * ==================================================
+ */
+
+function calcularDatosInasistencia(alumno) {
+
+    /*
+     * ----------------------------------------------
+     * FECHA DE HOY
+     * ----------------------------------------------
+     */
+
+    const hoy = new Date();
+
+    hoy.setHours(0, 0, 0, 0);
+
+
+    /*
+     * ----------------------------------------------
+     * LUNES DE LA SEMANA CORRIENTE
+     * ----------------------------------------------
+     */
+
+    const lunesActual = new Date(hoy);
+
+    const diasDesdeLunes = hoy.getDay() === 0
+        ? 6
+        : hoy.getDay() - 1;
+
+    lunesActual.setDate(
+        hoy.getDate() - diasDesdeLunes
+    );
+
+    lunesActual.setHours(0, 0, 0, 0);
+
+
+    /*
+     * ----------------------------------------------
+     * DETERMINAR DÍAS DE CLASE DEL GRUPO
+     * ----------------------------------------------
+     */
+
+    let diasClase = [];
+
+    if (alumno.grupo) {
+
+        if (/\bMJ\d/.test(alumno.grupo)) {
+
+            diasClase = [2, 4];
+
+        }
+        else if (/\bL\d/.test(alumno.grupo)) {
+
+            diasClase = [1, 3, 5];
+
+        }
+        else if (/\bS\d/.test(alumno.grupo)) {
+
+            diasClase = [6];
+
+        }
+
+    }
+
+
+    /*
+     * ----------------------------------------------
+     * OBTENER TODAS LAS SESIONES VÁLIDAS
+     * ----------------------------------------------
+     */
+
+    const sesionesValidas = [];
+
+    if (alumno.sesiones) {
+
+        alumno.sesiones.forEach(sesion => {
+
+            if (!sesion.fecha) {
+                return;
+            }
+
+            const textoFecha = String(sesion.fecha);
+
+            const coincidencia = textoFecha.match(
+                /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+            );
+
+            if (!coincidencia) {
+                return;
+            }
+
+            const dia = parseInt(coincidencia[1]);
+            const mesTexto = coincidencia[2];
+            const año = parseInt(coincidencia[3]);
+
+            const meses = {
+                Jan: 0,
+                Feb: 1,
+                Mar: 2,
+                Apr: 3,
+                May: 4,
+                Jun: 5,
+                Jul: 6,
+                Aug: 7,
+                Sep: 8,
+                Oct: 9,
+                Nov: 10,
+                Dec: 11
+            };
+
+            const mes = meses[mesTexto];
+
+            if (mes === undefined) {
+                return;
+            }
+
+            const fecha = new Date(
+                año,
+                mes,
+                dia
+            );
+
+            fecha.setHours(0, 0, 0, 0);
+
+            /*
+             * Solo considerar días correspondientes
+             * al horario del alumno.
+             */
+
+            if (!diasClase.includes(fecha.getDay())) {
+                return;
+            }
+
+            sesionesValidas.push({
+                fecha,
+                asistencia: String(
+                    sesion.asistencia || ""
+                )
+                .trim()
+                .charAt(0)
+            });
+
+        });
+
+    }
+
+
+    /*
+     * ----------------------------------------------
+     * INASISTENCIAS HASTA LA SEMANA ANTERIOR
+     * ----------------------------------------------
+     */
+
+    const inasistenciasAcumuladas =
+        sesionesValidas.filter(sesion => {
+
+            return (
+                sesion.fecha < lunesActual &&
+                sesion.asistencia === "A"
+            );
+
+        }).length;
+
+
+    /*
+     * ----------------------------------------------
+     * INASISTENCIAS DE LA SEMANA CORRIENTE
+     * ----------------------------------------------
+     */
+
+    const inasistenciasSemana = sesionesValidas.filter(sesion => {
+
+        return (
+            sesion.fecha >= lunesActual &&
+            sesion.fecha <= hoy &&
+            sesion.asistencia === "A"
+        );
+
+    });
+
+
+    /*
+     * ----------------------------------------------
+     * TEXTO DE LOS DÍAS DE INASISTENCIA
+     * ----------------------------------------------
+     */
+
+    const nombresDias = [
+        "domingo",
+        "lunes",
+        "martes",
+        "miércoles",
+        "jueves",
+        "viernes",
+        "sábado"
+    ];
+
+    const textoDiasInasistencias =
+        inasistenciasSemana
+            .sort((a, b) => a.fecha - b.fecha)
+            .map(sesion => {
+
+                const dia = nombresDias[
+                    sesion.fecha.getDay()
+                ];
+
+                const numero = String(
+                    sesion.fecha.getDate()
+                ).padStart(2, "0");
+
+                const mes = String(
+                    sesion.fecha.getMonth() + 1
+                ).padStart(2, "0");
+
+                return `${dia} ${numero}/${mes}`;
+
+            })
+            .join(" y ");
+
+
+    /*
+     * ----------------------------------------------
+     * FECHA MÍNIMA DEL EXCEL
+     * ----------------------------------------------
+     */
+
+    if (!primeraFechaExcel) {
+
+        console.warn(
+            "No existe primeraFechaExcel."
+        );
+
+        return {
+            textoDiasInasistencias,
+            porcentajeActual: 0,
+            porcentajeProyectado: 0
+        };
+
+    }
+
+
+    /*
+     * ----------------------------------------------
+     * FIN DEL PERÍODO PROYECTADO
+     * 7 MESES DESDE LA PRIMERA FECHA DEL EXCEL
+     * ----------------------------------------------
+     */
+
+    const fechaFinProyeccion =
+        new Date(primeraFechaExcel);
+
+    fechaFinProyeccion.setMonth(
+        fechaFinProyeccion.getMonth() + 7
+    );
+
+    fechaFinProyeccion.setHours(0, 0, 0, 0);
+
+
+/*
+ * ----------------------------------------------
+ * CONTAR TODAS LAS CLASES DEL PERÍODO
+ * 7 MESES SEGÚN LOS DÍAS DEL GRUPO
+ * ----------------------------------------------
+ */
+
+let cantidadClasesPeriodo = 0;
+
+const fechaPeriodo =
+    new Date(primeraFechaExcel);
+
+fechaPeriodo.setHours(0, 0, 0, 0);
+
+while (fechaPeriodo < fechaFinProyeccion) {
+
+    if (
+        diasClase.includes(
+            fechaPeriodo.getDay()
+        )
+    ) {
+
+        cantidadClasesPeriodo++;
+
+    }
+
+    fechaPeriodo.setDate(
+        fechaPeriodo.getDate() + 1
+    );
+
+}
+
+console.log(
+    "CLASES PROYECTADAS EN 7 MESES:",
+    alumno.nombres,
+    {
+        grupo: alumno.grupo,
+        diasClase,
+        primeraFechaExcel,
+        fechaFinProyeccion,
+        cantidadClasesPeriodo
+    }
+);
+
+
+    /*
+     * ----------------------------------------------
+     * PORCENTAJE ACTUAL
+     * ----------------------------------------------
+     */
+
+    const porcentajeActual =
+        cantidadClasesPeriodo > 0
+            ? (
+                inasistenciasAcumuladas /
+                cantidadClasesPeriodo
+            ) * 100
+            : 0;
+
+
+    /*
+     * ----------------------------------------------
+     * PORCENTAJE PROYECTADO
+     * ----------------------------------------------
+     */
+
+    const totalInasistenciasProyectadas =
+        inasistenciasAcumuladas +
+        inasistenciasSemana.length;
+
+    const porcentajeProyectado =
+        cantidadClasesPeriodo > 0
+            ? (
+                totalInasistenciasProyectadas /
+                cantidadClasesPeriodo
+            ) * 100
+            : 0;
+
+
+    /*
+     * ----------------------------------------------
+     * RESULTADO
+     * ----------------------------------------------
+     */
+
+    const resultado = {
+
+        textoDiasInasistencias,
+
+        porcentajeActual,
+
+        porcentajeProyectado
+
+    };
+
+
+    console.log(
+        "DATOS CALCULADOS PARA INASISTENCIA:",
+        alumno.nombres,
+        resultado
+    );
+
+
+    return resultado;
+
+}        
+        
+function mostrarAlumnos(lista, fechaInicioFiltro = "", fechaFinFiltro = "") {
+
+    resultadoAsistencia.innerHTML = "";
+
+    if (lista.length === 0) {
+        return;
+    }
+
+    const tabla = document.createElement("table");
+
+    tabla.style.borderCollapse = "collapse";
+    tabla.style.width = "100%";
+
+    /*
+     * --------------------------------------------------
+     * OBTENER LAS FECHAS REALES DEL EXCEL
+     * --------------------------------------------------
+     */
+
+    const fechasRegistradas = [];
+
+    lista.forEach(alumno => {
+
+        if (!alumno.sesiones) {
+            return;
+        }
+
+        alumno.sesiones.forEach(sesion => {
+
+            if (!sesion.fecha) {
+                return;
+            }
+
+            const textoFecha = String(sesion.fecha);
+
+            const coincidencia = textoFecha.match(
+                /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+            );
+
+            if (!coincidencia) {
+                return;
+            }
+
+            const dia = parseInt(coincidencia[1]);
+            const mesTexto = coincidencia[2];
+            const año = parseInt(coincidencia[3]);
+
+            const meses = {
+                Jan: 0,
+                Feb: 1,
+                Mar: 2,
+                Apr: 3,
+                May: 4,
+                Jun: 5,
+                Jul: 6,
+                Aug: 7,
+                Sep: 8,
+                Oct: 9,
+                Nov: 10,
+                Dec: 11
+            };
+
+            const mes = meses[mesTexto];
+
+            if (mes === undefined) {
+                return;
+            }
+
+            const fecha = new Date(año, mes, dia);
+
+            if (!fechasRegistradas.some(
+                fechaExistente =>
+                    fechaExistente.getTime() === fecha.getTime()
+            )) {
+                fechasRegistradas.push(fecha);
+            }
+
+        });
+
+    });
+
+    if (fechasRegistradas.length === 0) {
+        return;
+    }
+
+    /*
+     * Ordenar fechas
+     */
+
+    fechasRegistradas.sort((a, b) => a - b);
+
+    /*
+     * --------------------------------------------------
+     * CREAR CALENDARIO CONTINUO
+     * --------------------------------------------------
+     */
+
+    const fechaInicial = fechaInicioFiltro
+        ? new Date(fechaInicioFiltro + "T00:00:00")
+        : new Date(fechasRegistradas[0]);
+
+    const fechaFinal = fechaFinFiltro
+        ? new Date(fechaFinFiltro + "T00:00:00")
+        : new Date(
+            fechasRegistradas[fechasRegistradas.length - 1]
+        );
+
+    const fechas = [];
+
+    const fechaActual = new Date(fechaInicial);
+
+    while (fechaActual <= fechaFinal) {
+
+        fechas.push(new Date(fechaActual));
+
+        fechaActual.setDate(fechaActual.getDate() + 1);
+
+    }
+
+    /*
+     * --------------------------------------------------
+     * ENCABEZADO
+     * --------------------------------------------------
+     */
+
+    const filaEncabezado = document.createElement("tr");
+
+    const thAlumno = document.createElement("th");
+
+    thAlumno.textContent = "Alumnos";
+
+    thAlumno.style.border = "1px solid #ccc";
+    thAlumno.style.padding = "8px";
+    thAlumno.style.whiteSpace = "nowrap";
+
+    filaEncabezado.appendChild(thAlumno);
+
+    fechas.forEach(fecha => {
+
+        const th = document.createElement("th");
+
+        const dia = String(fecha.getDate()).padStart(2, "0");
+        const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+        const año = fecha.getFullYear();
+
+        th.textContent = `${dia}/${mes}/${año}`;
+
+        th.style.border = "1px solid #ccc";
+        th.style.padding = "8px";
+        th.style.textAlign = "center";
+        th.style.whiteSpace = "nowrap";
+
+        filaEncabezado.appendChild(th);
+
+    });
+
+    /*
+     * --------------------------------------------------
+     * COLUMNA PARA MENSAJES
+     * --------------------------------------------------
+     */
+
+    const thMensaje = document.createElement("th");
+
+    thMensaje.textContent = "Mensaje";
+
+    thMensaje.style.border = "1px solid #ccc";
+    thMensaje.style.padding = "8px";
+    thMensaje.style.textAlign = "center";
+    thMensaje.style.whiteSpace = "nowrap";
+
+    filaEncabezado.appendChild(thMensaje);
+
+    tabla.appendChild(filaEncabezado);
+
+    /*
+     * --------------------------------------------------
+     * FILAS DE ALUMNOS
+     * --------------------------------------------------
+     */
+
+    lista.forEach(alumno => {
+
+        const fila = document.createElement("tr");
+
+        /*
+         * Nombre completo en una sola línea
+         */
+
+        const celdaAlumno = document.createElement("td");
+
+        celdaAlumno.textContent =
+            `${alumno.apellidos} ${alumno.nombres}`;
+
+        celdaAlumno.style.border = "1px solid #ccc";
+        celdaAlumno.style.padding = "8px";
+        celdaAlumno.style.whiteSpace = "nowrap";
+
+        fila.appendChild(celdaAlumno);
+
+        /*
+         * Crear mapa de asistencia
+         */
+
+        const asistenciaPorFecha = {};
+
+        if (alumno.sesiones) {
+
+            alumno.sesiones.forEach(sesion => {
+
+                if (!sesion.fecha) {
+                    return;
+                }
+
+                const textoFecha = String(sesion.fecha);
+
+                const coincidencia = textoFecha.match(
+                    /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+                );
+
+                if (!coincidencia) {
+                    return;
+                }
+
+                const dia = parseInt(coincidencia[1]);
+                const mesTexto = coincidencia[2];
+                const año = parseInt(coincidencia[3]);
+
+                const meses = {
+                    Jan: 0,
+                    Feb: 1,
+                    Mar: 2,
+                    Apr: 3,
+                    May: 4,
+                    Jun: 5,
+                    Jul: 6,
+                    Aug: 7,
+                    Sep: 8,
+                    Oct: 9,
+                    Nov: 10,
+                    Dec: 11
+                };
+
+                const mes = meses[mesTexto];
+
+                if (mes === undefined) {
+                    return;
+                }
+
+                const fecha = new Date(año, mes, dia);
+
+                const clave =
+                    `${fecha.getFullYear()}-${String(
+                        fecha.getMonth() + 1
+                    ).padStart(2, "0")}-${String(
+                        fecha.getDate()
+                    ).padStart(2, "0")}`;
+
+                /*
+                 * Solo guardar P, L, E o A
+                 */
+
+                const asistencia = String(
+                    sesion.asistencia || ""
+                ).trim();
+
+                const resultado = asistencia.charAt(0);
+
+                asistenciaPorFecha[clave] =
+                    ["P", "L", "E", "A"].includes(resultado)
+                        ? resultado
+                        : "?";
+
+            });
+
+        }
+
+        /*
+         * --------------------------------------------------
+         * DETERMINAR DÍAS DE CLASE SEGÚN EL GRUPO
+         * --------------------------------------------------
+         */
+
+        let tipoHorario = "";
+
+        if (alumno.grupo) {
+
+            if (/\bMJ\d/.test(alumno.grupo)) {
+                tipoHorario = "MJ";
+            }
+            else if (/\bL\d/.test(alumno.grupo)) {
+                tipoHorario = "L";
+            }
+            else if (/\bS\d/.test(alumno.grupo)) {
+                tipoHorario = "S";
+            }
+
+        }
+
+        /*
+         * --------------------------------------------------
+         * CREAR CELDAS
+         * --------------------------------------------------
+         */
+
+        fechas.forEach(fecha => {
+
+            const celda = document.createElement("td");
+
+            const diaSemana = fecha.getDay();
+
+            let correspondeClase = false;
+
+            /*
+             * getDay():
+             * 0 = domingo
+             * 1 = lunes
+             * 2 = martes
+             * 3 = miércoles
+             * 4 = jueves
+             * 5 = viernes
+             * 6 = sábado
+             */
+
+            if (tipoHorario === "L") {
+
+                correspondeClase =
+                    diaSemana === 1 ||
+                    diaSemana === 3 ||
+                    diaSemana === 5;
+
+            }
+            else if (tipoHorario === "MJ") {
+
+                correspondeClase =
+                    diaSemana === 2 ||
+                    diaSemana === 4;
+
+            }
+            else if (tipoHorario === "S") {
+
+                correspondeClase =
+                    diaSemana === 6;
+
+            }
+
+            const clave =
+                `${fecha.getFullYear()}-${String(
+                    fecha.getMonth() + 1
+                ).padStart(2, "0")}-${String(
+                    fecha.getDate()
+                ).padStart(2, "0")}`;
+
+            if (!correspondeClase) {
+
+                celda.textContent = "---";
+
+            }
+            else if (asistenciaPorFecha[clave]) {
+
+                celda.textContent =
+                    asistenciaPorFecha[clave];
+
+            }
+            else {
+
+                celda.textContent = "?";
+
+            }
+
+            celda.style.border = "1px solid #ccc";
+            celda.style.padding = "8px";
+            celda.style.textAlign = "center";
+
+            fila.appendChild(celda);
+
+        });
+
+        /*
+         * --------------------------------------------------
+         * BOTÓN ENVIAR MENSAJE
+         * --------------------------------------------------
+         */
+
+        const celdaMensaje = document.createElement("td");
+
+        celdaMensaje.style.border = "1px solid #ccc";
+        celdaMensaje.style.padding = "8px";
+        celdaMensaje.style.textAlign = "center";
+
+        const botonMensaje = document.createElement("button");
+
+        botonMensaje.type = "button";
+        botonMensaje.textContent = "Enviar mensaje";
+
+        botonMensaje.classList.add(
+            "btn-enviar-mensaje",
+            "mensaje-no-enviado"
+        );
+
+/*
+ * --------------------------------------------------
+ * ENVIAR MENSAJE POR WHATSAPP
+ * --------------------------------------------------
+ */
+
+botonMensaje.addEventListener("click", function() {
+
+    /*
+     * Evitar un segundo envío
+     */
+
+    if (botonMensaje.classList.contains("mensaje-enviado")) {
+        return;
+    }
+
+    /*
+     * Seleccionar uno de los modelos
+     */
+
+    const indiceAleatorio =
+        Math.floor(
+            Math.random() *
+            modelosMensajeInasistencia.length
+        );
+
+    const modelo =
+        modelosMensajeInasistencia[indiceAleatorio];
+
+
+    /*
+     * Preparar datos del alumno
+     */
+
+    const primerNombre =
+        String(alumno.nombres || "")
+        .trim()
+        .split(/\s+/)[0];
+
+    const datosInasistencia =
+        calcularDatosInasistencia(alumno);
+
+    const datos = {
+        primerNombre: primerNombre,
+        textoDiasInasistencias:
+            datosInasistencia.textoDiasInasistencias,
+        porcentajeActual:
+            datosInasistencia.porcentajeActual,
+        porcentajeProyectado:
+            datosInasistencia.porcentajeProyectado
+    };
+
+
+    /*
+     * Generar mensaje
+     */
+
+    const mensaje = modelo(datos);
+
+
+    /*
+     * Preparar número de WhatsApp
+     */
+
+    const telefono =
+        String(alumno.telefono || "")
+        .replace(/\D/g, "");
+
+
+    /*
+     * Verificar que exista teléfono
+     */
+
+    if (!telefono) {
+
+        console.warn(
+            "El alumno no tiene número de teléfono:",
+            `${alumno.apellidos} ${alumno.nombres}`
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Crear enlace de WhatsApp
+     */
+
+/*
+ * --------------------------------------------------
+ * ABRIR APLICACIÓN DE WHATSAPP
+ * --------------------------------------------------
+ */
+
+const urlWhatsApp =
+    `whatsapp://send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
+
+window.location.href = urlWhatsApp;
+
+
+    /*
+     * Registrar información
+     */
+
+    console.log(
+        "MENSAJE SELECCIONADO:",
+        indiceAleatorio + 1
+    );
+
+    console.log(
+        "ALUMNO:",
+        `${alumno.apellidos} ${alumno.nombres}`
+    );
+
+    console.log(
+        "TELÉFONO:",
+        telefono
+    );
+
+    console.log(
+        "MENSAJE:",
+        mensaje
+    );
+
+
+    /*
+     * Cambiar botón de verde a rosado
+     */
+
+    botonMensaje.classList.remove(
+        "mensaje-no-enviado"
+    );
+
+    botonMensaje.classList.add(
+        "mensaje-enviado"
+    );
+
+});
+
+        celdaMensaje.appendChild(botonMensaje);
+
+        fila.appendChild(celdaMensaje);
+
+        tabla.appendChild(fila);
+
+    });
+
+    resultadoAsistencia.appendChild(tabla);
+
+}
+
+document.getElementById("btnFiltrar").addEventListener("click", function() {
+
+    const grupoSeleccionado = filtroGrupo.value;
+    const filtroAlumnos = document.getElementById("filtroAsistencia").value;
+
+    const fechaInicio = document.getElementById("fechaInicio").value;
+    const fechaFin = document.getElementById("fechaFin").value;
+
+    /*
+     * --------------------------------------------------
+     * FILTRAR POR GRUPO
+     * --------------------------------------------------
+     */
+
+    let alumnosFiltrados = grupoSeleccionado === "todos"
+        ? registrosAsistencia
+        : registrosAsistencia.filter(
+            alumno => alumno.grupo === grupoSeleccionado
+        );
+
+
+    /*
+     * --------------------------------------------------
+     * FILTRAR POR ASISTENCIA
+     * --------------------------------------------------
+     */
+
+    if (filtroAlumnos === "asistentes" ||
+        filtroAlumnos === "inasistentes") {
+
+        /*
+         * Fecha de hoy.
+         * Solo se evalúan los días operativos
+         * que ya han ocurrido.
+         */
+
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        alumnosFiltrados = alumnosFiltrados.filter(alumno => {
+
+            /*
+             * Determinar los días de clase del grupo
+             */
+
+            let diasClase = [];
+
+            if (alumno.grupo) {
+
+                if (/\bMJ\d/.test(alumno.grupo)) {
+
+                    diasClase = [2, 4];
+
+                }
+                else if (/\bL\d/.test(alumno.grupo)) {
+
+                    diasClase = [1, 3, 5];
+
+                }
+                else if (/\bS\d/.test(alumno.grupo)) {
+
+                    diasClase = [6];
+
+                }
+
+            }
+
+            /*
+             * Si no conocemos el horario,
+             * no podemos determinar asistencia.
+             */
+
+            if (diasClase.length === 0) {
+                return false;
+            }
+
+            /*
+             * Obtener las fechas de las sesiones
+             * que ya corresponden al horario del alumno.
+             */
+
+/*
+ * Obtener las fechas de las sesiones
+ * que corresponden al período seleccionado.
+ */
+
+const fechasOperativas = [];
+
+if (alumno.sesiones) {
+
+    alumno.sesiones.forEach(sesion => {
+
+        if (!sesion.fecha) {
+            return;
+        }
+
+        const textoFecha = String(sesion.fecha);
+
+        const coincidencia = textoFecha.match(
+            /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+        );
+
+        if (!coincidencia) {
+            return;
+        }
+
+        const dia = parseInt(coincidencia[1]);
+        const mesTexto = coincidencia[2];
+        const año = parseInt(coincidencia[3]);
+
+        const meses = {
+            Jan: 0,
+            Feb: 1,
+            Mar: 2,
+            Apr: 3,
+            May: 4,
+            Jun: 5,
+            Jul: 6,
+            Aug: 7,
+            Sep: 8,
+            Oct: 9,
+            Nov: 10,
+            Dec: 11
+        };
+
+        const mes = meses[mesTexto];
+
+        if (mes === undefined) {
+            return;
+        }
+
+        const fecha = new Date(año, mes, dia);
+
+        fecha.setHours(0, 0, 0, 0);
+
+        /*
+         * Solo incluir:
+         *
+         * 1. días que corresponden al horario
+         * 2. fechas dentro del período seleccionado
+         * 3. días que ya ocurrieron
+         */
+
+        const fechaInicioDate = fechaInicio
+            ? new Date(fechaInicio + "T00:00:00")
+            : null;
+
+        const fechaFinDate = fechaFin
+            ? new Date(fechaFin + "T00:00:00")
+            : hoy;
+
+        if (
+            diasClase.includes(fecha.getDay()) &&
+            (!fechaInicioDate || fecha >= fechaInicioDate) &&
+            fecha <= fechaFinDate &&
+            fecha <= hoy
+        ) {
+
+            fechasOperativas.push({
+                fecha,
+                asistencia:
+                    String(
+                        sesion.asistencia || ""
+                    )
+                    .trim()
+                    .charAt(0)
+            });
+
+        }
+
+    });
+
+}
+
+            /*
+             * Si todavía no existe ningún día operativo
+             * para este alumno, no se considera asistente
+             * ni inasistente.
+             */
+
+            if (fechasOperativas.length === 0) {
+                return false;
+            }
+
+            /*
+             * ASISTENTES:
+             *
+             * Todas las fechas operativas ya ocurridas
+             * deben tener P.
+             */
+
+            const esAsistente =
+                fechasOperativas.every(
+                    sesion => sesion.asistencia === "P"
+                );
+
+            /*
+             * INASISTENTES:
+             *
+             * Basta con que una fecha operativa ya ocurrida
+             * no tenga P.
+             */
+
+            const esInasistente =
+                fechasOperativas.some(
+                    sesion => sesion.asistencia !== "P"
+                );
+
+            if (filtroAlumnos === "asistentes") {
+                return esAsistente;
+            }
+
+            return esInasistente;
+
+        });
+
+    }
+    else if (filtroAlumnos === "inasistentes") {
+
+        alumnosFiltrados = alumnosFiltrados.filter(alumno => {
+
+            if (!alumno.sesiones) {
+                return true;
+            }
+
+            return !alumno.sesiones.some(sesion => {
+
+                const asistencia =
+                    String(sesion.asistencia || "")
+                    .trim()
+                    .charAt(0);
+
+                return ["P", "L", "E"].includes(asistencia);
+
+            });
+
+        });
+
+    }
+
+
+    /*
+     * --------------------------------------------------
+     * MENSAJES CUANDO NO HAY COINCIDENCIAS
+     * --------------------------------------------------
+     */
+
+    if (alumnosFiltrados.length === 0) {
+
+        resultadoAsistencia.innerHTML = "";
+
+        const mensaje = document.createElement("div");
+
+        mensaje.style.padding = "15px";
+        mensaje.style.fontWeight = "bold";
+
+        if (
+            grupoSeleccionado === "todos" &&
+            filtroAlumnos === "asistentes"
+        ) {
+
+            mensaje.textContent =
+                "Ningún grupo ha terminado su semana operativa.";
+
+        }
+        else if (grupoSeleccionado !== "todos") {
+
+            mensaje.textContent =
+                "El grupo seleccionado aún se encuentra en semana operativa.";
+
+        }
+        else if (filtroAlumnos === "inasistentes") {
+
+            mensaje.textContent =
+                "No se encontraron alumnos inasistentes.";
+
+        }
+        else {
+
+            mensaje.textContent =
+                "No se encontraron resultados.";
+
+        }
+
+        resultadoAsistencia.appendChild(mensaje);
+
+        return;
+
+    }
+
+
+    /*
+     * --------------------------------------------------
+     * MOSTRAR RESULTADOS
+     * --------------------------------------------------
+     */
+
+    mostrarAlumnos(
+        alumnosFiltrados,
+        fechaInicio,
+        fechaFin
+    );
+
+});
+
+document.getElementById("btnPrepararInforme").addEventListener("click", function() {
+
+    /*
+     * --------------------------------------------------
+     * PREPARAR INFORME DE INASISTENTES
+     * --------------------------------------------------
+     */
+
+    /*
+     * Alumnos → Inasistentes
+     */
+
+    document.getElementById("filtroAsistencia").value = "inasistentes";
+
+
+    /*
+     * Grupo → Todos
+     */
+
+    document.getElementById("filtroGrupo").value = "todos";
+
+
+    /*
+     * Fecha de hoy
+     */
+
+    const hoy = new Date();
+
+    hoy.setHours(0, 0, 0, 0);
+
+
+    /*
+     * Buscar el lunes pasado más reciente.
+     *
+     * getDay():
+     * 0 = domingo
+     * 1 = lunes
+     * 2 = martes
+     * 3 = miércoles
+     * 4 = jueves
+     * 5 = viernes
+     * 6 = sábado
+     */
+
+    const lunes = new Date(hoy);
+
+    const diasDesdeLunes = hoy.getDay() === 0
+        ? 6
+        : hoy.getDay() - 1;
+
+    lunes.setDate(
+        hoy.getDate() - diasDesdeLunes
+    );
+
+
+    /*
+     * Convertir fechas a formato YYYY-MM-DD
+     */
+
+    const convertirFechaInput = function(fecha) {
+
+        const año = fecha.getFullYear();
+
+        const mes = String(
+            fecha.getMonth() + 1
+        ).padStart(2, "0");
+
+        const dia = String(
+            fecha.getDate()
+        ).padStart(2, "0");
+
+        return `${año}-${mes}-${dia}`;
+
+    };
+
+
+    /*
+     * Fecha de inicio → lunes
+     * Fecha de fin → hoy
+     */
+
+    document.getElementById("fechaInicio").value =
+        convertirFechaInput(lunes);
+
+    document.getElementById("fechaFin").value =
+        convertirFechaInput(hoy);
+
+
+    /*
+     * Ejecutar el filtrado
+     */
+
+    document.getElementById("btnFiltrar").click();
+
+});        
+
+document.getElementById("archivoAsistencia").addEventListener("change", async function() {
+
+    const archivo = this.files[0];
+
+    if (!archivo) {
+        return;
+    }
+
+    const datos = await archivo.arrayBuffer();
+
+    const libro = new ExcelJS.Workbook();
+
+    await libro.xlsx.load(datos);
+
+    console.log("Archivo cargado correctamente");
+
+
+    libro.worksheets.forEach(hoja => {
+
+        console.log("Hoja:", hoja.name);
+
+        const filaEncabezados = hoja.getRow(4);
+
+        const encabezados = filaEncabezados.values;
+
+console.log("Encabezados:", encabezados);
+
+
+/*
+ * --------------------------------------------------
+ * OBTENER PRIMERA FECHA DEL EXCEL
+ * --------------------------------------------------
+ */
+
+for (let i = 5; i < encabezados.length; i++) {
+
+    const encabezado = encabezados[i];
+
+    if (!encabezado) {
+        continue;
+    }
+
+    const textoFecha = String(encabezado);
+
+    const coincidencia = textoFecha.match(
+        /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+    );
+
+    if (!coincidencia) {
+        continue;
+    }
+
+    const dia = parseInt(coincidencia[1]);
+    const mesTexto = coincidencia[2];
+    const año = parseInt(coincidencia[3]);
+
+    const meses = {
+        Jan: 0,
+        Feb: 1,
+        Mar: 2,
+        Apr: 3,
+        May: 4,
+        Jun: 5,
+        Jul: 6,
+        Aug: 7,
+        Sep: 8,
+        Oct: 9,
+        Nov: 10,
+        Dec: 11
+    };
+
+    const mes = meses[mesTexto];
+
+    if (mes === undefined) {
+        continue;
+    }
+
+    const fechaEncontrada = new Date(
+        año,
+        mes,
+        dia
+    );
+
+    fechaEncontrada.setHours(0, 0, 0, 0);
+
+    if (
+        primeraFechaExcel === null ||
+        fechaEncontrada < primeraFechaExcel
+    ) {
+
+        primeraFechaExcel = fechaEncontrada;
+
+    }
+
+    break;
+}
+
+console.log(
+    "PRIMERA FECHA DEL EXCEL:",
+    primeraFechaExcel
+);
+
+        const indiceInicioSesiones = 6;
+        const indiceFinSesiones = encabezados.findIndex(
+            encabezado => encabezado === "P"
+        );
+
+        console.log(
+            "Índice inicio sesiones:",
+            indiceInicioSesiones
+        );
+
+        console.log(
+            "Índice fin sesiones:",
+            indiceFinSesiones
+        );
+
+hoja.eachRow((fila, numeroFila) => {
+
+    if (numeroFila < 5) {
+        return;
+    }
+
+    const valores = fila.values;
+
+const apellido = valores[1];
+const nombre = valores[2];
+const studentId = valores[3];
+const email = valores[4];
+
+    const sesiones = [];
+
+    for (
+        let indice = indiceInicioSesiones;
+        indice < indiceFinSesiones;
+        indice++
+    ) {
+
+        sesiones.push({
+            fecha: encabezados[indice],
+            asistencia: valores[indice]
+        });
+
+    }
+
+const alumnoEncontrado = alumnos.find(alumno =>
+    alumno.apellidos === apellido &&
+    alumno.nombres === nombre
+);
+
+    if (alumnoEncontrado) {
+
+        const registroAlumno = {
+            apellidos: alumnoEncontrado.apellidos,
+            nombres: alumnoEncontrado.nombres,
+            telefono: alumnoEncontrado.telefono,
+            grupo: alumnoEncontrado.grupo,
+            studentId,
+            email,
+            sesiones
+        };
+
+        registrosAsistencia.push(registroAlumno);
+
+        console.log("REGISTRO COMPLETO:", registroAlumno);
+
+    }
+});
+
+    });
+
+console.log("TOTAL REGISTROS ENCONTRADOS:", registrosAsistencia.length);
+
+mostrarAlumnos(registrosAsistencia);    
+
+if (registrosAsistencia.length > 0) {
+
+    console.log(
+        "SESIONES PRIMER ALUMNO:",
+        registrosAsistencia[0].sesiones
+    );
+
+}    
+
+});        
+
     </script>
+
 </body>
 </html>
