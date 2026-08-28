@@ -379,6 +379,430 @@ function calcularTotalClasesProyectadas(
     return totalClases;
 }        
 
+function obtenerDatosInasistencia(alumno) {
+
+    const primerNombre =
+        String(alumno.nombres || "")
+        .trim()
+        .split(/\s+/)[0];
+
+    const diasInasistencias = [];
+
+    if (alumno.sesiones) {
+
+        alumno.sesiones.forEach(sesion => {
+
+            const asistencia =
+                String(sesion.asistencia || "")
+                .trim()
+                .charAt(0);
+
+            if (asistencia !== "A") {
+                return;
+            }
+
+            if (!sesion.fecha) {
+                return;
+            }
+
+            const textoFecha = String(sesion.fecha);
+
+            const coincidencia = textoFecha.match(
+                /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+            );
+
+            if (!coincidencia) {
+                return;
+            }
+
+            const dia = parseInt(coincidencia[1]);
+            const mesTexto = coincidencia[2];
+            const año = parseInt(coincidencia[3]);
+
+            const meses = {
+                Jan: 0,
+                Feb: 1,
+                Mar: 2,
+                Apr: 3,
+                May: 4,
+                Jun: 5,
+                Jul: 6,
+                Aug: 7,
+                Sep: 8,
+                Oct: 9,
+                Nov: 10,
+                Dec: 11
+            };
+
+            const mesesTexto = {
+                Jan: "enero",
+                Feb: "febrero",
+                Mar: "marzo",
+                Apr: "abril",
+                May: "mayo",
+                Jun: "junio",
+                Jul: "julio",
+                Aug: "agosto",
+                Sep: "septiembre",
+                Oct: "octubre",
+                Nov: "noviembre",
+                Dec: "diciembre"
+            };
+
+            if (meses[mesTexto] === undefined) {
+                return;
+            }
+
+            const fecha = new Date(
+                año,
+                meses[mesTexto],
+                dia
+            );
+
+            const diasSemana = [
+                "domingo",
+                "lunes",
+                "martes",
+                "miércoles",
+                "jueves",
+                "viernes",
+                "sábado"
+            ];
+
+            diasInasistencias.push(
+                `${diasSemana[fecha.getDay()]} ${dia} de ${mesesTexto[mesTexto]}`
+            );
+
+        });
+
+    }
+
+    return {
+        primerNombre,
+        diasInasistencias,
+        porcentajeActual: null,
+        porcentajeProyectado: null,
+        limiteInasistencia: 10
+    };
+
+}     
+
+/*
+ * ==================================================
+ * OBTENER DATOS PARA MENSAJE DE INASISTENCIA
+ * ==================================================
+ */
+
+/*
+ * ==================================================
+ * OBTENER DATOS PARA MENSAJE DE INASISTENCIA
+ * ==================================================
+ */
+
+function obtenerDatosInasistencia(
+    alumno,
+    fechaInicioSemana,
+    fechaFinSemana
+) {
+
+    /*
+     * --------------------------------------------------
+     * PRIMER NOMBRE
+     * --------------------------------------------------
+     */
+
+    const primerNombre =
+        String(alumno.nombres || "")
+        .trim()
+        .split(/\s+/)[0];
+
+    /*
+     * --------------------------------------------------
+     * TOTAL DE CLASES DEL CURSO
+     * --------------------------------------------------
+     */
+
+    const totalClasesCurso =
+        calcularTotalClasesProyectadas(
+            alumno.grupo,
+            primeraFechaExcel
+        );
+
+    /*
+     * --------------------------------------------------
+     * FECHAS DE LA SEMANA CORRIENTE
+     * --------------------------------------------------
+     */
+
+    const inicioSemana =
+        new Date(fechaInicioSemana + "T00:00:00");
+
+    const finSemana =
+        new Date(fechaFinSemana + "T00:00:00");
+
+    /*
+     * --------------------------------------------------
+     * CONTADORES
+     * --------------------------------------------------
+     */
+
+    let inasistenciasAntesSemana = 0;
+
+    let inasistenciasSemana = 0;
+
+    const diasInasistencias = [];
+
+    /*
+     * --------------------------------------------------
+     * RECORRER SESIONES
+     * --------------------------------------------------
+     */
+
+    if (alumno.sesiones) {
+
+        alumno.sesiones.forEach(sesion => {
+
+            /*
+             * Solo A = inasistencia
+             */
+
+            const asistencia =
+                String(sesion.asistencia || "")
+                .trim()
+                .charAt(0);
+
+            if (asistencia !== "A") {
+                return;
+            }
+
+            if (!sesion.fecha) {
+                return;
+            }
+
+            /*
+             * --------------------------------------------------
+             * INTERPRETAR FECHA DEL EXCEL
+             * --------------------------------------------------
+             */
+
+            const textoFecha =
+                String(sesion.fecha);
+
+            const coincidencia =
+                textoFecha.match(
+                    /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+                );
+
+            if (!coincidencia) {
+                return;
+            }
+
+            const dia =
+                parseInt(coincidencia[1]);
+
+            const mesTexto =
+                coincidencia[2];
+
+            const año =
+                parseInt(coincidencia[3]);
+
+            const meses = {
+
+                Jan: 0,
+                Feb: 1,
+                Mar: 2,
+                Apr: 3,
+                May: 4,
+                Jun: 5,
+                Jul: 6,
+                Aug: 7,
+                Sep: 8,
+                Oct: 9,
+                Nov: 10,
+                Dec: 11
+
+            };
+
+            const mesesTexto = {
+
+                Jan: "enero",
+                Feb: "febrero",
+                Mar: "marzo",
+                Apr: "abril",
+                May: "mayo",
+                Jun: "junio",
+                Jul: "julio",
+                Aug: "agosto",
+                Sep: "septiembre",
+                Oct: "octubre",
+                Nov: "noviembre",
+                Dec: "diciembre"
+
+            };
+
+            const mes =
+                meses[mesTexto];
+
+            if (mes === undefined) {
+                return;
+            }
+
+            const fecha =
+                new Date(año, mes, dia);
+
+            fecha.setHours(0, 0, 0, 0);
+
+            /*
+             * --------------------------------------------------
+             * INASISTENCIAS ANTERIORES A LA SEMANA
+             * --------------------------------------------------
+             */
+
+            if (fecha < inicioSemana) {
+
+                inasistenciasAntesSemana++;
+
+            }
+
+            /*
+             * --------------------------------------------------
+             * INASISTENCIAS DE LA SEMANA CORRIENTE
+             * --------------------------------------------------
+             */
+
+            else if (
+                fecha >= inicioSemana &&
+                fecha <= finSemana
+            ) {
+
+                inasistenciasSemana++;
+
+                const diasSemana = [
+
+                    "domingo",
+                    "lunes",
+                    "martes",
+                    "miércoles",
+                    "jueves",
+                    "viernes",
+                    "sábado"
+
+                ];
+
+                diasInasistencias.push({
+
+                    fecha,
+
+                    texto:
+                        `${diasSemana[fecha.getDay()]} ${dia} de ${mesesTexto[mesTexto]}`
+
+                });
+
+            }
+
+        });
+
+    }
+
+    /*
+     * --------------------------------------------------
+     * INASISTENCIAS ACUMULADAS DESPUÉS DE LA SEMANA
+     * --------------------------------------------------
+     */
+
+    const inasistenciasAcumuladas =
+        inasistenciasAntesSemana +
+        inasistenciasSemana;
+
+    /*
+     * --------------------------------------------------
+     * ORDENAR DÍAS
+     * --------------------------------------------------
+     */
+
+    diasInasistencias.sort(
+        (a, b) => a.fecha - b.fecha
+    );
+
+    /*
+     * --------------------------------------------------
+     * TEXTO DE LOS DÍAS
+     * --------------------------------------------------
+     */
+
+    const textoDiasInasistencias =
+        diasInasistencias
+        .map(item => item.texto)
+        .join(", ");
+
+    /*
+     * --------------------------------------------------
+     * PORCENTAJE ACTUAL
+     * --------------------------------------------------
+     *
+     * Se consideran solamente las A anteriores
+     * a la semana que se está notificando.
+     */
+
+    const porcentajeActual =
+        totalClasesCurso > 0
+            ? (
+                inasistenciasAntesSemana /
+                totalClasesCurso
+            ) * 100
+            : 0;
+
+    /*
+     * --------------------------------------------------
+     * PORCENTAJE SI NO JUSTIFICA
+     * --------------------------------------------------
+     *
+     * Se agregan las A de la semana corriente.
+     */
+
+    const porcentajeProyectado =
+        totalClasesCurso > 0
+            ? (
+                inasistenciasAcumuladas /
+                totalClasesCurso
+            ) * 100
+            : 0;
+
+    /*
+     * --------------------------------------------------
+     * RESULTADO
+     * --------------------------------------------------
+     */
+
+    return {
+
+        primerNombre,
+
+        diasInasistencias:
+            diasInasistencias.map(
+                item => item.texto
+            ),
+
+        textoDiasInasistencias,
+
+        inasistenciasAntesSemana,
+
+        inasistenciasSemana,
+
+        inasistenciasAcumuladas,
+
+        totalClasesCurso,
+
+        porcentajeActual,
+
+        porcentajeProyectado,
+
+        limiteInasistencia: 10
+
+    };
+
+}        
+
 function mostrarAlumnos(lista, fechaInicioFiltro = "", fechaFinFiltro = "") {
 
     resultadoAsistencia.innerHTML = "";
