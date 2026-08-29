@@ -336,78 +336,86 @@ sesionesGrupo.sort(
 
 /*
  * ----------------------------------------------
- * ÚLTIMA SEMANA OPERATIVA DISPONIBLE
+ * ÚLTIMA SEMANA OPERATIVA
  * ----------------------------------------------
+ *
+ * La semana operativa siempre va desde
+ * el último lunes transcurrido hasta
+ * el domingo siguiente.
  */
 
 let fechasUltimaSemana = [];
 
-if (sesionesGrupo.length > 0) {
-
-    const ultimaFecha =
-        sesionesGrupo[
-            sesionesGrupo.length - 1
-        ].fechaObjeto;
+const hoy =
+    new Date();
 
 
-    /*
-     * LUNES COMO INICIO DE LA SEMANA OPERATIVA
-     */
+/*
+ * ----------------------------------------------
+ * ENCONTRAR EL ÚLTIMO LUNES
+ * ----------------------------------------------
+ */
 
-    const diaSemana =
-        ultimaFecha.getDay();
+const diaHoy =
+    hoy.getDay();
 
-    const diasDesdeLunes =
-        diaSemana === 0
-            ? 6
-            : diaSemana - 1;
+const diasDesdeLunes =
+    diaHoy === 0
+        ? 6
+        : diaHoy - 1;
 
 
-    const inicioSemana =
-        new Date(ultimaFecha);
+const inicioSemana =
+    new Date(hoy);
 
-    inicioSemana.setDate(
-        ultimaFecha.getDate() -
-        diasDesdeLunes
+inicioSemana.setDate(
+    hoy.getDate() -
+    diasDesdeLunes
+);
+
+inicioSemana.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+
+/*
+ * ----------------------------------------------
+ * DOMINGO DE LA SEMANA OPERATIVA
+ * ----------------------------------------------
+ */
+
+const finSemana =
+    new Date(inicioSemana);
+
+finSemana.setDate(
+    inicioSemana.getDate() + 6
+);
+
+finSemana.setHours(
+    23,
+    59,
+    59,
+    999
+);
+
+
+/*
+ * ----------------------------------------------
+ * SESIONES REALES DE ESA SEMANA
+ * ----------------------------------------------
+ */
+
+fechasUltimaSemana =
+    sesionesGrupo.filter(
+        sesion =>
+            sesion.fechaObjeto >=
+                inicioSemana &&
+            sesion.fechaObjeto <=
+                finSemana
     );
-
-    inicioSemana.setHours(
-        0,
-        0,
-        0,
-        0
-    );
-
-
-    const finSemana =
-        new Date(inicioSemana);
-
-    finSemana.setDate(
-        inicioSemana.getDate() + 6
-    );
-
-    finSemana.setHours(
-        23,
-        59,
-        59,
-        999
-    );
-
-
-    /*
-     * SESIONES REALES DE ESA SEMANA
-     */
-
-    fechasUltimaSemana =
-        sesionesGrupo.filter(
-            sesion =>
-                sesion.fechaObjeto >=
-                    inicioSemana &&
-                sesion.fechaObjeto <=
-                    finSemana
-        );
-
-}
 
 
 /*
