@@ -158,19 +158,35 @@ grupos.forEach(grupo => {
 
     });
 
+
     /*
- * JUSTIFICACIÓN
- */
+     * JUSTIFICACIÓN
+     */
 
-const celdaJustificacion =
-    hoja.getCell(14, dias.length + 2);
+    const celdaJustificacion =
+        hoja.getCell(14, dias.length + 2);
 
-celdaJustificacion.value =
-    "JUSTIFICACIÓN";
+    celdaJustificacion.value =
+        "JUSTIFICACIÓN";
 
-celdaJustificacion.font = {
-    bold: true
-};
+    celdaJustificacion.font = {
+        bold: true
+    };
+
+
+    /*
+     * ANCHO DE COLUMNAS
+     */
+
+    hoja.getColumn(1).width = 30;
+
+    for (let i = 0; i < dias.length; i++) {
+
+        hoja.getColumn(i + 2).width = 10;
+
+    }
+
+    hoja.getColumn(dias.length + 2).width = 53;
 
 });
 
