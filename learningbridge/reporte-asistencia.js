@@ -65,10 +65,19 @@ grupos.forEach(grupo => {
     const hoja =
         libro.addWorksheet(grupo);
 
+    /*
+     * LOGO
+     */
+
     hoja.addImage(imagenLogo, {
         tl: { col: 0, row: 0 },
         br: { col: 3, row: 9 }
     });
+
+
+    /*
+     * TÍTULO
+     */
 
     hoja.getCell("C11").value =
         "CONTROL DE ASISTENCIA Y PUNTUALIDAD";
@@ -77,6 +86,11 @@ grupos.forEach(grupo => {
         bold: true
     };
 
+
+    /*
+     * GRUPO
+     */
+
     hoja.getCell("A13").value =
         `GRUPO: ${grupo}`;
 
@@ -84,12 +98,65 @@ grupos.forEach(grupo => {
         bold: true
     };
 
+
+    /*
+     * NOMBRES Y APELLIDOS
+     */
+
     hoja.getCell("A15").value =
-    "NOMBRES Y APELLIDOS";
+        "NOMBRES Y APELLIDOS";
 
     hoja.getCell("A15").font = {
         bold: true
     };
+
+
+    /*
+     * DÍAS DE CLASE DEL GRUPO
+     */
+
+    let dias = [];
+
+    if (grupo.includes(" L")) {
+
+        dias = [
+            "LUNES",
+            "MIÉRCOLES",
+            "VIERNES"
+        ];
+
+    } else if (grupo.includes(" MJ")) {
+
+        dias = [
+            "MARTES",
+            "JUEVES"
+        ];
+
+    } else if (grupo.includes(" S")) {
+
+        dias = [
+            "SÁBADO"
+        ];
+
+    }
+
+
+    /*
+     * COLOCAR DÍAS DESDE B12
+     */
+
+    dias.forEach((dia, indice) => {
+
+        const celda =
+            hoja.getCell(12, indice + 2);
+
+        celda.value = dia;
+
+        celda.font = {
+            bold: true
+        };
+
+    });
 
 });
 
