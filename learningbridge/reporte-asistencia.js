@@ -640,6 +640,7 @@ alumnosGrupo.forEach(
         const fila =
             indice + 16;
 
+
         /*
          * ----------------------------------------------
          * NOMBRE DEL ALUMNO
@@ -686,6 +687,174 @@ alumnosGrupo.forEach(
         celdaPAIAlumno.alignment = {
             horizontal: "center",
             vertical: "middle"
+        };
+
+
+        /*
+         * ----------------------------------------------
+         * ASISTENCIA / INASISTENCIA
+         * ----------------------------------------------
+         */
+
+        dias.forEach((dia, indiceDia) => {
+
+            const numeroColumna =
+                indiceDia + 3;
+
+
+            /*
+             * Buscar la fecha que corresponde
+             * a la columna del día.
+             */
+
+            const diaBuscado =
+                {
+                    "DOMINGO": 0,
+                    "LUNES": 1,
+                    "MARTES": 2,
+                    "MIÉRCOLES": 3,
+                    "JUEVES": 4,
+                    "VIERNES": 5,
+                    "SÁBADO": 6
+                }[dia];
+
+
+            const sesionDia =
+                fechasUltimaSemana.find(
+                    sesion =>
+                        sesion.fechaObjeto &&
+                        sesion.fechaObjeto.getDay() ===
+                            diaBuscado
+                );
+
+
+            const celdaAsistencia =
+                hoja.getCell(
+                    fila,
+                    numeroColumna
+                );
+
+
+            /*
+             * Si existe una sesión para ese día,
+             * buscar la asistencia correspondiente
+             * del alumno.
+             */
+
+            if (sesionDia && alumno.sesiones) {
+
+                const sesionAlumno =
+                    alumno.sesiones.find(
+                        sesion => {
+
+                            if (!sesion.fecha) {
+                                return false;
+                            }
+
+                            const textoFecha =
+                                sesion.fecha
+                                    .replace(
+                                        "All students",
+                                        ""
+                                    )
+                                    .trim();
+
+                            const partes =
+                                textoFecha.match(
+                                    /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})\s+(\d{1,2})\.(\d{2})(AM|PM)$/
+                                );
+
+                            if (!partes) {
+                                return false;
+                            }
+
+                            const diaSesion =
+                                parseInt(
+                                    partes[1],
+                                    10
+                                );
+
+                            const meses = {
+                                Jan: 0,
+                                Feb: 1,
+                                Mar: 2,
+                                Apr: 3,
+                                May: 4,
+                                Jun: 5,
+                                Jul: 6,
+                                Aug: 7,
+                                Sep: 8,
+                                Oct: 9,
+                                Nov: 10,
+                                Dec: 11
+                            };
+
+                            const mesSesion =
+                                meses[partes[2]];
+
+                            const añoSesion =
+                                parseInt(
+                                    partes[3],
+                                    10
+                                );
+
+                            return (
+                                diaSesion ===
+                                    sesionDia.fechaObjeto.getDate() &&
+                                mesSesion ===
+                                    sesionDia.fechaObjeto.getMonth() &&
+                                añoSesion ===
+                                    sesionDia.fechaObjeto.getFullYear()
+                            );
+
+                        }
+                    );
+
+
+                if (sesionAlumno) {
+
+                    celdaAsistencia.value =
+                        String(
+                            sesionAlumno.asistencia || ""
+                        )
+                        .trim()
+                        .charAt(0);
+
+                }
+
+            }
+
+
+            celdaAsistencia.alignment = {
+                horizontal: "center",
+                vertical: "middle"
+            };
+
+        });
+
+
+        /*
+         * ----------------------------------------------
+         * JUSTIFICACIÓN
+         * ----------------------------------------------
+         */
+
+        const columnaJustificacion =
+            dias.length + 3;
+
+        const celdaJustificacionAlumno =
+            hoja.getCell(
+                fila,
+                columnaJustificacion
+            );
+
+        celdaJustificacionAlumno.value =
+            alumno.justificacion || "";
+
+        celdaJustificacionAlumno.alignment = {
+            horizontal: "left",
+            vertical: "middle",
+            wrapText: true
         };
 
     }
