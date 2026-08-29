@@ -31,6 +31,15 @@ document
             grupos
         );
 
+        grupos.forEach((grupo, indice) => {
+
+    console.log(
+        `GRUPO ${indice + 1}:`,
+        JSON.stringify(grupo)
+    );
+
+});
+
 
         /*
          * ----------------------------------------------
