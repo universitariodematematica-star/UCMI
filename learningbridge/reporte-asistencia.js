@@ -4,6 +4,12 @@
  * ==================================================
  */
 
+/*
+ * ==================================================
+ * REPORTE DE ASISTENCIA
+ * ==================================================
+ */
+
 document
     .getElementById("btnDescargarExcel")
     .addEventListener("click", async function() {
@@ -40,14 +46,14 @@ document
 
         /*
          * ----------------------------------------------
-         * CREAR UNA HOJA POR GRUPO
+         * CREAR HOJAS
          * ----------------------------------------------
          */
 
         grupos.forEach(grupo => {
 
             const hoja = libro.addWorksheet(
-                grupo
+                String(grupo)
             );
 
             hoja.getCell("A1").value =
@@ -58,24 +64,32 @@ document
 
         /*
          * ----------------------------------------------
-         * DESCARGAR
+         * GENERAR ARCHIVO
          * ----------------------------------------------
          */
 
-        const archivo =
+        const buffer =
             await libro.xlsx.writeBuffer();
 
-        const blob =
-            new Blob(
-                [archivo],
-                {
-                    type:
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                }
-            );
+
+        /*
+         * ----------------------------------------------
+         * CREAR DESCARGA
+         * ----------------------------------------------
+         */
+
+        const blob = new Blob(
+            [buffer],
+            {
+                type:
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+        );
 
         const enlace =
             document.createElement("a");
+
+        enlace.style.display = "none";
 
         enlace.href =
             URL.createObjectURL(blob);
@@ -83,10 +97,10 @@ document
         enlace.download =
             "Reporte_Asistencia.xlsx";
 
+        document.body.appendChild(enlace);
+
         enlace.click();
 
-        URL.revokeObjectURL(
-            enlace.href
-        );
+        document.body.removeChild(enlace);
 
     });
