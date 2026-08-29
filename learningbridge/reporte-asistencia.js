@@ -8,53 +8,34 @@ document
     .getElementById("btnDescargarExcel")
     .addEventListener("click", async function() {
 
-        /*
-         * ----------------------------------------------
-         * CREAR LIBRO
-         * ----------------------------------------------
-         */
-
         const libro = new ExcelJS.Workbook();
 
 
         /*
          * ----------------------------------------------
-         * OBTENER GRUPOS
+         * CREAR TRES HOJAS DE PRUEBA
          * ----------------------------------------------
          */
 
-        const grupos = [
-            ...new Set(
-                registrosAsistencia
-                    .map(alumno => alumno.grupo)
-                    .filter(grupo => grupo)
-            )
-        ];
+        const hoja1 =
+            libro.addWorksheet("Grupo 1");
+
+        hoja1.getCell("A1").value =
+            "PRUEBA GRUPO 1";
 
 
-        console.log(
-            "GRUPOS ENCONTRADOS:",
-            grupos
-        );
+        const hoja2 =
+            libro.addWorksheet("Grupo 2");
+
+        hoja2.getCell("A1").value =
+            "PRUEBA GRUPO 2";
 
 
-        /*
-         * ----------------------------------------------
-         * CREAR UNA HOJA POR GRUPO
-         * ----------------------------------------------
-         */
+        const hoja3 =
+            libro.addWorksheet("Grupo 3");
 
-        grupos.forEach((grupo, indice) => {
-
-            const hoja =
-                libro.addWorksheet(
-                    `Grupo ${indice + 1}`
-                );
-
-            hoja.getCell("A1").value =
-                `GRUPO: ${grupo}`;
-
-        });
+        hoja3.getCell("A1").value =
+            "PRUEBA GRUPO 3";
 
 
         /*
@@ -71,15 +52,16 @@ document
          * ----------------------------------------------
          * DESCARGAR
          * ----------------------------------------------
- */
+         */
 
-        const blob = new Blob(
-            [buffer],
-            {
-                type:
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            }
-        );
+        const blob =
+            new Blob(
+                [buffer],
+                {
+                    type:
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                }
+            );
 
         const enlace =
             document.createElement("a");
@@ -88,7 +70,7 @@ document
             URL.createObjectURL(blob);
 
         enlace.download =
-            "Reporte_Asistencia.xlsx";
+            "Prueba_Tres_Hojas.xlsx";
 
         document.body.appendChild(enlace);
 
