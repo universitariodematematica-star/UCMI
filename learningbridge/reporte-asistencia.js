@@ -52,15 +52,28 @@ document
          * ----------------------------------------------
          */
 
-        grupos.forEach(grupo => {
+const respuestaLogo = await fetch("lb-logo.png");
+const datosLogo = await respuestaLogo.arrayBuffer();
 
-            const hoja =
-                libro.addWorksheet(grupo);
+const imagenLogo = libro.addImage({
+    buffer: datosLogo,
+    extension: "png"
+});
+        
+grupos.forEach(grupo => {
 
-            hoja.getCell("A1").value =
-                `GRUPO: ${grupo}`;
+    const hoja =
+        libro.addWorksheet(grupo);
 
-        });
+    hoja.addImage(imagenLogo, {
+        tl: { col: 0, row: 0 },
+        br: { col: 1, row: 6 }
+    });
+
+    hoja.getCell("A1").value =
+        `GRUPO: ${grupo}`;
+
+});
 
 
         /*
