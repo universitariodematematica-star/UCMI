@@ -13,29 +13,42 @@ document
 
         /*
          * ----------------------------------------------
-         * CREAR TRES HOJAS DE PRUEBA
+         * OBTENER GRUPOS REALES
          * ----------------------------------------------
          */
 
-        const hoja1 =
-            libro.addWorksheet("Grupo 1");
-
-        hoja1.getCell("A1").value =
-            "PRUEBA GRUPO 1";
-
-
-        const hoja2 =
-            libro.addWorksheet("Grupo 2");
-
-        hoja2.getCell("A1").value =
-            "PRUEBA GRUPO 2";
+        const grupos = [
+            ...new Set(
+                registrosAsistencia
+                    .map(alumno => alumno.grupo)
+                    .filter(grupo => grupo)
+            )
+        ];
 
 
-        const hoja3 =
-            libro.addWorksheet("Grupo 3");
+        console.log(
+            "GRUPOS ENCONTRADOS:",
+            grupos
+        );
 
-        hoja3.getCell("A1").value =
-            "PRUEBA GRUPO 3";
+
+        /*
+         * ----------------------------------------------
+         * CREAR HOJAS DE PRUEBA
+         * ----------------------------------------------
+         */
+
+        grupos.forEach((grupo, indice) => {
+
+            const hoja =
+                libro.addWorksheet(
+                    `Grupo ${indice + 1}`
+                );
+
+            hoja.getCell("A1").value =
+                `GRUPO: ${grupo}`;
+
+        });
 
 
         /*
@@ -52,7 +65,7 @@ document
          * ----------------------------------------------
          * DESCARGAR
          * ----------------------------------------------
-         */
+ */
 
         const blob =
             new Blob(
@@ -70,7 +83,7 @@ document
             URL.createObjectURL(blob);
 
         enlace.download =
-            "Prueba_Tres_Hojas.xlsx";
+            "Prueba_Grupos.xlsx";
 
         document.body.appendChild(enlace);
 
