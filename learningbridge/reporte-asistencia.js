@@ -833,29 +833,129 @@ alumnosGrupo.forEach(
         });
 
 
-        /*
-         * ----------------------------------------------
-         * JUSTIFICACIÓN
-         * ----------------------------------------------
-         */
+/*
+ * ----------------------------------------------
+ * JUSTIFICACIÓN
+ * ----------------------------------------------
+ */
 
-        const columnaJustificacion =
-            dias.length + 3;
+const columnaJustificacion =
+    dias.length + 3;
 
-        const celdaJustificacionAlumno =
-            hoja.getCell(
-                fila,
-                columnaJustificacion
-            );
+const celdaJustificacionAlumno =
+    hoja.getCell(
+        fila,
+        columnaJustificacion
+    );
 
-        celdaJustificacionAlumno.value =
-            alumno.justificacion || "";
+celdaJustificacionAlumno.value =
+    alumno.justificacion || "";
 
-        celdaJustificacionAlumno.alignment = {
-            horizontal: "left",
-            vertical: "middle",
-            wrapText: true
+celdaJustificacionAlumno.alignment = {
+    horizontal: "left",
+    vertical: "middle",
+    wrapText: true
+};
+
+
+/*
+ * ----------------------------------------------
+ * COLOR DE TODA LA FILA
+ * SEGÚN LA JUSTIFICACIÓN
+ * ----------------------------------------------
+ */
+
+const textoJustificacion =
+    String(
+        alumno.justificacion || ""
+    )
+    .trim()
+    .toLowerCase();
+
+
+/*
+ * SIN JUSTIFICACIÓN
+ * → SIN RELLENO
+ */
+
+if (textoJustificacion === "") {
+
+    for (
+        let columna = 1;
+        columna <= columnaJustificacion;
+        columna++
+    ) {
+
+        hoja.getCell(
+            fila,
+            columna
+        ).fill = undefined;
+
+    }
+
+}
+
+
+/*
+ * SE RETIRA
+ * → GRIS CLARO
+ */
+
+else if (
+    /s\s*e\s+r\s*e\s*t\s*i\s*r\s*a/i.test(
+        textoJustificacion
+    )
+) {
+
+    for (
+        let columna = 1;
+        columna <= columnaJustificacion;
+        columna++
+    ) {
+
+        hoja.getCell(
+            fila,
+            columna
+        ).fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: {
+                argb: "FFD9D9D9"
+            }
         };
+
+    }
+
+}
+
+
+/*
+ * OTRA EXPLICACIÓN
+ * → AZUL CLARO
+ */
+
+else {
+
+    for (
+        let columna = 1;
+        columna <= columnaJustificacion;
+        columna++
+    ) {
+
+        hoja.getCell(
+            fila,
+            columna
+        ).fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: {
+                argb: "FFDDEBF7"
+            }
+        };
+
+    }
+
+}
 
     }
 );
