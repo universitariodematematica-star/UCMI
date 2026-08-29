@@ -65,10 +65,10 @@ grupos.forEach(grupo => {
     const hoja =
         libro.addWorksheet(grupo);
 
-    hoja.addImage(imagenLogo, {
-        tl: { col: 0, row: 0 },
-        br: { col: 1, row: 6 }
-    });
+hoja.addImage(imagenLogo, {
+    tl: { col: 0, row: 0 },
+    br: { col: 3, row: 9 }
+});
 
     hoja.getCell("A1").value =
         `GRUPO: ${grupo}`;
