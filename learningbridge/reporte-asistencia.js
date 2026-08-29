@@ -71,170 +71,387 @@ document
          * ----------------------------------------------
          */
 
-        grupos.forEach(grupo => {
+grupos.forEach(grupo => {
 
-            const hoja =
-                libro.addWorksheet(grupo);
-
-
-            /*
-             * LOGO
-             */
-
-            hoja.addImage(imagenLogo, {
-                tl: { col: 0, row: 0 },
-                br: { col: 3, row: 9 }
-            });
+    const hoja =
+        libro.addWorksheet(grupo);
 
 
-            /*
-             * TÍTULO
-             */
+    /*
+     * ----------------------------------------------
+     * LOGO
+     * ----------------------------------------------
+     */
 
-            hoja.mergeCells("B11:D11");
-
-            hoja.getCell("B11").value =
-                "CONTROL DE ASISTENCIA Y PUNTUALIDAD";
-
-            hoja.getCell("B11").font = {
-                bold: true
-            };
-
-            hoja.getCell("B11").alignment = {
-                horizontal: "center",
-                vertical: "middle"
-            };
+    hoja.addImage(imagenLogo, {
+        tl: { col: 0, row: 0 },
+        ext: {
+            width: 180,
+            height: 180
+        }
+    });
 
 
-            /*
-             * GRUPO
-             */
+    /*
+     * ----------------------------------------------
+     * TÍTULO
+     * ----------------------------------------------
+     */
 
-            hoja.getCell("A13").value =
-                `GRUPO: ${grupo}`;
+    hoja.mergeCells("B11:D11");
 
-            hoja.getCell("A13").font = {
-                bold: true
-            };
+    hoja.getCell("B11").value =
+        "CONTROL DE ASISTENCIA Y PUNTUALIDAD";
 
-            hoja.getCell("A13").alignment = {
-                horizontal: "left"
-            };
+    hoja.getCell("B11").font = {
+        bold: true
+    };
 
-
-            /*
-             * NOMBRES Y APELLIDOS
-             */
-
-            hoja.getCell("A15").value =
-                "NOMBRES Y APELLIDOS";
-
-            hoja.getCell("A15").font = {
-                bold: true
-            };
-
-            hoja.getCell("A15").alignment = {
-                horizontal: "left"
-            };
+    hoja.getCell("B11").alignment = {
+        horizontal: "center",
+        vertical: "middle"
+    };
 
 
-            /*
-             * DÍAS DE CLASE DEL GRUPO
-             */
+    /*
+     * ----------------------------------------------
+     * GRUPO
+     * ----------------------------------------------
+     */
 
-            let dias = [];
+    hoja.getCell("A13").value =
+        `GRUPO: ${grupo}`;
 
-            if (grupo.includes(" L")) {
+    hoja.getCell("A13").font = {
+        bold: true
+    };
 
-                dias = [
-                    "LUNES",
-                    "MIÉRCOLES",
-                    "VIERNES"
-                ];
+    hoja.getCell("A13").alignment = {
+        horizontal: "left"
+    };
 
-            } else if (grupo.includes(" MJ")) {
 
-                dias = [
-                    "MARTES",
-                    "JUEVES"
-                ];
+    /*
+     * ----------------------------------------------
+     * NOMBRES Y APELLIDOS
+     * ----------------------------------------------
+     */
 
-            } else if (grupo.includes(" S")) {
+    hoja.getCell("A15").value =
+        "NOMBRES Y APELLIDOS";
 
-                dias = [
-                    "SÁBADO"
-                ];
+    hoja.getCell("A15").font = {
+        bold: true
+    };
 
+    hoja.getCell("A15").alignment = {
+        horizontal: "left"
+    };
+
+
+    /*
+     * ----------------------------------------------
+     * DÍAS DE CLASE DEL GRUPO
+     * ----------------------------------------------
+     */
+
+    let dias = [];
+
+    if (grupo.includes(" L")) {
+
+        dias = [
+            "LUNES",
+            "MIÉRCOLES",
+            "VIERNES"
+        ];
+
+    } else if (grupo.includes(" MJ")) {
+
+        dias = [
+            "MARTES",
+            "JUEVES"
+        ];
+
+    } else if (grupo.includes(" S")) {
+
+        dias = [
+            "SÁBADO"
+        ];
+
+    }
+
+
+    /*
+     * ----------------------------------------------
+     * OBTENER SESIONES DEL GRUPO
+     * ----------------------------------------------
+     */
+
+    const registrosGrupo =
+        registros.filter(
+            alumno =>
+                alumno.grupo === grupo
+        );
+
+
+    /*
+     * ----------------------------------------------
+     * OBTENER FECHAS DE LAS SESIONES
+     * ----------------------------------------------
+     */
+
+    const sesionesGrupo = [];
+
+    registrosGrupo.forEach(alumno => {
+
+        if (!alumno.sesiones) {
+            return;
+        }
+
+        alumno.sesiones.forEach(sesion => {
+
+            if (!sesion.fecha) {
+                return;
             }
 
+            if (
+                !sesionesGrupo.some(
+                    existente =>
+                        existente.fecha === sesion.fecha
+                )
+            ) {
 
-            /*
-             * COLOCAR DÍAS DESDE B14
-             */
-
-            dias.forEach((dia, indice) => {
-
-                const celda =
-                    hoja.getCell(14, indice + 2);
-
-                celda.value =
-                    dia;
-
-                celda.font = {
-                    bold: true
-                };
-
-                celda.alignment = {
-                    horizontal: "center",
-                    vertical: "middle"
-                };
-
-            });
-
-
-            /*
-             * JUSTIFICACIÓN
-             */
-
-            const celdaJustificacion =
-                hoja.getCell(
-                    14,
-                    dias.length + 2
-                );
-
-            celdaJustificacion.value =
-                "JUSTIFICACIÓN";
-
-            celdaJustificacion.font = {
-                bold: true
-            };
-
-            celdaJustificacion.alignment = {
-                horizontal: "center",
-                vertical: "middle"
-            };
-
-
-            /*
-             * ANCHO DE COLUMNAS
-             */
-
-            hoja.getColumn(1).width =
-                30;
-
-            for (let i = 0; i < dias.length; i++) {
-
-                hoja.getColumn(i + 2).width =
-                    15;
+                sesionesGrupo.push({
+                    fecha: sesion.fecha
+                });
 
             }
-
-            hoja.getColumn(
-                dias.length + 2
-            ).width =
-                53;
 
         });
+
+    });
+
+
+    /*
+     * ----------------------------------------------
+     * CONVERTIR FECHAS
+     * ----------------------------------------------
+     */
+
+    sesionesGrupo.forEach(sesion => {
+
+        const textoFecha =
+            sesion.fecha
+                .replace(
+                    "All students",
+                    ""
+                )
+                .trim();
+
+        sesion.fechaObjeto =
+            new Date(textoFecha);
+
+    });
+
+
+    /*
+     * ----------------------------------------------
+     * ORDENAR SESIONES POR FECHA
+     * ----------------------------------------------
+     */
+
+    sesionesGrupo.sort(
+        (a, b) =>
+            a.fechaObjeto - b.fechaObjeto
+    );
+
+
+    /*
+     * ----------------------------------------------
+     * ÚLTIMA SEMANA OPERATIVA
+     * ----------------------------------------------
+     */
+
+    let fechasUltimaSemana = [];
+
+    if (sesionesGrupo.length > 0) {
+
+        const ultimaFecha =
+            sesionesGrupo[
+                sesionesGrupo.length - 1
+            ].fechaObjeto;
+
+        const diaSemana =
+            ultimaFecha.getDay();
+
+        const inicioSemana =
+            new Date(ultimaFecha);
+
+        inicioSemana.setDate(
+            ultimaFecha.getDate() -
+            diaSemana
+        );
+
+        inicioSemana.setHours(
+            0, 0, 0, 0
+        );
+
+        const finSemana =
+            new Date(inicioSemana);
+
+        finSemana.setDate(
+            inicioSemana.getDate() + 6
+        );
+
+        finSemana.setHours(
+            23, 59, 59, 999
+        );
+
+
+        fechasUltimaSemana =
+            sesionesGrupo.filter(
+                sesion =>
+                    sesion.fechaObjeto >=
+                        inicioSemana &&
+                    sesion.fechaObjeto <=
+                        finSemana
+            );
+
+    }
+
+
+    /*
+     * ----------------------------------------------
+     * COLOCAR DÍAS Y FECHAS
+     * ----------------------------------------------
+     */
+
+    dias.forEach((dia, indice) => {
+
+        const numeroColumna =
+            indice + 2;
+
+
+        /*
+         * DÍA
+         */
+
+        const celdaDia =
+            hoja.getCell(
+                14,
+                numeroColumna
+            );
+
+        celdaDia.value =
+            dia;
+
+        celdaDia.font = {
+            bold: true
+        };
+
+        celdaDia.alignment = {
+            horizontal: "center",
+            vertical: "middle"
+        };
+
+
+        /*
+         * FECHA
+         */
+
+        const diaBuscado =
+            {
+                "DOMINGO": 0,
+                "LUNES": 1,
+                "MARTES": 2,
+                "MIÉRCOLES": 3,
+                "JUEVES": 4,
+                "VIERNES": 5,
+                "SÁBADO": 6
+            }[dia];
+
+
+        const sesionDia =
+            fechasUltimaSemana.find(
+                sesion =>
+                    sesion.fechaObjeto.getDay() ===
+                    diaBuscado
+            );
+
+
+        const celdaFecha =
+            hoja.getCell(
+                15,
+                numeroColumna
+            );
+
+
+        if (sesionDia) {
+
+            celdaFecha.value =
+                sesionDia.fechaObjeto;
+
+            celdaFecha.numFmt =
+                "dd/mm/yyyy";
+
+        }
+
+
+        celdaFecha.alignment = {
+            horizontal: "center",
+            vertical: "middle"
+        };
+
+    });
+
+
+    /*
+     * ----------------------------------------------
+     * JUSTIFICACIÓN
+     * ----------------------------------------------
+     */
+
+    const celdaJustificacion =
+        hoja.getCell(
+            14,
+            dias.length + 2
+        );
+
+    celdaJustificacion.value =
+        "JUSTIFICACIÓN";
+
+    celdaJustificacion.font = {
+        bold: true
+    };
+
+    celdaJustificacion.alignment = {
+        horizontal: "center",
+        vertical: "middle"
+    };
+
+
+    /*
+     * ----------------------------------------------
+     * ANCHO DE COLUMNAS
+     * ----------------------------------------------
+     */
+
+    hoja.getColumn(1).width =
+        30;
+
+    for (let i = 0; i < dias.length; i++) {
+
+        hoja.getColumn(i + 2).width =
+            15;
+
+    }
+
+    hoja.getColumn(
+        dias.length + 2
+    ).width =
+        53;
+
+});
 
 
         /*
