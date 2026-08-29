@@ -640,6 +640,12 @@ alumnosGrupo.forEach(
         const fila =
             indice + 16;
 
+        /*
+         * ----------------------------------------------
+         * NOMBRE DEL ALUMNO
+         * ----------------------------------------------
+         */
+
         const celdaNombre =
             hoja.getCell(
                 fila,
@@ -651,6 +657,34 @@ alumnosGrupo.forEach(
 
         celdaNombre.alignment = {
             horizontal: "left",
+            vertical: "middle"
+        };
+
+
+        /*
+         * ----------------------------------------------
+         * PAI
+         * PORCENTAJE ACUMULADO DE INASISTENCIAS
+         * ----------------------------------------------
+         */
+
+        const datosInasistencia =
+            calcularDatosInasistencia(alumno);
+
+        const celdaPAIAlumno =
+            hoja.getCell(
+                fila,
+                2
+            );
+
+        celdaPAIAlumno.value =
+            datosInasistencia.porcentajeActual / 100;
+
+        celdaPAIAlumno.numFmt =
+            "0.00%";
+
+        celdaPAIAlumno.alignment = {
+            horizontal: "center",
             vertical: "middle"
         };
 
