@@ -248,8 +248,76 @@ sesionesGrupo.forEach(sesion => {
             )
             .trim();
 
+    /*
+     * FORMATO RECIBIDO:
+     * 5 Aug 2026 5.00PM
+     */
+
+    const partes =
+        textoFecha.match(
+            /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})\s+(\d{1,2})\.(\d{2})(AM|PM)$/
+        );
+
+    if (!partes) {
+
+        console.error(
+            "FECHA NO RECONOCIDA:",
+            textoFecha
+        );
+
+        return;
+
+    }
+
+    const dia =
+        parseInt(partes[1], 10);
+
+    const meses = {
+        Jan: 0,
+        Feb: 1,
+        Mar: 2,
+        Apr: 3,
+        May: 4,
+        Jun: 5,
+        Jul: 6,
+        Aug: 7,
+        Sep: 8,
+        Oct: 9,
+        Nov: 10,
+        Dec: 11
+    };
+
+    const mes =
+        meses[partes[2]];
+
+    const año =
+        parseInt(partes[3], 10);
+
+    let hora =
+        parseInt(partes[4], 10);
+
+    const minutos =
+        parseInt(partes[5], 10);
+
+    const periodo =
+        partes[6];
+
+    if (periodo === "PM" && hora !== 12) {
+        hora += 12;
+    }
+
+    if (periodo === "AM" && hora === 12) {
+        hora = 0;
+    }
+
     sesion.fechaObjeto =
-        new Date(textoFecha);
+        new Date(
+            año,
+            mes,
+            dia,
+            hora,
+            minutos
+        );
 
 });
 
