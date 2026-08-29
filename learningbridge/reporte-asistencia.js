@@ -20,7 +20,7 @@ document
         const grupos = [
             ...new Set(
                 registrosAsistencia
-                    .map(alumno => alumno.grupo)
+                    window.registrosAsistencia
                     .filter(grupo => grupo)
             )
         ];
