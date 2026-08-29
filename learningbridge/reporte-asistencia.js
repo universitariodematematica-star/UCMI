@@ -84,6 +84,13 @@ grupos.forEach(grupo => {
         bold: true
     };
 
+    hoja.getCell("A15").value =
+    "NOMBRES Y APELLIDOS";
+
+    hoja.getCell("A15").font = {
+        bold: true
+    };
+
 });
 
 
