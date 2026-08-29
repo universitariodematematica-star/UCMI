@@ -147,6 +147,7 @@
         }
 
         /* Estilo interactivo exclusivo para el grammar formula */
+
         .card-grammar-formula {
             cursor: pointer;
         }
@@ -1035,8 +1036,7 @@
 
             <textarea
                 class="board-textarea"
-                placeholder="Escribe aquí notas adicionales, ejemplos de nombres en Latinoamérica o explicaciones para la clase...">
-            </textarea>
+                placeholder="Escribe aquí notas adicionales, ejemplos de nombres en Latinoamérica o explicaciones para la clase..."></textarea>
 
 
             <div class="modal-footer">
@@ -1057,10 +1057,172 @@
 
 
     <!-- =====================================================
-         SCRIPT DE LA PIZARRA
+         SCRIPT DE LA PIZARRA + PERSISTENCIA
     ===================================================== -->
 
     <script>
+
+        /* =====================================================
+           PERSISTENCIA DE RESPUESTAS
+           ===================================================== */
+
+        const STORAGE_KEY =
+            'learning_bridge_lesson6_my_name_last_name';
+
+
+        function guardarRespuestas() {
+
+            try {
+
+                const datos = {};
+
+                const campos =
+                    document.querySelectorAll(
+                        'input[type="text"], textarea'
+                    );
+
+
+                campos.forEach((campo, indice) => {
+
+                    /*
+                     * Cada campo recibe una clave estable
+                     * basada en su posición dentro de la página.
+                     */
+
+                    const clave =
+                        campo.dataset.persistKey ||
+                        `campo_${indice}`;
+
+                    campo.dataset.persistKey = clave;
+
+                    datos[clave] = campo.value;
+
+                });
+
+
+                localStorage.setItem(
+                    STORAGE_KEY,
+                    JSON.stringify(datos)
+                );
+
+            } catch (error) {
+
+                console.warn(
+                    'No fue posible guardar las respuestas:',
+                    error
+                );
+
+            }
+
+        }
+
+
+        function cargarRespuestas() {
+
+            try {
+
+                const datosGuardados =
+                    localStorage.getItem(
+                        STORAGE_KEY
+                    );
+
+
+                if (!datosGuardados) {
+
+                    return;
+
+                }
+
+
+                const datos =
+                    JSON.parse(
+                        datosGuardados
+                    );
+
+
+                const campos =
+                    document.querySelectorAll(
+                        'input[type="text"], textarea'
+                    );
+
+
+                campos.forEach((campo, indice) => {
+
+                    const clave =
+                        campo.dataset.persistKey ||
+                        `campo_${indice}`;
+
+                    campo.dataset.persistKey = clave;
+
+
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            datos,
+                            clave
+                        )
+                    ) {
+
+                        campo.value =
+                            datos[clave];
+
+                    }
+
+                });
+
+
+                console.log(
+                    '✓ Respuestas recuperadas correctamente.'
+                );
+
+            } catch (error) {
+
+                console.warn(
+                    'No fue posible recuperar las respuestas:',
+                    error
+                );
+
+            }
+
+        }
+
+
+        function activarPersistencia() {
+
+            const campos =
+                document.querySelectorAll(
+                    'input[type="text"], textarea'
+                );
+
+
+            campos.forEach((campo, indice) => {
+
+                /*
+                 * Asignamos una identidad persistente
+                 * a cada campo.
+                 */
+
+                campo.dataset.persistKey =
+                    `campo_${indice}`;
+
+
+                /*
+                 * Guardar inmediatamente cada vez
+                 * que el usuario escribe.
+                 */
+
+                campo.addEventListener(
+                    'input',
+                    guardarRespuestas
+                );
+
+            });
+
+        }
+
+
+        /* =====================================================
+           PIZARRA
+        ===================================================== */
 
         function openWhiteboard() {
 
@@ -1072,6 +1234,14 @@
 
 
         function closeWhiteboard() {
+
+            /*
+             * Antes de cerrar la pizarra,
+             * aseguramos que su contenido quede guardado.
+             */
+
+            guardarRespuestas();
+
 
             document.getElementById(
                 'whiteboardModal'
@@ -1087,13 +1257,39 @@
                     'whiteboardModal'
                 );
 
+
             if (event.target == modal) {
 
                 closeWhiteboard();
 
             }
 
-        }
+        };
+
+
+        /* =====================================================
+           INICIALIZACIÓN
+        ===================================================== */
+
+        document.addEventListener(
+            'DOMContentLoaded',
+            function() {
+
+                /*
+                 * Primero asignamos las claves.
+                 */
+
+                activarPersistencia();
+
+
+                /*
+                 * Después recuperamos lo guardado.
+                 */
+
+                cargarRespuestas();
+
+            }
+        );
 
     </script>
 
