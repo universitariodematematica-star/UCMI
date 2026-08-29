@@ -142,13 +142,13 @@ grupos.forEach(grupo => {
 
 
     /*
-     * COLOCAR DÍAS DESDE B12
+     * COLOCAR DÍAS DESDE B14
      */
 
     dias.forEach((dia, indice) => {
 
         const celda =
-            hoja.getCell(12, indice + 2);
+            hoja.getCell(14, indice + 2);
 
         celda.value = dia;
 
