@@ -967,7 +967,7 @@ if (
             type: "pattern",
             pattern: "solid",
             fgColor: {
-                argb: "FFFCE4EC"
+                argb: "FFF4B6C2"
             }
         };
 
@@ -1000,7 +1000,7 @@ else if (
             type: "pattern",
             pattern: "solid",
             fgColor: {
-                argb: "FFD9D9D9"
+                argb: "FFBFBFBF"
             }
         };
 
@@ -1031,7 +1031,7 @@ else if (
             type: "pattern",
             pattern: "solid",
             fgColor: {
-                argb: "FFDDEBF7"
+                argb: "FFBDD7EE"
             }
         };
 
@@ -1105,6 +1105,71 @@ hoja.getColumn(
     53;
 });
 
+/*
+ * ----------------------------------------------
+ * BORDES DE LA TABLA
+ * ----------------------------------------------
+ *
+ * Desde GRUPO hasta el último alumno.
+ *
+ * Columnas:
+ * A = Nombres y apellidos
+ * B = PAI
+ * C... = Días
+ * última = Justificación
+ *
+ * Filas:
+ * 13 = GRUPO
+ * 14 = Días
+ * 15 = Fechas
+ * 16... = Alumnos
+ */
+
+const ultimaFilaTabla =
+    alumnosGrupo.length + 15;
+
+const ultimaColumnaTabla =
+    dias.length + 3;
+
+
+for (
+    let filaTabla = 13;
+    filaTabla <= ultimaFilaTabla;
+    filaTabla++
+) {
+
+    for (
+        let columnaTabla = 1;
+        columnaTabla <= ultimaColumnaTabla;
+        columnaTabla++
+    ) {
+
+        hoja.getCell(
+            filaTabla,
+            columnaTabla
+        ).border = {
+
+            top: {
+                style: "thin"
+            },
+
+            left: {
+                style: "thin"
+            },
+
+            bottom: {
+                style: "thin"
+            },
+
+            right: {
+                style: "thin"
+            }
+
+        };
+
+    }
+
+}        
 
         /*
          * ----------------------------------------------
