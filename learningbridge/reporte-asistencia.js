@@ -848,8 +848,88 @@ const celdaJustificacionAlumno =
         columnaJustificacion
     );
 
+
+/*
+ * ----------------------------------------------
+ * DETERMINAR SI EXISTE ALGUNA INASISTENCIA
+ * EN LA ÚLTIMA SEMANA
+ * ----------------------------------------------
+ */
+
+let tieneInasistencia =
+    false;
+
+dias.forEach((dia, indiceDia) => {
+
+    const numeroColumna =
+        indiceDia + 3;
+
+    const celdaAsistencia =
+        hoja.getCell(
+            fila,
+            numeroColumna
+        );
+
+    const valorAsistencia =
+        String(
+            celdaAsistencia.value || ""
+        )
+        .trim()
+        .toUpperCase();
+
+    if (
+        valorAsistencia === "A"
+    ) {
+
+        tieneInasistencia =
+            true;
+
+    }
+
+});
+
+
+/*
+ * ----------------------------------------------
+ * TEXTO DE JUSTIFICACIÓN
+ * ----------------------------------------------
+ */
+
+let textoJustificacion =
+    String(
+        alumno.justificacion || ""
+    )
+    .trim();
+
+
+/*
+ * ----------------------------------------------
+ * NO RESPONDIÓ
+ * ----------------------------------------------
+ *
+ * Si tiene al menos una A durante la última
+ * semana y no existe justificación.
+ */
+
+if (
+    textoJustificacion === "" &&
+    tieneInasistencia
+) {
+
+    textoJustificacion =
+        "No respondió";
+
+}
+
+
+/*
+ * ----------------------------------------------
+ * ESCRIBIR JUSTIFICACIÓN
+ * ----------------------------------------------
+ */
+
 celdaJustificacionAlumno.value =
-    alumno.justificacion || "";
+    textoJustificacion;
 
 celdaJustificacionAlumno.alignment = {
     horizontal: "left",
@@ -861,24 +941,18 @@ celdaJustificacionAlumno.alignment = {
 /*
  * ----------------------------------------------
  * COLOR DE TODA LA FILA
- * SEGÚN LA JUSTIFICACIÓN
  * ----------------------------------------------
  */
 
-const textoJustificacion =
-    String(
-        alumno.justificacion || ""
-    )
-    .trim()
-    .toLowerCase();
-
 
 /*
- * SIN JUSTIFICACIÓN
- * → SIN RELLENO
+ * NO RESPONDIÓ
+ * → ROSADO CLARO
  */
 
-if (textoJustificacion === "") {
+if (
+    textoJustificacion === "No respondió"
+) {
 
     for (
         let columna = 1;
@@ -889,7 +963,13 @@ if (textoJustificacion === "") {
         hoja.getCell(
             fila,
             columna
-        ).fill = undefined;
+        ).fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: {
+                argb: "FFFCE4EC"
+            }
+        };
 
     }
 
@@ -930,11 +1010,13 @@ else if (
 
 
 /*
- * OTRA EXPLICACIÓN
+ * OTRA JUSTIFICACIÓN ESCRITA
  * → AZUL CLARO
  */
 
-else {
+else if (
+    textoJustificacion !== ""
+) {
 
     for (
         let columna = 1;
@@ -957,6 +1039,28 @@ else {
 
 }
 
+
+/*
+ * SIN JUSTIFICACIÓN Y SIN INASISTENCIA
+ * → SIN RELLENO
+ */
+
+else {
+
+    for (
+        let columna = 1;
+        columna <= columnaJustificacion;
+        columna++
+    ) {
+
+        hoja.getCell(
+            fila,
+            columna
+        ).fill = undefined;
+
+    }
+
+}
     }
 );
 
@@ -968,7 +1072,7 @@ else {
  */
 
 hoja.getColumn(1).width =
-    30;
+    45;
 
 
 /*
