@@ -2287,7 +2287,59 @@ document.getElementById("btnPrepararInforme").addEventListener("click", function
 
     document.getElementById("btnFiltrar").click();
 
-});        
+});  
+
+/*
+ * --------------------------------------------------
+ * RECUPERAR REGISTROS GUARDADOS
+ * --------------------------------------------------
+ */
+
+const registrosGuardados =
+    localStorage.getItem(
+        "learningBridgeRegistrosAsistencia"
+    );
+
+if (registrosGuardados) {
+
+    try {
+
+        const registrosRecuperados =
+            JSON.parse(registrosGuardados);
+
+        if (
+            Array.isArray(registrosRecuperados) &&
+            registrosRecuperados.length > 0
+        ) {
+
+            registrosAsistencia.length = 0;
+
+            registrosAsistencia.push(
+                ...registrosRecuperados
+            );
+
+            console.log(
+                "REGISTROS RECUPERADOS DESDE LOCALSTORAGE:",
+                registrosAsistencia.length
+            );
+
+            mostrarAlumnos(
+                registrosAsistencia
+            );
+
+        }
+
+    }
+    catch (error) {
+
+        console.error(
+            "Error al recuperar los registros guardados:",
+            error
+        );
+
+    }
+
+}        
 
 document.getElementById("archivoAsistencia").addEventListener("change", async function() {
 
@@ -2425,6 +2477,11 @@ const registroAlumno = {
     });
 
 console.log("TOTAL REGISTROS ENCONTRADOS:", registrosAsistencia.length);
+
+localStorage.setItem(
+    "learningBridgeRegistrosAsistencia",
+    JSON.stringify(registrosAsistencia)
+);    
 
 mostrarAlumnos(registrosAsistencia);    
 
