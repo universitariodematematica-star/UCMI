@@ -423,32 +423,32 @@ grupos.forEach(grupo => {
         );
 
 
-    /*
-     * ----------------------------------------------
-     * PAI
-     * ----------------------------------------------
-     */
+/*
+ * ----------------------------------------------
+ * PAI
+ * ----------------------------------------------
+ */
 
-    const celdaPAI =
-        hoja.getCell(
-            14,
-            2
-        );
+const celdaPAI =
+    hoja.getCell(
+        15,
+        2
+    );
 
-    celdaPAI.value =
-        "PAI";
+celdaPAI.value =
+    "PAI";
 
-    celdaPAI.font = {
-        bold: true
-    };
+celdaPAI.font = {
+    bold: true
+};
 
-    celdaPAI.alignment = {
-        horizontal: "center",
-        vertical: "middle"
-    };
+celdaPAI.alignment = {
+    horizontal: "center",
+    vertical: "middle"
+};
 
-    celdaPAI.note =
-        "Porcentage Acumulado de Inasistencias";
+celdaPAI.note =
+    "Porcentage Acumulado de Inasistencias";
 
 
     /*
@@ -621,45 +621,81 @@ grupos.forEach(grupo => {
     };
 
 
-    /*
-     * ----------------------------------------------
-     * ANCHO DE COLUMNAS
-     * ----------------------------------------------
-     */
+/*
+ * ----------------------------------------------
+ * NOMBRES DE LOS ALUMNOS
+ * ----------------------------------------------
+ */
 
-    hoja.getColumn(1).width =
-        30;
-
-
-    /*
-     * PAI
-     */
-
-    hoja.getColumn(2).width =
-        15;
+const alumnosGrupo =
+    registros.filter(
+        alumno =>
+            alumno.grupo === grupo
+    );
 
 
-    /*
-     * DÍAS
-     */
+alumnosGrupo.forEach(
+    (alumno, indice) => {
 
-    for (let i = 0; i < dias.length; i++) {
+        const fila =
+            indice + 16;
 
-        hoja.getColumn(i + 3).width =
-            15;
+        const celdaNombre =
+            hoja.getCell(
+                fila,
+                1
+            );
+
+        celdaNombre.value =
+            `${alumno.nombres} ${alumno.apellidos}`;
+
+        celdaNombre.alignment = {
+            horizontal: "left",
+            vertical: "middle"
+        };
 
     }
+);
 
 
-    /*
-     * JUSTIFICACIÓN
-     */
+/*
+ * ----------------------------------------------
+ * ANCHO DE COLUMNAS
+ * ----------------------------------------------
+ */
 
-    hoja.getColumn(
-        dias.length + 3
-    ).width =
-        53;
+hoja.getColumn(1).width =
+    30;
 
+
+/*
+ * PAI
+ */
+
+hoja.getColumn(2).width =
+    15;
+
+
+/*
+ * DÍAS
+ */
+
+for (let i = 0; i < dias.length; i++) {
+
+    hoja.getColumn(i + 3).width =
+        15;
+
+}
+
+
+/*
+ * JUSTIFICACIÓN
+ */
+
+hoja.getColumn(
+    dias.length + 3
+).width =
+    53;
 });
 
 
