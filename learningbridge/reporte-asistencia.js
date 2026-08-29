@@ -181,228 +181,255 @@ grupos.forEach(grupo => {
     }
 
 
-    /*
-     * ----------------------------------------------
-     * OBTENER SESIONES DEL GRUPO
-     * ----------------------------------------------
-     */
+/*
+ * ----------------------------------------------
+ * OBTENER SESIONES DEL GRUPO
+ * ----------------------------------------------
+ */
 
-    const registrosGrupo =
-        registros.filter(
-            alumno =>
-                alumno.grupo === grupo
-        );
+const registrosGrupo =
+    registros.filter(
+        alumno =>
+            alumno.grupo === grupo
+    );
 
 
-    /*
-     * ----------------------------------------------
-     * OBTENER FECHAS DE LAS SESIONES
-     * ----------------------------------------------
-     */
+/*
+ * ----------------------------------------------
+ * OBTENER FECHAS DE LAS SESIONES
+ * ----------------------------------------------
+ */
 
-    const sesionesGrupo = [];
+const sesionesGrupo = [];
 
-    registrosGrupo.forEach(alumno => {
+registrosGrupo.forEach(alumno => {
 
-        if (!alumno.sesiones) {
+    if (!alumno.sesiones) {
+        return;
+    }
+
+    alumno.sesiones.forEach(sesion => {
+
+        if (!sesion.fecha) {
             return;
         }
 
-        alumno.sesiones.forEach(sesion => {
+        if (
+            !sesionesGrupo.some(
+                existente =>
+                    existente.fecha === sesion.fecha
+            )
+        ) {
 
-            if (!sesion.fecha) {
-                return;
-            }
+            sesionesGrupo.push({
+                fecha: sesion.fecha
+            });
 
-            if (
-                !sesionesGrupo.some(
-                    existente =>
-                        existente.fecha === sesion.fecha
-                )
-            ) {
-
-                sesionesGrupo.push({
-                    fecha: sesion.fecha
-                });
-
-            }
-
-        });
+        }
 
     });
 
+});
+
+
+/*
+ * ----------------------------------------------
+ * CONVERTIR FECHAS
+ * ----------------------------------------------
+ */
+
+sesionesGrupo.forEach(sesion => {
+
+    const textoFecha =
+        sesion.fecha
+            .replace(
+                "All students",
+                ""
+            )
+            .trim();
+
+    sesion.fechaObjeto =
+        new Date(textoFecha);
+
+});
+
+
+/*
+ * ----------------------------------------------
+ * ORDENAR SESIONES POR FECHA
+ * ----------------------------------------------
+ */
+
+sesionesGrupo.sort(
+    (a, b) =>
+        a.fechaObjeto - b.fechaObjeto
+);
+
+
+/*
+ * ----------------------------------------------
+ * ÚLTIMA SEMANA OPERATIVA DISPONIBLE
+ * ----------------------------------------------
+ */
+
+let fechasUltimaSemana = [];
+
+if (sesionesGrupo.length > 0) {
+
+    const ultimaFecha =
+        sesionesGrupo[
+            sesionesGrupo.length - 1
+        ].fechaObjeto;
+
 
     /*
-     * ----------------------------------------------
-     * CONVERTIR FECHAS
-     * ----------------------------------------------
+     * LUNES COMO INICIO DE LA SEMANA OPERATIVA
      */
 
-    sesionesGrupo.forEach(sesion => {
+    const diaSemana =
+        ultimaFecha.getDay();
 
-        const textoFecha =
-            sesion.fecha
-                .replace(
-                    "All students",
-                    ""
-                )
-                .trim();
-
-        sesion.fechaObjeto =
-            new Date(textoFecha);
-
-    });
+    const diasDesdeLunes =
+        diaSemana === 0
+            ? 6
+            : diaSemana - 1;
 
 
-    /*
-     * ----------------------------------------------
-     * ORDENAR SESIONES POR FECHA
-     * ----------------------------------------------
-     */
+    const inicioSemana =
+        new Date(ultimaFecha);
 
-    sesionesGrupo.sort(
-        (a, b) =>
-            a.fechaObjeto - b.fechaObjeto
+    inicioSemana.setDate(
+        ultimaFecha.getDate() -
+        diasDesdeLunes
+    );
+
+    inicioSemana.setHours(
+        0,
+        0,
+        0,
+        0
+    );
+
+
+    const finSemana =
+        new Date(inicioSemana);
+
+    finSemana.setDate(
+        inicioSemana.getDate() + 6
+    );
+
+    finSemana.setHours(
+        23,
+        59,
+        59,
+        999
     );
 
 
     /*
-     * ----------------------------------------------
-     * ÚLTIMA SEMANA OPERATIVA
-     * ----------------------------------------------
+     * SESIONES REALES DE ESA SEMANA
      */
 
-    let fechasUltimaSemana = [];
-
-    if (sesionesGrupo.length > 0) {
-
-        const ultimaFecha =
-            sesionesGrupo[
-                sesionesGrupo.length - 1
-            ].fechaObjeto;
-
-        const diaSemana =
-            ultimaFecha.getDay();
-
-        const inicioSemana =
-            new Date(ultimaFecha);
-
-        inicioSemana.setDate(
-            ultimaFecha.getDate() -
-            diaSemana
+    fechasUltimaSemana =
+        sesionesGrupo.filter(
+            sesion =>
+                sesion.fechaObjeto >=
+                    inicioSemana &&
+                sesion.fechaObjeto <=
+                    finSemana
         );
 
-        inicioSemana.setHours(
-            0, 0, 0, 0
+}
+
+
+/*
+ * ----------------------------------------------
+ * COLOCAR DÍAS Y FECHAS
+ * ----------------------------------------------
+ */
+
+dias.forEach((dia, indice) => {
+
+    const numeroColumna =
+        indice + 2;
+
+
+    /*
+     * DÍA
+     */
+
+    const celdaDia =
+        hoja.getCell(
+            14,
+            numeroColumna
         );
 
-        const finSemana =
-            new Date(inicioSemana);
+    celdaDia.value =
+        dia;
 
-        finSemana.setDate(
-            inicioSemana.getDate() + 6
+    celdaDia.font = {
+        bold: true
+    };
+
+    celdaDia.alignment = {
+        horizontal: "center",
+        vertical: "middle"
+    };
+
+
+    /*
+     * FECHA CORRESPONDIENTE AL DÍA
+     */
+
+    const diaBuscado =
+        {
+            "DOMINGO": 0,
+            "LUNES": 1,
+            "MARTES": 2,
+            "MIÉRCOLES": 3,
+            "JUEVES": 4,
+            "VIERNES": 5,
+            "SÁBADO": 6
+        }[dia];
+
+
+    const sesionDia =
+        fechasUltimaSemana.find(
+            sesion =>
+                sesion.fechaObjeto.getDay() ===
+                diaBuscado
         );
 
-        finSemana.setHours(
-            23, 59, 59, 999
+
+    const celdaFecha =
+        hoja.getCell(
+            15,
+            numeroColumna
         );
 
 
-        fechasUltimaSemana =
-            sesionesGrupo.filter(
-                sesion =>
-                    sesion.fechaObjeto >=
-                        inicioSemana &&
-                    sesion.fechaObjeto <=
-                        finSemana
-            );
+    if (sesionDia) {
+
+        celdaFecha.value =
+            sesionDia.fechaObjeto;
+
+        celdaFecha.numFmt =
+            "dd/mm/yyyy";
+
+    } else {
+
+        celdaFecha.value =
+            "";
 
     }
 
 
-    /*
-     * ----------------------------------------------
-     * COLOCAR DÍAS Y FECHAS
-     * ----------------------------------------------
-     */
+    celdaFecha.alignment = {
+        horizontal: "center",
+        vertical: "middle"
+    };
 
-    dias.forEach((dia, indice) => {
-
-        const numeroColumna =
-            indice + 2;
-
-
-        /*
-         * DÍA
-         */
-
-        const celdaDia =
-            hoja.getCell(
-                14,
-                numeroColumna
-            );
-
-        celdaDia.value =
-            dia;
-
-        celdaDia.font = {
-            bold: true
-        };
-
-        celdaDia.alignment = {
-            horizontal: "center",
-            vertical: "middle"
-        };
-
-
-        /*
-         * FECHA
-         */
-
-        const diaBuscado =
-            {
-                "DOMINGO": 0,
-                "LUNES": 1,
-                "MARTES": 2,
-                "MIÉRCOLES": 3,
-                "JUEVES": 4,
-                "VIERNES": 5,
-                "SÁBADO": 6
-            }[dia];
-
-
-        const sesionDia =
-            fechasUltimaSemana.find(
-                sesion =>
-                    sesion.fechaObjeto.getDay() ===
-                    diaBuscado
-            );
-
-
-        const celdaFecha =
-            hoja.getCell(
-                15,
-                numeroColumna
-            );
-
-
-        if (sesionDia) {
-
-            celdaFecha.value =
-                sesionDia.fechaObjeto;
-
-            celdaFecha.numFmt =
-                "dd/mm/yyyy";
-
-        }
-
-
-        celdaFecha.alignment = {
-            horizontal: "center",
-            vertical: "middle"
-        };
-
-    });
+});
 
 
     /*
