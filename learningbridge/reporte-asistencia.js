@@ -158,6 +158,20 @@ grupos.forEach(grupo => {
 
     });
 
+    /*
+ * JUSTIFICACIÓN
+ */
+
+const celdaJustificacion =
+    hoja.getCell(14, dias.length + 2);
+
+celdaJustificacion.value =
+    "JUSTIFICACIÓN";
+
+celdaJustificacion.font = {
+    bold: true
+};
+
 });
 
 
