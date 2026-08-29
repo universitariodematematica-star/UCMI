@@ -65,13 +65,24 @@ grupos.forEach(grupo => {
     const hoja =
         libro.addWorksheet(grupo);
 
-hoja.addImage(imagenLogo, {
-    tl: { col: 0, row: 0 },
-    br: { col: 3, row: 9 }
-});
+    hoja.addImage(imagenLogo, {
+        tl: { col: 0, row: 0 },
+        br: { col: 3, row: 9 }
+    });
 
-hoja.getCell("C11").value =
-        "CONTROL DE AISTENCIA Y PUNTUALIDAD";    
+    hoja.getCell("C11").value =
+        "CONTROL DE ASISTENCIA Y PUNTUALIDAD";
+
+    hoja.getCell("C11").font = {
+        bold: true
+    };
+
+    hoja.getCell("A13").value =
+        `GRUPO: ${grupo}`;
+
+    hoja.getCell("A13").font = {
+        bold: true
+    };
 
 });
 
