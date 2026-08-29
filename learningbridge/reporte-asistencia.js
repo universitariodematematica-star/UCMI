@@ -420,6 +420,34 @@ fechasUltimaSemana =
 
 /*
  * ----------------------------------------------
+ * PAI
+ * ----------------------------------------------
+ */
+
+const celdaPAI =
+    hoja.getCell(
+        14,
+        2
+    );
+
+celdaPAI.value =
+    "PAI";
+
+celdaPAI.font = {
+    bold: true
+};
+
+celdaPAI.alignment = {
+    horizontal: "center",
+    vertical: "middle"
+};
+
+celdaPAI.note =
+    "Porcentage Acumulado de Inasistencias";
+
+
+/*
+ * ----------------------------------------------
  * COLOCAR DÍAS Y FECHAS
  * ----------------------------------------------
  */
@@ -427,7 +455,7 @@ fechasUltimaSemana =
 dias.forEach((dia, indice) => {
 
     const numeroColumna =
-        indice + 2;
+        indice + 3;
 
 
     /*
@@ -454,7 +482,7 @@ dias.forEach((dia, indice) => {
 
 
     /*
-     * FECHA CORRESPONDIENTE AL DÍA
+     * FECHA
      */
 
     const diaBuscado =
@@ -469,18 +497,24 @@ dias.forEach((dia, indice) => {
         }[dia];
 
 
+    const celdaFecha =
+        hoja.getCell(
+            15,
+            numeroColumna
+        );
+
+
+    /*
+     * ----------------------------------------------
+     * FECHA REAL DE LA SESIÓN
+     * ----------------------------------------------
+     */
+
     const sesionDia =
         fechasUltimaSemana.find(
             sesion =>
                 sesion.fechaObjeto.getDay() ===
                 diaBuscado
-        );
-
-
-    const celdaFecha =
-        hoja.getCell(
-            15,
-            numeroColumna
         );
 
 
@@ -494,8 +528,57 @@ dias.forEach((dia, indice) => {
 
     } else {
 
-        celdaFecha.value =
-            "";
+        /*
+         * Para sábado:
+         * fecha del viernes + 1 día.
+         */
+
+        if (
+            dia === "SÁBADO" &&
+            fechasUltimaSemana.length > 0
+        ) {
+
+            const sesionesViernes =
+                fechasUltimaSemana.filter(
+                    sesion =>
+                        sesion.fechaObjeto.getDay() === 5
+                );
+
+            if (
+                sesionesViernes.length > 0
+            ) {
+
+                const viernes =
+                    sesionesViernes[
+                        sesionesViernes.length - 1
+                    ].fechaObjeto;
+
+                const sabado =
+                    new Date(viernes);
+
+                sabado.setDate(
+                    viernes.getDate() + 1
+                );
+
+                celdaFecha.value =
+                    sabado;
+
+                celdaFecha.numFmt =
+                    "dd/mm/yyyy";
+
+            } else {
+
+                celdaFecha.value =
+                    "";
+
+            }
+
+        } else {
+
+            celdaFecha.value =
+                "";
+
+        }
 
     }
 
@@ -506,6 +589,71 @@ dias.forEach((dia, indice) => {
     };
 
 });
+
+
+/*
+ * ----------------------------------------------
+ * JUSTIFICACIÓN
+ * ----------------------------------------------
+ */
+
+const celdaJustificacion =
+    hoja.getCell(
+        14,
+        dias.length + 3
+    );
+
+celdaJustificacion.value =
+    "JUSTIFICACIÓN";
+
+celdaJustificacion.font = {
+    bold: true
+};
+
+celdaJustificacion.alignment = {
+    horizontal: "center",
+    vertical: "middle"
+};
+
+
+/*
+ * ----------------------------------------------
+ * ANCHO DE COLUMNAS
+ * ----------------------------------------------
+ */
+
+hoja.getColumn(1).width =
+    30;
+
+
+/*
+ * PAI
+ */
+
+hoja.getColumn(2).width =
+    15;
+
+
+/*
+ * DÍAS
+ */
+
+for (let i = 0; i < dias.length; i++) {
+
+    hoja.getColumn(i + 3).width =
+        15;
+
+}
+
+
+/*
+ * JUSTIFICACIÓN
+ */
+
+hoja.getColumn(
+    dias.length + 3
+).width =
+    53;
 
 
     /*
