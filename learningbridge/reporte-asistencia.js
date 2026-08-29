@@ -70,6 +70,8 @@ hoja.addImage(imagenLogo, {
     br: { col: 3, row: 9 }
 });
 
+hoja.getCell("C11").value =
+        "CONTROL DE AISTENCIA Y PUNTUALIDAD";    
 
 });
 
