@@ -70,8 +70,6 @@ hoja.addImage(imagenLogo, {
     br: { col: 3, row: 9 }
 });
 
-    hoja.getCell("A1").value =
-        `GRUPO: ${grupo}`;
 
 });
 
