@@ -109,7 +109,31 @@ if (btnIdiomas && submenuIdiomas) {
 
 }
 
-            // ==========================================================
+
+// ==========================================================
+// SUBMENÚ INGLÉS
+// ==========================================================
+
+const btnIngles = document.getElementById("btnIngles");
+const submenuIngles = document.getElementById("submenuIngles");
+
+
+if (btnIngles && submenuIngles) {
+
+    btnIngles.addEventListener("click", (e) => {
+
+        e.preventDefault();
+
+        submenuIngles.style.display =
+            submenuIngles.style.display === "none"
+            ? "block"
+            : "none";
+
+    });
+
+}
+
+// ==========================================================
 // CERRAR SESIÓN GLOBAL
 // ==========================================================
 
