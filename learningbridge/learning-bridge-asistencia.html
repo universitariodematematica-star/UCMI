@@ -1664,27 +1664,41 @@ const diasClase = obtenerDiasClase(alumno.grupo);
 
         });
 
-        /*
-         * --------------------------------------------------
-         * BOTÓN ENVIAR MENSAJE
-         * --------------------------------------------------
-         */
+/*
+ * --------------------------------------------------
+ * BOTONES DE WHATSAPP
+ * --------------------------------------------------
+ */
 
-        const celdaMensaje = document.createElement("td");
+const celdaMensaje = document.createElement("td");
 
-        celdaMensaje.style.border = "1px solid #ccc";
-        celdaMensaje.style.padding = "8px";
-        celdaMensaje.style.textAlign = "center";
+celdaMensaje.style.border = "1px solid #ccc";
+celdaMensaje.style.padding = "8px";
+celdaMensaje.style.textAlign = "center";
+celdaMensaje.style.whiteSpace = "nowrap";
 
-        const botonMensaje = document.createElement("button");
 
-        botonMensaje.type = "button";
-        botonMensaje.textContent = "Enviar mensaje";
+/*
+ * --------------------------------------------------
+ * BOTÓN ENVIAR MENSAJE
+ * --------------------------------------------------
+ */
 
-        botonMensaje.classList.add(
-            "btn-enviar-mensaje",
-            "mensaje-no-enviado"
-        );
+const botonMensaje = document.createElement("button");
+
+botonMensaje.type = "button";
+
+botonMensaje.textContent =
+    alumno.mensajeEnviado
+        ? "Mensaje enviado"
+        : "Enviar mensaje";
+
+botonMensaje.classList.add(
+    alumno.mensajeEnviado
+        ? "mensaje-enviado"
+        : "mensaje-no-enviado"
+);
+
 
 /*
  * --------------------------------------------------
@@ -1698,9 +1712,10 @@ botonMensaje.addEventListener("click", function() {
      * Evitar un segundo envío
      */
 
-    if (botonMensaje.classList.contains("mensaje-enviado")) {
+    if (alumno.mensajeEnviado) {
         return;
     }
+
 
     /*
      * Seleccionar uno de los modelos
@@ -1772,29 +1787,42 @@ botonMensaje.addEventListener("click", function() {
 
 
     /*
-     * Crear enlace de WhatsApp
+     * --------------------------------------------------
+     * ABRIR APLICACIÓN DE WHATSAPP
+     * --------------------------------------------------
      */
 
-/*
- * --------------------------------------------------
- * ABRIR APLICACIÓN DE WHATSAPP
- * --------------------------------------------------
- */
+    const urlWhatsApp =
+        `whatsapp://send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
 
-const urlWhatsApp =
-    `whatsapp://send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
-
-window.location.href = urlWhatsApp;
+    window.location.href = urlWhatsApp;
 
 
     /*
-     * Registrar información
+     * --------------------------------------------------
+     * REGISTRAR MENSAJE ENVIADO
+     * --------------------------------------------------
      */
+
+    alumno.mensajeEnviado = true;
 
 
     /*
-     * Cambiar botón de verde a rosado
+     * Guardar estado en localStorage
      */
+
+    localStorage.setItem(
+        "learningBridgeRegistrosAsistencia",
+        JSON.stringify(registrosAsistencia)
+    );
+
+
+    /*
+     * Cambiar botón
+     */
+
+    botonMensaje.textContent =
+        "Mensaje enviado";
 
     botonMensaje.classList.remove(
         "mensaje-no-enviado"
@@ -1806,7 +1834,134 @@ window.location.href = urlWhatsApp;
 
 });
 
-        celdaMensaje.appendChild(botonMensaje);
+
+/*
+ * --------------------------------------------------
+ * BOTÓN LLAMAR POR WHATSAPP
+ * --------------------------------------------------
+ */
+
+const botonLlamar = document.createElement("button");
+
+botonLlamar.type = "button";
+
+botonLlamar.textContent =
+    alumno.llamadaRealizada
+        ? "Llamada realizada"
+        : "Llamar por WhatsApp";
+
+botonLlamar.classList.add(
+    alumno.llamadaRealizada
+        ? "llamada-realizada"
+        : "llamada-no-realizada"
+);
+
+
+/*
+ * --------------------------------------------------
+ * LLAMAR POR WHATSAPP
+ * --------------------------------------------------
+ */
+
+botonLlamar.addEventListener("click", function() {
+
+    /*
+     * Evitar una segunda llamada registrada
+     */
+
+    if (alumno.llamadaRealizada) {
+        return;
+    }
+
+
+    /*
+     * Preparar número de WhatsApp
+     */
+
+    const telefono =
+        String(alumno.telefono || "")
+        .replace(/\D/g, "");
+
+
+    /*
+     * Verificar que exista teléfono
+     */
+
+    if (!telefono) {
+
+        console.warn(
+            "El alumno no tiene número de teléfono:",
+            `${alumno.apellidos} ${alumno.nombres}`
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * --------------------------------------------------
+     * ABRIR LLAMADA DE WHATSAPP
+     * --------------------------------------------------
+     */
+
+    const urlLlamada =
+        `whatsapp://call?phone=${telefono}`;
+
+    window.location.href = urlLlamada;
+
+
+    /*
+     * --------------------------------------------------
+     * REGISTRAR LLAMADA REALIZADA
+     * --------------------------------------------------
+     */
+
+    alumno.llamadaRealizada = true;
+
+
+    /*
+     * Guardar estado en localStorage
+     */
+
+    localStorage.setItem(
+        "learningBridgeRegistrosAsistencia",
+        JSON.stringify(registrosAsistencia)
+    );
+
+
+    /*
+     * Cambiar botón
+     */
+
+    botonLlamar.textContent =
+        "Llamada realizada";
+
+    botonLlamar.classList.remove(
+        "llamada-no-realizada"
+    );
+
+    botonLlamar.classList.add(
+        "llamada-realizada"
+    );
+
+});
+
+
+/*
+ * --------------------------------------------------
+ * COLOCAR LOS DOS BOTONES EN LA CELDA
+ * --------------------------------------------------
+ */
+
+celdaMensaje.appendChild(botonMensaje);
+
+const separador =
+    document.createTextNode(" ");
+
+celdaMensaje.appendChild(separador);
+
+celdaMensaje.appendChild(botonLlamar);
 
 fila.appendChild(celdaMensaje);
 
