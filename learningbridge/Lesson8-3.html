@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ERG Constructor - UCMI</title>
+
+<link rel="stylesheet" href="css/ucmi-estilos.css">
+
+<link rel="stylesheet" href="css/pizarra.css">
+
+<link rel="stylesheet" href="css/reproductor.css">
+
+<style>
+
+
+.audioUCMI{
+margin-top:25px;
+}
+
+.opcion-radio{
+display:block;
+margin:8px 0;
+font-size:1.1em;
+cursor:pointer;
+line-height:1.4;
+}
+
+.opcion-radio input{
+transform:scale(1.35);
+margin-right:14px;
+cursor:pointer;
+}
+
+.verificar{
+display:block;
+margin:35px 0 0 0;
+padding:14px 42px;
+background:linear-gradient(to left,#6A1B9A,#3949AB);
+color:white;
+font-size:1.1em;
+font-weight:bold;
+border:none;
+border-radius:14px;
+cursor:pointer;
+box-shadow:0 8px 18px rgba(0,0,0,.35);
+transition:.25s;
+}
+
+.verificar:hover{
+background:linear-gradient(to left,#7B1FA2,#3F51B5);
+transform:translateY(-3px);
+box-shadow:0 12px 22px rgba(0,0,0,.45);
+}
+
+.resultado{
+margin-top:25px;
+font-size:20px;
+line-height:1.6;
+}
+
+.instruccion-ejercicio{
+width:92%;
+margin:0 auto 35px auto;
+padding:18px 22px;
+background:#eef6ff;
+border-left:8px solid #3949AB;
+border-radius:14px;
+box-shadow:0 6px 14px rgba(0,0,0,.15);
+font-size:1.2em;
+line-height:1.6;
+color:#071426;
+font-weight:bold;
+}
+
+/*====================================================
+        DRAG AND DROP
+====================================================*/
+
+
+.espacio-drop{
+display:inline-block;
+min-width:100px;
+padding:8px 15px;
+border:2px dashed #3949AB;
+border-radius:10px;
+background:#eef6ff;
+text-align:center;
+margin:0 8px;
+font-weight:bold;
+}
+
+.boton-arrastrable{
+width:auto;
+margin:8px;
+padding:10px 20px;
+background:#FFD700;
+border-radius:10px;
+cursor:grab;
+font-weight:bold;
+}
+
+.correcto-drag{
+background:#c8f7c5;
+border:2px solid green;
+}
+
+.zona-destino-oracion{
+    width:90%;
+    min-height:80px;
+    margin:25px auto;
+    padding:20px;
+    border:3px dashed #071426;
+    border-radius:20px;
+    background:#f5f8ff;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+    color:#555;
+    transition:.3s;
+}
+
+.palabra-arrastrable{
+    background:#1565c0;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    margin:5px;
+    border-radius:15px;
+    font-size:17px;
+    font-weight:bold;
+    cursor:grab;
+    transition:.3s;
+    box-shadow:0 5px 12px rgba(0,0,0,.2);
+}
+
+
+.palabra-arrastrable:hover{
+    background:#ec407a;
+    transform:translateY(-3px);
+}
+
+
+.palabra-arrastrable:active{
+    cursor:grabbing;
+}
+
+.contenedor-relacionar{
+
+display:flex;
+justify-content:center;
+gap:80px;
+margin:40px auto;
+
+}
+
+
+.columna-relacionar{
+
+width:300px;
+
+}
+
+
+.columna-relacionar h3{
+
+text-align:center;
+color:#071426;
+
+}
+
+
+.elemento-relacionar{
+
+padding:15px;
+margin:15px;
+
+background:white;
+
+color:#071426;
+
+border-radius:15px;
+
+text-align:center;
+
+font-weight:bold;
+
+box-shadow:0 5px 15px rgba(0,0,0,.2);
+
+cursor:grab;
+
+transition:.3s;
+
+}
+
+
+.elemento-relacionar:hover{
+
+transform:translateY(-3px);
+
+}
+
+
+.derecha-relacionar{
+
+border:3px dashed #3949AB;
+
+}
+
+
+.relacion-correcta{
+
+background:#c8f7c5 !important;
+
+border:3px solid green;
+
+}
+
+
+.relacion-incorrecta{
+
+background:#ffcdd2 !important;
+
+border:3px solid red;
+
+}
+
+.banco-palabras-oracion{
+    width:90%;
+    margin:30px auto;
+    padding:20px;
+    border-radius:20px;
+    background:white;
+    box-shadow:0 8px 20px rgba(0,0,0,.15);
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+}
+
+.evaluar-ordenar{
+    display:block;
+    margin:25px auto;
+    padding:14px 35px;
+    border:none;
+    border-radius:18px;
+    background:linear-gradient(
+        135deg,
+        #283593,
+        #5c6bc0
+    );
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.evaluar-drag{
+    display:block;
+    margin:30px auto;
+    padding:14px 40px;
+    background:#3949AB;
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    border:none;
+    border-radius:18px;
+    cursor:pointer;
+    box-shadow:0 8px 18px rgba(0,0,0,.35);
+    transition:.25s;
+}
+
+
+.evaluar-drag:hover{
+    background:#303F9F;
+    transform:translateY(-3px);
+    box-shadow:0 12px 25px rgba(0,0,0,.45);
+}
+
+.boton-reiniciar-ucmi{
+    display:block;
+    width:260px;
+    margin:35px auto;
+    padding:16px 30px;
+    background:linear-gradient(
+        135deg,
+        #071426,
+        #1b3a63
+    );
+
+    color:#FFD700;
+    border:2px solid #FFD700;
+    border-radius:18px;
+    font-size:18px;
+    font-weight:bold;
+    letter-spacing:1px;
+    cursor:pointer;
+    box-shadow:
+    0 8px 18px rgba(0,0,0,.35);
+    transition:.3s ease;
+}
+
+
+.boton-reiniciar-ucmi:hover{
+    transform:translateY(-4px);
+    background:linear-gradient(
+        135deg,
+        #10294a,
+        #071426
+    );
+    box-shadow:
+    0 14px 25px rgba(0,0,0,.45);
+}
+
+
+.boton-reiniciar-ucmi:active{
+    transform:scale(.96);
+}
+
+.tabla-comparacion-traduccion{
+
+width:90%;
+margin:20px auto;
+border-collapse:collapse;
+font-size:18px;
+
+}
+
+
+.tabla-comparacion-traduccion th{
+
+background:#071426;
+color:#FFD700;
+padding:12px;
+border:2px solid #ddd;
+
+}
+
+
+.tabla-comparacion-traduccion td{
+
+padding:10px;
+border:1px solid #ddd;
+text-align:center;
+font-weight:bold;
+
+}
+
+
+.correcto-comparacion{
+
+background:#e8f5e9;
+color:green;
+
+}
+
+
+.error-comparacion{
+
+background:#ffebee;
+color:red;
+
+}
+
+.tabla-comparacion-traduccion{
+
+width:95%;
+margin:20px auto;
+border-collapse:collapse;
+font-size:18px;
+
+}
+
+
+.tabla-comparacion-traduccion th{
+
+background:#071426;
+color:#FFD700;
+padding:10px;
+
+}
+
+
+.tabla-comparacion-traduccion td{
+
+border:1px solid #ccc;
+padding:10px;
+text-align:center;
+font-weight:bold;
+
+}
+
+
+.comparacion-ok{
+
+background:#c8f7c5;
+
+}
+
+
+.comparacion-error{
+
+background:#ffcdd2;
+color:#b71c1c;
+
+}
+
+
+.comparacion-correcta{
+
+background:#c8f7c5;
+color:green;
+
+}
+
+.tabla-comparacion-traduccion th {
+
+    background-color: indigo;
+    color: white;
+    border: 1px solid #444;
+
+}
+
+
+.tabla-comparacion-traduccion th:first-child {
+
+    border-top-left-radius: 12px;
+
+}
+
+
+.tabla-comparacion-traduccion th:last-child {
+
+    border-top-right-radius: 12px;
+
+}
+
+
+.tabla-comparacion-traduccion {
+
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+
+}
+
+</style>
+
+</head>
+
+<body data-codigo-contenido="ERG.2.8.A1">
+
+<div id="navegacionUCMI" class="navegacion-ucmi">
+
+<a 
+class="boton-interactivo"
+href="temario.html?nivel=A1">
+VOLVER AL TEMARIO
+</a>
+
+
+<a 
+class="boton-interactivo"
+href="listening.html?nivel=A1&unidad=2&tema=8">
+SEGUIR A LISTENING
+</a>
+
+
+<a 
+class="boton-interactivo"
+href="skills.html?nivel=A1&unidad=2&tema=8">
+VOLVER A SKILLS
+</a>
+
+</div>
+
+<div id="ucmiEncabezado"></div>
+
+<div id="contenidoUCMI">
+
+
+<table class="barra-rosada">
+
+<tr>
+
+<td>
+
+<p>
+Números a nuestro alrededor
+</p>
+
+</td>
+
+</tr>
+
+</table>
+
+<table class="barra-turquesa">
+<tr>
+<td>
+<p>
+Ejercicios resueltos ERG.2.8.A1
+</p>
+</td>
+</tr>
+</table>
+
+<div style="height:25px;"></div>
+
+<div style="height:20px;"></div>
+
+<button 
+class="boton-reiniciar-ucmi"
+onclick="UCMIRestaurarEjercicios.reiniciar()">
+
+↻ Reiniciar ejercicios
+
+</button>
+
+
+<div id="zona-ejercicios"></div>
+<div style="height:35px;"></div>
+
+
+</div>
+
+
+</div>
+
+<canvas id="drawingCanvas"></canvas>
+
+<script src="js/pizarra.js"></script>
+<script src="js/navegacion.js"></script>
+<script src="js/encabezado.js"></script>
+<script src="js/reproductor.js"></script>
+<script src="js/motor-ejercicios.js"></script>
+<script src="js/motor-estructuras.js"></script>
+<script src="js/motor-completar-listening.js"></script>
+<script src="js/motor-ordenar-parrafos.js"></script>
+<script src="js/motor-comprension-texto.js"></script>
+<script src="js/motor-comprension-auditiva.js"></script>
+<script src="js/motor-sustitucion-contextual.js"></script>
+<script src="js/motor-mineria.js"></script>
+<script src="js/motor-escritura-guiada.js"></script>
+
+<script>
+
+
+UCMIPizarra.iniciar();
+
+UCMINavegacion.iniciar("grammar");
+
+UCMIEncabezado.iniciar({
+    titulo:"Numbers Around Us",
+    skill:"Grammar"
+});
+
+const ejercicioCompletarTextoListening =
+{"audio":"","parrafos":[],"referencias":[]};
+
+const ejercicioComprensionAuditiva =
+{"audio":"audios/A1/Unidad_01/Tema_01/Grammar/AG.1.1.1.A1.mp3","titulo":"Nombre del título","preguntas":[{"numero":1,"pregunta":"Enunciado primera pregunta","correcta":"Enunciado opción correcta","incorrectas":["Enunciado opción falsa","Enunciado opción falsa","Enunciado opción falsa"]}]};
+
+const ejercicioSustitucionContextual =
+{"nombre":"Nombre","parrafos":[{"numero":"Párrafo 1","texto":"She went to the supermarket because she needed some food for dinner.","inicio":5,"fin":10,"correcta":"supermarket because she needed some food","incorrectas":["supermarket because she wanted something to eat","park because she wanted to relax","restaurant because she had already eaten"],"explicacion":"La frase correcta puede sustituir al segmento original porque mantiene la idea esencial del contexto."}]};
+
+const ejercicioEscrituraGuiada =
+{"ejercicios":[{"numero":1,"palabras":["Palabra 1","Palabra 2","Palabra 3"],"numeroMinimoPalabras":1,"estructuras":["Estructura 1","Estructura 2","Estructura 3"]}]};
+
+UCMIMotorEjercicios.generar({
+
+    contenedor:"zona-ejercicios",
+
+    seleccionSimple:
+    [{"oracion":"How many ___ are there in the basket?","correcta":"apples","incorrecta1":"apple","incorrecta2":"a apple","incorrecta3":"water","explicacion":"Después de 'How many' se utiliza un sustantivo contable en plural (apples)."},{"oracion":"How many ___ do you need for the recipe?","correcta":"tomatoes","incorrecta1":"tomato","incorrecta2":"milk","incorrecta3":"flour","explicacion":"'Tomatoes' es el sustantivo contable plural adecuado para preguntar por cantidades."},{"oracion":"How many ___ are on the kitchen table?","correcta":"oranges","incorrecta1":"orange","incorrecta2":"bread","incorrecta3":"sugar","explicacion":"La estructura requiere el nombre del objeto contable en su forma plural ('oranges')."},{"oracion":"How many ___ are in your pencil case?","correcta":"pens","incorrecta1":"pen","incorrecta2":"ink","incorrecta3":"paper","explicacion":"Se emplea el plural 'pens' ya que estamos cuantificando elementos contables discretos."},{"oracion":"How many ___ do you see in the classroom?","correcta":"students","incorrecta1":"student","incorrecta2":"teacher","incorrecta3":"furniture","explicacion":"'How many' exige un sustantivo plural contable ('students')."},{"oracion":"There ___ three apples in the bag.","correcta":"are","incorrecta1":"is","incorrecta2":"am","incorrecta3":"be","explicacion":"Para sustantivos contables en plural ('three apples') se utiliza la forma 'are' del verbo to be."},{"oracion":"There ___ five students in the tutoring room.","correcta":"are","incorrecta1":"is","incorrecta2":"am","incorrecta3":"be","explicacion":"El sujeto es plural ('five students'), por lo que corresponde usar 'There are'."},{"oracion":"There ___ ten oranges on the market stall.","correcta":"are","incorrecta1":"is","incorrecta2":"am","incorrecta3":"being","explicacion":"Al indicar la existencia de varios elementos contables, la forma correcta es 'There are'."},{"oracion":"There ___ four chairs near the desk.","correcta":"are","incorrecta1":"is","incorrecta2":"am","incorrecta3":"be","explicacion":"'Four chairs' es una cantidad plural que requiere el uso de 'There are'."},{"oracion":"There ___ two books on the shelf.","correcta":"are","incorrecta1":"is","incorrecta2":"am","incorrecta3":"has","explicacion":"Con un número plural ('two books'), la estructura correcta comienza con 'There are'."}],
+
+
+    completarEspacios:
+    [{"oracion":"They ___ students.","respuesta":"are","explicacion":"Con el pronombre they se utiliza are."}],
+
+
+    dragDropBlanco:
+    [{"textoAntes":"I ","correcta":"am","opciones":["is","are","be","was"],"textoDespues":" a student.","explicacion":"Con I se utiliza am."}],
+
+
+    ordenarOracion:
+    [{"oracion":"How many apples are there in the basket?","explicacion":"Usa la estructura How many seguida del sustantivo contable en plural (apples)."},{"oracion":"How many tomatoes do you need for the recipe?","explicacion":"Se emplea How many con el sustantivo plural contable tomatoes para preguntar por cantidades."},{"oracion":"How many oranges are on the table?","explicacion":"Estructura interrogativa que combina How many con el sustantivo plural oranges."},{"oracion":"How many students are in the classroom?","explicacion":"Pregunta correcta usando How many y el plural contable students."},{"oracion":"How many books do you have in your bag?","explicacion":"Formulación adecuada con How many y el sustantivo plural books."},{"oracion":"There are three apples in the bag.","explicacion":"Sigue la estructura afirmativa: There are + número (three) + sustantivo plural (apples)."},{"oracion":"There are five students in the room.","explicacion":"Emplea la fórmula There are seguida de la cantidad numérica y el sustantivo plural."},{"oracion":"There are ten oranges on the market stall.","explicacion":"Indica existencia en plural usando There are, el número ten y oranges."},{"oracion":"There are four chairs near the desk.","explicacion":"Estructura correcta con There are, el número four y el plural chairs."},{"oracion":"There are two books on the shelf.","explicacion":"Oración afirmativa que utiliza There are + two + books."}],
+
+    emparejarColumnas:
+    [{"izquierda":"How many apples are there?","derecha":"¿Cuántas manzanas hay?","explicacion":"Se usa 'How many' seguido del sustantivo plural 'apples' para preguntar por cantidades contables."},{"izquierda":"How many tomatoes do you need?","derecha":"¿Cuántos tomates necesitas?","explicacion":"La estructura 'How many' requiere un sustantivo contable en plural como 'tomatoes'."},{"izquierda":"How many oranges are on the table?","derecha":"¿Cuántas naranjas hay en la mesa?","explicacion":"Estructura interrogativa para consultar la cantidad de elementos plurales contables."},{"izquierda":"How many students are in the classroom?","derecha":"¿Cuántos estudiantes hay en el salón?","explicacion":"Se emplea 'How many' con el plural 'students' para saber el número de personas."},{"izquierda":"How many books do you have?","derecha":"¿Cuántos libros tienes?","explicacion":"Pregunta directa sobre cantidades utilizando la estructura 'How many + plural noun'."},{"izquierda":"There are three apples","derecha":"Hay tres manzanas","explicacion":"Estructura afirmativa que combina 'There are' con el número 'three' y el plural 'apples'."},{"izquierda":"There are five students","derecha":"Hay cinco estudiantes","explicacion":"Se utiliza 'There are' seguido de la cantidad numérica y el sustantivo contable plural."},{"izquierda":"There are ten oranges","derecha":"Hay diez naranjas","explicacion":"Indica existencia de múltiples elementos usando 'There are + number + plural noun'."},{"izquierda":"There are four chairs","derecha":"Hay cuatro sillas","explicacion":"Fórmula correcta para expresar existencia numérica plural en el espacio."},{"izquierda":"There are two books","derecha":"Hay dos libros","explicacion":"Oración afirmativa que emplea 'There are' seguido de un número y un sustantivo plural."}],
+
+    traduccion:
+    [{"oracion":"Yo soy un estudiante.","respuesta":"I am a student.","respuestasAlternativas":["I'm a student."],"explicacion":"Se aceptan la forma completa y la contracción cuando tienen el mismo significado."}],
+    
+    transcripcion:
+    {"audio":"https://ejemplo.mp3","oraciones":["Hello. My name is John.","I am from Ecuador.","I study English every day."]},
+    
+    identificarImagenes:
+    {"audio":"audios/A1/Unidad_01/Tema_01/Grammar/AG.1.1.1.A1.mp3","imagenes":[{"codigo":"A1-U1-T1-I01","oracion":"The dog is chasing the cat.","url":"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh6eQKiv4mfHCl592SlZUtdZkjvXDlyyLqF_qcd4m6rdIQQ3j3QEtaxid3iemDlja4GhKZsrSbu7jc6PqTZPN4uWph7YU1YC1VVvuDkA_ilkUdAQb10ow8vhnuAnvXox-vMKgy5g-T2pXQFftINVZzqtsT4uvy5uCQ5Tnn02mQFzRkz3wi1f2FbSrTnep1y/s819/A1-U1-T1-I01.png"},{"codigo":"A1-U1-T1-I02","oracion":"The girl is reading a book.","url":"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiQqQMxp7uhAbmKUwX6Dh9NCTjKse2HQ43dO24zyB1mndsZAdt7LVaQ2WB9dHve3NFWSCExG1T0GYwQbhRovw0EmGaYC3I891T0ZKD_ZshgEkB3NcomKXrfKDjwPLiYJMp02N_c7P7WRhNiCEYKRAYLfvNSjAbygd7bVc33O8TSjLjnChCor4Ea11RNePoq/s819/A1-U1-T1-I02.png"},{"codigo":"A1-U1-T1-I03","oracion":"The boy is drinking water.","url":"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhQ2LoorTv1g38lbWQie-etAaSHrNIyHSDZCv9OxM6q0fFQ7rlmIpYzYEmNzt6ss6KXVAMyigd0bz25kXnp_x8UhGtbSiSjih3Ypl1KJsz0DiwkusfYNTtf3qaZivsyloSkk0LQP5gpbw6FSnIaEJsoYg83uUTybVUXpX6gAU_7g25x-0Y6uDTmaB_3f0aO/s819/A1-U1-T1-I03.png"},{"codigo":"A1-U1-T1-I04","oracion":"The boy is drinking water. 2","url":"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj84-Eb17oN_M_EY381BFO8tJY1DftqUJrLf0cMLAkddUlThmi1Ufjw_U4Ndp3QQR-QCK3L79QckoWAuf-aIbxN97CoK6ntcf9HgtQKGah9Tn-LLOPuOcaJLhxB9jEFhsXOeI93eH54rx-ASMIIMP__TeGrUJ1qicKflk5tCtv3Afsd4fo2_-AcmSC2Ybaz/s819/A1-U1-T1-I04.png"},{"codigo":"A1-U1-T1-I05","oracion":"The boy is drinking water. 3","url":"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgezGVAgEogjQ9web04uxCn_5pqQZ_a3Pnbfd_uSP_T4fZgpQ0j9ERvTpjKjb5QSQ14X4xqrro2MvqdhPkmZKqFAW9yCvbiCh2PC5yVhHEnrUi0djkIJp6sn0pe0R9UDcLeeZWkdpVt6kKbhB2DfWqxeNoz_oIUajVUImOX-juthyUTrGet4dsxvE7gKS6m/s819/A1-U1-T1-I05.png"}]},
+    
+    estructuras:
+    {"informacion":[{"fila":2,"tipo":"Estructura 1","componentes":["Sujeto","Verbo","Complemento","","","","","",""]},{"fila":3,"tipo":"Estructura 2","componentes":["Sujeto","will","Base","Complemento","","","","",""]},{"fila":4,"tipo":"Estructura 3","componentes":["Sujeto","have/has","been","ing","Complemento","","","",""]},{"fila":5,"tipo":"Estructura 4","componentes":["Sujeto","will","have/has","been","ing","Complemento","","",""]}],"oraciones":[{"fila":8,"tipo":"Estructura 1","elementos":["She","is","a doctor","","","","","",""]},{"fila":11,"tipo":"Estructura 2","elementos":["He","will","come","by then","","","","",""]},{"fila":14,"tipo":"Estructura 3","elementos":["I","have","been","waiting","for you","","","",""]},{"fila":17,"tipo":"Estructura 4","elementos":["You","will","have","been","running","for hours","","",""]}],"tablas":[{"numero":1,"tipo":"Estructura 1","encabezados":["Sujeto","Verbo","Complemento"],"oraciones":[["She","is","a doctor"]]},{"numero":2,"tipo":"Estructura 2","encabezados":["Sujeto","will","Base","Complemento"],"oraciones":[["He","will","come","by then"]]},{"numero":3,"tipo":"Estructura 3","encabezados":["Sujeto","have/has","been","ing","Complemento"],"oraciones":[["I","have","been","waiting","for you"]]},{"numero":4,"tipo":"Estructura 4","encabezados":["Sujeto","will","have/has","been","ing","Complemento"],"oraciones":[["You","will","have","been","running","for hours"]]}]},
+    
+    completarTextoListening:
+    {"audio":"","parrafos":[],"referencias":[]},
+    
+    ordenarParrafos:
+    [{"orden":1,"parrafo":"Este es el primer párrafo del texto."},{"orden":2,"parrafo":"Este es el segundo párrafo del texto."},{"orden":3,"parrafo":"Este es el tercer párrafo del texto."}],
+
+mostrarSeleccionSimple:
+"Sí",
+
+mostrarCompletar:
+"No",
+
+mostrarDragDrop:
+"No",
+
+mostrarOrdenarOracion:
+"Sí",
+
+mostrarRelacionar:
+"Sí",
+
+mostrarTraduccion:
+"No",
+
+mostrarTranscripcion:
+"No",
+
+mostrarIdentificarImagenes:
+"No",
+
+mostrarEstructuras:
+"No"
+
+});
+
+
+if(
+    "No"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "No"
+    .trim()
+    .toLowerCase() === "si"
+){
+
+    UCMIMotorCompletarListening.generar({
+
+        contenedor:"zona-ejercicios",
+
+        completarTextoListening:
+        ejercicioCompletarTextoListening
+
+    });
+
+}
+
+
+if(
+    "No"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "No"
+    .trim()
+    .toLowerCase() === "si"
+){
+
+    UCMIMotorOrdenarParrafos.generar({
+
+        contenedor:"zona-ejercicios",
+
+        ordenarParrafos:
+        [{"orden":1,"parrafo":"Este es el primer párrafo del texto."},{"orden":2,"parrafo":"Este es el segundo párrafo del texto."},{"orden":3,"parrafo":"Este es el tercer párrafo del texto."}]
+
+    });
+
+}
+
+if(
+    "No"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "No"
+    .trim()
+    .toLowerCase() === "si"
+){
+
+    UCMIMotorComprensionTexto.generar({
+
+        contenedor:"zona-ejercicios",
+
+        comprensionTexto:
+        {"titulo":"Nombre del título","parrafos":[{"numero":1,"texto":"Párrafo 1"},{"numero":2,"texto":"Párrafo 2"},{"numero":3,"texto":"Párrafo 3"},{"numero":4,"texto":"Párrafo 4"},{"numero":5,"texto":"Párrafo 5"},{"numero":6,"texto":"Párrafo 6"},{"numero":7,"texto":"Párrafo 7"},{"numero":8,"texto":"Párrafo 8"},{"numero":9,"texto":"Párrafo 9"},{"numero":10,"texto":"Párrafo 10"}],"preguntas":[{"numero":1,"pregunta":"Enunciado primera pregunta","correcta":"Enunciado opción correcta","incorrectas":["Enunciado opción falsa","Enunciado opción falsa","Enunciado opción falsa"]}]}
+
+    });
+
+}
+
+if(
+    "No"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "No"
+    .trim()
+    .toLowerCase() === "si"
+){
+
+    UCMIMotorComprensionAuditiva.generar({
+
+        contenedor:"zona-ejercicios",
+
+        comprensionAuditiva:
+        ejercicioComprensionAuditiva
+
+    });
+
+}
+
+if(
+    "No"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "No"
+    .trim()
+    .toLowerCase() === "si"
+){
+
+    UCMIMotorSustitucionContextual.generar({
+
+        contenedor:"zona-ejercicios",
+
+        sustitucionContextual:
+        {"nombre":"Nombre","parrafos":[{"numero":"Párrafo 1","texto":"She went to the supermarket because she needed some food for dinner.","inicio":5,"fin":10,"correcta":"supermarket because she needed some food","incorrectas":["supermarket because she wanted something to eat","park because she wanted to relax","restaurant because she had already eaten"],"explicacion":"La frase correcta puede sustituir al segmento original porque mantiene la idea esencial del contexto."}]}
+
+    });
+
+}
+
+
+if(
+    "Sí"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "Sí"
+    .trim()
+    .toLowerCase() === "si"
+){
+
+    UCMIMotorMineria.generar({
+
+        contenedor:"zona-ejercicios",
+
+        mineria:
+        {"palabras":["Number + noun","How many + plural noun?","There are + number + plural noun."],"numeroMinimoPalabras":0,"estructuras":[{"numero":1,"estructura":"Number + noun"},{"numero":2,"estructura":"How many + plural noun?"},{"numero":3,"estructura":"There are + number + plural noun."}]}
+
+    });
+
+}
+
+if(
+    "No"
+    .trim()
+    .toLowerCase() === "sí"
+    ||
+    "No"
+    .trim()
+    .toLowerCase() === "si"
+){
+
+    UCMIMotorEscrituraGuiada.generar({
+
+        contenedor:"zona-ejercicios",
+
+        escrituraGuiada:
+        ejercicioEscrituraGuiada
+
+    });
+
+}
+
+document.querySelectorAll(".audioUCMI").forEach(contenedor=>{
+
+    const datos = contenedor.querySelector(".audio-data");
+
+    if(datos){
+
+        UCMIAudio.crear(contenedor,{
+
+            titulo: datos.dataset.titulo,
+
+            archivo: datos.dataset.audio
+
+        });
+
+    }
+
+});
+
+</script>
+
+</body>
+
+</html>
