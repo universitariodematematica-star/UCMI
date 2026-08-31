@@ -130,20 +130,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.08);
         }
 
-        .card-grammar-formula {
-            cursor: pointer;
-        }
-
-        .card-grammar-formula::after {
-            content: "💡 Abrir Pizarra";
-            display: block;
-            font-size: 8.5px;
-            color: #777;
-            font-weight: bold;
-            margin-top: 2px;
-            text-align: right;
-        }
-
         /* =====================================================
             COLORES ESPECÍFICOS DE TARJETAS
         ===================================================== */
@@ -202,6 +188,28 @@
             text-transform: uppercase;
             margin-bottom: 3px;
             letter-spacing: 0.3px;
+        }
+
+        /* =====================================================
+            BOTÓN DE PIZARRA INTEGRADO
+        ===================================================== */
+        .board-trigger-btn {
+            background-color: #d99b26;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            font-size: 9px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+
+        .board-trigger-btn:hover {
+            background-color: #b8811e;
         }
 
         /* =====================================================
@@ -285,7 +293,7 @@
         }
 
         /* =====================================================
-            SECCIÓN DE IMAGEN NATIVA (SIN PÉRDIDA DE NITIDEZ)
+            SECCIÓN DE IMAGEN NATIVA
         ===================================================== */
         .image-section {
             margin-top: 6px;
@@ -303,7 +311,7 @@
             display: block;
             margin: 0 auto;
             border-radius: 4px;
-            image-rendering: -webkit-optimize-contrast; /* Máxima nitidez en navegadores */
+            image-rendering: -webkit-optimize-contrast;
         }
 
         /* =====================================================
@@ -419,7 +427,8 @@
             }
 
             .print-btn-container,
-            .modal-overlay {
+            .modal-overlay,
+            .board-trigger-btn {
                 display: none !important;
             }
 
@@ -432,10 +441,6 @@
             input {
                 border-bottom: 1px solid #000 !important;
                 color: #000 !important;
-            }
-
-            .card::after {
-                display: none;
             }
         }
     </style>
@@ -475,7 +480,7 @@
                 </div>
 
                 <!-- 2. GRAMMAR FORMULA -->
-                <div class="card card-grammar-formula" onclick="openWhiteboard()">
+                <div class="card card-grammar-formula">
                     <span class="badge">Grammar Formula</span>
                     <p>
                         Number + noun<br>
@@ -487,6 +492,7 @@
                         There are + number + plural noun.<br>
                         There are five oranges.
                     </p>
+                    <button class="board-trigger-btn" type="button" onclick="openWhiteboard()">💡 Abrir Pizarra Interactiva</button>
                 </div>
 
                 <!-- 3. KEY VOCABULARY -->
@@ -601,11 +607,11 @@
         <div class="modal-container" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3>💡 Pizarra Interactiva: Numbers Around Us</h3>
-                <button class="close-modal-btn" onclick="closeWhiteboard()">×</button>
+                <button class="close-modal-btn" type="button" onclick="closeWhiteboard()">×</button>
             </div>
-            <textarea class="board-textarea" placeholder="Escribe aquí notas adicionales, ejemplos de conteo o explicaciones de precios para la clase..."></textarea>
+            <textarea class="board-textarea" id="whiteboardText" placeholder="Escribe aquí notas adicionales, ejemplos de conteo o explicaciones de precios para la clase..."></textarea>
             <div class="modal-footer">
-                <button class="btn-board-action" onclick="closeWhiteboard()">Guardar y Cerrar</button>
+                <button class="btn-board-action" type="button" onclick="closeWhiteboard()">Guardar y Cerrar</button>
             </div>
         </div>
     </div>
@@ -648,7 +654,7 @@
         }
 
         function activarPersistencia() {
-            const campos = document.querySelectorAll('input[type="text'], textarea');
+            const campos = document.querySelectorAll('input[type="text"], textarea');
             campos.forEach((campo, indice) => {
                 campo.dataset.persistKey = `campo_${indice}`;
                 campo.addEventListener('input', guardarRespuestas);
@@ -656,17 +662,23 @@
         }
 
         function openWhiteboard() {
-            document.getElementById('whiteboardModal').style.display = 'flex';
+            const modal = document.getElementById('whiteboardModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
         }
 
         function closeWhiteboard() {
             guardarRespuestas();
-            document.getElementById('whiteboardModal').style.display = 'none';
+            const modal = document.getElementById('whiteboardModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
         }
 
         window.onclick = function(event) {
             let modal = document.getElementById('whiteboardModal');
-            if (event.target == modal) {
+            if (event.target === modal) {
                 closeWhiteboard();
             }
         };
