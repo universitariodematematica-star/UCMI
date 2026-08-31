@@ -1944,69 +1944,19 @@ document.getElementById("btnFiltrar").addEventListener("click", function() {
      * --------------------------------------------------
      */
 
-    if (filtroAlumnos === "asistentes" ||
-        filtroAlumnos === "inasistentes") {
+    if (filtroAlumnos === "asistentes") {
 
         /*
-         * Fecha de hoy.
-         * Solo se evalúan los días operativos
-         * que ya han ocurrido.
+         * Fecha de hoy
          */
 
         const hoy = new Date();
+
         hoy.setHours(0, 0, 0, 0);
 
-        alumnosFiltrados = alumnosFiltrados.filter(alumno => {
-
-/*
- * Determinar los días de clase del grupo
- */
-
-const diasClase = obtenerDiasClase(alumno.grupo);
-
-            /*
-             * Si no conocemos el horario,
-             * no podemos determinar asistencia.
-             */
-
-            if (diasClase.length === 0) {
-                return false;
-            }
-
-            /*
-             * Obtener las fechas de las sesiones
-             * que ya corresponden al horario del alumno.
-             */
-
-/*
- * Obtener las fechas de las sesiones
- * que corresponden al período seleccionado.
- */
-
-const fechasOperativas = [];
-
-if (alumno.sesiones) {
-
-    alumno.sesiones.forEach(sesion => {
-
-        if (!sesion.fecha) {
-            return;
-        }
-
-const fecha = convertirFechaExcel(sesion.fecha);
-
-if (!fecha) {
-    return;
-}
-
-        fecha.setHours(0, 0, 0, 0);
 
         /*
-         * Solo incluir:
-         *
-         * 1. días que corresponden al horario
-         * 2. fechas dentro del período seleccionado
-         * 3. días que ya ocurrieron
+         * Determinar el período seleccionado
          */
 
         const fechaInicioDate = fechaInicio
@@ -2017,88 +1967,209 @@ if (!fecha) {
             ? new Date(fechaFin + "T00:00:00")
             : hoy;
 
-        if (
-            diasClase.includes(fecha.getDay()) &&
-            (!fechaInicioDate || fecha >= fechaInicioDate) &&
-            fecha <= fechaFinDate &&
-            fecha <= hoy
-        ) {
 
-            fechasOperativas.push({
-                fecha,
-                asistencia:
-                    String(
-                        sesion.asistencia || ""
-                    )
-                    .trim()
-                    .charAt(0)
-            });
+        /*
+         * --------------------------------------------------
+         * FILTRAR ALUMNOS ASISTENTES
+         * --------------------------------------------------
+         */
 
-        }
+        alumnosFiltrados = alumnosFiltrados.filter(alumno => {
 
-    });
+            const diasClase =
+                obtenerDiasClase(alumno.grupo);
 
-}
 
             /*
-             * Si todavía no existe ningún día operativo
-             * para este alumno, no se considera asistente
-             * ni inasistente.
+             * Si no conocemos el horario,
+             * no podemos determinar asistencia.
+             */
+
+            if (diasClase.length === 0) {
+                return false;
+            }
+
+
+            /*
+             * Obtener únicamente las sesiones que:
+             *
+             * 1. corresponden al horario del grupo
+             * 2. están dentro del período seleccionado
+             * 3. ya ocurrieron
+             */
+
+            const fechasOperativas = [];
+
+            if (alumno.sesiones) {
+
+                alumno.sesiones.forEach(sesion => {
+
+                    if (!sesion.fecha) {
+                        return;
+                    }
+
+                    const fecha =
+                        convertirFechaExcel(sesion.fecha);
+
+                    if (!fecha) {
+                        return;
+                    }
+
+                    fecha.setHours(0, 0, 0, 0);
+
+                    if (
+                        diasClase.includes(fecha.getDay()) &&
+                        (!fechaInicioDate ||
+                            fecha >= fechaInicioDate) &&
+                        fecha <= fechaFinDate &&
+                        fecha <= hoy
+                    ) {
+
+                        fechasOperativas.push({
+                            fecha,
+                            asistencia:
+                                String(
+                                    sesion.asistencia || ""
+                                )
+                                .trim()
+                                .charAt(0)
+                        });
+
+                    }
+
+                });
+
+            }
+
+
+            /*
+             * Si no existe ninguna fecha operativa,
+             * no se considera asistente.
              */
 
             if (fechasOperativas.length === 0) {
                 return false;
             }
 
-            /*
-             * ASISTENTES:
-             *
-             * Todas las fechas operativas ya ocurridas
-             * deben tener P.
-             */
-
-            const esAsistente =
-                fechasOperativas.every(
-                    sesion => sesion.asistencia === "P"
-                );
 
             /*
-             * INASISTENTES:
-             *
-             * Basta con que una fecha operativa ya ocurrida
-             * no tenga P.
+             * Todas las sesiones operativas deben
+             * tener P.
              */
 
-            const esInasistente =
-                fechasOperativas.some(
-                    sesion => sesion.asistencia !== "P"
-                );
-
-            if (filtroAlumnos === "asistentes") {
-                return esAsistente;
-            }
-
-            return esInasistente;
+            return fechasOperativas.every(
+                sesion =>
+                    sesion.asistencia === "P"
+            );
 
         });
+
 
     }
     else if (filtroAlumnos === "inasistentes") {
 
+        /*
+         * Fecha de hoy
+         */
+
+        const hoy = new Date();
+
+        hoy.setHours(0, 0, 0, 0);
+
+
+        /*
+         * Determinar el período seleccionado
+         */
+
+        const fechaInicioDate = fechaInicio
+            ? new Date(fechaInicio + "T00:00:00")
+            : null;
+
+        const fechaFinDate = fechaFin
+            ? new Date(fechaFin + "T00:00:00")
+            : hoy;
+
+
+        /*
+         * --------------------------------------------------
+         * FILTRAR ALUMNOS INASISTENTES
+         * --------------------------------------------------
+         */
+
         alumnosFiltrados = alumnosFiltrados.filter(alumno => {
 
-            if (!alumno.sesiones) {
-                return true;
+            const diasClase =
+                obtenerDiasClase(alumno.grupo);
+
+
+            /*
+             * Si no conocemos el horario,
+             * no podemos determinar asistencia.
+             */
+
+            if (diasClase.length === 0) {
+                return false;
             }
 
-            return !alumno.sesiones.some(sesion => {
+
+            /*
+             * Buscar únicamente las sesiones:
+             *
+             * 1. correspondientes al horario del grupo
+             * 2. dentro del período seleccionado
+             * 3. que ya ocurrieron
+             */
+
+            if (!alumno.sesiones) {
+                return false;
+            }
+
+
+            return alumno.sesiones.some(sesion => {
+
+                if (!sesion.fecha) {
+                    return false;
+                }
+
+                const fecha =
+                    convertirFechaExcel(sesion.fecha);
+
+                if (!fecha) {
+                    return false;
+                }
+
+                fecha.setHours(0, 0, 0, 0);
+
+
+                /*
+                 * La condición fundamental:
+                 *
+                 * DEBE EXISTIR UNA A
+                 * dentro del período.
+                 */
+
+                if (
+                    !diasClase.includes(fecha.getDay()) ||
+                    (fechaInicioDate &&
+                        fecha < fechaInicioDate) ||
+                    fecha > fechaFinDate ||
+                    fecha > hoy
+                ) {
+
+                    return false;
+
+                }
+
 
                 const asistencia =
-                    String(sesion.asistencia || "")
+                    String(
+                        sesion.asistencia || ""
+                    )
                     .trim()
                     .charAt(0);
 
-                return ["P", "L", "E"].includes(asistencia);
+
+                return asistencia === "A";
 
             });
 
