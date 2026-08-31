@@ -2328,6 +2328,36 @@ document.getElementById("archivoAsistencia").addEventListener("change", async fu
 
     await libro.xlsx.load(datos);
 
+
+    /*
+     * --------------------------------------------------
+     * CONSERVAR JUSTIFICACIONES EXISTENTES
+     * --------------------------------------------------
+     */
+
+    const justificacionesExistentes = new Map();
+
+    registrosAsistencia.forEach(registro => {
+
+        const clave =
+            registro.studentId ||
+            `${registro.apellidos}|${registro.nombres}`;
+
+        justificacionesExistentes.set(
+            clave,
+            registro.justificacion || ""
+        );
+
+    });
+
+
+    /*
+     * --------------------------------------------------
+     * COMENZAR NUEVOS REGISTROS DESDE EL EXCEL
+     * --------------------------------------------------
+     */
+
+    registrosAsistencia.length = 0;
     libro.worksheets.forEach(hoja => {
 
         const filaEncabezados = hoja.getRow(4);
@@ -2406,16 +2436,45 @@ const alumnoEncontrado = alumnos.find(alumno =>
 
     if (alumnoEncontrado) {
 
-const registroAlumno = {
-    apellidos: alumnoEncontrado.apellidos,
-    nombres: alumnoEncontrado.nombres,
-    telefono: alumnoEncontrado.telefono,
-    grupo: alumnoEncontrado.grupo,
-    studentId,
-    email,
-    sesiones,
-    justificacion: ""
-};
+        /*
+         * --------------------------------------------------
+         * RECUPERAR JUSTIFICACIÓN ANTERIOR
+         * --------------------------------------------------
+         */
+
+        const clave =
+            studentId ||
+            `${alumnoEncontrado.apellidos}|${alumnoEncontrado.nombres}`;
+
+        const justificacionAnterior =
+            justificacionesExistentes.get(clave) || "";
+
+
+        /*
+         * --------------------------------------------------
+         * CREAR NUEVO REGISTRO
+         * --------------------------------------------------
+         */
+
+        const registroAlumno = {
+
+            apellidos: alumnoEncontrado.apellidos,
+
+            nombres: alumnoEncontrado.nombres,
+
+            telefono: alumnoEncontrado.telefono,
+
+            grupo: alumnoEncontrado.grupo,
+
+            studentId,
+
+            email,
+
+            sesiones,
+
+            justificacion: justificacionAnterior
+
+        };
 
         registrosAsistencia.push(registroAlumno);
 
