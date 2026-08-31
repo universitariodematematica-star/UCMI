@@ -1680,6 +1680,39 @@ celdaMensaje.style.whiteSpace = "nowrap";
 
 /*
  * --------------------------------------------------
+ * BOTONES DE WHATSAPP
+ * --------------------------------------------------
+ */
+
+const celdaMensaje = document.createElement("td");
+
+celdaMensaje.style.border = "1px solid #ccc";
+celdaMensaje.style.padding = "8px";
+celdaMensaje.style.textAlign = "center";
+celdaMensaje.style.whiteSpace = "nowrap";
+
+
+/*
+ * --------------------------------------------------
+ * CONFIGURACIÓN VISUAL DE LOS BOTONES
+ * --------------------------------------------------
+ */
+
+function configurarBotonWhatsApp(boton) {
+
+    boton.style.width = "145px";
+    boton.style.height = "42px";
+    boton.style.borderRadius = "8px";
+    boton.style.border = "none";
+    boton.style.cursor = "pointer";
+    boton.style.fontWeight = "bold";
+    boton.style.margin = "2px";
+
+}
+
+
+/*
+ * --------------------------------------------------
  * BOTÓN ENVIAR MENSAJE
  * --------------------------------------------------
  */
@@ -1699,6 +1732,8 @@ botonMensaje.classList.add(
         : "mensaje-no-enviado"
 );
 
+configurarBotonWhatsApp(botonMensaje);
+
 
 /*
  * --------------------------------------------------
@@ -1708,18 +1743,9 @@ botonMensaje.classList.add(
 
 botonMensaje.addEventListener("click", function() {
 
-    /*
-     * Evitar un segundo envío
-     */
-
     if (alumno.mensajeEnviado) {
         return;
     }
-
-
-    /*
-     * Seleccionar uno de los modelos
-     */
 
     const indiceAleatorio =
         Math.floor(
@@ -1730,10 +1756,6 @@ botonMensaje.addEventListener("click", function() {
     const modelo =
         modelosMensajeInasistencia[indiceAleatorio];
 
-
-    /*
-     * Preparar datos del alumno
-     */
 
     const primerNombre =
         String(alumno.nombres || "")
@@ -1754,25 +1776,13 @@ botonMensaje.addEventListener("click", function() {
     };
 
 
-    /*
-     * Generar mensaje
-     */
-
     const mensaje = modelo(datos);
 
-
-    /*
-     * Preparar número de WhatsApp
-     */
 
     const telefono =
         String(alumno.telefono || "")
         .replace(/\D/g, "");
 
-
-    /*
-     * Verificar que exista teléfono
-     */
 
     if (!telefono) {
 
@@ -1786,12 +1796,6 @@ botonMensaje.addEventListener("click", function() {
     }
 
 
-    /*
-     * --------------------------------------------------
-     * ABRIR APLICACIÓN DE WHATSAPP
-     * --------------------------------------------------
-     */
-
     const urlWhatsApp =
         `whatsapp://send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
 
@@ -1799,17 +1803,10 @@ botonMensaje.addEventListener("click", function() {
 
 
     /*
-     * --------------------------------------------------
-     * REGISTRAR MENSAJE ENVIADO
-     * --------------------------------------------------
+     * Registrar mensaje enviado
      */
 
     alumno.mensajeEnviado = true;
-
-
-    /*
-     * Guardar estado en localStorage
-     */
 
     localStorage.setItem(
         "learningBridgeRegistrosAsistencia",
@@ -1856,6 +1853,22 @@ botonLlamar.classList.add(
         : "llamada-no-realizada"
 );
 
+configurarBotonWhatsApp(botonLlamar);
+
+
+/*
+ * --------------------------------------------------
+ * COLOR DEL BOTÓN LLAMAR
+ * --------------------------------------------------
+ */
+
+botonLlamar.style.backgroundColor =
+    alumno.llamadaRealizada
+        ? "#dc2626"
+        : "#25D366";
+
+botonLlamar.style.color = "white";
+
 
 /*
  * --------------------------------------------------
@@ -1865,27 +1878,15 @@ botonLlamar.classList.add(
 
 botonLlamar.addEventListener("click", function() {
 
-    /*
-     * Evitar una segunda llamada registrada
-     */
-
     if (alumno.llamadaRealizada) {
         return;
     }
 
 
-    /*
-     * Preparar número de WhatsApp
-     */
-
     const telefono =
         String(alumno.telefono || "")
         .replace(/\D/g, "");
 
-
-    /*
-     * Verificar que exista teléfono
-     */
 
     if (!telefono) {
 
@@ -1900,9 +1901,7 @@ botonLlamar.addEventListener("click", function() {
 
 
     /*
-     * --------------------------------------------------
-     * ABRIR LLAMADA DE WHATSAPP
-     * --------------------------------------------------
+     * Abrir llamada de WhatsApp
      */
 
     const urlLlamada =
@@ -1912,17 +1911,11 @@ botonLlamar.addEventListener("click", function() {
 
 
     /*
-     * --------------------------------------------------
-     * REGISTRAR LLAMADA REALIZADA
-     * --------------------------------------------------
+     * Registrar llamada realizada
      */
 
     alumno.llamadaRealizada = true;
 
-
-    /*
-     * Guardar estado en localStorage
-     */
 
     localStorage.setItem(
         "learningBridgeRegistrosAsistencia",
@@ -1945,12 +1938,16 @@ botonLlamar.addEventListener("click", function() {
         "llamada-realizada"
     );
 
+
+    botonLlamar.style.backgroundColor =
+        "#dc2626";
+
 });
 
 
 /*
  * --------------------------------------------------
- * COLOCAR LOS DOS BOTONES EN LA CELDA
+ * COLOCAR LOS DOS BOTONES
  * --------------------------------------------------
  */
 
