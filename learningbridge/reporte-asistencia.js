@@ -25,16 +25,6 @@ document
             )
         ];
 
-        console.log(
-            "REGISTROS DISPONIBLES:",
-            registros
-        );
-
-        console.log(
-            "GRUPOS ENCONTRADOS:",
-            grupos
-        );
-
 
         /*
          * ----------------------------------------------
