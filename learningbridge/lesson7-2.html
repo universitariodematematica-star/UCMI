@@ -437,5 +437,108 @@
     <!-- FRANJA FINAL -->
     <div class="bottom-bar"></div>
 
+    <script>
+    /* =====================================================
+       PERSISTENCIA DE RESPUESTAS
+    ===================================================== */
+
+    const STORAGE_KEY =
+        "learningbridge_unit2_lesson7_practice_create";
+
+    function guardarRespuestas() {
+
+        const campos =
+            document.querySelectorAll(
+                'input[type="text"]'
+            );
+
+        const respuestas = [];
+
+        campos.forEach(function(campo, indice) {
+
+            respuestas[indice] = campo.value;
+
+        });
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(respuestas)
+        );
+
+    }
+
+
+    function cargarRespuestas() {
+
+        const datosGuardados =
+            localStorage.getItem(STORAGE_KEY);
+
+        if (!datosGuardados) {
+            return;
+        }
+
+        let respuestas;
+
+        try {
+
+            respuestas =
+                JSON.parse(datosGuardados);
+
+        } catch (error) {
+
+            return;
+
+        }
+
+        const campos =
+            document.querySelectorAll(
+                'input[type="text"]'
+            );
+
+        campos.forEach(function(campo, indice) {
+
+            if (
+                Array.isArray(respuestas) &&
+                respuestas[indice] !== undefined
+            ) {
+
+                campo.value =
+                    respuestas[indice];
+
+            }
+
+        });
+
+    }
+
+
+    /* =====================================================
+       ACTIVAR PERSISTENCIA
+    ===================================================== */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function() {
+
+            cargarRespuestas();
+
+            const campos =
+                document.querySelectorAll(
+                    'input[type="text"]'
+                );
+
+            campos.forEach(function(campo) {
+
+                campo.addEventListener(
+                    "input",
+                    guardarRespuestas
+                );
+
+            });
+
+        }
+    );
+</script>
+
 </body>
 </html>
