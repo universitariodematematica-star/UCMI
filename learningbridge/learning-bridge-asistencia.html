@@ -1035,52 +1035,77 @@ function obtenerDiasClase(grupo) {
  */
 
 function convertirFechaExcel(textoFecha) {
-
-    const texto = String(textoFecha || "");
-
-    const coincidencia = texto.match(
-        /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
-    );
-
-    if (!coincidencia) {
+    if (!textoFecha || typeof textoFecha !== "string") {
         return null;
     }
 
-    const dia = parseInt(coincidencia[1]);
-    const mesTexto = coincidencia[2];
-    const año = parseInt(coincidencia[3]);
+    const match = textoFecha.match(
+        /^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})/
+    );
 
-    const meses = {
-        Jan: 0,
-        Feb: 1,
-        Mar: 2,
-        Apr: 3,
-        May: 4,
-        Jun: 5,
-        Jul: 6,
-        Aug: 7,
-        Sep: 8,
-        Oct: 9,
-        Nov: 10,
-        Dec: 11
-    };
+    if (!match) return null;
 
-    const mes = meses[mesTexto];
+    const [, dia, mesTextoOriginal, anio] = match;
 
-    if (mes === undefined) {
+    const mesTexto = mesTextoOriginal.toLowerCase();
+
+    const meses = [
+        "january",
+        "february",
+        "march",
+        "april",
+        "may",
+        "june",
+        "july",
+        "august",
+        "september",
+        "october",
+        "november",
+        "december"
+    ];
+
+    const abreviaciones = [
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "may",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "oct",
+        "nov",
+        "dec"
+    ];
+
+    let indiceMes = -1;
+
+    for (let i = 0; i < meses.length; i++) {
+        const nombreCompleto = meses[i];
+        const abreviacion = abreviaciones[i];
+
+        if (
+            mesTexto.length >= 3 &&
+            (
+                nombreCompleto.startsWith(mesTexto) ||
+                abreviacion === mesTexto
+            )
+        ) {
+            indiceMes = i;
+            break;
+        }
+    }
+
+    if (indiceMes === -1) {
         return null;
     }
 
-    const fecha = new Date(
-        año,
-        mes,
-        dia
+    return new Date(
+        Number(anio),
+        indiceMes,
+        Number(dia)
     );
-
-    fecha.setHours(0, 0, 0, 0);
-
-    return fecha;
-
 }
 
 
