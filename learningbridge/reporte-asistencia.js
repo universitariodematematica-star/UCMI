@@ -278,12 +278,11 @@ const meses = {
     Dec: 11
 };
 
-const mesTexto =
-    partes[2]
-        .substring(0, 3);
-
 const mes =
-    meses[mesTexto];
+    meses[
+        partes[2]
+            .substring(0, 3)
+    ];
 
 if (mes === undefined) {
 
@@ -330,7 +329,6 @@ sesion.fechaObjeto =
         hora,
         minutos
     );
-
         if (!partes) {
 
             console.error(
