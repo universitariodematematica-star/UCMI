@@ -771,38 +771,41 @@ alumnosGrupo.forEach(
                                     )
                                     .trim();
 
-                            const partes =
-                                textoFecha.match(
-                                    /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})\s+(\d{1,2})\.(\d{2})(AM|PM)$/
-                                );
+const partes =
+    textoFecha.match(
+        /^(\d{1,2})\s+([A-Za-z]{1,9})\s+(\d{4})\s+(\d{1,2})\.(\d{2})(AM|PM)$/
+    );
 
-                            if (!partes) {
-                                return false;
-                            }
+if (!partes) {
+    return false;
+}
 
-                            const diaSesion =
-                                parseInt(
-                                    partes[1],
-                                    10
-                                );
+const diaSesion =
+    parseInt(
+        partes[1],
+        10
+    );
 
-                            const meses = {
-                                Jan: 0,
-                                Feb: 1,
-                                Mar: 2,
-                                Apr: 3,
-                                May: 4,
-                                Jun: 5,
-                                Jul: 6,
-                                Aug: 7,
-                                Sep: 8,
-                                Oct: 9,
-                                Nov: 10,
-                                Dec: 11
-                            };
+const meses = {
+    Jan: 0,
+    Feb: 1,
+    Mar: 2,
+    Apr: 3,
+    May: 4,
+    Jun: 5,
+    Jul: 6,
+    Aug: 7,
+    Sep: 8,
+    Oct: 9,
+    Nov: 10,
+    Dec: 11
+};
 
-                            const mesSesion =
-                                meses[partes[2]];
+const mesSesion =
+    meses[
+        partes[2]
+            .substring(0, 3)
+    ];
 
                             const añoSesion =
                                 parseInt(
