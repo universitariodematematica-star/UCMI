@@ -157,18 +157,6 @@ if (grupo === "LB 7AM") {
         "VIERNES"
     ];
 
-} else let dias = [];
-
-if (grupo === "LB 7AM") {
-
-    dias = [
-        "LUNES",
-        "MARTES",
-        "MIÉRCOLES",
-        "JUEVES",
-        "VIERNES"
-    ];
-
 } else if (grupo === "LB C1 8PM") {
 
     dias = [
