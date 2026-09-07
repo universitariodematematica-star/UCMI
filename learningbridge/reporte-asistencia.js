@@ -412,6 +412,13 @@ grupos.forEach(grupo => {
                     finSemana
         );
 
+    console.log(
+    "SESIONES DE LA ÚLTIMA SEMANA:",
+    fechasUltimaSemana.map(
+        sesion => sesion.fechaObjeto
+    )
+);
+
 
 /*
  * ----------------------------------------------
