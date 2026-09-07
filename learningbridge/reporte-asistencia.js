@@ -145,32 +145,63 @@ grupos.forEach(grupo => {
      * ----------------------------------------------
      */
 
-    let dias = [];
+let dias = [];
 
-    if (grupo.includes(" L")) {
+if (grupo === "LB 7AM") {
 
-        dias = [
-            "LUNES",
-            "MIÉRCOLES",
-            "VIERNES"
-        ];
+    dias = [
+        "LUNES",
+        "MARTES",
+        "MIÉRCOLES",
+        "JUEVES",
+        "VIERNES"
+    ];
 
-    } else if (grupo.includes(" MJ")) {
+} else let dias = [];
 
-        dias = [
-            "MARTES",
-            "JUEVES"
-        ];
+if (grupo === "LB 7AM") {
 
-    } else if (grupo.includes(" S")) {
+    dias = [
+        "LUNES",
+        "MARTES",
+        "MIÉRCOLES",
+        "JUEVES",
+        "VIERNES"
+    ];
 
-        dias = [
-            "SÁBADO"
-        ];
+} else if (grupo === "LB C1 8PM") {
 
-    }
+    dias = [
+        "LUNES",
+        "MARTES",
+        "MIÉRCOLES",
+        "JUEVES",
+        "VIERNES",
+        "SÁBADO"
+    ];
 
+} else if (grupo.includes(" L")) {
 
+    dias = [
+        "LUNES",
+        "MIÉRCOLES",
+        "VIERNES"
+    ];
+
+} else if (grupo.includes(" MJ")) {
+
+    dias = [
+        "MARTES",
+        "JUEVES"
+    ];
+
+} else if (grupo.includes(" S")) {
+
+    dias = [
+        "SÁBADO"
+    ];
+
+}
     /*
      * ----------------------------------------------
      * OBTENER SESIONES DEL GRUPO
