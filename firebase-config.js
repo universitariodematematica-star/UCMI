@@ -1,60 +1,507 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-// ===============================================
-// CONFIGURACIÓN GENERAL UCMI
-// ===============================================
+    <title>Habilitar estudiantes - Examen A1</title>
 
-export const CONFIG = {
+    <style>
 
-    UID_MAESTRO:
-        "x0oBFbDP09d7I3VZvWuN6BOODf32",
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    URL_INDEX:
-        "index.html",
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f4f7;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
 
-    URL_FORMULARIO_ESTUDIANTE:
-        "https://universitariodematematica-star.github.io/UCMI/formulario-postulacion.html",
+        .contenedor {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+        }
 
-    URL_FORMULARIO_DOCENTE:
-        "https://universitariodematematica-star.github.io/UCMI/postulacion-docente.html",
+        .encabezado {
+            background: #071426;
+            color: white;
+            text-align: center;
+            padding: 30px 25px;
+        }
 
-    URL_POSTULACION_ACADEMICA:
-        "https://universitariodematematica-star.github.io/UCMI/postulacion-academica.html"
+        .logo {
+            width: 180px;
+            height: 70px;
+            margin: 0 auto 20px;
 
-};
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
 
-// ===============================================
-// FIREBASE
-// ===============================================
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
-const firebaseConfig = {
+            font-size: 14px;
+            color: #d8dee8;
+        }
 
-    apiKey: "AIzaSyA2eMtX0I2u1iKdtHjNisMrqVSlpJbzHNI",
+        .encabezado h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
 
-    authDomain: "ucmi-13796634.firebaseapp.com",
+        .encabezado p {
+            font-size: 16px;
+            color: #d8dee8;
+        }
 
-    projectId: "ucmi-13796634",
+        .contenido {
+            padding: 30px;
+        }
 
-    storageBucket: "ucmi-13796634.firebasestorage.app",
+        .campo {
+            margin-bottom: 20px;
+        }
 
-    messagingSenderId: "1090719609536",
+        .campo label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #071426;
+        }
 
-    appId: "1:1090719609536:web:8d7f269d991d8dc3c6b325",
+        .campo input {
+            width: 100%;
+            height: 46px;
 
-    measurementId: "G-3M3DH25722"
+            padding: 0 14px;
 
-};
+            border: 1px solid #cbd2da;
+            border-radius: 7px;
 
-const app = initializeApp(firebaseConfig);
+            font-size: 16px;
+            outline: none;
+        }
 
-// ===============================================
-// EXPORTACIONES
-// ===============================================
+        .campo input:focus {
+            border-color: #178a75;
 
-export { app };
+            box-shadow:
+                0 0 0 3px
+                rgba(23, 138, 117, 0.12);
+        }
 
-export const auth = getAuth(app);
+        .boton {
+            width: 100%;
+            height: 48px;
 
-export const db = getFirestore(app);
+            border: none;
+            border-radius: 7px;
+
+            background: #178a75;
+            color: white;
+
+            font-size: 16px;
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        .boton:hover {
+            background: #126f5f;
+        }
+
+        .boton:disabled {
+            background: #9aa5ad;
+            cursor: not-allowed;
+        }
+
+        .mensaje {
+            margin-top: 20px;
+            padding: 12px;
+
+            border-radius: 7px;
+
+            text-align: center;
+
+            display: none;
+        }
+
+        .mensaje.exito {
+            display: block;
+
+            background: #e8f7f3;
+            color: #126f5f;
+        }
+
+        .mensaje.error {
+            display: block;
+
+            background: #fdecec;
+            color: #b42318;
+        }
+
+        .mensaje.proceso {
+            display: block;
+
+            background: #eef3f7;
+            color: #071426;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="contenedor">
+
+        <div class="encabezado">
+
+            <div class="logo">
+                ESPACIO PARA EL LOGO
+            </div>
+
+            <h1>
+                HABILITAR ESTUDIANTES
+            </h1>
+
+            <p>
+                Examen de Evaluación · A1
+            </p>
+
+        </div>
+
+
+        <div class="contenido">
+
+            <div class="campo">
+
+                <label for="cedula">
+                    Número de cédula
+                </label>
+
+                <input
+                    type="text"
+                    id="cedula"
+                    inputmode="numeric"
+                    maxlength="10"
+                    autocomplete="off"
+                    placeholder="Ingrese el número de cédula"
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="nombres">
+                    Nombres
+                </label>
+
+                <input
+                    type="text"
+                    id="nombres"
+                    autocomplete="off"
+                    placeholder="Ingrese los nombres"
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="apellidos">
+                    Apellidos
+                </label>
+
+                <input
+                    type="text"
+                    id="apellidos"
+                    autocomplete="off"
+                    placeholder="Ingrese los apellidos"
+                >
+
+            </div>
+
+
+            <button
+                type="button"
+                class="boton"
+                id="btnHabilitar"
+            >
+                HABILITAR ESTUDIANTE
+            </button>
+
+
+            <div
+                id="mensaje"
+                class="mensaje"
+            ></div>
+
+        </div>
+
+    </div>
+
+
+    <script type="module">
+
+        // ============================================
+        // FIREBASE
+        // ============================================
+
+        import {
+            db
+        } from "./firebase-config.js";
+
+
+        import {
+            doc,
+            setDoc,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+
+        // ============================================
+        // ELEMENTOS DE LA INTERFAZ
+        // ============================================
+
+        const cedula =
+            document.getElementById("cedula");
+
+        const nombres =
+            document.getElementById("nombres");
+
+        const apellidos =
+            document.getElementById("apellidos");
+
+        const btnHabilitar =
+            document.getElementById("btnHabilitar");
+
+        const mensaje =
+            document.getElementById("mensaje");
+
+
+        // ============================================
+        // CONFIGURACIÓN DEL EXAMEN
+        // ============================================
+
+        const EXAMEN =
+            "A1";
+
+
+        const COLECCION =
+            "estudiantes_examen";
+
+
+        // ============================================
+        // HABILITAR ESTUDIANTE
+        // ============================================
+
+        btnHabilitar.addEventListener(
+            "click",
+            async function() {
+
+                const valorCedula =
+                    cedula.value.trim();
+
+                const valorNombres =
+                    nombres.value.trim();
+
+                const valorApellidos =
+                    apellidos.value.trim();
+
+
+                // ----------------------------------------
+                // VALIDACIÓN BÁSICA
+                // ----------------------------------------
+
+                if (!valorCedula) {
+
+                    mostrarMensaje(
+                        "Ingrese el número de cédula.",
+                        "error"
+                    );
+
+                    cedula.focus();
+
+                    return;
+                }
+
+
+                if (!/^\d{10}$/.test(valorCedula)) {
+
+                    mostrarMensaje(
+                        "La cédula debe contener 10 dígitos.",
+                        "error"
+                    );
+
+                    cedula.focus();
+
+                    return;
+                }
+
+
+                if (!valorNombres) {
+
+                    mostrarMensaje(
+                        "Ingrese los nombres.",
+                        "error"
+                    );
+
+                    nombres.focus();
+
+                    return;
+                }
+
+
+                if (!valorApellidos) {
+
+                    mostrarMensaje(
+                        "Ingrese los apellidos.",
+                        "error"
+                    );
+
+                    apellidos.focus();
+
+                    return;
+                }
+
+
+                // ----------------------------------------
+                // DESACTIVAR BOTÓN
+                // ----------------------------------------
+
+                btnHabilitar.disabled = true;
+
+
+                mostrarMensaje(
+                    "Guardando estudiante...",
+                    "proceso"
+                );
+
+
+                try {
+
+                    // ------------------------------------
+                    // DOCUMENTO
+                    // ------------------------------------
+
+                    const referenciaEstudiante =
+                        doc(
+                            db,
+                            COLECCION,
+                            valorCedula
+                        );
+
+
+                    // ------------------------------------
+                    // GUARDAR EN FIRESTORE
+                    // ------------------------------------
+
+                    await setDoc(
+                        referenciaEstudiante,
+                        {
+
+                            cedula:
+                                valorCedula,
+
+                            nombres:
+                                valorNombres,
+
+                            apellidos:
+                                valorApellidos,
+
+                            examen:
+                                EXAMEN,
+
+                            habilitado:
+                                true,
+
+                            fechaRegistro:
+                                serverTimestamp()
+
+                        },
+                        {
+                            merge: true
+                        }
+                    );
+
+
+                    // ------------------------------------
+                    // CONFIRMACIÓN
+                    // ------------------------------------
+
+                    mostrarMensaje(
+                        "Estudiante habilitado correctamente.",
+                        "exito"
+                    );
+
+
+                    // ------------------------------------
+                    // LIMPIAR CAMPOS
+                    // ------------------------------------
+
+                    cedula.value = "";
+                    nombres.value = "";
+                    apellidos.value = "";
+
+
+                    cedula.focus();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Error al guardar estudiante:",
+                        error
+                    );
+
+
+                    mostrarMensaje(
+                        "No fue posible guardar al estudiante. Revise la conexión con Firebase.",
+                        "error"
+                    );
+
+                } finally {
+
+                    btnHabilitar.disabled = false;
+
+                }
+
+            }
+        );
+
+
+        // ============================================
+        // MENSAJES
+        // ============================================
+
+        function mostrarMensaje(
+            texto,
+            tipo
+        ) {
+
+            mensaje.textContent =
+                texto;
+
+            mensaje.className =
+                "mensaje " + tipo;
+
+        }
+
+    </script>
+
+</body>
+</html>
