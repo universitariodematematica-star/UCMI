@@ -1189,8 +1189,10 @@ import { initializeApp } from
 import {
     getFirestore,
     doc,
-    getDoc
-} from
+    getDoc,
+    setDoc
+}
+from
     "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 
@@ -1393,6 +1395,89 @@ async function obtenerEstudiantePorCedula(cedula) {
     }
 
     return documento.data();
+}
+
+   /* =========================================================
+   REGISTRAR INTENTO EN FIRESTORE
+   ========================================================= */
+
+async function registrarIntentoFirestore() {
+
+    if (!intento) {
+        return false;
+    }
+
+
+    try {
+
+        const referencia =
+            doc(
+                db,
+                "intentos_examen",
+                intento.id
+            );
+
+
+        await setDoc(
+            referencia,
+            {
+                id:
+                    intento.id,
+
+                examenCodigo:
+                    intento.examenCodigo,
+
+                cedula:
+                    intento.cedula,
+
+                nombre:
+                    intento.nombre,
+
+                estado:
+                    intento.estado,
+
+                inicioIntento:
+                    intento.inicioIntento,
+
+                ultimaActividad:
+                    intento.ultimaActividad,
+
+                preguntaActual:
+                    intento.preguntaActual,
+
+                respuestas:
+                    intento.respuestas,
+
+                fechaEntrega:
+                    intento.fechaEntrega,
+
+                fechaCreacion:
+                    intento.fechaCreacion
+            }
+        );
+
+
+        console.log(
+            "Intento registrado correctamente en Firestore:",
+            intento.id
+        );
+
+
+        return true;
+
+
+    } catch (error) {
+
+        console.error(
+            "No se pudo registrar el intento en Firestore:",
+            error
+        );
+
+
+        return false;
+
+    }
+
 }
 
 
@@ -1777,9 +1862,24 @@ const estudiante =
 
     } else {
 
-        crearNuevoIntento(estudiante);
+    crearNuevoIntento(estudiante);
 
+
+    const registrado =
+        await registrarIntentoFirestore();
+
+
+    if (!registrado) {
+
+        mostrarMensajeIdentificacion(
+            "No se pudo registrar el inicio del examen. Verifique la conexión e inténtelo nuevamente.",
+            "error"
+        );
+
+        return;
     }
+
+}
 
 
     estudianteActual =
