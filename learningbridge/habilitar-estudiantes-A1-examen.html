@@ -44,6 +44,7 @@
             width: 180px;
             height: 70px;
             margin: 0 auto 20px;
+
             border: 2px dashed rgba(255, 255, 255, 0.5);
             border-radius: 8px;
 
@@ -83,6 +84,7 @@
         .campo input {
             width: 100%;
             height: 46px;
+
             padding: 0 14px;
 
             border: 1px solid #cbd2da;
@@ -94,7 +96,10 @@
 
         .campo input:focus {
             border-color: #178a75;
-            box-shadow: 0 0 0 3px rgba(23, 138, 117, 0.12);
+
+            box-shadow:
+                0 0 0 3px
+                rgba(23, 138, 117, 0.12);
         }
 
         .boton {
@@ -117,27 +122,45 @@
             background: #126f5f;
         }
 
+        .boton:disabled {
+            background: #9aa5ad;
+            cursor: not-allowed;
+        }
+
         .mensaje {
             margin-top: 20px;
             padding: 12px;
+
             border-radius: 7px;
+
             text-align: center;
+
             display: none;
         }
 
         .mensaje.exito {
             display: block;
+
             background: #e8f7f3;
             color: #126f5f;
         }
 
         .mensaje.error {
             display: block;
+
             background: #fdecec;
             color: #b42318;
         }
 
+        .mensaje.proceso {
+            display: block;
+
+            background: #eef3f7;
+            color: #071426;
+        }
+
     </style>
+
 </head>
 
 <body>
@@ -150,11 +173,16 @@
                 ESPACIO PARA EL LOGO
             </div>
 
-            <h1>HABILITAR ESTUDIANTES</h1>
+            <h1>
+                HABILITAR ESTUDIANTES
+            </h1>
 
-            <p>Examen de Evaluación · A1</p>
+            <p>
+                Examen de Evaluación · A1
+            </p>
 
         </div>
+
 
         <div class="contenido">
 
@@ -169,6 +197,7 @@
                     id="cedula"
                     inputmode="numeric"
                     maxlength="10"
+                    autocomplete="off"
                     placeholder="Ingrese el número de cédula"
                 >
 
@@ -184,6 +213,7 @@
                 <input
                     type="text"
                     id="nombres"
+                    autocomplete="off"
                     placeholder="Ingrese los nombres"
                 >
 
@@ -199,6 +229,7 @@
                 <input
                     type="text"
                     id="apellidos"
+                    autocomplete="off"
                     placeholder="Ingrese los apellidos"
                 >
 
@@ -224,7 +255,27 @@
     </div>
 
 
-    <script>
+    <script type="module">
+
+        // ============================================
+        // FIREBASE
+        // ============================================
+
+        import {
+            db
+        } from "./firebase-config.js";
+
+
+        import {
+            doc,
+            setDoc,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+
+        // ============================================
+        // ELEMENTOS DE LA INTERFAZ
+        // ============================================
 
         const cedula =
             document.getElementById("cedula");
@@ -242,9 +293,25 @@
             document.getElementById("mensaje");
 
 
+        // ============================================
+        // CONFIGURACIÓN DEL EXAMEN
+        // ============================================
+
+        const EXAMEN =
+            "A1";
+
+
+        const COLECCION =
+            "estudiantes_examen";
+
+
+        // ============================================
+        // HABILITAR ESTUDIANTE
+        // ============================================
+
         btnHabilitar.addEventListener(
             "click",
-            function() {
+            async function() {
 
                 const valorCedula =
                     cedula.value.trim();
@@ -256,33 +323,178 @@
                     apellidos.value.trim();
 
 
-                if (
-                    !valorCedula ||
-                    !valorNombres ||
-                    !valorApellidos
-                ) {
+                // ----------------------------------------
+                // VALIDACIÓN BÁSICA
+                // ----------------------------------------
+
+                if (!valorCedula) {
 
                     mostrarMensaje(
-                        "Complete todos los campos.",
+                        "Ingrese el número de cédula.",
                         "error"
                     );
+
+                    cedula.focus();
 
                     return;
                 }
 
 
+                if (!/^\d{10}$/.test(valorCedula)) {
+
+                    mostrarMensaje(
+                        "La cédula debe contener 10 dígitos.",
+                        "error"
+                    );
+
+                    cedula.focus();
+
+                    return;
+                }
+
+
+                if (!valorNombres) {
+
+                    mostrarMensaje(
+                        "Ingrese los nombres.",
+                        "error"
+                    );
+
+                    nombres.focus();
+
+                    return;
+                }
+
+
+                if (!valorApellidos) {
+
+                    mostrarMensaje(
+                        "Ingrese los apellidos.",
+                        "error"
+                    );
+
+                    apellidos.focus();
+
+                    return;
+                }
+
+
+                // ----------------------------------------
+                // DESACTIVAR BOTÓN
+                // ----------------------------------------
+
+                btnHabilitar.disabled = true;
+
+
                 mostrarMensaje(
-                    "Estudiante listo para ser habilitado.",
-                    "exito"
+                    "Guardando estudiante...",
+                    "proceso"
                 );
+
+
+                try {
+
+                    // ------------------------------------
+                    // DOCUMENTO
+                    // ------------------------------------
+
+                    const referenciaEstudiante =
+                        doc(
+                            db,
+                            COLECCION,
+                            valorCedula
+                        );
+
+
+                    // ------------------------------------
+                    // GUARDAR EN FIRESTORE
+                    // ------------------------------------
+
+                    await setDoc(
+                        referenciaEstudiante,
+                        {
+
+                            cedula:
+                                valorCedula,
+
+                            nombres:
+                                valorNombres,
+
+                            apellidos:
+                                valorApellidos,
+
+                            examen:
+                                EXAMEN,
+
+                            habilitado:
+                                true,
+
+                            fechaRegistro:
+                                serverTimestamp()
+
+                        },
+                        {
+                            merge: true
+                        }
+                    );
+
+
+                    // ------------------------------------
+                    // CONFIRMACIÓN
+                    // ------------------------------------
+
+                    mostrarMensaje(
+                        "Estudiante habilitado correctamente.",
+                        "exito"
+                    );
+
+
+                    // ------------------------------------
+                    // LIMPIAR CAMPOS
+                    // ------------------------------------
+
+                    cedula.value = "";
+                    nombres.value = "";
+                    apellidos.value = "";
+
+
+                    cedula.focus();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Error al guardar estudiante:",
+                        error
+                    );
+
+
+                    mostrarMensaje(
+                        "No fue posible guardar al estudiante. Revise la conexión con Firebase.",
+                        "error"
+                    );
+
+                } finally {
+
+                    btnHabilitar.disabled = false;
+
+                }
 
             }
         );
 
 
-        function mostrarMensaje(texto, tipo) {
+        // ============================================
+        // MENSAJES
+        // ============================================
 
-            mensaje.textContent = texto;
+        function mostrarMensaje(
+            texto,
+            tipo
+        ) {
+
+            mensaje.textContent =
+                texto;
 
             mensaje.className =
                 "mensaje " + tipo;
