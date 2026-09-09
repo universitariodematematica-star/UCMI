@@ -246,250 +246,301 @@
 
     <script type="module">
 
-        import { initializeApp }
-            from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { initializeApp }
+        from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
-        import {
-            getFirestore,
-            doc,
-            setDoc,
-            serverTimestamp
-        }
-        from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import {
+        getFirestore,
+        doc,
+        setDoc,
+        serverTimestamp
+    }
+    from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-
-        /* =================================================
-           CONFIGURACIÓN DEL MISMO PROYECTO FIREBASE DE UCMI
-           ================================================= */
-
-        const firebaseConfig = {
-
-            apiKey: "AIzaSyA2eMtX0i2u1iKdtHjNisMrqVSlpJbzHNI",
-
-            authDomain:
-                "ucmi-13796634.firebaseapp.com",
-
-            projectId:
-                "ucmi-13796634",
-
-            storageBucket:
-                "ucmi-13796634.firebasestorage.app",
-
-            messagingSenderId:
-                "1090719609536",
-
-            appId:
-                "1:1090719609536:web:8d7f269d991d8dc3c6b325",
-
-            measurementId:
-                "G-3M3DH25722"
-        };
+    import {
+        getAuth,
+        onAuthStateChanged
+    }
+    from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 
-        /* =================================================
-           INICIALIZAR FIREBASE
-           ================================================= */
-
-        const app =
-            initializeApp(firebaseConfig);
-
-
-        /* =================================================
-           INICIALIZAR FIRESTORE
-           ================================================= */
-
-        const db =
-            getFirestore(app);
-
-
-        /* =================================================
-           ELEMENTOS DE LA PÁGINA
-           ================================================= */
-
-        const formulario =
-            document.getElementById("formularioEstudiante");
-
-        const cedulaInput =
-            document.getElementById("cedula");
-
-        const nombresInput =
-            document.getElementById("nombres");
-
-        const apellidosInput =
-            document.getElementById("apellidos");
-
-        const boton =
-            document.getElementById("btnHabilitar");
-
-        const mensaje =
-            document.getElementById("mensaje");
+    const firebaseConfig = {
+        apiKey: "AIzaSyA2eMtX0i2u1iKdtHjNisMrqVSlpJbzHNI",
+        authDomain:
+            "ucmi-13796634.firebaseapp.com",
+        projectId:
+            "ucmi-13796634",
+        storageBucket:
+            "ucmi-13796634.firebasestorage.app",
+        messagingSenderId:
+            "1090719609536",
+        appId:
+            "1:1090719609536:web:8d7f269d991d8dc3c6b325",
+        measurementId:
+            "G-3M3DH25722"
+    };
 
 
-        /* =================================================
-           MOSTRAR MENSAJE
-           ================================================= */
-
-        function mostrarMensaje(texto, tipo) {
-
-            mensaje.textContent = texto;
-
-            mensaje.className = tipo;
-        }
+    const app =
+        initializeApp(firebaseConfig);
 
 
-        /* =================================================
-           HABILITAR ESTUDIANTE
-           ================================================= */
-
-        formulario.addEventListener(
-            "submit",
-            async function(event) {
-
-                event.preventDefault();
+    const db =
+        getFirestore(app);
 
 
-                /* -----------------------------------------
-                   OBTENER DATOS
-                   ----------------------------------------- */
-
-                const cedula =
-                    cedulaInput.value.trim();
-
-                const nombres =
-                    nombresInput.value.trim();
-
-                const apellidos =
-                    apellidosInput.value.trim();
+    const auth =
+        getAuth(app);
 
 
-                /* -----------------------------------------
-                   VALIDACIÓN BÁSICA
-                   ----------------------------------------- */
-
-                if (!cedula || !nombres || !apellidos) {
-
-                    mostrarMensaje(
-                        "Complete todos los campos.",
-                        "error"
-                    );
-
-                    return;
-                }
+    const SUPERADMIN_UID =
+        "x0oBFbDP09d7I3VZvWuN6BOODf32";
 
 
-                /* -----------------------------------------
-                   DESACTIVAR BOTÓN
-                   ----------------------------------------- */
+    let usuarioAutenticado =
+        null;
 
-                boton.disabled = true;
 
-                boton.textContent =
-                    "GUARDANDO...";
+    const formulario =
+        document.getElementById("formularioEstudiante");
 
+    const cedulaInput =
+        document.getElementById("cedula");
+
+    const nombresInput =
+        document.getElementById("nombres");
+
+    const apellidosInput =
+        document.getElementById("apellidos");
+
+    const boton =
+        document.getElementById("btnHabilitar");
+
+    const mensaje =
+        document.getElementById("mensaje");
+
+
+    function mostrarMensaje(texto, tipo) {
+
+        mensaje.textContent =
+            texto;
+
+        mensaje.className =
+            tipo;
+
+    }
+
+
+    /*
+     * ================================================
+     * VERIFICAR SESIÓN DE FIREBASE AUTHENTICATION
+     * ================================================
+     */
+
+    onAuthStateChanged(
+        auth,
+        function(user) {
+
+            console.log(
+                "Usuario autenticado:",
+                user
+                    ? user.uid
+                    : "NINGUNO"
+            );
+
+
+            if (!user) {
+
+                usuarioAutenticado =
+                    null;
+
+                boton.disabled =
+                    true;
 
                 mostrarMensaje(
-                    "",
-                    ""
+                    "No hay una sesión de Firebase Authentication activa.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            if (user.uid !== SUPERADMIN_UID) {
+
+                usuarioAutenticado =
+                    null;
+
+                boton.disabled =
+                    true;
+
+                mostrarMensaje(
+                    "Acceso no autorizado.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            usuarioAutenticado =
+                user;
+
+            boton.disabled =
+                false;
+
+            mostrarMensaje(
+                "Superadministrador autenticado.",
+                "exito"
+            );
+
+        }
+    );
+
+
+    /*
+     * ================================================
+     * HABILITAR ESTUDIANTE
+     * ================================================
+     */
+
+    formulario.addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+
+            if (
+                !usuarioAutenticado ||
+                usuarioAutenticado.uid !== SUPERADMIN_UID
+            ) {
+
+                mostrarMensaje(
+                    "No está autorizado para realizar esta operación.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            const cedula =
+                cedulaInput.value.trim();
+
+            const nombres =
+                nombresInput.value.trim();
+
+            const apellidos =
+                apellidosInput.value.trim();
+
+
+            if (
+                !cedula ||
+                !nombres ||
+                !apellidos
+            ) {
+
+                mostrarMensaje(
+                    "Complete todos los campos.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            boton.disabled =
+                true;
+
+            boton.textContent =
+                "GUARDANDO...";
+
+
+            mostrarMensaje(
+                "",
+                ""
+            );
+
+
+            try {
+
+                const referencia =
+                    doc(
+                        db,
+                        "estudiantes_examen",
+                        cedula
+                    );
+
+
+                await setDoc(
+                    referencia,
+                    {
+
+                        cedula:
+                            cedula,
+
+                        nombres:
+                            nombres,
+
+                        apellidos:
+                            apellidos,
+
+                        examen:
+                            "A1",
+
+                        habilitado:
+                            true,
+
+                        fechaRegistro:
+                            serverTimestamp()
+
+                    }
                 );
 
 
-                try {
-
-                    /* -------------------------------------
-                       DOCUMENTO:
-
-                       estudiantes_examen/{cedula}
-
-                       La cédula será la clave del documento.
-                       ------------------------------------- */
-
-                    const referencia =
-                        doc(
-                            db,
-                            "estudiantes_examen",
-                            cedula
-                        );
+                mostrarMensaje(
+                    "Estudiante habilitado correctamente en Firestore.",
+                    "exito"
+                );
 
 
-                    /* -------------------------------------
-                       GUARDAR ESTUDIANTE
-                       ------------------------------------- */
-
-                    await setDoc(
-                        referencia,
-                        {
-
-                            cedula:
-                                cedula,
-
-                            nombres:
-                                nombres,
-
-                            apellidos:
-                                apellidos,
-
-                            examen:
-                                "A1",
-
-                            habilitado:
-                                true,
-
-                            fechaRegistro:
-                                serverTimestamp()
-
-                        }
-                    );
-
-
-                    /* -------------------------------------
-                       ÉXITO
-                       ------------------------------------- */
-
-                    mostrarMensaje(
-                        "Estudiante habilitado correctamente en Firestore.",
-                        "exito"
-                    );
-
-
-                    /* -------------------------------------
-                       LIMPIAR FORMULARIO
-                       ------------------------------------- */
-
-                    formulario.reset();
-
-
-                }
-                catch (error) {
-
-                    console.error(
-                        "ERROR AL GUARDAR EN FIRESTORE:",
-                        error
-                    );
-
-
-                    mostrarMensaje(
-                        "No se pudo habilitar el estudiante. " +
-                        "Error: " +
-                        error.code +
-                        " — " +
-                        error.message,
-                        "error"
-                    );
-
-                }
-                finally {
-
-                    boton.disabled = false;
-
-                    boton.textContent =
-                        "HABILITAR ESTUDIANTE";
-
-                }
+                formulario.reset();
 
             }
-        );
+            catch (error) {
 
-    </script>
+                console.error(
+                    "ERROR AL GUARDAR EN FIRESTORE:",
+                    error
+                );
+
+
+                mostrarMensaje(
+                    "No se pudo habilitar el estudiante. " +
+                    "Error: " +
+                    error.code +
+                    " — " +
+                    error.message,
+                    "error"
+                );
+
+            }
+            finally {
+
+                boton.disabled =
+                    !usuarioAutenticado ||
+                    usuarioAutenticado.uid !== SUPERADMIN_UID;
+
+                boton.textContent =
+                    "HABILITAR ESTUDIANTE";
+
+            }
+
+        }
+    );
+
+</script>
 
 </body>
 
