@@ -244,7 +244,7 @@
          NO utiliza firebase-config.js
          ===================================================== -->
 
-    <script type="module">
+   <script type="module">
 
     import { initializeApp }
         from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -257,25 +257,31 @@
     }
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    import {
-        getAuth,
-        onAuthStateChanged
-    }
-    from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+    /* ==================================================
+       FIREBASE
+       ================================================== */
 
     const firebaseConfig = {
-        apiKey: "AIzaSyA2eMtX0i2u1iKdtHjNisMrqVSlpJbzHNI",
+
+        apiKey:
+            "AIzaSyA2eMtX0i2u1iKdtHjNisMrqVSlpJbzHNI",
+
         authDomain:
             "ucmi-13796634.firebaseapp.com",
+
         projectId:
             "ucmi-13796634",
+
         storageBucket:
             "ucmi-13796634.firebasestorage.app",
+
         messagingSenderId:
             "1090719609536",
+
         appId:
             "1:1090719609536:web:8d7f269d991d8dc3c6b325",
+
         measurementId:
             "G-3M3DH25722"
     };
@@ -289,38 +295,64 @@
         getFirestore(app);
 
 
-    const auth =
-        getAuth(app);
-
-
-    const SUPERADMIN_UID =
-        "x0oBFbDP09d7I3VZvWuN6BOODf32";
-
-
-    let usuarioAutenticado =
-        null;
-
+    /* ==================================================
+       ELEMENTOS DEL FORMULARIO
+       ================================================== */
 
     const formulario =
-        document.getElementById("formularioEstudiante");
+        document.getElementById(
+            "formularioEstudiante"
+        );
+
 
     const cedulaInput =
-        document.getElementById("cedula");
+        document.getElementById(
+            "cedula"
+        );
+
 
     const nombresInput =
-        document.getElementById("nombres");
+        document.getElementById(
+            "nombres"
+        );
+
 
     const apellidosInput =
-        document.getElementById("apellidos");
+        document.getElementById(
+            "apellidos"
+        );
+
 
     const boton =
-        document.getElementById("btnHabilitar");
+        document.getElementById(
+            "btnHabilitar"
+        );
+
 
     const mensaje =
-        document.getElementById("mensaje");
+        document.getElementById(
+            "mensaje"
+        );
 
 
-    function mostrarMensaje(texto, tipo) {
+    /* ==================================================
+       BOTÓN HABILITADO
+       ================================================== */
+
+    boton.disabled = false;
+
+    boton.textContent =
+        "HABILITAR ESTUDIANTE";
+
+
+    /* ==================================================
+       MENSAJES
+       ================================================== */
+
+    function mostrarMensaje(
+        texto,
+        tipo
+    ) {
 
         mensaje.textContent =
             texto;
@@ -331,78 +363,9 @@
     }
 
 
-    /*
-     * ================================================
-     * VERIFICAR SESIÓN DE FIREBASE AUTHENTICATION
-     * ================================================
-     */
-
-    onAuthStateChanged(
-        auth,
-        function(user) {
-
-            console.log(
-                "Usuario autenticado:",
-                user
-                    ? user.uid
-                    : "NINGUNO"
-            );
-
-
-            if (!user) {
-
-                usuarioAutenticado =
-                    null;
-
-                boton.disabled =
-                    true;
-
-                mostrarMensaje(
-                    "No hay una sesión de Firebase Authentication activa.",
-                    "error"
-                );
-
-                return;
-            }
-
-
-            if (user.uid !== SUPERADMIN_UID) {
-
-                usuarioAutenticado =
-                    null;
-
-                boton.disabled =
-                    true;
-
-                mostrarMensaje(
-                    "Acceso no autorizado.",
-                    "error"
-                );
-
-                return;
-            }
-
-
-            usuarioAutenticado =
-                user;
-
-            boton.disabled =
-                false;
-
-            mostrarMensaje(
-                "Superadministrador autenticado.",
-                "exito"
-            );
-
-        }
-    );
-
-
-    /*
-     * ================================================
-     * HABILITAR ESTUDIANTE
-     * ================================================
-     */
+    /* ==================================================
+       HABILITAR ESTUDIANTE
+       ================================================== */
 
     formulario.addEventListener(
         "submit",
@@ -411,29 +374,21 @@
             event.preventDefault();
 
 
-            if (
-                !usuarioAutenticado ||
-                usuarioAutenticado.uid !== SUPERADMIN_UID
-            ) {
-
-                mostrarMensaje(
-                    "No está autorizado para realizar esta operación.",
-                    "error"
-                );
-
-                return;
-            }
-
-
             const cedula =
                 cedulaInput.value.trim();
+
 
             const nombres =
                 nombresInput.value.trim();
 
+
             const apellidos =
                 apellidosInput.value.trim();
 
+
+            /* ------------------------------------------
+               VALIDACIÓN
+               ------------------------------------------ */
 
             if (
                 !cedula ||
@@ -450,8 +405,11 @@
             }
 
 
-            boton.disabled =
-                true;
+            /* ------------------------------------------
+               BLOQUEAR DURANTE EL GUARDADO
+               ------------------------------------------ */
+
+            boton.disabled = true;
 
             boton.textContent =
                 "GUARDANDO...";
@@ -465,6 +423,10 @@
 
             try {
 
+                /* --------------------------------------
+                   DOCUMENTO DEL ESTUDIANTE
+                   -------------------------------------- */
+
                 const referencia =
                     doc(
                         db,
@@ -472,6 +434,10 @@
                         cedula
                     );
 
+
+                /* --------------------------------------
+                   GUARDAR EN FIRESTORE
+                   -------------------------------------- */
 
                 await setDoc(
                     referencia,
@@ -499,8 +465,12 @@
                 );
 
 
+                /* --------------------------------------
+                   ÉXITO
+                   -------------------------------------- */
+
                 mostrarMensaje(
-                    "Estudiante habilitado correctamente en Firestore.",
+                    "Estudiante habilitado correctamente.",
                     "exito"
                 );
 
@@ -508,6 +478,8 @@
                 formulario.reset();
 
             }
+
+
             catch (error) {
 
                 console.error(
@@ -519,18 +491,18 @@
                 mostrarMensaje(
                     "No se pudo habilitar el estudiante. " +
                     "Error: " +
-                    error.code +
+                    (error.code || "desconocido") +
                     " — " +
-                    error.message,
+                    (error.message || ""),
                     "error"
                 );
 
             }
+
+
             finally {
 
-                boton.disabled =
-                    !usuarioAutenticado ||
-                    usuarioAutenticado.uid !== SUPERADMIN_UID;
+                boton.disabled = false;
 
                 boton.textContent =
                     "HABILITAR ESTUDIANTE";
