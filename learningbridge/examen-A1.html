@@ -1187,6 +1187,8 @@
    CONFIGURACIÓN DEL EXAMEN
    ========================================================= */
 
+
+   
 const CONFIG_EXAMEN = {
 
     codigo: "EXAMEN_A1",
@@ -1205,6 +1207,26 @@ const CONFIG_EXAMEN = {
    ========================================================= */
 
 const CLAVE_STORAGE = "learning_bridge_examen_A1_intento";
+
+   const firebaseConfig = {
+    apiKey:
+        "AIzaSyA2eMtX0i2u1iKdtHjNisMrqVSlpJbzHNI",
+    authDomain:
+        "ucmi-13796634.firebaseapp.com",
+    projectId:
+        "ucmi-13796634",
+    storageBucket:
+        "ucmi-13796634.firebasestorage.app",
+    messagingSenderId:
+        "1090719609536",
+    appId:
+        "1:1090719609536:web:8d7f269d991d8dc3c6b325",
+    measurementId:
+        "G-3M3DH25722"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 
 /* =========================================================
@@ -1347,39 +1369,20 @@ let estudianteActual = null;
 
    ========================================================= */
 
-const estudiantesDemo = {
+async function obtenerEstudiantePorCedula(cedula) {
 
-    "0102030405": {
+    const referencia =
+        doc(db, "estudiantes_examen", cedula);
 
-        cedula: "0102030405",
+    const documento =
+        await getDoc(referencia);
 
-        nombre: "Estudiante de Prueba",
-
-        habilitado: true
-
-    },
-
-    "9999999999": {
-
-        cedula: "9999999999",
-
-        nombre: "Estudiante que ya presentó",
-
-        habilitado: true
-
-    },
-
-    "1111111111": {
-
-        cedula: "1111111111",
-
-        nombre: "Estudiante no habilitado",
-
-        habilitado: false
-
+    if (!documento.exists()) {
+        return null;
     }
 
-};
+    return documento.data();
+}
 
 
 /* =========================================================
@@ -1577,7 +1580,7 @@ function crearNuevoIntento(estudiante) {
    VALIDAR CÉDULA
    ========================================================= */
 
-function validarCedula() {
+async function validarCedula() {
 
     const cedula =
         cedulaInput.value.trim();
@@ -1599,19 +1602,19 @@ function validarCedula() {
     }
 
 
-    const estudiante =
-        estudiantesDemo[cedula];
+const estudiante =
+    await obtenerEstudiantePorCedula(cedula);
 
 
-    if (!estudiante) {
+if (!estudiante) {
 
-        mostrarMensajeIdentificacion(
-            "La cédula ingresada no corresponde a un estudiante habilitado para esta evaluación.",
-            "error"
-        );
+    mostrarMensajeIdentificacion(
+        "La cédula ingresada no corresponde a un estudiante habilitado para esta evaluación.",
+        "error"
+    );
 
-        return;
-    }
+    return;
+}
 
 
     if (!estudiante.habilitado) {
