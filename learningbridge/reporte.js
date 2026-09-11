@@ -151,35 +151,34 @@ function encontrarColumna(encabezados, nombreBuscado) {
 
 function leerConfiguracionGrupos(workbook) {
 
-    const hoja =
-        workbook.getWorksheet("Configuracion-Grupos");
+    const hoja = workbook.getWorksheet("Configuracion-Grupos");
 
     if (!hoja) {
-
         throw new Error(
-            'El archivo Excel no contiene la hoja "Configuracion-Grupos".'
+            'No se encontró la hoja "Configuracion-Grupos".'
         );
-
     }
 
+    let filaEncabezados = null;
+    let indices = {};
 
     /*
-     * --------------------------------------------------------
-     * BUSCAR LA FILA DE ENCABEZADOS
-     * --------------------------------------------------------
+     * ------------------------------------------
+     * BUSCAR ENCABEZADOS
+     * ------------------------------------------
      */
 
-    let filaEncabezados = null;
+    for (
+        let numeroFila = 1;
+        numeroFila <= Math.min(20, hoja.rowCount);
+        numeroFila++
+    ) {
 
-    for (let numeroFila = 1;
-         numeroFila <= Math.min(20, hoja.rowCount);
-         numeroFila++) {
+        const fila = hoja.getRow(numeroFila);
 
-        const valores =
-            hoja.getRow(numeroFila).values;
-
-        const encabezados =
-            valores.map(valor => normalizarTexto(valor));
+        const encabezados = fila.values
+            .map(valor => normalizarTexto(valor))
+            .filter(valor => valor !== "");
 
         if (
             encabezados.includes("grupo") &&
@@ -188,91 +187,41 @@ function leerConfiguracionGrupos(workbook) {
             encabezados.includes("miercoles") &&
             encabezados.includes("jueves") &&
             encabezados.includes("viernes") &&
-            encabezados.includes("sabado")
+            encabezados.includes("sabado") &&
+            encabezados.includes("domingo")
         ) {
 
             filaEncabezados = numeroFila;
+
+            fila.eachCell((celda, numeroColumna) => {
+
+                const encabezado =
+                    normalizarTexto(celda.value);
+
+                if (encabezado) {
+                    indices[encabezado] = numeroColumna;
+                }
+
+            });
+
             break;
-
         }
-
     }
-
 
     if (!filaEncabezados) {
 
         throw new Error(
-            'No se encontró una fila válida de encabezados en "Configuracion-Grupos".'
+            'La hoja "Configuracion-Grupos" no contiene los encabezados requeridos.'
         );
-
     }
 
-
     /*
-     * --------------------------------------------------------
-     * OBTENER ENCABEZADOS
-     * --------------------------------------------------------
-     */
-
-    const valoresEncabezados =
-        hoja.getRow(filaEncabezados).values;
-
-    const indiceGrupo =
-        encontrarColumna(
-            valoresEncabezados,
-            "Grupo"
-        );
-
-
-    const indicesDias = {};
-
-    DIAS_SEMANA.forEach(dia => {
-
-        indicesDias[dia] =
-            encontrarColumna(
-                valoresEncabezados,
-                dia
-            );
-
-    });
-
-
-    /*
-     * --------------------------------------------------------
-     * VALIDAR COLUMNAS
-     * --------------------------------------------------------
-     */
-
-    if (indiceGrupo === -1) {
-
-        throw new Error(
-            'La hoja "Configuracion-Grupos" no contiene la columna "Grupo".'
-        );
-
-    }
-
-
-    for (const dia of DIAS_SEMANA) {
-
-        if (indicesDias[dia] === -1) {
-
-            throw new Error(
-                `Falta la columna "${dia}" en "Configuracion-Grupos".`
-            );
-
-        }
-
-    }
-
-
-    /*
-     * --------------------------------------------------------
+     * ------------------------------------------
      * LEER GRUPOS
-     * --------------------------------------------------------
+     * ------------------------------------------
      */
 
-    const grupos = [];
-
+    const configuraciones = [];
 
     for (
         let numeroFila = filaEncabezados + 1;
@@ -280,76 +229,36 @@ function leerConfiguracionGrupos(workbook) {
         numeroFila++
     ) {
 
-        const valores =
-            hoja.getRow(numeroFila).values;
+        const fila = hoja.getRow(numeroFila);
 
-
-        const grupo =
-            String(
-                valores[indiceGrupo] ?? ""
-            ).trim();
-
-
-        /*
-         * Ignorar filas completamente vacías.
-         */
+        const grupo = String(
+            fila.getCell(indices["grupo"]).value || ""
+        ).trim();
 
         if (!grupo) {
             continue;
         }
 
-
-        /*
-         * ----------------------------------------------------
-         * CREAR CONFIGURACIÓN DEL GRUPO
-         * ----------------------------------------------------
-         */
-
         const dias = {};
-
 
         DIAS_SEMANA.forEach(dia => {
 
-            dias[dia] =
-                esDiaOperativo(
-                    valores[indicesDias[dia]]
-                );
+            const clave = normalizarTexto(dia);
+
+            const valor =
+                fila.getCell(indices[clave]).value;
+
+            dias[dia] = esDiaOperativo(valor);
 
         });
 
-
-        /*
-         * ----------------------------------------------------
-         * COMPROBAR QUE TENGA AL MENOS UN DÍA
-         * ----------------------------------------------------
-         */
-
-        const tieneDiaOperativo =
-            Object.values(dias).some(Boolean);
-
-
-        if (!tieneDiaOperativo) {
-
-            console.warn(
-                `El grupo "${grupo}" no tiene ningún día operativo configurado.`
-            );
-
-        }
-
-
-        grupos.push({
-
-            grupo: grupo,
-
-            dias: dias
-
+        configuraciones.push({
+            grupo,
+            dias
         });
-
     }
 
-
-    return grupos;
-
+    return configuraciones;
 }
 
 
