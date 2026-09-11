@@ -1,1 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
 
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Learning Bridge - Control de Asistencia</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #222;
+        }
+
+        h1 {
+            margin: 0;
+            padding: 20px;
+            background-color: #5c1d53;
+            color: white;
+            text-align: center;
+        }
+
+        h2 {
+            margin: 0;
+            padding: 15px;
+            background-color: #178a75;
+            color: white;
+            text-align: center;
+        }
+
+        .contenedor-principal {
+            width: 95%;
+            max-width: 1600px;
+            margin: 25px auto;
+        }
+
+        .panel-control {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+        }
+
+        .bloque-control {
+            margin-bottom: 20px;
+        }
+
+        .bloque-control label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        #archivoAsistencia {
+            width: 100%;
+            max-width: 600px;
+            padding: 8px;
+        }
+
+        .fila-filtros {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .control-filtro {
+            min-width: 180px;
+        }
+
+        .control-filtro input,
+        .control-filtro select {
+            width: 100%;
+            padding: 9px;
+            border: 1px solid #bbb;
+            border-radius: 5px;
+            background-color: white;
+        }
+
+        .botones {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #btnFiltrar {
+            background-color: #178a75;
+            color: white;
+        }
+
+        #btnPrepararInforme {
+            background-color: #5c1d53;
+            color: white;
+        }
+
+        #btnDescargarExcel {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        #btnLimpiarDatos {
+            background-color: #dc2626;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.88;
+        }
+
+        #cambiosGrupoDetectados {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #fff3cd;
+            border: 1px solid #e0b400;
+        }
+
+        #resultadoAsistencia {
+            margin-top: 25px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #5c1d53;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .mensaje-no-enviado,
+        .llamada-no-realizada {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .mensaje-enviado,
+        .llamada-realizada {
+            background-color: #dc2626;
+            color: white;
+        }
+
+        textarea {
+            width: 100%;
+            min-width: 180px;
+            resize: vertical;
+            padding: 6px;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+        }
+
+        .estado {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            background-color: #e9ecef;
+            display: none;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <h1>Learning Bridge</h1>
+
+    <h2>Control de Asistencia</h2>
+
+
+    <div class="contenedor-principal">
+
+
+        <!-- ==========================================
+             PANEL DE CONTROL
+        =========================================== -->
+
+        <div class="panel-control">
+
+
+            <!-- ARCHIVO EXCEL -->
+
+            <div class="bloque-control">
+
+                <label for="archivoAsistencia">
+                    Archivo de asistencia
+                </label>
+
+                <input
+                    type="file"
+                    id="archivoAsistencia"
+                    accept=".xlsx,.xls"
+                >
+
+            </div>
+
+
+            <!-- FILTROS -->
+
+            <div class="fila-filtros">
+
+
+                <div class="control-filtro">
+
+                    <label for="filtroAsistencia">
+                        Estado de asistencia
+                    </label>
+
+                    <select id="filtroAsistencia">
+
+                        <option value="todos">
+                            Todos
+                        </option>
+
+                        <option value="asistentes">
+                            Asistentes
+                        </option>
+
+                        <option value="inasistentes">
+                            Inasistentes
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="control-filtro">
+
+                    <label for="fechaInicio">
+                        Fecha inicial
+                    </label>
+
+                    <input
+                        type="date"
+                        id="fechaInicio"
+                    >
+
+                </div>
+
+
+                <div class="control-filtro">
+
+                    <label for="fechaFin">
+                        Fecha final
+                    </label>
+
+                    <input
+                        type="date"
+                        id="fechaFin"
+                    >
+
+                </div>
+
+
+                <div class="control-filtro">
+
+                    <label for="filtroGrupo">
+                        Grupo
+                    </label>
+
+                    <select id="filtroGrupo">
+
+                        <option value="todos">
+                            Todos
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- BOTONES -->
+
+            <div class="botones">
+
+                <button id="btnFiltrar">
+                    Filtrar
+                </button>
+
+                <button id="btnPrepararInforme">
+                    Preparar informe
+                </button>
+
+                <button id="btnDescargarExcel">
+                    Descargar Excel
+                </button>
+
+                <button id="btnLimpiarDatos">
+                    Limpiar datos
+                </button>
+
+            </div>
+
+
+            <!-- ESTADO -->
+
+            <div
+                id="estadoAsistencia"
+                class="estado">
+            </div>
+
+
+            <!-- CAMBIOS DE GRUPO -->
+
+            <div id="cambiosGrupoDetectados"></div>
+
+
+        </div>
+
+
+        <!-- ==========================================
+             RESULTADOS
+        =========================================== -->
+
+        <div id="resultadoAsistencia"></div>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         EXCELJS
+    =========================================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+
+
+    <!-- ==========================================
+         NUEVO JAVASCRIPT
+    =========================================== -->
+
+    <script src="reporte.js"></script>
+
+
+</body>
+
+</html>
