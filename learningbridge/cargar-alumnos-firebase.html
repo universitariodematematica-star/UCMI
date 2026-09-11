@@ -1,0 +1,377 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Learning Bridge - Cargar Alumnos</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #222;
+        }
+
+        h1 {
+            margin: 0;
+            padding: 20px;
+            background-color: #5c1d53;
+            color: white;
+            text-align: center;
+        }
+
+        h2 {
+            margin: 0;
+            padding: 15px;
+            background-color: #178a75;
+            color: white;
+            text-align: center;
+        }
+
+        .contenedor-principal {
+            width: 95%;
+            max-width: 1200px;
+            margin: 25px auto;
+        }
+
+        .panel {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.10);
+        }
+
+        .bloque {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            max-width: 600px;
+            padding: 8px;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 8px;
+        }
+
+        #btnProbarFirebase {
+            background-color: #178a75;
+            color: white;
+        }
+
+        #btnProbarFirebase:hover {
+            opacity: .88;
+        }
+
+        #estado {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            background-color: #e9ecef;
+            display: none;
+        }
+
+        #resultado {
+            margin-top: 25px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #5c1d53;
+            color: white;
+        }
+
+        .exito {
+            background-color: #d1fae5 !important;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .error {
+            background-color: #fee2e2 !important;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <h1>Learning Bridge</h1>
+
+    <h2>Cargar alumnos</h2>
+
+    <div class="contenedor-principal">
+
+        <div class="panel">
+
+            <div class="bloque">
+
+                <label>
+                    Prueba de conexión con Firebase
+                </label>
+
+                <button id="btnProbarFirebase">
+                    Probar conexión
+                </button>
+
+            </div>
+
+            <div id="estado"></div>
+
+            <div id="resultado"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         FIREBASE
+         ================================================== -->
+
+    <script type="module">
+
+        import {
+            initializeApp
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+        import {
+            getFirestore,
+            collection,
+            getDocs
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+
+        // ==================================================
+        // CONFIGURACIÓN FIREBASE - LEARNING BRIDGE
+        // ==================================================
+
+        const firebaseConfig = {
+
+            apiKey: "AIzaSyDRtE0WVvfZpQBGqaIAlo4DgT9KIDxP8Kk",
+
+            authDomain: "learning-bridge-c8080.firebaseapp.com",
+
+            projectId: "learning-bridge-c8080",
+
+            storageBucket: "learning-bridge-c8080.firebasestorage.app",
+
+            messagingSenderId: "133644983307",
+
+            appId: "1:133644983307:web:e2740b73d58dc62026fb0e"
+
+        };
+
+
+        // ==================================================
+        // INICIALIZAR FIREBASE
+        // ==================================================
+
+        const app = initializeApp(firebaseConfig);
+
+        const db = getFirestore(app);
+
+
+        // ==================================================
+        // ELEMENTOS DE LA PÁGINA
+        // ==================================================
+
+        const btnProbarFirebase =
+            document.getElementById("btnProbarFirebase");
+
+        const estado =
+            document.getElementById("estado");
+
+        const resultado =
+            document.getElementById("resultado");
+
+
+        // ==================================================
+        // MOSTRAR ESTADO
+        // ==================================================
+
+        function mostrarEstado(mensaje, tipo = "") {
+
+            estado.textContent = mensaje;
+
+            estado.className = tipo;
+
+            estado.style.display = "block";
+
+        }
+
+
+        // ==================================================
+        // PROBAR FIREBASE
+        // ==================================================
+
+        btnProbarFirebase.addEventListener(
+            "click",
+            async function() {
+
+                resultado.innerHTML = "";
+
+                mostrarEstado(
+                    "Conectando con Firebase..."
+                );
+
+                try {
+
+                    const referencia =
+                        collection(db, "alumnos");
+
+                    const snapshot =
+                        await getDocs(referencia);
+
+
+                    mostrarEstado(
+                        "Conexión correcta con Firebase y Firestore.",
+                        "exito"
+                    );
+
+
+                    // ==========================================
+                    // MOSTRAR LOS ALUMNOS EXISTENTES
+                    // ==========================================
+
+                    if (snapshot.empty) {
+
+                        resultado.innerHTML = `
+                            <p>
+                                La conexión funciona, pero la colección
+                                <strong>alumnos</strong> está vacía.
+                            </p>
+                        `;
+
+                        return;
+                    }
+
+
+                    let html = `
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Apellidos</th>
+                                    <th>Nombres</th>
+                                    <th>Teléfono</th>
+                                    <th>Grupo</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+                    `;
+
+
+                    snapshot.forEach(function(doc) {
+
+                        const alumno =
+                            doc.data();
+
+                        html += `
+
+                            <tr>
+
+                                <td>
+                                    ${alumno.studentId || ""}
+                                </td>
+
+                                <td>
+                                    ${alumno.apellidos || ""}
+                                </td>
+
+                                <td>
+                                    ${alumno.nombres || ""}
+                                </td>
+
+                                <td>
+                                    ${alumno.telefono || ""}
+                                </td>
+
+                                <td>
+                                    ${alumno.grupo || ""}
+                                </td>
+
+                            </tr>
+
+                        `;
+
+                    });
+
+
+                    html += `
+                            </tbody>
+                        </table>
+                    `;
+
+
+                    resultado.innerHTML = html;
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Error al conectar con Firebase:",
+                        error
+                    );
+
+
+                    mostrarEstado(
+                        "Error al conectar con Firebase: " +
+                        error.message,
+                        "error"
+                    );
+
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
+```
