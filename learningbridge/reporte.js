@@ -367,6 +367,549 @@ function mostrarConfiguracionEnConsola(configuraciones) {
 
 }
 
+/* ============================================================
+   RECONOCER ENCABEZADO DE FECHA
+============================================================ */
+
+function convertirFechaExcel(valor) {
+
+    if (valor instanceof Date) {
+        return new Date(
+            valor.getFullYear(),
+            valor.getMonth(),
+            valor.getDate()
+        );
+    }
+
+    if (typeof valor === "number") {
+
+        const fecha =
+            new Date(
+                Math.round(
+                    (valor - 25569) * 86400 * 1000
+                )
+            );
+
+        if (!isNaN(fecha.getTime())) {
+
+            return new Date(
+                fecha.getFullYear(),
+                fecha.getMonth(),
+                fecha.getDate()
+            );
+
+        }
+
+    }
+
+    const texto =
+        String(valor ?? "").trim();
+
+    if (!texto) {
+        return null;
+    }
+
+    const fecha =
+        new Date(texto);
+
+    if (!isNaN(fecha.getTime())) {
+
+        return new Date(
+            fecha.getFullYear(),
+            fecha.getMonth(),
+            fecha.getDate()
+        );
+
+    }
+
+    return null;
+
+}
+
+
+/* ============================================================
+   COMPROBAR SI UNA COLUMNA ES UNA SESIÓN
+============================================================ */
+
+function esColumnaSesion(valor) {
+
+    return convertirFechaExcel(valor) !== null;
+
+}
+
+
+/* ============================================================
+   LEER HOJA DE ASISTENCIA DE UN GRUPO
+============================================================ */
+
+function leerHojaGrupo(hoja) {
+
+    /*
+     * La fila 4 contiene los encabezados.
+     */
+
+    const filaEncabezados =
+        hoja.getRow(4);
+
+    const encabezados = [];
+
+    for (
+        let numeroColumna = 1;
+        numeroColumna <= hoja.columnCount;
+        numeroColumna++
+    ) {
+
+        encabezados[numeroColumna] =
+            filaEncabezados
+                .getCell(numeroColumna)
+                .value;
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * IDENTIFICAR LAS COLUMNAS DE SESIONES
+     * --------------------------------------------------------
+     */
+
+    const columnasSesiones = [];
+
+    for (
+        let numeroColumna = 5;
+        numeroColumna <= hoja.columnCount;
+        numeroColumna++
+    ) {
+
+        const encabezado =
+            encabezados[numeroColumna];
+
+        if (
+            esColumnaSesion(encabezado)
+        ) {
+
+            columnasSesiones.push({
+                columna: numeroColumna,
+                encabezado: encabezado,
+                fecha: convertirFechaExcel(
+                    encabezado
+                )
+            });
+
+        }
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * LEER ALUMNOS
+     * --------------------------------------------------------
+     */
+
+    const alumnos = [];
+
+    for (
+        let numeroFila = 5;
+        numeroFila <= hoja.rowCount;
+        numeroFila++
+    ) {
+
+        const fila =
+            hoja.getRow(numeroFila);
+
+        const apellidos =
+            String(
+                fila.getCell(1).value ?? ""
+            ).trim();
+
+        const nombres =
+            String(
+                fila.getCell(2).value ?? ""
+            ).trim();
+
+        const studentId =
+            String(
+                fila.getCell(3).value ?? ""
+            ).trim();
+
+        const email =
+            String(
+                fila.getCell(4).value ?? ""
+            ).trim();
+
+
+        /*
+         * Ignorar filas completamente vacías.
+         */
+
+        if (
+            !apellidos &&
+            !nombres &&
+            !studentId
+        ) {
+            continue;
+        }
+
+
+        /*
+         * ----------------------------------------------------
+         * SESIONES DEL ALUMNO
+         * ----------------------------------------------------
+         */
+
+        const sesiones = [];
+
+        columnasSesiones.forEach(
+            sesion => {
+
+                const valor =
+                    fila
+                        .getCell(
+                            sesion.columna
+                        )
+                        .value;
+
+                let asistencia =
+                    String(
+                        valor ?? ""
+                    ).trim();
+
+                asistencia =
+                    asistencia.toUpperCase();
+
+
+                sesiones.push({
+
+                    fecha:
+                        sesion.fecha,
+
+                    encabezado:
+                        sesion.encabezado,
+
+                    asistencia:
+                        asistencia
+
+                });
+
+            }
+        );
+
+
+        alumnos.push({
+
+            apellidos:
+                apellidos,
+
+            nombres:
+                nombres,
+
+            studentId:
+                studentId,
+
+            email:
+                email,
+
+            grupo:
+                hoja.name,
+
+            sesiones:
+                sesiones
+
+        });
+
+    }
+
+
+    return alumnos;
+
+}
+
+
+/* ============================================================
+   LEER TODAS LAS HOJAS DE ASISTENCIA
+============================================================ */
+
+function leerRegistrosAsistencia(workbook) {
+
+    const registros = [];
+
+
+    workbook.worksheets.forEach(
+        hoja => {
+
+            /*
+             * La hoja de configuración no es
+             * una hoja de asistencia.
+             */
+
+            if (
+                hoja.name ===
+                "Configuracion-Grupos"
+            ) {
+                return;
+            }
+
+
+            const alumnos =
+                leerHojaGrupo(
+                    hoja
+                );
+
+
+            registros.push(
+                ...alumnos
+            );
+
+        }
+    );
+
+
+    return registros;
+
+}
+
+
+/* ============================================================
+   MOSTRAR ASISTENCIAS EN PANTALLA
+============================================================ */
+
+function mostrarRegistrosAsistencia(
+    registros
+) {
+
+    const contenedor =
+        document.getElementById(
+            "resultadoAsistencia"
+        );
+
+    if (!contenedor) {
+        return;
+    }
+
+
+    contenedor.innerHTML = "";
+
+
+    if (!registros.length) {
+
+        contenedor.textContent =
+            "No se encontraron registros de asistencia.";
+
+        return;
+
+    }
+
+
+    const tabla =
+        document.createElement("table");
+
+    tabla.style.width = "100%";
+    tabla.style.borderCollapse =
+        "collapse";
+
+
+    /*
+     * --------------------------------------------------------
+     * OBTENER TODAS LAS FECHAS
+     * --------------------------------------------------------
+     */
+
+    const fechas = [];
+
+    registros.forEach(
+        alumno => {
+
+            alumno.sesiones.forEach(
+                sesion => {
+
+                    if (
+                        sesion.fecha &&
+                        !fechas.some(
+                            fecha =>
+                                fecha.getTime() ===
+                                sesion.fecha.getTime()
+                        )
+                    ) {
+
+                        fechas.push(
+                            sesion.fecha
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+    fechas.sort(
+        (a, b) =>
+            a.getTime() -
+            b.getTime()
+    );
+
+
+    /*
+     * --------------------------------------------------------
+     * ENCABEZADO
+     * --------------------------------------------------------
+     */
+
+    const filaEncabezado =
+        document.createElement("tr");
+
+
+    const encabezadoAlumno =
+        document.createElement("th");
+
+    encabezadoAlumno.textContent =
+        "Alumno";
+
+    filaEncabezado.appendChild(
+        encabezadoAlumno
+    );
+
+
+    const encabezadoGrupo =
+        document.createElement("th");
+
+    encabezadoGrupo.textContent =
+        "Grupo";
+
+    filaEncabezado.appendChild(
+        encabezadoGrupo
+    );
+
+
+    fechas.forEach(
+        fecha => {
+
+            const th =
+                document.createElement("th");
+
+            th.textContent =
+                fecha.toLocaleDateString(
+                    "es-EC"
+                );
+
+            filaEncabezado.appendChild(
+                th
+            );
+
+        }
+    );
+
+
+    tabla.appendChild(
+        filaEncabezado
+    );
+
+
+    /*
+     * --------------------------------------------------------
+     * ALUMNOS
+     * --------------------------------------------------------
+     */
+
+    registros.forEach(
+        alumno => {
+
+            const fila =
+                document.createElement("tr");
+
+
+            const celdaNombre =
+                document.createElement("td");
+
+            celdaNombre.textContent =
+                `${alumno.apellidos} ${alumno.nombres}`;
+
+            fila.appendChild(
+                celdaNombre
+            );
+
+
+            const celdaGrupo =
+                document.createElement("td");
+
+            celdaGrupo.textContent =
+                alumno.grupo;
+
+            fila.appendChild(
+                celdaGrupo
+            );
+
+
+            fechas.forEach(
+                fecha => {
+
+                    const celda =
+                        document.createElement("td");
+
+                    const sesion =
+                        alumno.sesiones.find(
+                            registro =>
+                                registro.fecha &&
+                                registro.fecha.getTime() ===
+                                fecha.getTime()
+                        );
+
+
+                    celda.textContent =
+                        sesion
+                            ? (
+                                sesion.asistencia ||
+                                "?"
+                            )
+                            : "";
+
+                    fila.appendChild(
+                        celda
+                    );
+
+                }
+            );
+
+
+            tabla.appendChild(
+                fila
+            );
+
+        }
+    );
+
+
+    /*
+     * --------------------------------------------------------
+     * ESTILO BÁSICO
+     * --------------------------------------------------------
+     */
+
+    tabla
+        .querySelectorAll("th, td")
+        .forEach(celda => {
+
+            celda.style.border =
+                "1px solid #ccc";
+
+            celda.style.padding =
+                "8px";
+
+            celda.style.textAlign =
+                "center";
+
+        });
+
+
+    contenedor.appendChild(
+        tabla
+    );
+
+}
+
 
 /* ============================================================
    PROCESAR ARCHIVO EXCEL
@@ -481,6 +1024,35 @@ async function procesarArchivoExcel(file) {
             configuracionGrupos
         );
 
+       /*
+ * ----------------------------------------------------
+ * LEER REGISTROS DE ASISTENCIA
+ * ----------------------------------------------------
+ */
+
+registrosAsistencia =
+    leerRegistrosAsistencia(
+        workbook
+    );
+
+window.registrosAsistencia =
+    registrosAsistencia;
+
+
+/*
+ * ----------------------------------------------------
+ * MOSTRAR ASISTENCIAS
+ * ----------------------------------------------------
+ */
+
+mostrarRegistrosAsistencia(
+    registrosAsistencia
+);
+
+console.log(
+    "Registros de asistencia:",
+    registrosAsistencia
+);
 
         /*
          * ----------------------------------------------------
