@@ -1014,23 +1014,182 @@ btnBorrarAlumno.addEventListener(
                     "listaGruposBorrar"
                 );
 
-            listaGrupos.forEach(function(grupo) {
+listaGrupos.forEach(function(grupo) {
 
-                const boton =
-                    document.createElement("button");
+    const boton =
+        document.createElement("button");
 
-                boton.type = "button";
+    boton.type = "button";
 
-                boton.textContent =
-                    grupo;
+    boton.textContent =
+        grupo;
 
-                boton.classList.add(
-                    "boton-grupo-borrar"
+    boton.classList.add(
+        "boton-grupo-borrar"
+    );
+
+    boton.addEventListener(
+        "click",
+        async function() {
+
+            resultado.innerHTML = "";
+
+            mostrarEstado(
+                "Cargando alumnos del grupo..."
+            );
+
+            try {
+
+                const consulta =
+                    await getDocs(
+                        collection(db, "alumnos")
+                    );
+
+                const alumnosGrupo = [];
+
+                consulta.forEach(
+                    function(documento) {
+
+                        const alumno =
+                            documento.data();
+
+                        if (
+                            alumno.grupo === grupo
+                        ) {
+
+                            alumnosGrupo.push({
+                                id: documento.id,
+                                ...alumno
+                            });
+
+                        }
+
+                    }
                 );
 
-                lista.appendChild(boton);
+                alumnosGrupo.sort(
+                    function(a, b) {
 
-            });
+                        const nombreA =
+                            (
+                                a.apellidos +
+                                " " +
+                                a.nombres
+                            ).toLowerCase();
+
+                        const nombreB =
+                            (
+                                b.apellidos +
+                                " " +
+                                b.nombres
+                            ).toLowerCase();
+
+                        return nombreA.localeCompare(
+                            nombreB
+                        );
+
+                    }
+                );
+
+                if (
+                    alumnosGrupo.length === 0
+                ) {
+
+                    mostrarEstado(
+                        "No hay alumnos en este grupo.",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                let html = `
+                    <h3>
+                        Alumnos del grupo:
+                        ${grupo}
+                    </h3>
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>Apellidos</th>
+                                <th>Nombres</th>
+                                <th>Student ID</th>
+                                <th>Teléfono</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+                `;
+
+                alumnosGrupo.forEach(
+                    function(alumno) {
+
+                        html += `
+                            <tr>
+
+                                <td>
+                                    ${alumno.apellidos || ""}
+                                </td>
+
+                                <td>
+                                    ${alumno.nombres || ""}
+                                </td>
+
+                                <td>
+                                    ${alumno.studentId || ""}
+                                </td>
+
+                                <td>
+                                    ${alumno.telefono || ""}
+                                </td>
+
+                            </tr>
+                        `;
+
+                    }
+                );
+
+                html += `
+                        </tbody>
+
+                    </table>
+                `;
+
+                resultado.innerHTML = html;
+
+                mostrarEstado(
+                    "Seleccione el alumno que desea borrar.",
+                    "exito"
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Error al cargar alumnos del grupo:",
+                    error
+                );
+
+                mostrarEstado(
+                    "No se pudieron cargar los alumnos: " +
+                    error.message,
+                    "error"
+                );
+
+            }
+
+        }
+    );
+
+    lista.appendChild(
+        boton
+    );
+
+});
 
             mostrarEstado(
                 "Seleccione el grupo del alumno que desea borrar.",
