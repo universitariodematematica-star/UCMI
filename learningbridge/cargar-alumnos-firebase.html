@@ -273,7 +273,8 @@ import {
     getDocs,
     doc,
     setDoc,
-    getDoc
+    getDoc,
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // ==================================================
@@ -1117,8 +1118,8 @@ listaGrupos.forEach(function(grupo) {
                             <tr>
                                 <th>Apellidos</th>
                                 <th>Nombres</th>
-                                <th>Student ID</th>
                                 <th>Teléfono</th>
+                                <th>Acción</th>
                             </tr>
 
                         </thead>
@@ -1127,32 +1128,44 @@ listaGrupos.forEach(function(grupo) {
                 `;
 
                 alumnosGrupo.forEach(
-                    function(alumno) {
-
-                        html += `
-                            <tr>
-
-                                <td>
-                                    ${alumno.apellidos || ""}
-                                </td>
-
-                                <td>
-                                    ${alumno.nombres || ""}
-                                </td>
-
-                                <td>
-                                    ${alumno.studentId || ""}
-                                </td>
-
-                                <td>
-                                    ${alumno.telefono || ""}
-                                </td>
-
-                            </tr>
-                        `;
-
-                    }
-                );
+                        function(alumno) {
+                    
+                            html += `
+                                <tr id="fila-alumno-${alumno.id}">
+                    
+                                    <td>
+                                        ${alumno.apellidos || ""}
+                                    </td>
+                    
+                                    <td>
+                                        ${alumno.nombres || ""}
+                                    </td>
+                    
+                                    <td>
+                                        ${alumno.studentId || ""}
+                                    </td>
+                    
+                                    <td>
+                                        ${alumno.telefono || ""}
+                                    </td>
+                    
+                                    <td>
+                    
+                                        <button
+                                            type="button"
+                                            class="boton-borrar-alumno"
+                                            data-id="${alumno.id}"
+                                            data-nombre="${alumno.apellidos || ""} ${alumno.nombres || ""}">
+                                            Borrar alumno
+                                        </button>
+                    
+                                    </td>
+                    
+                                </tr>
+                            `;
+                    
+                        }
+                    );
 
                 html += `
                         </tbody>
@@ -1161,6 +1174,86 @@ listaGrupos.forEach(function(grupo) {
                 `;
 
                 resultado.innerHTML = html;
+
+                resultado.innerHTML = html;
+
+const botonesBorrar =
+    document.querySelectorAll(
+        ".boton-borrar-alumno"
+    );
+
+botonesBorrar.forEach(
+    function(boton) {
+
+        boton.addEventListener(
+            "click",
+            async function() {
+
+                const id =
+                    boton.dataset.id;
+
+                const nombre =
+                    boton.dataset.nombre;
+
+                const confirmar =
+                    confirm(
+                        "¿Está seguro de que desea borrar al alumno?\n\n" +
+                        nombre
+                    );
+
+                if (!confirmar) {
+                    return;
+                }
+
+                try {
+
+                    await deleteDoc(
+                        doc(
+                            db,
+                            "alumnos",
+                            id
+                        )
+                    );
+
+                    const fila =
+                        document.getElementById(
+                            "fila-alumno-" + id
+                        );
+
+                    if (fila) {
+                        fila.remove();
+                    }
+
+                    mostrarEstado(
+                        "El alumno fue borrado correctamente.",
+                        "exito"
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Error al borrar alumno:",
+                        error
+                    );
+
+                    mostrarEstado(
+                        "No se pudo borrar el alumno: " +
+                        error.message,
+                        "error"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
+
+mostrarEstado(
+    "Seleccione el alumno que desea borrar.",
+    "exito"
+);
 
                 mostrarEstado(
                     "Seleccione el alumno que desea borrar.",
