@@ -200,19 +200,9 @@
 
 </div>
 
-<div id="panelBorrarAlumno">
-
-    <label for="studentIdBorrar">
-        Student ID del alumno:
-    </label>
-
-    <input
-        type="text"
-        id="studentIdBorrar"
-        placeholder="Ejemplo: 2520"
-    >
-
-</div>
+<button id="btnBorrarAlumno">
+    Borrar alumno
+</button>
 
 </div>
 
@@ -930,6 +920,104 @@ btnGuardarAlumnos.addEventListener(
         }
     }
 );
+
+ // ==================================================
+// MOSTRAR GRUPOS PARA BORRAR ALUMNOS
+// ==================================================
+
+btnBorrarAlumno.addEventListener(
+    "click",
+    async function() {
+
+        resultado.innerHTML = "";
+
+        mostrarEstado(
+            "Cargando grupos..."
+        );
+
+        try {
+
+            const consulta =
+                await getDocs(
+                    collection(db, "alumnos")
+                );
+
+            const grupos = new Set();
+
+            consulta.forEach(function(documento) {
+
+                const alumno =
+                    documento.data();
+
+                if (alumno.grupo) {
+                    grupos.add(
+                        alumno.grupo
+                    );
+                }
+
+            });
+
+            const listaGrupos =
+                [...grupos].sort();
+
+            if (listaGrupos.length === 0) {
+
+                mostrarEstado(
+                    "No hay grupos registrados.",
+                    "error"
+                );
+
+                return;
+            }
+
+            resultado.innerHTML = `
+                <h3>Seleccione un grupo</h3>
+                <div id="listaGruposBorrar"></div>
+            `;
+
+            const lista =
+                document.getElementById(
+                    "listaGruposBorrar"
+                );
+
+            listaGrupos.forEach(function(grupo) {
+
+                const boton =
+                    document.createElement("button");
+
+                boton.type = "button";
+
+                boton.textContent =
+                    grupo;
+
+                boton.classList.add(
+                    "boton-grupo-borrar"
+                );
+
+                lista.appendChild(boton);
+
+            });
+
+            mostrarEstado(
+                "Seleccione el grupo del alumno que desea borrar.",
+                "exito"
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Error al cargar grupos:",
+                error
+            );
+
+            mostrarEstado(
+                "No se pudieron cargar los grupos: " +
+                error.message,
+                "error"
+            );
+        }
+    }
+);       
 
     </script>
 
