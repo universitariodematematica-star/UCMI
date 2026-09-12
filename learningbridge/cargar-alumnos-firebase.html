@@ -1203,12 +1203,410 @@ btnBorrarAlumno.addEventListener(
                                 </table>
                             `;
 
-                            resultado.innerHTML = html;
+resultado.innerHTML = html;
 
-                            const botonesRetirar =
-                                document.querySelectorAll(
-                                    ".boton-retirar-alumno"
+// ==================================================
+// CAMBIAR DATOS DE UN ALUMNO
+// ==================================================
+
+const botonesCambiar =
+    document.querySelectorAll(
+        ".boton-cambiar-datos"
+    );
+
+botonesCambiar.forEach(
+    function(boton) {
+
+        boton.addEventListener(
+            "click",
+            async function() {
+
+                const id =
+                    boton.dataset.id;
+
+                mostrarEstado(
+                    "Cargando datos del alumno..."
+                );
+
+                try {
+
+                    const referencia =
+                        doc(
+                            db,
+                            "alumnos",
+                            id
+                        );
+
+                    const documento =
+                        await getDoc(
+                            referencia
+                        );
+
+                    if (!documento.exists()) {
+
+                        mostrarEstado(
+                            "El alumno ya no existe en la lista activa.",
+                            "error"
+                        );
+
+                        return;
+                    }
+
+                    const alumno =
+                        documento.data();
+
+                    resultado.innerHTML = `
+
+                        <h3>
+                            Cambiar datos del alumno
+                        </h3>
+
+                        <div
+                            style="
+                                max-width: 600px;
+                                margin: 20px auto;
+                            "
+                        >
+
+                            <label>
+                                Apellidos
+                            </label>
+
+                            <input
+                                type="text"
+                                id="editarApellidos"
+                                value="${alumno.apellidos || ""}"
+                                style="
+                                    width: 100%;
+                                    padding: 10px;
+                                    margin-bottom: 15px;
+                                "
+                            >
+
+                            <label>
+                                Nombres
+                            </label>
+
+                            <input
+                                type="text"
+                                id="editarNombres"
+                                value="${alumno.nombres || ""}"
+                                style="
+                                    width: 100%;
+                                    padding: 10px;
+                                    margin-bottom: 15px;
+                                "
+                            >
+
+                            <label>
+                                Student ID
+                            </label>
+
+                            <input
+                                type="text"
+                                id="editarStudentId"
+                                value="${alumno.studentId || ""}"
+                                style="
+                                    width: 100%;
+                                    padding: 10px;
+                                    margin-bottom: 15px;
+                                "
+                            >
+
+                            <label>
+                                Teléfono
+                            </label>
+
+                            <input
+                                type="text"
+                                id="editarTelefono"
+                                value="${alumno.telefono || ""}"
+                                style="
+                                    width: 100%;
+                                    padding: 10px;
+                                    margin-bottom: 15px;
+                                "
+                            >
+
+                            <label>
+                                Grupo
+                            </label>
+
+                            <input
+                                type="text"
+                                id="editarGrupo"
+                                value="${alumno.grupo || ""}"
+                                style="
+                                    width: 100%;
+                                    padding: 10px;
+                                    margin-bottom: 20px;
+                                "
+                            >
+
+                            <button
+                                type="button"
+                                id="btnGuardarCambios"
+                                style="
+                                    background-color: #178a75;
+                                    color: white;
+                                    font-weight: bold;
+                                    margin-right: 8px;
+                                "
+                            >
+                                Guardar cambios
+                            </button>
+
+                            <button
+                                type="button"
+                                id="btnCancelarCambios"
+                                style="
+                                    background-color: #5c1d53;
+                                    color: white;
+                                    font-weight: bold;
+                                "
+                            >
+                                Cancelar
+                            </button>
+
+                        </div>
+                    `;
+
+                    mostrarEstado(
+                        "Modifique los datos del alumno y guarde los cambios.",
+                        "exito"
+                    );
+
+                    const btnGuardarCambios =
+                        document.getElementById(
+                            "btnGuardarCambios"
+                        );
+
+                    const btnCancelarCambios =
+                        document.getElementById(
+                            "btnCancelarCambios"
+                        );
+
+                    btnCancelarCambios.addEventListener(
+                        "click",
+                        function() {
+
+                            resultado.innerHTML = "";
+
+                            mostrarEstado(
+                                "Edición cancelada.",
+                                "exito"
+                            );
+
+                        }
+                    );
+
+                    btnGuardarCambios.addEventListener(
+                        "click",
+                        async function() {
+
+                            const apellidos =
+                                document
+                                    .getElementById(
+                                        "editarApellidos"
+                                    )
+                                    .value
+                                    .trim();
+
+                            const nombres =
+                                document
+                                    .getElementById(
+                                        "editarNombres"
+                                    )
+                                    .value
+                                    .trim();
+
+                            const nuevoStudentId =
+                                document
+                                    .getElementById(
+                                        "editarStudentId"
+                                    )
+                                    .value
+                                    .trim();
+
+                            const telefono =
+                                document
+                                    .getElementById(
+                                        "editarTelefono"
+                                    )
+                                    .value
+                                    .trim();
+
+                            const grupo =
+                                document
+                                    .getElementById(
+                                        "editarGrupo"
+                                    )
+                                    .value
+                                    .trim();
+
+                            if (!nuevoStudentId) {
+
+                                mostrarEstado(
+                                    "El Student ID no puede estar vacío.",
+                                    "error"
                                 );
+
+                                return;
+                            }
+
+                            btnGuardarCambios.disabled =
+                                true;
+
+                            btnGuardarCambios.textContent =
+                                "Guardando...";
+
+                            try {
+
+                                const datosAlumno = {
+
+                                    studentId:
+                                        nuevoStudentId,
+
+                                    apellidos:
+                                        apellidos,
+
+                                    nombres:
+                                        nombres,
+
+                                    telefono:
+                                        telefono,
+
+                                    grupo:
+                                        grupo
+                                };
+
+                                // ------------------------------------------
+                                // EL STUDENT ID NO CAMBIÓ
+                                // ------------------------------------------
+
+                                if (
+                                    nuevoStudentId === id
+                                ) {
+
+                                    await setDoc(
+                                        referencia,
+                                        datosAlumno
+                                    );
+
+                                }
+
+                                // ------------------------------------------
+                                // EL STUDENT ID CAMBIÓ
+                                // ------------------------------------------
+
+                                else {
+
+                                    const nuevaReferencia =
+                                        doc(
+                                            db,
+                                            "alumnos",
+                                            nuevoStudentId
+                                        );
+
+                                    const alumnoExistente =
+                                        await getDoc(
+                                            nuevaReferencia
+                                        );
+
+                                    if (
+                                        alumnoExistente.exists()
+                                    ) {
+
+                                        throw new Error(
+                                            "Ya existe otro alumno con ese Student ID."
+                                        );
+
+                                    }
+
+                                    const batch =
+                                        writeBatch(db);
+
+                                    batch.set(
+                                        nuevaReferencia,
+                                        datosAlumno
+                                    );
+
+                                    batch.delete(
+                                        referencia
+                                    );
+
+                                    await batch.commit();
+
+                                }
+
+                                mostrarEstado(
+                                    "Los datos del alumno fueron actualizados correctamente.",
+                                    "exito"
+                                );
+
+                                resultado.innerHTML = `
+                                    <h3>
+                                        Datos actualizados correctamente
+                                    </h3>
+
+                                    <p>
+                                        El alumno
+                                        <strong>
+                                            ${apellidos} ${nombres}
+                                        </strong>
+                                        fue actualizado.
+                                    </p>
+                                `;
+
+                            } catch (error) {
+
+                                console.error(
+                                    "Error al cambiar datos del alumno:",
+                                    error
+                                );
+
+                                btnGuardarCambios.disabled =
+                                    false;
+
+                                btnGuardarCambios.textContent =
+                                    "Guardar cambios";
+
+                                mostrarEstado(
+                                    "No se pudieron actualizar los datos: " +
+                                    error.message,
+                                    "error"
+                                );
+
+                            }
+
+                        }
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Error al cargar datos del alumno:",
+                        error
+                    );
+
+                    mostrarEstado(
+                        "No se pudieron cargar los datos del alumno: " +
+                        error.message,
+                        "error"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
+
+const botonesRetirar =
+    document.querySelectorAll(
+        ".boton-retirar-alumno"
+    );
 
                             botonesRetirar.forEach(
                                 function(boton) {
