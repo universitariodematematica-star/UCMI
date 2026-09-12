@@ -1498,18 +1498,47 @@ const listaGrupos =
                                     .value
                                     .trim();
 
-                            if (!nuevoStudentId) {
+                           if (!nuevoStudentId) {
 
-                                mostrarEstado(
-                                    "El Student ID no puede estar vacío.",
-                                    "error"
-                                );
+    mostrarEstado(
+        "El Student ID no puede estar vacío.",
+        "error"
+    );
 
-                                return;
-                            }
+    return;
+}
 
-                            btnGuardarCambios.disabled =
-                                true;
+// ==================================================
+// VERIFICAR QUE EL STUDENT ID NO ESTÉ DUPLICADO
+// ==================================================
+
+if (nuevoStudentId !== id) {
+
+    const referenciaNuevoAlumno =
+        doc(
+            db,
+            "alumnos",
+            nuevoStudentId
+        );
+
+    const alumnoConEseId =
+        await getDoc(
+            referenciaNuevoAlumno
+        );
+
+    if (alumnoConEseId.exists()) {
+
+        mostrarEstado(
+            "No se puede guardar. Ya existe otro alumno con ese Student ID.",
+            "error"
+        );
+
+        return;
+    }
+}
+
+btnGuardarCambios.disabled =
+    true;
 
                             btnGuardarCambios.textContent =
                                 "Guardando...";
