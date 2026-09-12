@@ -242,7 +242,13 @@
             <button id="btnBorrarAlumno">
                 Borrar alumno
             </button>
-
+            
+            <button
+                id="btnReingresarAlumno"
+                type="button">
+                Reingresar alumno
+            </button>
+            
             <button
                 type="button"
                 onclick="window.location.href='asistencia.html'">
@@ -369,6 +375,9 @@ const btnGuardarAlumnos =
 
 const btnBorrarAlumno =
     document.getElementById("btnBorrarAlumno");
+
+const btnReingresarAlumno =
+    document.getElementById("btnReingresarAlumno");        
 
 const estado =
     document.getElementById("estado");
@@ -1912,7 +1921,252 @@ const botonesRetirar =
             );
         }
     }
-);       
+);
+
+// ==================================================
+// REINGRESAR ALUMNO
+// ==================================================
+
+btnReingresarAlumno.addEventListener(
+    "click",
+    async function() {
+
+        resultado.innerHTML = "";
+
+        mostrarEstado(
+            "Cargando alumnos retirados..."
+        );
+
+        try {
+
+            const consulta =
+                await getDocs(
+                    collection(
+                        db,
+                        "historial_alumnos"
+                    )
+                );
+
+            if (consulta.empty) {
+
+                mostrarEstado(
+                    "No hay alumnos retirados en el historial.",
+                    "error"
+                );
+
+                return;
+            }
+
+            const alumnosRetirados = [];
+
+            consulta.forEach(
+                function(documento) {
+
+                    const alumno =
+                        documento.data();
+
+                    alumnosRetirados.push({
+
+                        id:
+                            documento.id,
+
+                        studentId:
+                            alumno.studentId || "",
+
+                        apellidos:
+                            alumno.apellidos || "",
+
+                        nombres:
+                            alumno.nombres || "",
+
+                        telefono:
+                            alumno.telefono || "",
+
+                        grupo:
+                            alumno.grupo || "",
+
+                        fechaRetiro:
+                            alumno.fechaRetiro || null
+
+                    });
+
+                }
+            );
+
+            alumnosRetirados.sort(
+                function(a, b) {
+
+                    const nombreA =
+                        (
+                            a.apellidos +
+                            " " +
+                            a.nombres
+                        ).toLowerCase();
+
+                    const nombreB =
+                        (
+                            b.apellidos +
+                            " " +
+                            b.nombres
+                        ).toLowerCase();
+
+                    return nombreA.localeCompare(
+                        nombreB
+                    );
+
+                }
+            );
+
+            let html = `
+
+                <h3>
+                    Alumnos retirados
+                </h3>
+
+                <p>
+                    Seleccione el alumno que desea reingresar.
+                </p>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Apellidos
+                            </th>
+
+                            <th>
+                                Nombres
+                            </th>
+
+                            <th>
+                                Student ID
+                            </th>
+
+                            <th>
+                                Grupo
+                            </th>
+
+                            <th>
+                                Fecha de retiro
+                            </th>
+
+                            <th>
+                                Acción
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+            `;
+
+            alumnosRetirados.forEach(
+                function(alumno) {
+
+                    let fechaRetiro = "";
+
+                    if (
+                        alumno.fechaRetiro &&
+                        typeof alumno.fechaRetiro.toDate ===
+                        "function"
+                    ) {
+
+                        fechaRetiro =
+                            alumno.fechaRetiro
+                                .toDate()
+                                .toLocaleString(
+                                    "es-EC"
+                                );
+
+                    }
+
+                    html += `
+
+                        <tr
+                            id="fila-historial-${alumno.id}"
+                        >
+
+                            <td>
+                                ${alumno.apellidos}
+                            </td>
+
+                            <td>
+                                ${alumno.nombres}
+                            </td>
+
+                            <td>
+                                ${alumno.studentId}
+                            </td>
+
+                            <td>
+                                ${alumno.grupo}
+                            </td>
+
+                            <td>
+                                ${fechaRetiro}
+                            </td>
+
+                            <td>
+
+                                <button
+                                    type="button"
+                                    class="boton-reingresar-alumno"
+                                    data-id="${alumno.id}"
+                                >
+                                    Reingresar
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    `;
+
+                }
+            );
+
+            html += `
+
+                    </tbody>
+
+                </table>
+
+            `;
+
+            resultado.innerHTML = html;
+
+            mostrarEstado(
+                "Seleccione el alumno que desea reingresar.",
+                "exito"
+            );
+
+            console.log(
+                "Alumnos retirados:",
+                alumnosRetirados
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Error al cargar alumnos retirados:",
+                error
+            );
+
+            mostrarEstado(
+                "No se pudieron cargar los alumnos retirados: " +
+                error.message,
+                "error"
+            );
+
+        }
+
+    }
+);        
 
     </script>
 
