@@ -402,6 +402,12 @@
         signOut
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+    import {
+        getFirestore,
+        collection,
+        getDocs
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
 
     const firebaseConfig = {
 
@@ -424,6 +430,114 @@
 
     const auth = getAuth(app);
 
+    const db = getFirestore(app);
+
+
+    /*
+     * ==================================================
+     * CARGAR GRUPOS DESDE FIREBASE
+     * ==================================================
+     */
+
+    async function cargarGruposDesdeFirebase() {
+
+        try {
+
+            const snapshot =
+                await getDocs(
+                    collection(db, "alumnos")
+                );
+
+
+            const grupos = new Set();
+
+
+            snapshot.forEach(function(doc) {
+
+                const alumno = doc.data();
+
+                const grupo =
+                    alumno.grupo
+                        ? String(alumno.grupo).trim()
+                        : "";
+
+
+                if (grupo) {
+
+                    grupos.add(grupo);
+
+                }
+
+            });
+
+
+            const selector =
+                document.getElementById("filtroGrupo");
+
+
+            selector.innerHTML = "";
+
+
+            const opcionTodos =
+                document.createElement("option");
+
+            opcionTodos.value = "todos";
+
+            opcionTodos.textContent = "Todos";
+
+            selector.appendChild(opcionTodos);
+
+
+            Array.from(grupos)
+                .sort(function(a, b) {
+
+                    return a.localeCompare(
+                        b,
+                        "es",
+                        {
+                            numeric: true,
+                            sensitivity: "base"
+                        }
+                    );
+
+                })
+                .forEach(function(grupo) {
+
+                    const opcion =
+                        document.createElement("option");
+
+                    opcion.value = grupo;
+
+                    opcion.textContent = grupo;
+
+                    selector.appendChild(opcion);
+
+                });
+
+
+            console.log(
+                "GRUPOS CARGADOS DESDE FIREBASE:",
+                Array.from(grupos)
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Error al cargar grupos desde Firebase:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /*
+     * ==================================================
+     * CERRAR SESIÓN
+     * ==================================================
+     */
 
     document
         .getElementById("btnCerrarSesion")
@@ -450,8 +564,16 @@
 
         });
 
-</script>
 
+    /*
+     * ==================================================
+     * INICIAR CARGA DE GRUPOS
+     * ==================================================
+     */
+
+    cargarGruposDesdeFirebase();
+
+</script>
 
 </body>
 
