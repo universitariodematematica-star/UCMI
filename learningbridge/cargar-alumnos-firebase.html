@@ -231,7 +231,10 @@ import {
 import {
     getFirestore,
     collection,
-    getDocs
+    getDocs,
+    doc,
+    setDoc,
+    getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // ==================================================
@@ -780,6 +783,135 @@ archivoAlumnos.addEventListener(
 
             }
         );
+
+        // ==================================================
+// GUARDAR / ACTUALIZAR ALUMNOS EN FIREBASE
+// ==================================================
+
+btnGuardarAlumnos.addEventListener(
+    "click",
+    async function() {
+
+        if (alumnosExcel.length === 0) {
+            mostrarEstado(
+                "Primero debe cargar un archivo de alumnos.",
+                "error"
+            );
+            return;
+        }
+
+        resultado.innerHTML = "";
+
+        mostrarEstado(
+            "Guardando alumnos en Firebase..."
+        );
+
+        try {
+
+            let creados = 0;
+            let actualizados = 0;
+
+            for (const alumno of alumnosExcel) {
+
+                const studentId =
+                    alumno.studentId;
+
+                if (!studentId) {
+                    console.warn(
+                        "Alumno ignorado porque no tiene Student ID:",
+                        alumno
+                    );
+                    continue;
+                }
+
+                const referencia =
+                    doc(
+                        db,
+                        "alumnos",
+                        studentId
+                    );
+
+                const documento =
+                    await getDoc(referencia);
+
+                const datosAlumno = {
+                    studentId:
+                        alumno.studentId,
+
+                    apellidos:
+                        alumno.apellidos,
+
+                    nombres:
+                        alumno.nombres,
+
+                    telefono:
+                        alumno.telefono,
+
+                    grupo:
+                        alumno.grupo
+                };
+
+                await setDoc(
+                    referencia,
+                    datosAlumno
+                );
+
+                if (documento.exists()) {
+                    actualizados++;
+                } else {
+                    creados++;
+                }
+            }
+
+            mostrarEstado(
+                "Carga completada correctamente.",
+                "exito"
+            );
+
+            resultado.innerHTML = `
+                <h3>Resultado de la carga</h3>
+
+                <p>
+                    Alumnos nuevos:
+                    <strong>${creados}</strong>
+                </p>
+
+                <p>
+                    Alumnos actualizados:
+                    <strong>${actualizados}</strong>
+                </p>
+
+                <p>
+                    Total procesados:
+                    <strong>${creados + actualizados}</strong>
+                </p>
+            `;
+
+            console.log(
+                "Alumnos nuevos:",
+                creados
+            );
+
+            console.log(
+                "Alumnos actualizados:",
+                actualizados
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Error al guardar alumnos:",
+                error
+            );
+
+            mostrarEstado(
+                "No se pudieron guardar los alumnos: " +
+                error.message,
+                "error"
+            );
+        }
+    }
+);
 
     </script>
 
