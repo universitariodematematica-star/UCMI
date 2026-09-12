@@ -2150,6 +2150,235 @@ btnReingresarAlumno.addEventListener(
                 alumnosRetirados
             );
 
+            // ==================================================
+            // CONECTAR BOTONES REINGRESAR
+            // ==================================================
+
+            const botonesReingresar =
+                document.querySelectorAll(
+                    ".boton-reingresar-alumno"
+                );
+
+            botonesReingresar.forEach(
+                function(boton) {
+
+                    boton.addEventListener(
+                        "click",
+                        async function() {
+
+                            const idHistorial =
+                                boton.dataset.id;
+
+                            try {
+
+                                boton.disabled =
+                                    true;
+
+                                boton.textContent =
+                                    "Reingresando...";
+
+                                // ==========================================
+                                // OBTENER EL REGISTRO DEL HISTORIAL
+                                // ==========================================
+
+                                const referenciaHistorial =
+                                    doc(
+                                        db,
+                                        "historial_alumnos",
+                                        idHistorial
+                                    );
+
+                                const documentoHistorial =
+                                    await getDoc(
+                                        referenciaHistorial
+                                    );
+
+                                if (
+                                    !documentoHistorial.exists()
+                                ) {
+
+                                    throw new Error(
+                                        "El registro del historial ya no existe."
+                                    );
+
+                                }
+
+                                const alumno =
+                                    documentoHistorial.data();
+
+                                const studentId =
+                                    String(
+                                        alumno.studentId || ""
+                                    ).trim();
+
+                                if (!studentId) {
+
+                                    throw new Error(
+                                        "El registro del historial no tiene Student ID."
+                                    );
+
+                                }
+
+                                // ==========================================
+                                // COMPROBAR SI YA ESTÁ ACTIVO
+                                // ==========================================
+
+                                const referenciaAlumno =
+                                    doc(
+                                        db,
+                                        "alumnos",
+                                        studentId
+                                    );
+
+                                const alumnoActivo =
+                                    await getDoc(
+                                        referenciaAlumno
+                                    );
+
+                                if (
+                                    alumnoActivo.exists()
+                                ) {
+
+                                    mostrarEstado(
+                                        "No se puede reingresar. Ya existe un alumno activo con el Student ID " +
+                                        studentId +
+                                        ".",
+                                        "error"
+                                    );
+
+                                    boton.disabled =
+                                        false;
+
+                                    boton.textContent =
+                                        "Reingresar";
+
+                                    return;
+                                }
+
+                                // ==========================================
+                                // CONFIRMAR REINGRESO
+                                // ==========================================
+
+                                const confirmar =
+                                    confirm(
+                                        "¿Está seguro de que desea reingresar al alumno?\n\n" +
+                                        alumno.apellidos +
+                                        " " +
+                                        alumno.nombres +
+                                        "\n\n" +
+                                        "Student ID: " +
+                                        studentId +
+                                        "\n" +
+                                        "Grupo: " +
+                                        (alumno.grupo || "")
+                                    );
+
+                                if (!confirmar) {
+
+                                    boton.disabled =
+                                        false;
+
+                                    boton.textContent =
+                                        "Reingresar";
+
+                                    return;
+                                }
+
+                                // ==========================================
+                                // DATOS QUE VOLVERÁN A ALUMNOS
+                                // ==========================================
+
+                                const datosAlumno = {
+
+                                    studentId:
+                                        studentId,
+
+                                    apellidos:
+                                        alumno.apellidos || "",
+
+                                    nombres:
+                                        alumno.nombres || "",
+
+                                    telefono:
+                                        alumno.telefono || "",
+
+                                    grupo:
+                                        alumno.grupo || ""
+
+                                };
+
+                                // ==========================================
+                                // OPERACIÓN ATÓMICA
+                                //
+                                // 1. Restaurar alumno
+                                // 2. Eliminar registro del historial
+                                // ==========================================
+
+                                const batch =
+                                    writeBatch(db);
+
+                                batch.set(
+                                    referenciaAlumno,
+                                    datosAlumno
+                                );
+
+                                batch.delete(
+                                    referenciaHistorial
+                                );
+
+                                await batch.commit();
+
+                                // ==========================================
+                                // QUITAR FILA DE LA PANTALLA
+                                // ==========================================
+
+                                const fila =
+                                    document.getElementById(
+                                        "fila-historial-" +
+                                        idHistorial
+                                    );
+
+                                if (fila) {
+                                    fila.remove();
+                                }
+
+                                mostrarEstado(
+                                    "El alumno fue reingresado correctamente.",
+                                    "exito"
+                                );
+
+                                console.log(
+                                    "Alumno reingresado:",
+                                    datosAlumno
+                                );
+
+                            } catch (error) {
+
+                                console.error(
+                                    "Error al reingresar alumno:",
+                                    error
+                                );
+
+                                boton.disabled =
+                                    false;
+
+                                boton.textContent =
+                                    "Reingresar";
+
+                                mostrarEstado(
+                                    "No se pudo reingresar al alumno: " +
+                                    error.message,
+                                    "error"
+                                );
+
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
         } catch (error) {
 
             console.error(
