@@ -1255,6 +1255,42 @@ botonesCambiar.forEach(
                     const alumno =
                         documento.data();
 
+                    const consultaGrupos =
+    await getDocs(
+        collection(db, "alumnos")
+    );
+
+const grupos =
+    new Set();
+
+consultaGrupos.forEach(
+    function(documentoGrupo) {
+
+        const datosGrupo =
+            documentoGrupo.data();
+
+        if (datosGrupo.grupo) {
+
+            grupos.add(
+                datosGrupo.grupo
+            );
+
+        }
+
+    }
+);
+
+if (alumno.grupo) {
+    grupos.add(alumno.grupo);
+}
+
+const listaGrupos =
+    [...grupos].sort(
+        function(a, b) {
+            return a.localeCompare(b);
+        }
+    );
+
                     resultado.innerHTML = `
 
                         <h3>
@@ -1331,17 +1367,35 @@ botonesCambiar.forEach(
                             <label>
                                 Grupo
                             </label>
-
-                            <input
-                                type="text"
+                            
+                             <select
                                 id="editarGrupo"
-                                value="${alumno.grupo || ""}"
                                 style="
                                     width: 100%;
                                     padding: 10px;
                                     margin-bottom: 20px;
                                 "
                             >
+                                <option value="">
+                                    Seleccione un grupo
+                                </option>
+                            
+                                ${listaGrupos.map(
+                                    function(grupo) {
+                            
+                                        return `
+                                            <option
+                                                value="${grupo}"
+                                                ${grupo === alumno.grupo ? "selected" : ""}
+                                            >
+                                                ${grupo}
+                                            </option>
+                                        `;
+                            
+                                    }
+                                ).join("")}
+                            
+                            </select>
 
                             <button
                                 type="button"
