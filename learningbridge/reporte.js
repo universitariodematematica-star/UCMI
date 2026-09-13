@@ -1227,11 +1227,22 @@ if (!fechaInicioGrupo) {
  */
 
 const totalClases =
-    calcularTotalClasesGrupo(
-        alumno.grupo,
-        fechaInicioGrupo
-    );
+calcularTotalClasesGrupo(
+alumno.grupo,
+fechaInicioGrupo
+);
 
+console.log(
+"CALCULO PORCENTAJES:",
+alumno.grupo,
+"fechaInicioGrupo:",
+fechaInicioGrupo,
+"totalClases:",
+totalClases,
+"sesiones:",
+alumno.sesiones
+);
+   
 if (totalClases <= 0) {
     return {
         porcentajeEfectivo: 0,
