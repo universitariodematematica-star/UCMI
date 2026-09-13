@@ -59,6 +59,10 @@ CALCULAR TOTAL DE CLASES DEL GRUPO DURANTE 7 MESES
 ============================================================
 */
 
+/* ============================================================
+CALCULAR TOTAL DE CLASES DEL GRUPO DURANTE 7 MESES
+============================================================ */
+
 function calcularTotalClasesGrupo(
 grupo,
 fechaInicio
@@ -71,7 +75,7 @@ if (!grupo || !fechaInicio) {
 const configuracion =
     configuracionGrupos.find(
         item =>
-            String(item.Grupo).trim() ===
+            String(item.grupo).trim() ===
             String(grupo).trim()
     );
 
@@ -96,6 +100,13 @@ fechaFinCurso.setMonth(
     fechaFinCurso.getMonth() + 7
 );
 
+fechaFinCurso.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
 let totalClases = 0;
 
 const fechaActual =
@@ -109,7 +120,8 @@ while (fechaActual < fechaFinCurso) {
         ];
 
     if (
-        configuracion[nombreDia] === true
+        configuracion.dias &&
+        configuracion.dias[nombreDia] === true
     ) {
 
         totalClases++;
@@ -124,6 +136,12 @@ while (fechaActual < fechaFinCurso) {
 return totalClases;
 
 }
+
+/* ============================================================
+OBTENER PRIMERA FECHA DEL GRUPO
+============================================================ */
+
+function obtenerPrimeraFechaGrupo(grupo) {
 
 const fechas = [];
 
@@ -143,15 +161,22 @@ registrosAsistencia.forEach(alumno => {
             return;
         }
 
-        const fecha = new Date(sesion.fecha);
+        const fecha =
+            new Date(sesion.fecha);
 
         if (isNaN(fecha.getTime())) {
             return;
         }
 
-        fecha.setHours(0, 0, 0, 0);
+        fecha.setHours(
+            0,
+            0,
+            0,
+            0
+        );
 
         fechas.push(fecha);
+
     });
 
 });
@@ -160,82 +185,37 @@ if (fechas.length === 0) {
     return null;
 }
 
-fechas.sort((a, b) => a - b);
+fechas.sort(
+    (a, b) => a - b
+);
 
 return fechas[0];
 
 }
 
-fechas.sort((a, b) => a - b);
+/* ============================================================
+REFERENCIAS GLOBALES
+============================================================ */
 
-return fechas[0];
+window.configuracionGrupos =
+configuracionGrupos;
 
-window.configuracionGrupos = configuracionGrupos;
-window.registrosAsistencia = registrosAsistencia;
-
+window.registrosAsistencia =
+registrosAsistencia;
 
 /* ============================================================
-   DÍAS DE LA SEMANA
+DÍAS DE LA SEMANA
 ============================================================ */
 
 const DIAS_SEMANA = [
-    "Lunes",
-    "Martes",
-    "Miércoles",
-    "Jueves",
-    "Viernes",
-    "Sábado",
-    "Domingo"
+"Lunes",
+"Martes",
+"Miércoles",
+"Jueves",
+"Viernes",
+"Sábado",
+"Domingo"
 ];
-
-if (!grupo || !fechaInicio) {
-    return 0;
-}
-
-const configuracion = configuracionGrupos.find(
-    item => item.grupo === grupo
-);
-
-if (!configuracion) {
-    console.warn(
-        "No se encontró configuración para el grupo:",
-        grupo
-    );
-
-    return 0;
-}
-
-const inicio = new Date(fechaInicio);
-
-inicio.setHours(0, 0, 0, 0);
-
-const fin = new Date(inicio);
-
-fin.setMonth(fin.getMonth() + 7);
-
-fin.setHours(0, 0, 0, 0);
-
-let totalClases = 0;
-
-const fecha = new Date(inicio);
-
-while (fecha < fin) {
-
-    const diaSemana = fecha.getDay();
-
-    const nombreDia =
-        DIAS_SEMANA[
-            diaSemana === 0 ? 6 : diaSemana - 1
-        ];
-
-    if (configuracion[nombreDia] === true) {
-        totalClases++;
-    }
-
-    fecha.setDate(fecha.getDate() + 1);
-}
-
-return totalClases;
 
 
 /* ============================================================
