@@ -1743,6 +1743,71 @@ fila.appendChild(
             }
         );
 
+       ```javascript
+        /*
+         * ------------------------------------------------
+         * JUSTIFICACIÓN
+         * ------------------------------------------------
+         */
+
+        const celdaJustificacion =
+            document.createElement("td");
+
+        const campoJustificacion =
+            document.createElement("textarea");
+
+        campoJustificacion.placeholder =
+            "Escribir justificación...";
+
+        campoJustificacion.rows =
+            3;
+
+        campoJustificacion.style.width =
+            "220px";
+
+        campoJustificacion.style.minHeight =
+            "60px";
+
+        campoJustificacion.style.resize =
+            "vertical";
+
+        campoJustificacion.style.boxSizing =
+            "border-box";
+
+        campoJustificacion.value =
+            alumno.justificacion || "";
+
+        campoJustificacion.addEventListener(
+            "click",
+            function(evento) {
+
+                evento.stopPropagation();
+
+            }
+        );
+
+        campoJustificacion.addEventListener(
+            "input",
+            function(evento) {
+
+                evento.stopPropagation();
+
+                alumno.justificacion =
+                    campoJustificacion.value;
+
+            }
+        );
+
+        celdaJustificacion.appendChild(
+            campoJustificacion
+        );
+
+        fila.appendChild(
+            celdaJustificacion
+        );
+```
+
+
 
         /*
          * ------------------------------------------------
