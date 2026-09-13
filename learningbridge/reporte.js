@@ -1904,7 +1904,6 @@ if (!telefono) {
     );
 
     return;
-
 }
 
 let numero =
@@ -1918,13 +1917,14 @@ if (numero.startsWith("0")) {
     numero =
         "593" +
         numero.substring(1);
-
 }
 
 /*
  * ------------------------------------------------
- * OBTENER PORCENTAJES DEL ESTUDIANTE
+ * OBTENER PORCENTAJES
  * ------------------------------------------------
+ * ESTA ES LA ÚNICA FUENTE DE LOS PORCENTAJES.
+ * NO SE RECALCULAN AQUÍ.
  */
 
 const porcentajes =
@@ -1934,7 +1934,7 @@ const porcentajes =
 
 /*
  * ------------------------------------------------
- * OBTENER PRIMER NOMBRE
+ * PRIMER NOMBRE
  * ------------------------------------------------
  */
 
@@ -1947,7 +1947,7 @@ const primerNombre =
 
 /*
  * ------------------------------------------------
- * CALCULAR LUNES DE LA SEMANA ACTUAL
+ * OBTENER LUNES DE LA SEMANA ACTUAL
  * ------------------------------------------------
  */
 
@@ -1961,34 +1961,54 @@ hoy.setHours(
     0
 );
 
+const lunesSemana =
+    new Date(hoy);
+
 const diaSemana =
-    hoy.getDay();
+    lunesSemana.getDay();
 
 const diferenciaLunes =
     diaSemana === 0
         ? 6
         : diaSemana - 1;
 
-const lunesSemana =
-    new Date(hoy);
-
 lunesSemana.setDate(
-    hoy.getDate() -
+    lunesSemana.getDate() -
     diferenciaLunes
-);
-
-lunesSemana.setHours(
-    0,
-    0,
-    0,
-    0
 );
 
 /*
  * ------------------------------------------------
- * OBTENER INASISTENCIAS DE LA SEMANA ACTUAL
+ * DÍAS DE INASISTENCIA DE LA SEMANA ACTUAL
  * ------------------------------------------------
  */
+
+const diasSemana =
+    [
+        "domingo",
+        "lunes",
+        "martes",
+        "miércoles",
+        "jueves",
+        "viernes",
+        "sábado"
+    ];
+
+const mesesTexto =
+    [
+        "enero",
+        "febrero",
+        "marzo",
+        "abril",
+        "mayo",
+        "junio",
+        "julio",
+        "agosto",
+        "septiembre",
+        "octubre",
+        "noviembre",
+        "diciembre"
+    ];
 
 const diasInasistencias = [];
 
@@ -2025,13 +2045,6 @@ if (
                 0
             );
 
-            if (
-                fecha < lunesSemana ||
-                fecha > hoy
-            ) {
-                return;
-            }
-
             const asistencia =
                 String(
                     sesion.asistencia || ""
@@ -2045,53 +2058,39 @@ if (
                 return;
             }
 
-            diasInasistencias.push(
-                fecha
-            );
+            if (
+                fecha < lunesSemana ||
+                fecha > hoy
+            ) {
+                return;
+            }
 
+            const textoFecha =
+                diasSemana[
+                    fecha.getDay()
+                ] +
+                " " +
+                fecha.getDate() +
+                " de " +
+                mesesTexto[
+                    fecha.getMonth()
+                ];
+
+            diasInasistencias.push(
+                textoFecha
+            );
         }
     );
-
 }
-
-/*
- * ------------------------------------------------
- * CONVERTIR FECHAS A TEXTO
- * ------------------------------------------------
- */
-
-const mesesTexto = [
-    "enero",
-    "febrero",
-    "marzo",
-    "abril",
-    "mayo",
-    "junio",
-    "julio",
-    "agosto",
-    "septiembre",
-    "octubre",
-    "noviembre",
-    "diciembre"
-];
 
 const textoDiasInasistencias =
     diasInasistencias.length > 0
-        ? diasInasistencias
-            .map(
-                fecha =>
-                    fecha.getDate() +
-                    " de " +
-                    mesesTexto[
-                        fecha.getMonth()
-                    ]
-            )
-            .join(", ")
+        ? diasInasistencias.join(", ")
         : "no registra inasistencias";
 
 /*
  * ------------------------------------------------
- * DATOS PARA LOS MODELOS
+ * DATOS PARA EL MODELO
  * ------------------------------------------------
  */
 
@@ -2122,7 +2121,7 @@ const mensaje =
 
 /*
  * ------------------------------------------------
- * ABRIR WHATSAPP CON EL MENSAJE
+ * ABRIR WHATSAPP
  * ------------------------------------------------
  */
 
@@ -2146,7 +2145,6 @@ botonMensaje
 fila.appendChild(
 celdaMensaje
 );
-
 const celdaLlamar = document.createElement("td");
 
 const botonLlamar = document.createElement("button");
