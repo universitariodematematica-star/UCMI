@@ -967,13 +967,13 @@ function mostrarRegistrosAsistencia(
                         );
 
 
-                    celda.textContent =
-                        sesion
-                            ? (
-                                sesion.asistencia ||
-                                "?"
-                            )
-                            : "";
+                        celda.textContent =
+                            sesion
+                                ? (
+                                    (sesion.asistencia || "?")
+                                        .charAt(0)
+                                )
+                                : "";
 
                     fila.appendChild(
                         celda
