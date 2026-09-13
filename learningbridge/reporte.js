@@ -114,55 +114,6 @@ const fechaActual =
 
 while (fechaActual < fechaFinCurso) {
 
-    const nombreDia =
-        DIAS_SEMANA_CALCULO[
-            fechaActual.getDay()
-        ];
-
-    if (
-        configuracion.dias &&
-        configuracion.dias[nombreDia] === true
-    ) {
-        totalClases++;
-    }
-
-    fechaActual.setDate(
-        fechaActual.getDate() + 1
-    );
-}
-
-return totalClases;
-
-}
-let totalClases = 0;
-
-const fechaActual =
-    new Date(fechaInicioCurso);
-
-while (fechaActual < fechaFinCurso) {
-
-    const nombreDia =
-        DIAS_SEMANA_CALCULO[
-            fechaActual.getDay()
-        ];
-
-    if (
-        configuracion.dias &&
-        configuracion.dias[nombreDia] === true
-    ) {
-
-        totalClases++;
-
-    }
-
-    fechaActual.setDate(
-        fechaActual.getDate() + 1
-    );
-}
-
-return totalClases;
-
-}
 
 /* ============================================================
 OBTENER PRIMERA FECHA DEL GRUPO
