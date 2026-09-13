@@ -1892,23 +1892,182 @@ botonMensaje.addEventListener("click", function(event) {
 
 event.stopPropagation();
 
-const telefono = alumno.telefono || alumno.celular || alumno.whatsapp;
+const telefono =
+    alumno.telefono ||
+    alumno.celular ||
+    alumno.whatsapp;
 
 if (!telefono) {
-    alert("El estudiante no tiene un número de teléfono registrado.");
+
+    alert(
+        "El estudiante no tiene un número de teléfono registrado."
+    );
+
     return;
+
 }
 
-let numero = String(telefono).replace(/\D/g, "");
+let numero =
+    String(telefono).replace(
+        /\D/g,
+        ""
+    );
 
 if (numero.startsWith("0")) {
-    numero = "593" + numero.substring(1);
+
+    numero =
+        "593" +
+        numero.substring(1);
+
 }
 
-const urlWhatsApp =
-    "whatsapp://send?phone=" + numero;
+/*
+ * ------------------------------------------------
+ * OBTENER PORCENTAJES DEL ESTUDIANTE
+ * ------------------------------------------------
+ */
 
-window.location.href = urlWhatsApp;
+const porcentajes =
+    calcularPorcentajesAsistencia(
+        alumno
+    );
+
+/*
+ * ------------------------------------------------
+ * DATOS PARA EL MENSAJE
+ * ------------------------------------------------
+ */
+
+const primerNombre =
+    String(
+        alumno.nombres || ""
+    )
+    .trim()
+    .split(/\s+/)[0];
+
+/*
+ * ------------------------------------------------
+ * INASISTENCIAS DEL ESTUDIANTE
+ * ------------------------------------------------
+ */
+
+const diasInasistencias = [];
+
+if (
+    Array.isArray(
+        alumno.sesiones
+    )
+) {
+
+    alumno.sesiones.forEach(
+        sesion => {
+
+            if (!sesion.fecha) {
+                return;
+            }
+
+            const fecha =
+                new Date(
+                    sesion.fecha
+                );
+
+            if (
+                isNaN(
+                    fecha.getTime()
+                )
+            ) {
+                return;
+            }
+
+            fecha.setHours(
+                0,
+                0,
+                0,
+                0
+            );
+
+            const asistencia =
+                String(
+                    sesion.asistencia || ""
+                )
+                .trim()
+                .toUpperCase();
+
+            if (
+                !asistencia.startsWith("A")
+            ) {
+                return;
+            }
+
+            diasInasistencias.push(
+                sesion.fecha
+            );
+
+        }
+    );
+
+}
+
+const textoDiasInasistencias =
+    diasInasistencias.length > 0
+        ? diasInasistencias.join(", ")
+        : "no registra inasistencias";
+
+/*
+ * ------------------------------------------------
+ * DATOS QUE UTILIZAN LOS MODELOS
+ * ------------------------------------------------
+ */
+
+const datosMensaje = {
+
+    primerNombre,
+
+    textoDiasInasistencias,
+
+    porcentajeActual:
+        porcentajes.porcentajeEfectivo,
+
+    porcentajeProyectado:
+        porcentajes.porcentajeProyectado
+
+};
+
+/*
+ * ------------------------------------------------
+ * SELECCIONAR MODELO
+ * ------------------------------------------------
+ */
+
+const indiceModelo =
+    Math.floor(
+        Math.random() *
+        modelosMensajeInasistencia.length
+    );
+
+const mensaje =
+    modelosMensajeInasistencia[
+        indiceModelo
+    ](
+        datosMensaje
+    );
+
+/*
+ * ------------------------------------------------
+ * ABRIR WHATSAPP CON EL MENSAJE
+ * ------------------------------------------------
+ */
+
+const urlWhatsApp =
+    "whatsapp://send?phone=" +
+    numero +
+    "&text=" +
+    encodeURIComponent(
+        mensaje
+    );
+
+window.location.href =
+    urlWhatsApp;
 
 });
 
