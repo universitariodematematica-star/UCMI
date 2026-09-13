@@ -1940,76 +1940,76 @@ botonMensaje.style.padding = "8px 12px";
 botonMensaje.style.borderRadius = "5px";
 botonMensaje.style.cursor = "pointer";
 
-botonMensaje.addEventListener(
-"click",
-function(event) {
+botonMensaje.addEventListener("click", function(event) {
 
-    event.stopPropagation();
+event.stopPropagation();
 
-    // Aquí se incorporará posteriormente
-    // la lógica para enviar el mensaje.
+const telefono = alumno.telefono || alumno.celular || alumno.whatsapp;
 
+if (!telefono) {
+    alert("El estudiante no tiene un número de teléfono registrado.");
+    return;
 }
 
-);
+let numero = String(telefono).replace(/\D/g, "");
 
-celdaMensaje.appendChild(
-botonMensaje
-);
+if (numero.startsWith("0")) {
+    numero = "593" + numero.substring(1);
+}
 
-fila.appendChild(
-celdaMensaje
-);
+const urlWhatsApp =
+    "whatsapp://send?phone=" + numero;
 
-const celdaLlamar =
-document.createElement("td");
+window.location.href = urlWhatsApp;
 
-const botonLlamar =
-document.createElement("button");
+});
+
+celdaMensaje.appendChild(botonMensaje);
+
+fila.appendChild(celdaMensaje);
+
+const celdaLlamar = document.createElement("td");
+
+const botonLlamar = document.createElement("button");
 
 botonLlamar.type = "button";
 
-botonLlamar.textContent =
-"Llamar";
+botonLlamar.textContent = "Llamar";
 
-botonLlamar.style.backgroundColor =
-"#178a75";
+botonLlamar.style.backgroundColor = "#178a75";
+botonLlamar.style.color = "white";
+botonLlamar.style.border = "none";
+botonLlamar.style.padding = "8px 12px";
+botonLlamar.style.borderRadius = "5px";
+botonLlamar.style.cursor = "pointer";
 
-botonLlamar.style.color =
-"white";
+botonLlamar.addEventListener("click", function(event) {
 
-botonLlamar.style.border =
-"none";
+event.stopPropagation();
 
-botonLlamar.style.padding =
-"8px 12px";
+const telefono = alumno.telefono || alumno.celular || alumno.whatsapp;
 
-botonLlamar.style.borderRadius =
-"5px";
-
-botonLlamar.style.cursor =
-"pointer";
-
-botonLlamar.addEventListener(
-"click",
-function(event) {
-
-    event.stopPropagation();
-
-    // Aquí se incorporará posteriormente
-    // la lógica para llamar.
-
+if (!telefono) {
+    alert("El estudiante no tiene un número de teléfono registrado.");
+    return;
 }
 
-);
+let numero = String(telefono).replace(/\D/g, "");
 
-celdaLlamar.appendChild(
-botonLlamar
-);
+if (numero.startsWith("0")) {
+    numero = "593" + numero.substring(1);
+}
 
-fila.appendChild(
-celdaLlamar
-);
+const urlWhatsApp =
+    "whatsapp://send?phone=" + numero;
+
+window.location.href = urlWhatsApp;
+
+});
+
+celdaLlamar.appendChild(botonLlamar);
+
+fila.appendChild(celdaLlamar);
 
 
 
