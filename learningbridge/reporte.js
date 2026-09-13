@@ -1550,6 +1550,11 @@ if (btnFiltrar) {
                     "filtroAsistencia"
                 ).value;
 
+           const filtroGrupoSeleccionado =
+             document.getElementById(
+                 "filtroGrupo"
+             ).value;
+
 
             /*
              * ------------------------------------------------
@@ -1643,80 +1648,107 @@ if (btnFiltrar) {
              * ------------------------------------------------
              */
 
-            const registrosFiltrados =
-                registrosFiltradosPorFecha.filter(
-                    alumno => {
+const registrosFiltrados =
+    registrosFiltradosPorFecha
+        .filter(
+            alumno => {
 
-                        /*
-                         * Obtener solamente las marcas
-                         * correspondientes a las sesiones
-                         * seleccionadas.
-                         */
+                /*
+                 * ------------------------------------------------
+                 * FILTRO POR ESTADO DE ASISTENCIA
+                 * ------------------------------------------------
+                 */
 
-                        const tieneInasistencia =
-                            alumno.sesiones.some(
-                                sesion => {
+                const tieneInasistencia =
+                    alumno.sesiones.some(
+                        sesion => {
 
-                                    const asistencia =
-                                        String(
-                                            sesion.asistencia || ""
-                                        )
-                                            .trim()
-                                            .toUpperCase();
+                            const asistencia =
+                                String(
+                                    sesion.asistencia || ""
+                                )
+                                    .trim()
+                                    .toUpperCase();
 
-                                    return (
-                                        asistencia.charAt(0) ===
-                                        "A"
-                                    );
-
-                                }
+                            return (
+                                asistencia.charAt(0) ===
+                                "A"
                             );
 
-
-                        /*
-                         * TODOS
-                         */
-
-                        if (
-                            filtroEstado ===
-                            "todos"
-                        ) {
-                            return true;
                         }
+                    );
 
 
-                        /*
-                         * ASISTENTES
-                         *
-                         * No debe existir ninguna A.
-                         */
+                /*
+                 * TODOS
+                 */
 
-                        if (
-                            filtroEstado ===
-                            "asistentes"
-                        ) {
-                            return !tieneInasistencia;
-                        }
+                if (
+                    filtroEstado ===
+                    "todos"
+                ) {
+                    return true;
+                }
 
 
-                        /*
-                         * INASISTENTES
-                         *
-                         * Debe existir al menos una A.
-                         */
+                /*
+                 * ASISTENTES
+                 *
+                 * No tiene ninguna A.
+                 */
 
-                        if (
-                            filtroEstado ===
-                            "inasistentes"
-                        ) {
-                            return tieneInasistencia;
-                        }
+                if (
+                    filtroEstado ===
+                    "asistentes"
+                ) {
+                    return !tieneInasistencia;
+                }
 
 
-                        return true;
+                /*
+                 * INASISTENTES
+                 *
+                 * Tiene al menos una A.
+                 */
 
-                    }
+                if (
+                    filtroEstado ===
+                    "inasistentes"
+                ) {
+                    return tieneInasistencia;
+                }
+
+
+                return true;
+
+            }
+        )
+        .filter(
+            alumno => {
+
+                /*
+                 * ------------------------------------------------
+                 * FILTRO POR GRUPO
+                 * ------------------------------------------------
+                 *
+                 * "todos" = no filtrar por grupo.
+                 * Cualquier otro valor = solamente ese grupo.
+                 */
+
+                if (
+                    filtroGrupoSeleccionado ===
+                    "todos"
+                ) {
+                    return true;
+                }
+
+                return (
+                    alumno.grupo ===
+                    filtroGrupoSeleccionado
                 );
+
+            }
+        );
 
 
             /*
