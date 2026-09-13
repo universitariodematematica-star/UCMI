@@ -1580,27 +1580,86 @@ filaEncabezado.appendChild(
  * --------------------------------------------------------
  */
 
-const encabezadoProyectado = document.createElement("th");
-encabezadoProyectado.textContent = "% proyectado";
-filaEncabezado.appendChild(encabezadoProyectado);
+const encabezadoProyectado =
+document.createElement("th");
 
-const encabezadoJustificacion = document.createElement("th");
-encabezadoJustificacion.textContent = "Justificación";
-filaEncabezado.appendChild(encabezadoJustificacion);
+encabezadoProyectado.textContent =
+"% proyectado";
 
-const encabezadoMensaje = document.createElement("th");
-encabezadoMensaje.textContent = "Enviar mensaje";
-filaEncabezado.appendChild(encabezadoMensaje);
+filaEncabezado.appendChild(
+encabezadoProyectado
+);
 
-const encabezadoLlamar = document.createElement("th");
-encabezadoLlamar.textContent = "Llamar";
-filaEncabezado.appendChild(encabezadoLlamar);
+/*
 
-fechas.forEach(fecha => {
-const th = document.createElement("th");
-th.textContent = fecha.toLocaleDateString();
-filaEncabezado.appendChild(th);
-});
+FECHAS
+
+*/
+
+fechas.forEach(
+fecha => {
+
+    const th =
+        document.createElement("th");
+
+    th.textContent =
+        fecha.toLocaleDateString();
+
+    filaEncabezado.appendChild(
+        th
+    );
+
+}
+
+);
+
+/*
+
+JUSTIFICACIÓN
+
+*/
+
+const encabezadoJustificacion =
+document.createElement("th");
+
+encabezadoJustificacion.textContent =
+"Justificación";
+
+filaEncabezado.appendChild(
+encabezadoJustificacion
+);
+
+/*
+
+ENVIAR MENSAJE
+
+*/
+
+const encabezadoMensaje =
+document.createElement("th");
+
+encabezadoMensaje.textContent =
+"Enviar mensaje";
+
+filaEncabezado.appendChild(
+encabezadoMensaje
+);
+
+/*
+
+LLAMAR
+
+*/
+
+const encabezadoLlamar =
+document.createElement("th");
+
+encabezadoLlamar.textContent =
+"Llamar";
+
+filaEncabezado.appendChild(
+encabezadoLlamar
+);
 
 
     tabla.appendChild(
@@ -1636,6 +1695,102 @@ registros.forEach(
         fila.appendChild(
             celdaNombre
         );
+
+       const celdaMensaje =
+document.createElement("td");
+
+const botonMensaje =
+document.createElement("button");
+
+botonMensaje.type =
+"button";
+
+botonMensaje.textContent =
+"Enviar mensaje";
+
+botonMensaje.style.backgroundColor =
+"#178a75";
+
+botonMensaje.style.color =
+"white";
+
+botonMensaje.style.border =
+"none";
+
+botonMensaje.style.padding =
+"8px 12px";
+
+botonMensaje.style.borderRadius =
+"5px";
+
+botonMensaje.style.cursor =
+"pointer";
+
+botonMensaje.addEventListener(
+"click",
+function(evento) {
+
+    evento.stopPropagation();
+
+}
+
+);
+
+celdaMensaje.appendChild(
+botonMensaje
+);
+
+fila.appendChild(
+celdaMensaje
+);
+
+       const celdaLlamar =
+document.createElement("td");
+
+const botonLlamar =
+document.createElement("button");
+
+botonLlamar.type =
+"button";
+
+botonLlamar.textContent =
+"Llamar";
+
+botonLlamar.style.backgroundColor =
+"#178a75";
+
+botonLlamar.style.color =
+"white";
+
+botonLlamar.style.border =
+"none";
+
+botonLlamar.style.padding =
+"8px 12px";
+
+botonLlamar.style.borderRadius =
+"5px";
+
+botonLlamar.style.cursor =
+"pointer";
+
+botonLlamar.addEventListener(
+"click",
+function(evento) {
+
+    evento.stopPropagation();
+
+}
+
+);
+
+celdaLlamar.appendChild(
+botonLlamar
+);
+
+fila.appendChild(
+celdaLlamar
+);
 
 
         /*
