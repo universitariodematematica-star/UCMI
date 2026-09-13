@@ -917,79 +917,151 @@ function mostrarRegistrosAsistencia(
     );
 
 
-    /*
-     * --------------------------------------------------------
-     * ALUMNOS
-     * --------------------------------------------------------
-     */
+   /*
+ * --------------------------------------------------------
+ * ALUMNOS
+ * --------------------------------------------------------
+ */
 
-    registros.forEach(
-        alumno => {
+registros.forEach(
+    alumno => {
 
-            const fila =
-                document.createElement("tr");
-
-
-            const celdaNombre =
-                document.createElement("td");
-
-            celdaNombre.textContent =
-                `${alumno.apellidos} ${alumno.nombres}`;
-
-            fila.appendChild(
-                celdaNombre
-            );
+        const fila =
+            document.createElement("tr");
 
 
-            const celdaGrupo =
-                document.createElement("td");
+        /*
+         * ------------------------------------------------
+         * NOMBRE DEL ALUMNO
+         * ------------------------------------------------
+         */
 
-            celdaGrupo.textContent =
-                alumno.grupo;
+        const celdaNombre =
+            document.createElement("td");
 
-            fila.appendChild(
-                celdaGrupo
-            );
+        celdaNombre.textContent =
+            `${alumno.apellidos} ${alumno.nombres}`;
 
-
-            fechas.forEach(
-                fecha => {
-
-                    const celda =
-                        document.createElement("td");
-
-                    const sesion =
-                        alumno.sesiones.find(
-                            registro =>
-                                registro.fecha &&
-                                registro.fecha.getTime() ===
-                                fecha.getTime()
-                        );
+        fila.appendChild(
+            celdaNombre
+        );
 
 
-                        celda.textContent =
-                            sesion
-                                ? (
-                                    (sesion.asistencia || "?")
-                                        .charAt(0)
-                                )
-                                : "";
+        /*
+         * ------------------------------------------------
+         * GRUPO
+         * ------------------------------------------------
+         */
 
-                    fila.appendChild(
-                        celda
+        const celdaGrupo =
+            document.createElement("td");
+
+        celdaGrupo.textContent =
+            alumno.grupo;
+
+        fila.appendChild(
+            celdaGrupo
+        );
+
+
+        /*
+         * ------------------------------------------------
+         * ASISTENCIAS
+         * ------------------------------------------------
+         */
+
+        fechas.forEach(
+            fecha => {
+
+                const celda =
+                    document.createElement("td");
+
+                const sesion =
+                    alumno.sesiones.find(
+                        registro =>
+                            registro.fecha &&
+                            registro.fecha.getTime() ===
+                            fecha.getTime()
                     );
 
-                }
-            );
+                celda.textContent =
+                    sesion
+                        ? (
+                            (sesion.asistencia || "?")
+                                .charAt(0)
+                        )
+                        : "";
+
+                fila.appendChild(
+                    celda
+                );
+
+            }
+        );
 
 
-            tabla.appendChild(
-                fila
-            );
+        /*
+         * ------------------------------------------------
+         * SELECCIONAR ALUMNO
+         * ------------------------------------------------
+         */
 
-        }
-    );
+        fila.style.cursor =
+            "pointer";
 
+        fila.addEventListener(
+            "click",
+            function() {
+
+                /*
+                 * Quitar selección anterior.
+                 */
+
+                tabla
+                    .querySelectorAll(
+                        "tr.fila-alumno-seleccionada"
+                    )
+                    .forEach(
+                        filaSeleccionada => {
+
+                            filaSeleccionada.classList.remove(
+                                "fila-alumno-seleccionada"
+                            );
+
+                            filaSeleccionada.style.backgroundColor =
+                                "";
+
+                        }
+                    );
+
+
+                /*
+                 * Seleccionar esta fila.
+                 */
+
+                fila.classList.add(
+                    "fila-alumno-seleccionada"
+                );
+
+                fila.style.backgroundColor =
+                    "#7fffd4";
+
+            }
+        );
+
+
+        /*
+         * ------------------------------------------------
+         * AGREGAR FILA A LA TABLA
+         * ------------------------------------------------
+         */
+
+        tabla.appendChild(
+            fila
+        );
+
+    }
+);
 
     /*
      * --------------------------------------------------------
@@ -1014,6 +1086,7 @@ tabla
             "nowrap";
 
     });
+
 
 /*
  * --------------------------------------------------------
