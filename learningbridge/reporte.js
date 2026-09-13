@@ -42,6 +42,89 @@ let configuracionGrupos = [];
 
 let registrosAsistencia = [];
 
+const DIAS_SEMANA_CALCULO = [
+"Domingo",
+"Lunes",
+"Martes",
+"Miércoles",
+"Jueves",
+"Viernes",
+"Sábado"
+];
+
+/*
+
+============================================================
+CALCULAR TOTAL DE CLASES DEL GRUPO DURANTE 7 MESES
+============================================================
+*/
+
+function calcularTotalClasesGrupo(
+grupo,
+fechaInicio
+) {
+
+if (!grupo || !fechaInicio) {
+    return 0;
+}
+
+const configuracion =
+    configuracionGrupos.find(
+        item =>
+            String(item.Grupo).trim() ===
+            String(grupo).trim()
+    );
+
+if (!configuracion) {
+    return 0;
+}
+
+const fechaInicioCurso =
+    new Date(fechaInicio);
+
+fechaInicioCurso.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+const fechaFinCurso =
+    new Date(fechaInicioCurso);
+
+fechaFinCurso.setMonth(
+    fechaFinCurso.getMonth() + 7
+);
+
+let totalClases = 0;
+
+const fechaActual =
+    new Date(fechaInicioCurso);
+
+while (fechaActual < fechaFinCurso) {
+
+    const nombreDia =
+        DIAS_SEMANA_CALCULO[
+            fechaActual.getDay()
+        ];
+
+    if (
+        configuracion[nombreDia] === true
+    ) {
+
+        totalClases++;
+
+    }
+
+    fechaActual.setDate(
+        fechaActual.getDate() + 1
+    );
+}
+
+return totalClases;
+
+}
+
 const fechas = [];
 
 registrosAsistencia.forEach(alumno => {
@@ -70,10 +153,17 @@ registrosAsistencia.forEach(alumno => {
 
         fechas.push(fecha);
     });
+
 });
 
 if (fechas.length === 0) {
     return null;
+}
+
+fechas.sort((a, b) => a - b);
+
+return fechas[0];
+
 }
 
 fechas.sort((a, b) => a - b);
