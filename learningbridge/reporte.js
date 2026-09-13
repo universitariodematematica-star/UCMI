@@ -42,6 +42,44 @@ let configuracionGrupos = [];
 
 let registrosAsistencia = [];
 
+const fechas = [];
+
+registrosAsistencia.forEach(alumno => {
+
+    if (alumno.grupo !== grupo) {
+        return;
+    }
+
+    if (!Array.isArray(alumno.sesiones)) {
+        return;
+    }
+
+    alumno.sesiones.forEach(sesion => {
+
+        if (!sesion.fecha) {
+            return;
+        }
+
+        const fecha = new Date(sesion.fecha);
+
+        if (isNaN(fecha.getTime())) {
+            return;
+        }
+
+        fecha.setHours(0, 0, 0, 0);
+
+        fechas.push(fecha);
+    });
+});
+
+if (fechas.length === 0) {
+    return null;
+}
+
+fechas.sort((a, b) => a - b);
+
+return fechas[0];
+
 window.configuracionGrupos = configuracionGrupos;
 window.registrosAsistencia = registrosAsistencia;
 
@@ -59,6 +97,55 @@ const DIAS_SEMANA = [
     "Sábado",
     "Domingo"
 ];
+
+if (!grupo || !fechaInicio) {
+    return 0;
+}
+
+const configuracion = configuracionGrupos.find(
+    item => item.grupo === grupo
+);
+
+if (!configuracion) {
+    console.warn(
+        "No se encontró configuración para el grupo:",
+        grupo
+    );
+
+    return 0;
+}
+
+const inicio = new Date(fechaInicio);
+
+inicio.setHours(0, 0, 0, 0);
+
+const fin = new Date(inicio);
+
+fin.setMonth(fin.getMonth() + 7);
+
+fin.setHours(0, 0, 0, 0);
+
+let totalClases = 0;
+
+const fecha = new Date(inicio);
+
+while (fecha < fin) {
+
+    const diaSemana = fecha.getDay();
+
+    const nombreDia =
+        DIAS_SEMANA[
+            diaSemana === 0 ? 6 : diaSemana - 1
+        ];
+
+    if (configuracion[nombreDia] === true) {
+        totalClases++;
+    }
+
+    fecha.setDate(fecha.getDate() + 1);
+}
+
+return totalClases;
 
 
 /* ============================================================
