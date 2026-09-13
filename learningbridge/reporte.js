@@ -2057,6 +2057,134 @@ if (archivoAsistencia) {
 
 }
 
+```js
+/*
+ * ==================================================
+ * BOTÓN PREPARAR INFORME
+ * ==================================================
+ */
+
+document
+    .getElementById("btnPrepararInforme")
+    .addEventListener("click", function() {
+
+        /*
+         * ----------------------------------------------
+         * OBTENER FECHAS
+         * ----------------------------------------------
+         */
+
+        const hoy = new Date();
+
+        hoy.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+        /*
+         * ----------------------------------------------
+         * CALCULAR EL LUNES DE LA SEMANA ACTUAL
+         * ----------------------------------------------
+         */
+
+        const lunesActual =
+            new Date(hoy);
+
+        const diaSemana =
+            hoy.getDay();
+
+        const diasDesdeLunes =
+            diaSemana === 0
+                ? 6
+                : diaSemana - 1;
+
+        lunesActual.setDate(
+            hoy.getDate() -
+            diasDesdeLunes
+        );
+
+        /*
+         * ----------------------------------------------
+         * FORMATEAR FECHAS PARA LOS INPUT DATE
+         * ----------------------------------------------
+         */
+
+        const formatearFecha =
+            fecha => {
+
+                const anio =
+                    fecha.getFullYear();
+
+                const mes =
+                    String(
+                        fecha.getMonth() + 1
+                    ).padStart(2, "0");
+
+                const dia =
+                    String(
+                        fecha.getDate()
+                    ).padStart(2, "0");
+
+                return `${anio}-${mes}-${dia}`;
+            };
+
+        /*
+         * ----------------------------------------------
+         * CONFIGURAR FILTROS
+         * ----------------------------------------------
+         */
+
+        document
+            .getElementById(
+                "filtroAsistencia"
+            )
+            .value = "inasistentes";
+
+        document
+            .getElementById(
+                "fechaInicio"
+            )
+            .value =
+                formatearFecha(
+                    lunesActual
+                );
+
+        document
+            .getElementById(
+                "fechaFin"
+            )
+            .value =
+                formatearFecha(
+                    hoy
+                );
+
+        document
+            .getElementById(
+                "filtroGrupo"
+            )
+            .value = "todos";
+
+        /*
+         * ----------------------------------------------
+         * EJECUTAR EL FILTRO EXISTENTE
+         * ----------------------------------------------
+         */
+
+        const btnFiltrar =
+            document.getElementById(
+                "btnFiltrar"
+            );
+
+        if (btnFiltrar) {
+            btnFiltrar.click();
+        }
+
+    });
+```
+
+
 
 /* ============================================================
    BOTÓN FILTRAR
