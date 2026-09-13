@@ -1953,8 +1953,6 @@ fila.appendChild(
             celdaJustificacion
         );
 
-       const celdaMensaje = document.createElement("td");
-
 const botonMensaje = document.createElement("button");
 botonMensaje.type = "button";
 botonMensaje.textContent = "Enviar mensaje";
