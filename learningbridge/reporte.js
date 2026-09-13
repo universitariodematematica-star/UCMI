@@ -1015,6 +1015,21 @@ tabla
 
     });
 
+/*
+ * --------------------------------------------------------
+ * ALUMNO Y GRUPO ALINEADOS A LA IZQUIERDA
+ * --------------------------------------------------------
+ */
+
+tabla
+    .querySelectorAll("th:nth-child(1), td:nth-child(1), th:nth-child(2), td:nth-child(2)")
+    .forEach(celda => {
+
+        celda.style.textAlign =
+            "left";
+
+    });
+
 
     contenedor.appendChild(
         tabla
