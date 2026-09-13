@@ -1186,306 +1186,328 @@ CALCULAR PORCENTAJES DE ASISTENCIA
 function calcularPorcentajesAsistencia(alumno) {
 
 if (!alumno || !alumno.grupo) {
-    return {
-        porcentajeEfectivo: 0,
-        porcentajeProyectado: 0
-    };
+return {
+porcentajeEfectivo: 0,
+porcentajeProyectado: 0
+};
 }
 
 /*
- * ------------------------------------------------
- * FECHA INICIAL DEL GRUPO
- * ------------------------------------------------
- */
+
+RECUPERAR EL REGISTRO ORIGINAL
+IMPORTANTE:
+"alumno" puede venir de un filtro de fechas.
+Por eso NO debemos utilizar sus sesiones para
+calcular los porcentajes.
+Aquí recuperamos el alumno original desde
+registrosAsistencia, donde están TODAS sus
+sesiones.
+
+*/
+
+const alumnoOriginal =
+registrosAsistencia.find(
+registro =>
+registro.grupo === alumno.grupo &&
+String(registro.studentId || "").trim() ===
+String(alumno.studentId || "").trim()
+);
+
+if (!alumnoOriginal) {
+return {
+porcentajeEfectivo: 0,
+porcentajeProyectado: 0
+};
+}
+
+/*
+
+FECHA INICIAL DEL GRUPO
+
+*/
 
 const primeraFechaGrupo =
-    obtenerPrimeraFechaGrupo(
-        alumno.grupo
-    );
+obtenerPrimeraFechaGrupo(
+alumno.grupo
+);
 
 if (!primeraFechaGrupo) {
-    return {
-        porcentajeEfectivo: 0,
-        porcentajeProyectado: 0
-    };
+return {
+porcentajeEfectivo: 0,
+porcentajeProyectado: 0
+};
 }
 
 /*
- * ------------------------------------------------
- * TOTAL DE CLASES DEL GRUPO EN 7 MESES
- *
- * ESTE ES EL DENOMINADOR.
- *
- * NO DEPENDE DEL RANGO SELECCIONADO
- * EN EL INFORME.
- * ------------------------------------------------
- */
+
+TOTAL DE CLASES DEL GRUPO EN 7 MESES
+ESTE ES EL DENOMINADOR.
+NO DEPENDE DEL RANGO SELECCIONADO
+EN EL INFORME.
+
+*/
 
 const totalClasesCurso =
-    calcularTotalClasesGrupo(
-        alumno.grupo,
-        primeraFechaGrupo
-    );
+calcularTotalClasesGrupo(
+alumno.grupo,
+primeraFechaGrupo
+);
 
 if (totalClasesCurso <= 0) {
-    return {
-        porcentajeEfectivo: 0,
-        porcentajeProyectado: 0
-    };
+return {
+porcentajeEfectivo: 0,
+porcentajeProyectado: 0
+};
 }
 
 /*
- * ------------------------------------------------
- * HOY
- * ------------------------------------------------
- */
+
+HOY
+
+*/
 
 const hoy =
-    new Date();
+new Date();
 
 hoy.setHours(
-    0,
-    0,
-    0,
-    0
+0,
+0,
+0,
+0
 );
 
 /*
- * ------------------------------------------------
- * LUNES DE LA SEMANA ACTUAL
- * ------------------------------------------------
- */
+
+LUNES DE LA SEMANA ACTUAL
+
+*/
 
 const lunesSemana =
-    new Date(hoy);
+new Date(hoy);
 
 const diaSemana =
-    lunesSemana.getDay();
+lunesSemana.getDay();
 
 const diferenciaLunes =
-    diaSemana === 0
-        ? 6
-        : diaSemana - 1;
+diaSemana === 0
+? 6
+: diaSemana - 1;
 
 lunesSemana.setDate(
-    lunesSemana.getDate() -
-    diferenciaLunes
+lunesSemana.getDate() -
+diferenciaLunes
 );
 
 lunesSemana.setHours(
-    0,
-    0,
-    0,
-    0
+0,
+0,
+0,
+0
 );
 
 /*
- * ------------------------------------------------
- * FIN DEL CURSO
- *
- * SOLO SE CONSIDERAN LAS SESIONES DENTRO
- * DE LOS 7 MESES DEL CURSO.
- * ------------------------------------------------
- */
+
+FIN DEL CURSO
+
+*/
 
 const finCurso =
-    new Date(
-        primeraFechaGrupo
-    );
+new Date(
+primeraFechaGrupo
+);
 
 finCurso.setHours(
-    0,
-    0,
-    0,
-    0
+0,
+0,
+0,
+0
 );
 
 finCurso.setMonth(
-    finCurso.getMonth() + 7
+finCurso.getMonth() + 7
 );
 
 finCurso.setHours(
-    0,
-    0,
-    0,
-    0
+0,
+0,
+0,
+0
 );
 
 /*
- * ------------------------------------------------
- * CONTADORES
- * ------------------------------------------------
- */
+
+CONTADORES
+
+*/
 
 let inasistenciasAntesSemana = 0;
 
 let inasistenciasSemanaActual = 0;
 
 /*
- * ------------------------------------------------
- * RECORRER TODAS LAS SESIONES DEL ALUMNO
- *
- * IMPORTANTE:
- * NO SE UTILIZA fechaInicioFiltro.
- * NO SE UTILIZA fechaFinFiltro.
- * ------------------------------------------------
- */
+
+RECORRER TODAS LAS SESIONES DEL ALUMNO ORIGINAL
+IMPORTANTE:
+SE USA alumnoOriginal.sesiones
+Y NO alumno.sesiones.
+De esta manera los porcentajes NO cambian
+cuando se modifica el rango de fechas del informe.
+
+*/
 
 if (
-    Array.isArray(
-        alumno.sesiones
-    )
+Array.isArray(
+alumnoOriginal.sesiones
+)
 ) {
 
-    alumno.sesiones.forEach(
-        sesion => {
+alumnoOriginal.sesiones.forEach(
+    sesion => {
 
-            if (!sesion.fecha) {
-                return;
-            }
+        if (!sesion.fecha) {
+            return;
+        }
 
-            const fecha =
-                new Date(
-                    sesion.fecha
-                );
-
-            if (
-                isNaN(
-                    fecha.getTime()
-                )
-            ) {
-                return;
-            }
-
-            fecha.setHours(
-                0,
-                0,
-                0,
-                0
+        const fecha =
+            new Date(
+                sesion.fecha
             );
 
-            /*
-             * Fuera del período del curso
-             * no cuenta.
-             */
+        if (
+            isNaN(
+                fecha.getTime()
+            )
+        ) {
+            return;
+        }
 
-            if (
-                fecha <
-                primeraFechaGrupo ||
-                fecha >=
-                finCurso
-            ) {
-                return;
-            }
+        fecha.setHours(
+            0,
+            0,
+            0,
+            0
+        );
 
-            /*
-             * No contar fechas futuras.
-             */
+        /*
+         * Fuera del período del curso
+         * no cuenta.
+         */
 
-            if (
-                fecha >
-                hoy
-            ) {
-                return;
-            }
+        if (
+            fecha <
+            primeraFechaGrupo ||
+            fecha >=
+            finCurso
+        ) {
+            return;
+        }
 
-            /*
-             * Solo cuentan las A.
-             */
+        /*
+         * No contar fechas futuras.
+         */
 
-            const asistencia =
-                String(
-                    sesion.asistencia || ""
-                )
-                .trim()
-                .toUpperCase();
+        if (
+            fecha >
+            hoy
+        ) {
+            return;
+        }
 
-            if (
-                !asistencia.startsWith("A")
-            ) {
-                return;
-            }
+        /*
+         * Solo cuentan las A.
+         */
 
-            /*
-             * ------------------------------------
-             * EFECTIVO
-             *
-             * Todas las A anteriores al lunes
-             * de la semana actual.
-             * ------------------------------------
-             */
+        const asistencia =
+            String(
+                sesion.asistencia || ""
+            )
+            .trim()
+            .toUpperCase();
 
-            if (
-                fecha <
-                lunesSemana
-            ) {
+        if (
+            !asistencia.startsWith("A")
+        ) {
+            return;
+        }
 
-                inasistenciasAntesSemana++;
+        /*
+         * ------------------------------------
+         * EFECTIVO
+         *
+         * Todas las A anteriores al lunes
+         * de la semana actual.
+         * ------------------------------------
+         */
 
-                return;
-            }
+        if (
+            fecha <
+            lunesSemana
+        ) {
 
-            /*
-             * ------------------------------------
-             * PROYECTADO
-             *
-             * A de lunes hasta hoy.
-             * ------------------------------------
-             */
+            inasistenciasAntesSemana++;
 
-            if (
-                fecha >=
-                lunesSemana &&
-                fecha <=
-                hoy
-            ) {
+            return;
+        }
 
-                inasistenciasSemanaActual++;
-            }
+        /*
+         * ------------------------------------
+         * PROYECTADO
+         *
+         * A de lunes hasta hoy.
+         * ------------------------------------
+         */
+
+        if (
+            fecha >=
+            lunesSemana &&
+            fecha <=
+            hoy
+        ) {
+
+            inasistenciasSemanaActual++;
 
         }
-    );
+
+    }
+);
+
 }
 
 /*
- * ------------------------------------------------
- * PORCENTAJE EFECTIVO
- *
- * TODAS LAS A HASTA EL DOMINGO ANTERIOR
- * ------------------------------------------------
- */
+
+PORCENTAJE EFECTIVO
+
+*/
 
 const porcentajeEfectivo =
-    (
-        inasistenciasAntesSemana /
-        totalClasesCurso
-    ) *
-    100;
+(
+inasistenciasAntesSemana /
+totalClasesCurso
+) *
+100;
 
 /*
- * ------------------------------------------------
- * PORCENTAJE PROYECTADO
- *
- * TODAS LAS A HASTA HOY
- * ------------------------------------------------
- */
+
+PORCENTAJE PROYECTADO
+
+*/
 
 const totalInasistenciasProyectadas =
-    inasistenciasAntesSemana +
-    inasistenciasSemanaActual;
+inasistenciasAntesSemana +
+inasistenciasSemanaActual;
 
 const porcentajeProyectado =
-    (
-        totalInasistenciasProyectadas /
-        totalClasesCurso
-    ) *
-    100;
+(
+totalInasistenciasProyectadas /
+totalClasesCurso
+) *
+100;
 
 return {
 
-    porcentajeEfectivo,
+porcentajeEfectivo,
 
-    porcentajeProyectado
+porcentajeProyectado
 
 };
 
