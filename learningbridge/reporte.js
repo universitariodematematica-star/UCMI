@@ -997,20 +997,23 @@ function mostrarRegistrosAsistencia(
      * --------------------------------------------------------
      */
 
-    tabla
-        .querySelectorAll("th, td")
-        .forEach(celda => {
+tabla
+    .querySelectorAll("th, td")
+    .forEach(celda => {
 
-            celda.style.border =
-                "1px solid #ccc";
+        celda.style.border =
+            "1px solid #ccc";
 
-            celda.style.padding =
-                "8px";
+        celda.style.padding =
+            "8px";
 
-            celda.style.textAlign =
-                "center";
+        celda.style.textAlign =
+            "center";
 
-        });
+        celda.style.whiteSpace =
+            "nowrap";
+
+    });
 
 
     contenedor.appendChild(
