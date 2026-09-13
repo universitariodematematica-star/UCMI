@@ -1533,3 +1533,12 @@ console.log(
 console.log(
     "Etapa 1: lectura de Configuracion-Grupos."
 );
+
+
+/*
+ * ==================================================
+ * RECUPERAR REGISTROS PERSISTENTES
+ * ==================================================
+ */
+
+cargarRegistrosAsistenciaPersistidos();
