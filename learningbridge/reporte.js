@@ -1546,12 +1546,28 @@ if (btnFiltrar) {
 const btnLimpiarDatos =
     document.getElementById("btnLimpiarDatos");
 
-
 if (btnLimpiarDatos) {
 
     btnLimpiarDatos.addEventListener(
         "click",
         function() {
+
+            /*
+             * ------------------------------------------------
+             * CONFIRMAR ELIMINACIÓN
+             * ------------------------------------------------
+             */
+
+            const confirmar =
+                confirm(
+                    "¿Está seguro de que desea borrar todos los datos de asistencia guardados?\n\n" +
+                    "Esta acción eliminará los datos de la persistencia local " +
+                    "y limpiará la información mostrada en pantalla."
+                );
+
+            if (!confirmar) {
+                return;
+            }
 
             /*
              * ------------------------------------------------
@@ -1562,7 +1578,6 @@ if (btnLimpiarDatos) {
             localStorage.removeItem(
                 CLAVE_PERSISTENCIA_ASISTENCIA
             );
-
 
             /*
              * ------------------------------------------------
@@ -1575,17 +1590,14 @@ if (btnLimpiarDatos) {
             window.registrosAsistencia =
                 registrosAsistencia;
 
-
             /*
              * ------------------------------------------------
              * LIMPIAR PANTALLA
-             * ------------------------------------------------
-             */
+             * ------------------------------------------------ */
 
             mostrarRegistrosAsistencia(
                 registrosAsistencia
             );
-
 
             console.log(
                 "Registros de asistencia eliminados de la persistencia."
