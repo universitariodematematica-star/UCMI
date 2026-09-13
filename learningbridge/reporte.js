@@ -1743,7 +1743,6 @@ fila.appendChild(
             }
         );
 
-       ```javascript
         /*
          * ------------------------------------------------
          * JUSTIFICACIÓN
@@ -1805,7 +1804,7 @@ fila.appendChild(
         fila.appendChild(
             celdaJustificacion
         );
-```
+
 
 
 
