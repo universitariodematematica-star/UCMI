@@ -1580,34 +1580,27 @@ filaEncabezado.appendChild(
  * --------------------------------------------------------
  */
 
-const encabezadoProyectado =
-    document.createElement("th");
+const encabezadoProyectado = document.createElement("th");
+encabezadoProyectado.textContent = "% proyectado";
+filaEncabezado.appendChild(encabezadoProyectado);
 
-encabezadoProyectado.textContent =
-    "% proyectado";
+const encabezadoJustificacion = document.createElement("th");
+encabezadoJustificacion.textContent = "Justificación";
+filaEncabezado.appendChild(encabezadoJustificacion);
 
-filaEncabezado.appendChild(
-    encabezadoProyectado
-);
+const encabezadoMensaje = document.createElement("th");
+encabezadoMensaje.textContent = "Enviar mensaje";
+filaEncabezado.appendChild(encabezadoMensaje);
 
+const encabezadoLlamar = document.createElement("th");
+encabezadoLlamar.textContent = "Llamar";
+filaEncabezado.appendChild(encabezadoLlamar);
 
-    fechas.forEach(
-        fecha => {
-
-            const th =
-                document.createElement("th");
-
-            th.textContent =
-                fecha.toLocaleDateString(
-                    "es-EC"
-                );
-
-            filaEncabezado.appendChild(
-                th
-            );
-
-        }
-    );
+fechas.forEach(fecha => {
+const th = document.createElement("th");
+th.textContent = fecha.toLocaleDateString();
+filaEncabezado.appendChild(th);
+});
 
 
     tabla.appendChild(
@@ -1804,6 +1797,46 @@ fila.appendChild(
         fila.appendChild(
             celdaJustificacion
         );
+
+       const celdaMensaje = document.createElement("td");
+
+const botonMensaje = document.createElement("button");
+botonMensaje.type = "button";
+botonMensaje.textContent = "Enviar mensaje";
+
+botonMensaje.style.backgroundColor = "#178a75";
+botonMensaje.style.color = "white";
+botonMensaje.style.border = "none";
+botonMensaje.style.padding = "8px 12px";
+botonMensaje.style.borderRadius = "5px";
+botonMensaje.style.cursor = "pointer";
+
+botonMensaje.addEventListener("click", function(evento) {
+evento.stopPropagation();
+});
+
+celdaMensaje.appendChild(botonMensaje);
+fila.appendChild(celdaMensaje);
+
+       const celdaLlamar = document.createElement("td");
+
+const botonLlamar = document.createElement("button");
+botonLlamar.type = "button";
+botonLlamar.textContent = "Llamar";
+
+botonLlamar.style.backgroundColor = "#178a75";
+botonLlamar.style.color = "white";
+botonLlamar.style.border = "none";
+botonLlamar.style.padding = "8px 12px";
+botonLlamar.style.borderRadius = "5px";
+botonLlamar.style.cursor = "pointer";
+
+botonLlamar.addEventListener("click", function(evento) {
+evento.stopPropagation();
+});
+
+celdaLlamar.appendChild(botonLlamar);
+fila.appendChild(celdaLlamar);
 
 
 
