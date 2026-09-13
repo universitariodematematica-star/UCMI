@@ -1906,9 +1906,9 @@ if (numero.startsWith("0")) {
 }
 
 const urlWhatsApp =
-    "https://wa.me/" + numero;
+    "whatsapp://send?phone=" + numero;
 
-window.open(urlWhatsApp, "_blank");
+window.location.href = urlWhatsApp;
 
 });
 
@@ -1949,7 +1949,7 @@ if (numero.startsWith("0")) {
 }
 
 const urlLlamada =
-    "tel:+" + numero;
+    "whatsapp://send?phone=" + numero;
 
 window.location.href = urlLlamada;
 
