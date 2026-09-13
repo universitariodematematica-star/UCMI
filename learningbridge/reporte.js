@@ -52,13 +52,6 @@ const DIAS_SEMANA_CALCULO = [
 "Sábado"
 ];
 
-/*
-
-============================================================
-CALCULAR TOTAL DE CLASES DEL GRUPO DURANTE 7 MESES
-============================================================
-*/
-
 /* ============================================================
 CALCULAR TOTAL DE CLASES DEL GRUPO DURANTE 7 MESES
 ============================================================ */
@@ -1107,80 +1100,69 @@ window.registrosAsistencia =
  */
 
 const configuracionGuardada =
+    localStorage.getItem(
+        CLAVE_PERSISTENCIA_CONFIGURACION
+    );
 
-La diferencia importante es que desaparece completamente este segundo bloque:
 
-} catch (error) {
+if (configuracionGuardada) {
 
-console.error(
-    "Error al guardar registros de asistencia:",
-    error
-);
+    const configuracion =
+        JSON.parse(
+            configuracionGuardada
+        );
+
+
+    configuracionGrupos.length = 0;
+
+    configuracionGrupos.push(
+        ...configuracion
+    );
+
+
+    window.configuracionGrupos =
+        configuracionGrupos;
 
 }
-        localStorage.getItem(
-            CLAVE_PERSISTENCIA_CONFIGURACION
-        );
 
 
-    if (configuracionGuardada) {
+/*
+ * ----------------------------------------------------
+ * RECUPERAR SELECTOR DE GRUPOS
+ * ----------------------------------------------------
+ */
 
-        const configuracion =
-            JSON.parse(
-                configuracionGuardada
-            );
+if (
+    configuracionGrupos &&
+    configuracionGrupos.length > 0
+) {
 
+    cargarGruposEnSelector(
+        configuracionGrupos
+    );
 
-        configuracionGrupos.length = 0;
-
-        configuracionGrupos.push(
-            ...configuracion
-        );
-
-
-        window.configuracionGrupos =
-            configuracionGrupos;
-
-    }
+}
 
 
-    /*
-     * ----------------------------------------------------
-     * RECUPERAR SELECTOR DE GRUPOS
-     * ----------------------------------------------------
-     */
+/*
+ * ----------------------------------------------------
+ * MOSTRAR REGISTROS RECUPERADOS
+ * ----------------------------------------------------
+ */
 
-    if (
-        configuracionGrupos &&
-        configuracionGrupos.length > 0
-    ) {
+if (
+    registrosAsistencia &&
+    registrosAsistencia.length > 0
+) {
 
-        cargarGruposEnSelector(
-            configuracionGrupos
-        );
+    mostrarRegistrosAsistencia(
+        registrosAsistencia
+    );
 
-    }
-
-
-    /*
-     * ----------------------------------------------------
-     * MOSTRAR REGISTROS RECUPERADOS
-     * ----------------------------------------------------
-     */
-
-    if (
-        registrosAsistencia &&
-        registrosAsistencia.length > 0
-    ) {
-
-        mostrarRegistrosAsistencia(
-            registrosAsistencia
-        );
-
-    }
+}
 
 
-    return true;
+return true;
 
 
 } catch (error) {
@@ -1966,10 +1948,10 @@ if (numero.startsWith("0")) {
     numero = "593" + numero.substring(1);
 }
 
-const urlWhatsApp =
-    "whatsapp://send?phone=" + numero;
+const urlLlamada =
+    "tel:+" + numero;
 
-window.location.href = urlWhatsApp;
+window.location.href = urlLlamada;
 
 });
 
