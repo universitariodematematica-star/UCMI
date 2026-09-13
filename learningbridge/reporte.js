@@ -1522,16 +1522,147 @@ if (btnFiltrar) {
         "click",
         function() {
 
-            console.log(
-                "Filtro seleccionado:",
-                filtroGrupo
-                    ? filtroGrupo.value
-                    : null
+            /*
+             * ------------------------------------------------
+             * OBTENER FECHAS
+             * ------------------------------------------------
+             */
+
+            const fechaInicioInput =
+                document.getElementById(
+                    "fechaInicio"
+                ).value;
+
+            const fechaFinInput =
+                document.getElementById(
+                    "fechaFin"
+                ).value;
+
+
+            /*
+             * ------------------------------------------------
+             * SIN FECHAS
+             * ------------------------------------------------
+             */
+
+            if (
+                !fechaInicioInput &&
+                !fechaFinInput
+            ) {
+
+                mostrarRegistrosAsistencia(
+                    registrosAsistencia
+                );
+
+                return;
+            }
+
+
+            /*
+             * ------------------------------------------------
+             * CONVERTIR FECHAS
+             * ------------------------------------------------
+             */
+
+            const fechaInicio =
+                fechaInicioInput
+                    ? new Date(
+                        fechaInicioInput +
+                        "T00:00:00"
+                    )
+                    : null;
+
+            const fechaFin =
+                fechaFinInput
+                    ? new Date(
+                        fechaFinInput +
+                        "T23:59:59"
+                    )
+                    : null;
+
+
+            /*
+             * ------------------------------------------------
+             * FILTRAR SESIONES
+             * ------------------------------------------------
+             */
+
+            const registrosFiltrados =
+                registrosAsistencia
+                    .map(
+                        alumno => {
+
+                            const sesionesFiltradas =
+                                alumno.sesiones.filter(
+                                    sesion => {
+
+                                        if (
+                                            !sesion.fecha
+                                        ) {
+                                            return false;
+                                        }
+
+                                        if (
+                                            fechaInicio &&
+                                            sesion.fecha <
+                                            fechaInicio
+                                        ) {
+                                            return false;
+                                        }
+
+                                        if (
+                                            fechaFin &&
+                                            sesion.fecha >
+                                            fechaFin
+                                        ) {
+                                            return false;
+                                        }
+
+                                        return true;
+
+                                    }
+                                );
+
+
+                            return {
+                                ...alumno,
+                                sesiones:
+                                    sesionesFiltradas
+                            };
+
+                        }
+                    )
+                    .filter(
+                        alumno =>
+                            alumno.sesiones.length > 0
+                    );
+
+
+            /*
+             * ------------------------------------------------
+             * MOSTRAR RESULTADO
+             * ------------------------------------------------
+             */
+
+            mostrarRegistrosAsistencia(
+                registrosFiltrados
             );
 
+
             console.log(
-                "Configuración actual:",
-                configuracionGrupos
+                "Filtro por fecha aplicado:",
+                {
+                    fechaInicio:
+                        fechaInicioInput ||
+                        "sin límite",
+
+                    fechaFin:
+                        fechaFinInput ||
+                        "sin límite",
+
+                    registros:
+                        registrosFiltrados
+                }
             );
 
         }
