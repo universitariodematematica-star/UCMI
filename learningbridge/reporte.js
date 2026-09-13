@@ -1500,85 +1500,80 @@ function mostrarRegistrosAsistencia(
     );
 
 
-    fechas.sort(
-        (a, b) =>
-            a.getTime() -
-            b.getTime()
-    );
+fechas.sort(
+(a, b) =>
+a.getTime() -
+b.getTime()
+);
 
+/*
 
-    /*
-     * --------------------------------------------------------
-     * ENCABEZADO
-     * --------------------------------------------------------
-     */
+ENCABEZADO
 
-    const filaEncabezado =
-        document.createElement("tr");
+*/
 
+const filaEncabezado =
+document.createElement("tr");
 
 const encabezadoAlumno =
-    document.createElement("th");
+document.createElement("th");
 
 encabezadoAlumno.textContent =
-    "Alumno";
+"Alumno";
 
 encabezadoAlumno.style.color =
-    "white";
+"white";
 
 encabezadoAlumno.style.backgroundColor =
-    "#5c1d53";
+"#5c1d53";
 
 encabezadoAlumno.style.position =
-    "sticky";
+"sticky";
 
 encabezadoAlumno.style.left =
-    "0";
+"0";
 
 encabezadoAlumno.style.top =
-    "0";
+"0";
 
 encabezadoAlumno.style.zIndex =
-    "5";
+"5";
 
 filaEncabezado.appendChild(
-    encabezadoAlumno
+encabezadoAlumno
 );
-
 
 const encabezadoGrupo =
-    document.createElement("th");
+document.createElement("th");
 
 encabezadoGrupo.textContent =
-    "Grupo";
+"Grupo";
 
 filaEncabezado.appendChild(
-    encabezadoGrupo
+encabezadoGrupo
 );
 
-
 /*
- * --------------------------------------------------------
- * PORCENTAJE EFECTIVO
- * --------------------------------------------------------
- */
+
+PORCENTAJE EFECTIVO
+
+*/
 
 const encabezadoEfectivo =
-    document.createElement("th");
+document.createElement("th");
 
 encabezadoEfectivo.textContent =
-    "% efectivo";
+"% efectivo";
 
 filaEncabezado.appendChild(
-    encabezadoEfectivo
+encabezadoEfectivo
 );
 
-
 /*
- * --------------------------------------------------------
- * PORCENTAJE PROYECTADO
- * --------------------------------------------------------
- */
+
+PORCENTAJE PROYECTADO
+
+*/
 
 const encabezadoProyectado =
 document.createElement("th");
@@ -1661,144 +1656,45 @@ filaEncabezado.appendChild(
 encabezadoLlamar
 );
 
+tabla.appendChild(
+filaEncabezado
+);
 
-    tabla.appendChild(
-        filaEncabezado
+/*
+
+ALUMNOS
+
+*/
+
+registros.forEach(
+alumno => {
+
+    const fila =
+        document.createElement("tr");
+
+
+    /*
+     * ------------------------------------------------
+     * NOMBRE DEL ALUMNO
+     * ------------------------------------------------
+     */
+
+    const celdaNombre =
+        document.createElement("td");
+
+    celdaNombre.textContent =
+        `${alumno.apellidos} ${alumno.nombres}`;
+
+    fila.appendChild(
+        celdaNombre
     );
 
 
-   /*
- * --------------------------------------------------------
- * ALUMNOS
- * --------------------------------------------------------
- */
-
-registros.forEach(
-    alumno => {
-
-        const fila =
-            document.createElement("tr");
-
-
-        /*
-         * ------------------------------------------------
-         * NOMBRE DEL ALUMNO
-         * ------------------------------------------------
-         */
-
-        const celdaNombre =
-            document.createElement("td");
-
-        celdaNombre.textContent =
-            `${alumno.apellidos} ${alumno.nombres}`;
-
-        fila.appendChild(
-            celdaNombre
-        );
-
-       const celdaMensaje =
-document.createElement("td");
-
-const botonMensaje =
-document.createElement("button");
-
-botonMensaje.type =
-"button";
-
-botonMensaje.textContent =
-"Enviar mensaje";
-
-botonMensaje.style.backgroundColor =
-"#178a75";
-
-botonMensaje.style.color =
-"white";
-
-botonMensaje.style.border =
-"none";
-
-botonMensaje.style.padding =
-"8px 12px";
-
-botonMensaje.style.borderRadius =
-"5px";
-
-botonMensaje.style.cursor =
-"pointer";
-
-botonMensaje.addEventListener(
-"click",
-function(evento) {
-
-    evento.stopPropagation();
-
-}
-
-);
-
-celdaMensaje.appendChild(
-botonMensaje
-);
-
-fila.appendChild(
-celdaMensaje
-);
-
-       const celdaLlamar =
-document.createElement("td");
-
-const botonLlamar =
-document.createElement("button");
-
-botonLlamar.type =
-"button";
-
-botonLlamar.textContent =
-"Llamar";
-
-botonLlamar.style.backgroundColor =
-"#178a75";
-
-botonLlamar.style.color =
-"white";
-
-botonLlamar.style.border =
-"none";
-
-botonLlamar.style.padding =
-"8px 12px";
-
-botonLlamar.style.borderRadius =
-"5px";
-
-botonLlamar.style.cursor =
-"pointer";
-
-botonLlamar.addEventListener(
-"click",
-function(evento) {
-
-    evento.stopPropagation();
-
-}
-
-);
-
-celdaLlamar.appendChild(
-botonLlamar
-);
-
-fila.appendChild(
-celdaLlamar
-);
-
-
-        /*
-         * ------------------------------------------------
-         * GRUPO
-         * ------------------------------------------------
-         */
-
+    /*
+     * ------------------------------------------------
+     * GRUPO
+     * ------------------------------------------------
+     */
 const celdaGrupo =
     document.createElement("td");
 
