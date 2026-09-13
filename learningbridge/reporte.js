@@ -69,50 +69,74 @@ fechaInicio
 ) {
 
 if (!grupo || !fechaInicio) {
-    return 0;
+return 0;
 }
 
 const configuracion =
-    configuracionGrupos.find(
-        item =>
-            String(item.grupo).trim() ===
-            String(grupo).trim()
-    );
+configuracionGrupos.find(
+item =>
+String(item.grupo).trim() ===
+String(grupo).trim()
+);
 
 if (!configuracion) {
-    return 0;
+return 0;
 }
 
 const fechaInicioCurso =
-    new Date(fechaInicio);
+new Date(fechaInicio);
 
 fechaInicioCurso.setHours(
-    0,
-    0,
-    0,
-    0
+0,
+0,
+0,
+0
 );
 
 const fechaFinCurso =
-    new Date(fechaInicioCurso);
+new Date(fechaInicioCurso);
 
 fechaFinCurso.setMonth(
-    fechaFinCurso.getMonth() + 7
+fechaFinCurso.getMonth() + 7
 );
 
 fechaFinCurso.setHours(
-    0,
-    0,
-    0,
-    0
+0,
+0,
+0,
+0
 );
 
 let totalClases = 0;
 
 const fechaActual =
-    new Date(fechaInicioCurso);
+new Date(fechaInicioCurso);
 
 while (fechaActual < fechaFinCurso) {
+
+const nombreDia =
+    DIAS_SEMANA_CALCULO[
+        fechaActual.getDay()
+    ];
+
+if (
+    configuracion.dias &&
+    configuracion.dias[nombreDia] === true
+) {
+
+    totalClases++;
+
+}
+
+fechaActual.setDate(
+    fechaActual.getDate() + 1
+);
+
+}
+
+return totalClases;
+
+}
 
 
 /* ============================================================
