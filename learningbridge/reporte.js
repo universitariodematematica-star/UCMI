@@ -1934,7 +1934,7 @@ const porcentajes =
 
 /*
  * ------------------------------------------------
- * DATOS PARA EL MENSAJE
+ * OBTENER PRIMER NOMBRE
  * ------------------------------------------------
  */
 
@@ -1947,7 +1947,46 @@ const primerNombre =
 
 /*
  * ------------------------------------------------
- * INASISTENCIAS DEL ESTUDIANTE
+ * CALCULAR LUNES DE LA SEMANA ACTUAL
+ * ------------------------------------------------
+ */
+
+const hoy =
+    new Date();
+
+hoy.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+const diaSemana =
+    hoy.getDay();
+
+const diferenciaLunes =
+    diaSemana === 0
+        ? 6
+        : diaSemana - 1;
+
+const lunesSemana =
+    new Date(hoy);
+
+lunesSemana.setDate(
+    hoy.getDate() -
+    diferenciaLunes
+);
+
+lunesSemana.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+/*
+ * ------------------------------------------------
+ * OBTENER INASISTENCIAS DE LA SEMANA ACTUAL
  * ------------------------------------------------
  */
 
@@ -1986,6 +2025,13 @@ if (
                 0
             );
 
+            if (
+                fecha < lunesSemana ||
+                fecha > hoy
+            ) {
+                return;
+            }
+
             const asistencia =
                 String(
                     sesion.asistencia || ""
@@ -2000,7 +2046,7 @@ if (
             }
 
             diasInasistencias.push(
-                sesion.fecha
+                fecha
             );
 
         }
@@ -2008,14 +2054,44 @@ if (
 
 }
 
+/*
+ * ------------------------------------------------
+ * CONVERTIR FECHAS A TEXTO
+ * ------------------------------------------------
+ */
+
+const mesesTexto = [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre"
+];
+
 const textoDiasInasistencias =
     diasInasistencias.length > 0
-        ? diasInasistencias.join(", ")
+        ? diasInasistencias
+            .map(
+                fecha =>
+                    fecha.getDate() +
+                    " de " +
+                    mesesTexto[
+                        fecha.getMonth()
+                    ]
+            )
+            .join(", ")
         : "no registra inasistencias";
 
 /*
  * ------------------------------------------------
- * DATOS QUE UTILIZAN LOS MODELOS
+ * DATOS PARA LOS MODELOS
  * ------------------------------------------------
  */
 
@@ -2035,20 +2111,12 @@ const datosMensaje = {
 
 /*
  * ------------------------------------------------
- * SELECCIONAR MODELO
+ * GENERAR MENSAJE
  * ------------------------------------------------
  */
 
-const indiceModelo =
-    Math.floor(
-        Math.random() *
-        modelosMensajeInasistencia.length
-    );
-
 const mensaje =
-    modelosMensajeInasistencia[
-        indiceModelo
-    ](
+    generarMensajeInasistencia(
         datosMensaje
     );
 
@@ -2071,9 +2139,13 @@ window.location.href =
 
 });
 
-celdaMensaje.appendChild(botonMensaje);
+celdaMensaje.appendChild(
+botonMensaje
+);
 
-fila.appendChild(celdaMensaje);
+fila.appendChild(
+celdaMensaje
+);
 
 const celdaLlamar = document.createElement("td");
 
