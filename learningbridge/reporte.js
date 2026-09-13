@@ -1906,9 +1906,9 @@ if (numero.startsWith("0")) {
 }
 
 const urlWhatsApp =
-    "whatsapp://send?phone=" + numero;
+    "https://wa.me/" + numero;
 
-window.location.href = urlWhatsApp;
+window.open(urlWhatsApp, "_blank");
 
 });
 
