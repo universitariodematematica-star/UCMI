@@ -1539,15 +1539,49 @@ filaEncabezado.appendChild(
 );
 
 
-    const encabezadoGrupo =
-        document.createElement("th");
+const encabezadoGrupo =
+    document.createElement("th");
 
-    encabezadoGrupo.textContent =
-        "Grupo";
+encabezadoGrupo.textContent =
+    "Grupo";
 
-    filaEncabezado.appendChild(
-        encabezadoGrupo
-    );
+filaEncabezado.appendChild(
+    encabezadoGrupo
+);
+
+
+/*
+ * --------------------------------------------------------
+ * PORCENTAJE EFECTIVO
+ * --------------------------------------------------------
+ */
+
+const encabezadoEfectivo =
+    document.createElement("th");
+
+encabezadoEfectivo.textContent =
+    "% efectivo";
+
+filaEncabezado.appendChild(
+    encabezadoEfectivo
+);
+
+
+/*
+ * --------------------------------------------------------
+ * PORCENTAJE PROYECTADO
+ * --------------------------------------------------------
+ */
+
+const encabezadoProyectado =
+    document.createElement("th");
+
+encabezadoProyectado.textContent =
+    "% proyectado";
+
+filaEncabezado.appendChild(
+    encabezadoProyectado
+);
 
 
     fechas.forEach(
@@ -1610,15 +1644,61 @@ registros.forEach(
          * ------------------------------------------------
          */
 
-        const celdaGrupo =
-            document.createElement("td");
+const celdaGrupo =
+    document.createElement("td");
 
-        celdaGrupo.textContent =
-            alumno.grupo;
+celdaGrupo.textContent =
+    alumno.grupo;
 
-        fila.appendChild(
-            celdaGrupo
-        );
+fila.appendChild(
+    celdaGrupo
+);
+
+
+/*
+ * ------------------------------------------------
+ * CALCULAR PORCENTAJES
+ * ------------------------------------------------
+ */
+
+const porcentajes =
+    calcularPorcentajesAsistencia(
+        alumno
+    );
+
+
+/*
+ * ------------------------------------------------
+ * PORCENTAJE EFECTIVO
+ * ------------------------------------------------
+ */
+
+const celdaEfectivo =
+    document.createElement("td");
+
+celdaEfectivo.textContent =
+    porcentajes.porcentajeEfectivo.toFixed(2) + "%";
+
+fila.appendChild(
+    celdaEfectivo
+);
+
+
+/*
+ * ------------------------------------------------
+ * PORCENTAJE PROYECTADO
+ * ------------------------------------------------
+ */
+
+const celdaProyectado =
+    document.createElement("td");
+
+celdaProyectado.textContent =
+    porcentajes.porcentajeProyectado.toFixed(2) + "%";
+
+fila.appendChild(
+    celdaProyectado
+);
 
 
         /*
