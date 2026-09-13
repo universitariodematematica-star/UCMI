@@ -1017,43 +1017,42 @@ try {
 
     registrosAsistencia =
         datos.map(
-            alumno => ({
+    alumno => ({
+        apellidos:
+            alumno.apellidos,
 
-                apellidos:
-                    alumno.apellidos,
+        nombres:
+            alumno.nombres,
 
-                nombres:
-                    alumno.nombres,
+        studentId:
+            alumno.studentId,
 
-                studentId:
-                    alumno.studentId,
+        telefono:
+            alumno.telefono || "",
 
-                email:
-                    alumno.email,
+        email:
+            alumno.email,
 
-                grupo:
-                    alumno.grupo,
+        grupo:
+            alumno.grupo,
 
-                sesiones:
-                    (alumno.sesiones || [])
-                        .map(
-                            sesion => ({
-
-                                fecha:
+        sesiones:
+            (alumno.sesiones || [])
+                .map(
+                    sesion => ({
+                        fecha:
+                            sesion.fecha
+                                ? new Date(
                                     sesion.fecha
-                                        ? new Date(
-                                            sesion.fecha
-                                        )
-                                        : null,
+                                )
+                                : null,
 
-                                asistencia:
-                                    sesion.asistencia
-
-                            })
-                        )
-
-            })
-        );
+                        asistencia:
+                            sesion.asistencia
+                    })
+                )
+    })
+);
 
 
     window.registrosAsistencia =
