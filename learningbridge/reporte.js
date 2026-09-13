@@ -930,77 +930,68 @@ function guardarRegistrosAsistencia() {
 
 try {
 
-    const datos =
-        registrosAsistencia.map(
-            alumno => ({
+const datos =
+    registrosAsistencia.map(
+        alumno => ({
 
-                apellidos:
-                    alumno.apellidos,
+            apellidos:
+                alumno.apellidos,
 
-                nombres:
-                    alumno.nombres,
+            nombres:
+                alumno.nombres,
 
-                studentId:
-                    alumno.studentId,
+            studentId:
+                alumno.studentId,
 
-                telefono:
-                    alumno.telefono,
+            telefono:
+                alumno.telefono,
 
-                email:
-                    alumno.email,
+            email:
+                alumno.email,
 
-                grupo:
-                    alumno.grupo,
+            grupo:
+                alumno.grupo,
 
-                sesiones:
-                    alumno.sesiones.map(
-                        sesion => ({
+            sesiones:
+                alumno.sesiones.map(
+                    sesion => ({
 
-                            fecha:
-                                sesion.fecha
-                                    ? sesion.fecha.toISOString()
-                                    : null,
+                        fecha:
+                            sesion.fecha
+                                ? sesion.fecha.toISOString()
+                                : null,
 
-                            asistencia:
-                                sesion.asistencia
+                        asistencia:
+                            sesion.asistencia
 
-                        })
-                    )
+                    })
+                )
 
-            })
-        );
-
-    localStorage.setItem(
-        CLAVE_PERSISTENCIA_ASISTENCIA,
-        JSON.stringify(datos)
+        })
     );
 
-    localStorage.setItem(
-        CLAVE_PERSISTENCIA_CONFIGURACION,
-        JSON.stringify(
-            configuracionGrupos
-        )
-    );
+localStorage.setItem(
+    CLAVE_PERSISTENCIA_ASISTENCIA,
+    JSON.stringify(datos)
+);
 
-    console.log(
-        "Registros de asistencia guardados en localStorage."
-    );
+localStorage.setItem(
+    CLAVE_PERSISTENCIA_CONFIGURACION,
+    JSON.stringify(
+        configuracionGrupos
+    )
+);
+
+console.log(
+    "Registros de asistencia guardados en localStorage."
+);
 
 } catch (error) {
 
-    console.error(
-        "Error al guardar registros de asistencia:",
-        error
-    );
-
-}
-
-} catch (error) {
-
-    console.error(
-        "Error al guardar registros de asistencia:",
-        error
-    );
+console.error(
+    "Error al guardar registros de asistencia:",
+    error
+);
 
 }
 
@@ -1010,76 +1001,87 @@ function cargarRegistrosAsistenciaPersistidos() {
 
 try {
 
-    const datosGuardados =
-        localStorage.getItem(
-            CLAVE_PERSISTENCIA_ASISTENCIA
-        );
+const datosGuardados =
+    localStorage.getItem(
+        CLAVE_PERSISTENCIA_ASISTENCIA
+    );
 
 
-    if (!datosGuardados) {
+if (!datosGuardados) {
 
-        return false;
+    return false;
 
-    }
-
-
-    const datos =
-        JSON.parse(
-            datosGuardados
-        );
+}
 
 
-    registrosAsistencia =
-        datos.map(
-    alumno => ({
-        apellidos:
-            alumno.apellidos,
+const datos =
+    JSON.parse(
+        datosGuardados
+    );
 
-        nombres:
-            alumno.nombres,
 
-        studentId:
-            alumno.studentId,
+registrosAsistencia =
+    datos.map(
+        alumno => ({
+            apellidos:
+                alumno.apellidos,
 
-        telefono:
-            alumno.telefono || "",
+            nombres:
+                alumno.nombres,
 
-        email:
-            alumno.email,
+            studentId:
+                alumno.studentId,
 
-        grupo:
-            alumno.grupo,
+            telefono:
+                alumno.telefono || "",
 
-        sesiones:
-            (alumno.sesiones || [])
-                .map(
-                    sesion => ({
-                        fecha:
-                            sesion.fecha
-                                ? new Date(
-                                    sesion.fecha
-                                )
-                                : null,
+            email:
+                alumno.email,
 
-                        asistencia:
-                            sesion.asistencia
-                    })
-                )
-    })
+            grupo:
+                alumno.grupo,
+
+            sesiones:
+                (alumno.sesiones || [])
+                    .map(
+                        sesion => ({
+                            fecha:
+                                sesion.fecha
+                                    ? new Date(
+                                        sesion.fecha
+                                    )
+                                    : null,
+
+                            asistencia:
+                                sesion.asistencia
+                        })
+                    )
+        })
+    );
+
+
+window.registrosAsistencia =
+    registrosAsistencia;
+
+
+/*
+ * ----------------------------------------------------
+ * RECUPERAR CONFIGURACIÓN DE GRUPOS
+ * ----------------------------------------------------
+ */
+
+const configuracionGuardada =
+
+La diferencia importante es que desaparece completamente este segundo bloque:
+
+} catch (error) {
+
+console.error(
+    "Error al guardar registros de asistencia:",
+    error
 );
 
-
-    window.registrosAsistencia =
-        registrosAsistencia;
-
-
-    /*
-     * ----------------------------------------------------
-     * RECUPERAR CONFIGURACIÓN DE GRUPOS
-     * ----------------------------------------------------
-     */
-
-    const configuracionGuardada =
+}
         localStorage.getItem(
             CLAVE_PERSISTENCIA_CONFIGURACION
         );
