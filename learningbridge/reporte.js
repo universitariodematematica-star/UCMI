@@ -1375,14 +1375,14 @@ if (Array.isArray(alumno.sesiones)) {
              */
 
             const asistencia =
-                String(
-                    sesion.asistencia || ""
-                )
-                    .trim()
-                    .toUpperCase();
-
-            if (asistencia !== "A") {
-                return;
+            String(
+            sesion.asistencia || ""
+            )
+            .trim()
+            .toUpperCase();
+            
+            if (!asistencia.startsWith("A")) {
+            return;
             }
 
             /*
