@@ -947,6 +947,428 @@ function cargarRegistrosAsistenciaPersistidos() {
 
 }
 
+/* ============================================================
+   CALCULAR PORCENTAJES DE ASISTENCIA
+============================================================ */
+
+function calcularPorcentajesAsistencia(alumno) {
+
+    /*
+     * --------------------------------------------------------
+     * VALIDAR DATOS DEL ALUMNO
+     * --------------------------------------------------------
+     */
+
+    if (
+        !alumno ||
+        !alumno.grupo ||
+        !Array.isArray(alumno.sesiones) ||
+        alumno.sesiones.length === 0
+    ) {
+
+        return {
+            totalClasesPeriodo: 0,
+            inasistenciasEfectivas: 0,
+            inasistenciasSemanaActual: 0,
+            porcentajeEfectivo: 0,
+            porcentajeProyectado: 0
+        };
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * OBTENER DÍAS DE CLASE DEL GRUPO
+     * --------------------------------------------------------
+     */
+
+    const configuracion =
+        configuracionGrupos.find(
+            configuracion =>
+                configuracion.grupo === alumno.grupo
+        );
+
+
+    if (!configuracion) {
+
+        console.warn(
+            "No se encontró configuración para el grupo:",
+            alumno.grupo
+        );
+
+        return {
+            totalClasesPeriodo: 0,
+            inasistenciasEfectivas: 0,
+            inasistenciasSemanaActual: 0,
+            porcentajeEfectivo: 0,
+            porcentajeProyectado: 0
+        };
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * CONVERTIR DÍAS DE CLASE A NÚMEROS DE JAVASCRIPT
+     *
+     * JavaScript:
+     *
+     * 0 = domingo
+     * 1 = lunes
+     * 2 = martes
+     * 3 = miércoles
+     * 4 = jueves
+     * 5 = viernes
+     * 6 = sábado
+     * --------------------------------------------------------
+     */
+
+    const diasClase = [];
+
+    DIAS_SEMANA.forEach(
+        (dia, indice) => {
+
+            if (
+                configuracion.dias[dia] === true
+            ) {
+
+                diasClase.push(
+                    indice === 6
+                        ? 0
+                        : indice + 1
+                );
+
+            }
+
+        }
+    );
+
+
+    if (diasClase.length === 0) {
+
+        return {
+            totalClasesPeriodo: 0,
+            inasistenciasEfectivas: 0,
+            inasistenciasSemanaActual: 0,
+            porcentajeEfectivo: 0,
+            porcentajeProyectado: 0
+        };
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * OBTENER PRIMERA FECHA DEL PERÍODO
+     *
+     * Se utiliza la primera sesión registrada del alumno.
+     * --------------------------------------------------------
+     */
+
+    const fechasAlumno =
+        alumno.sesiones
+            .map(
+                sesion =>
+                    sesion.fecha instanceof Date
+                        ? new Date(
+                            sesion.fecha.getFullYear(),
+                            sesion.fecha.getMonth(),
+                            sesion.fecha.getDate()
+                        )
+                        : null
+            )
+            .filter(
+                fecha =>
+                    fecha &&
+                    !isNaN(fecha.getTime())
+            )
+            .sort(
+                (a, b) =>
+                    a.getTime() -
+                    b.getTime()
+            );
+
+
+    if (fechasAlumno.length === 0) {
+
+        return {
+            totalClasesPeriodo: 0,
+            inasistenciasEfectivas: 0,
+            inasistenciasSemanaActual: 0,
+            porcentajeEfectivo: 0,
+            porcentajeProyectado: 0
+        };
+
+    }
+
+
+    const primeraFecha =
+        fechasAlumno[0];
+
+
+    /*
+     * --------------------------------------------------------
+     * PERÍODO DE 7 MESES
+     *
+     * Si comienza el 01/01/2026:
+     *
+     * 01/01/2026 <= fecha < 01/08/2026
+     *
+     * --------------------------------------------------------
+     */
+
+    const fechaFinPeriodo =
+        new Date(
+            primeraFecha.getFullYear(),
+            primeraFecha.getMonth() + 7,
+            primeraFecha.getDate()
+        );
+
+
+    /*
+     * --------------------------------------------------------
+     * CONTAR TODAS LAS CLASES PROGRAMADAS
+     * EN LOS 7 MESES
+     * --------------------------------------------------------
+     */
+
+    let totalClasesPeriodo = 0;
+
+    const fechaPeriodo =
+        new Date(primeraFecha);
+
+
+    while (
+        fechaPeriodo < fechaFinPeriodo
+    ) {
+
+        if (
+            diasClase.includes(
+                fechaPeriodo.getDay()
+            )
+        ) {
+
+            totalClasesPeriodo++;
+
+        }
+
+        fechaPeriodo.setDate(
+            fechaPeriodo.getDate() + 1
+        );
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * FECHA ACTUAL
+     * --------------------------------------------------------
+     */
+
+    const hoy =
+        new Date();
+
+    hoy.setHours(
+        0,
+        0,
+        0,
+        0
+    );
+
+
+    /*
+     * --------------------------------------------------------
+     * ENCONTRAR EL LUNES DE LA SEMANA ACTUAL
+     *
+     * Todo lo anterior al lunes pertenece al porcentaje
+     * EFECTIVO.
+     *
+     * Desde el lunes hasta hoy pertenece al porcentaje
+     * PROYECTADO.
+     * --------------------------------------------------------
+     */
+
+    const lunesActual =
+        new Date(hoy);
+
+    const diaSemana =
+        hoy.getDay();
+
+    const diasDesdeLunes =
+        diaSemana === 0
+            ? 6
+            : diaSemana - 1;
+
+    lunesActual.setDate(
+        hoy.getDate() -
+        diasDesdeLunes
+    );
+
+    lunesActual.setHours(
+        0,
+        0,
+        0,
+        0
+    );
+
+
+    /*
+     * --------------------------------------------------------
+     * CONTAR INASISTENCIAS EFECTIVAS
+     *
+     * SOLAMENTE "A".
+     *
+     * Se cuentan las A anteriores al lunes actual.
+     * --------------------------------------------------------
+     */
+
+    let inasistenciasEfectivas = 0;
+
+    alumno.sesiones.forEach(
+        sesion => {
+
+            if (
+                !(sesion.fecha instanceof Date)
+            ) {
+                return;
+            }
+
+            const fecha =
+                new Date(
+                    sesion.fecha.getFullYear(),
+                    sesion.fecha.getMonth(),
+                    sesion.fecha.getDate()
+                );
+
+            const asistencia =
+                String(
+                    sesion.asistencia || ""
+                )
+                    .trim()
+                    .toUpperCase()
+                    .charAt(0);
+
+
+            if (
+                fecha < lunesActual &&
+                asistencia === "A"
+            ) {
+
+                inasistenciasEfectivas++;
+
+            }
+
+        }
+    );
+
+
+    /*
+     * --------------------------------------------------------
+     * CONTAR INASISTENCIAS DE LA SEMANA ACTUAL
+     *
+     * Desde el lunes actual hasta hoy.
+     * --------------------------------------------------------
+     */
+
+    let inasistenciasSemanaActual = 0;
+
+    alumno.sesiones.forEach(
+        sesion => {
+
+            if (
+                !(sesion.fecha instanceof Date)
+            ) {
+                return;
+            }
+
+            const fecha =
+                new Date(
+                    sesion.fecha.getFullYear(),
+                    sesion.fecha.getMonth(),
+                    sesion.fecha.getDate()
+                );
+
+            const asistencia =
+                String(
+                    sesion.asistencia || ""
+                )
+                    .trim()
+                    .toUpperCase()
+                    .charAt(0);
+
+
+            if (
+                fecha >= lunesActual &&
+                fecha <= hoy &&
+                asistencia === "A"
+            ) {
+
+                inasistenciasSemanaActual++;
+
+            }
+
+        }
+    );
+
+
+    /*
+     * --------------------------------------------------------
+     * CALCULAR PORCENTAJE EFECTIVO
+     * --------------------------------------------------------
+     */
+
+    const porcentajeEfectivo =
+        totalClasesPeriodo > 0
+            ? (
+                inasistenciasEfectivas /
+                totalClasesPeriodo
+            ) * 100
+            : 0;
+
+
+    /*
+     * --------------------------------------------------------
+     * CALCULAR PORCENTAJE PROYECTADO
+     * --------------------------------------------------------
+     */
+
+    const totalInasistenciasProyectadas =
+        inasistenciasEfectivas +
+        inasistenciasSemanaActual;
+
+
+    const porcentajeProyectado =
+        totalClasesPeriodo > 0
+            ? (
+                totalInasistenciasProyectadas /
+                totalClasesPeriodo
+            ) * 100
+            : 0;
+
+
+    /*
+     * --------------------------------------------------------
+     * RESULTADO
+     * --------------------------------------------------------
+     */
+
+    return {
+
+        totalClasesPeriodo,
+
+        inasistenciasEfectivas,
+
+        inasistenciasSemanaActual,
+
+        porcentajeEfectivo,
+
+        porcentajeProyectado
+
+    };
+
+}
+
 
 /* ============================================================
    MOSTRAR ASISTENCIAS EN PANTALLA
