@@ -1,540 +1,2828 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learning Bridge English - Lección Interactiva</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
+/*
+ * ============================================================
+ * LEARNING BRIDGE
+ * NUEVO SISTEMA DE ASISTENCIA
+ * ============================================================
+ *
+ * Archivo:
+ * learningbridge/reporte.js
+ *
+ * ETAPA 1:
+ * - Leer archivo Excel
+ * - Leer hoja Configuracion-Grupos
+ * - Validar los días operativos
+ * - Cargar grupos en el selector
+ *
+ * IMPORTANTE:
+ * Este archivo pertenece al NUEVO sistema.
+ * No modifica el sistema antiguo.
+ * ============================================================
+ */
+
+
+/* ============================================================
+   ELEMENTOS DE LA PÁGINA
+============================================================ */
+
+const archivoAsistencia =
+    document.getElementById("archivoAsistencia");
+
+const filtroGrupo =
+    document.getElementById("filtroGrupo");
+
+const estadoAsistencia =
+    document.getElementById("estadoAsistencia");
+
+
+/* ============================================================
+   VARIABLES PRINCIPALES
+============================================================ */
+
+let configuracionGrupos = [];
+
+let registrosAsistencia = [];
+
+const DIAS_SEMANA_CALCULO = [
+"Domingo",
+"Lunes",
+"Martes",
+"Miércoles",
+"Jueves",
+"Viernes",
+"Sábado"
+];
+
+/*
+
+============================================================
+CALCULAR TOTAL DE CLASES DEL GRUPO DURANTE 7 MESES
+============================================================
+*/
+
+/* ============================================================
+CALCULAR TOTAL DE CLASES DEL GRUPO DURANTE 7 MESES
+============================================================ */
+
+function calcularTotalClasesGrupo(
+grupo,
+fechaInicio
+) {
+
+if (!grupo || !fechaInicio) {
+return 0;
+}
+
+const configuracion =
+configuracionGrupos.find(
+item =>
+String(item.grupo).trim() ===
+String(grupo).trim()
+);
+
+if (!configuracion) {
+return 0;
+}
+
+const fechaInicioCurso =
+new Date(fechaInicio);
+
+fechaInicioCurso.setHours(
+0,
+0,
+0,
+0
+);
+
+const fechaFinCurso =
+new Date(fechaInicioCurso);
+
+fechaFinCurso.setMonth(
+fechaFinCurso.getMonth() + 7
+);
+
+fechaFinCurso.setHours(
+0,
+0,
+0,
+0
+);
+
+let totalClases = 0;
+
+const fechaActual =
+new Date(fechaInicioCurso);
+
+while (fechaActual < fechaFinCurso) {
+
+const nombreDia =
+    DIAS_SEMANA_CALCULO[
+        fechaActual.getDay()
+    ];
+
+if (
+    configuracion.dias &&
+    configuracion.dias[nombreDia] === true
+) {
+
+    totalClases++;
+
+}
+
+fechaActual.setDate(
+    fechaActual.getDate() + 1
+);
+
+}
+
+return totalClases;
+
+}
+
+
+/* ============================================================
+OBTENER PRIMERA FECHA DEL GRUPO
+============================================================ */
+
+function obtenerPrimeraFechaGrupo(grupo) {
+
+const fechas = [];
+
+registrosAsistencia.forEach(alumno => {
+
+    if (alumno.grupo !== grupo) {
+        return;
+    }
+
+    if (!Array.isArray(alumno.sesiones)) {
+        return;
+    }
+
+    alumno.sesiones.forEach(sesion => {
+
+        if (!sesion.fecha) {
+            return;
         }
 
-        body {
-            background-color: #f4f5f7;
-            color: #333;
+        const fecha =
+            new Date(sesion.fecha);
+
+        if (isNaN(fecha.getTime())) {
+            return;
         }
 
-        /* Botón flotante para Imprimir / PDF */
-        .print-btn-container {
-            text-align: center;
-            margin: 15px 0;
+        fecha.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+        fechas.push(fecha);
+
+    });
+
+});
+
+if (fechas.length === 0) {
+    return null;
+}
+
+fechas.sort(
+    (a, b) => a - b
+);
+
+return fechas[0];
+
+}
+
+/* ============================================================
+REFERENCIAS GLOBALES
+============================================================ */
+
+window.configuracionGrupos =
+configuracionGrupos;
+
+window.registrosAsistencia =
+registrosAsistencia;
+
+/* ============================================================
+DÍAS DE LA SEMANA
+============================================================ */
+
+const DIAS_SEMANA = [
+"Lunes",
+"Martes",
+"Miércoles",
+"Jueves",
+"Viernes",
+"Sábado",
+"Domingo"
+];
+
+
+/* ============================================================
+   MOSTRAR ESTADO
+============================================================ */
+
+function mostrarEstado(mensaje, tipo = "normal") {
+
+    if (!estadoAsistencia) {
+        return;
+    }
+
+    estadoAsistencia.style.display = "block";
+
+    estadoAsistencia.textContent = mensaje;
+
+    if (tipo === "error") {
+
+        estadoAsistencia.style.backgroundColor = "#f8d7da";
+        estadoAsistencia.style.color = "#842029";
+
+    } else if (tipo === "exito") {
+
+        estadoAsistencia.style.backgroundColor = "#d1e7dd";
+        estadoAsistencia.style.color = "#0f5132";
+
+    } else {
+
+        estadoAsistencia.style.backgroundColor = "#e9ecef";
+        estadoAsistencia.style.color = "#222";
+
+    }
+}
+
+
+/* ============================================================
+   NORMALIZAR TEXTO
+============================================================ */
+
+function normalizarTexto(valor) {
+
+    return String(valor ?? "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+}
+
+
+/* ============================================================
+   CONVERTIR SÍ / NO
+============================================================ */
+
+function esDiaOperativo(valor) {
+
+    const texto = normalizarTexto(valor);
+
+    return (
+        texto === "si" ||
+        texto === "sí" ||
+        texto === "s" ||
+        texto === "yes" ||
+        texto === "1" ||
+        texto === "true"
+    );
+
+}
+
+
+/* ============================================================
+   BUSCAR COLUMNA POR NOMBRE
+============================================================ */
+
+function encontrarColumna(encabezados, nombreBuscado) {
+
+    const objetivo =
+        normalizarTexto(nombreBuscado);
+
+    return encabezados.findIndex(encabezado =>
+        normalizarTexto(encabezado) === objetivo
+    );
+
+}
+
+
+/* ============================================================
+   LEER CONFIGURACION-GRUPOS
+============================================================ */
+
+function leerConfiguracionGrupos(workbook) {
+
+    const hoja = workbook.getWorksheet("Configuracion-Grupos");
+
+    if (!hoja) {
+        throw new Error(
+            'No se encontró la hoja "Configuracion-Grupos".'
+        );
+    }
+
+    let filaEncabezados = null;
+    let indices = {};
+
+    /*
+     * ------------------------------------------
+     * BUSCAR ENCABEZADOS
+     * ------------------------------------------
+     */
+
+    for (
+        let numeroFila = 1;
+        numeroFila <= Math.min(20, hoja.rowCount);
+        numeroFila++
+    ) {
+
+        const fila = hoja.getRow(numeroFila);
+
+        const encabezados = fila.values
+            .map(valor => normalizarTexto(valor))
+            .filter(valor => valor !== "");
+
+        if (
+            encabezados.includes("grupo") &&
+            encabezados.includes("lunes") &&
+            encabezados.includes("martes") &&
+            encabezados.includes("miercoles") &&
+            encabezados.includes("jueves") &&
+            encabezados.includes("viernes") &&
+            encabezados.includes("sabado") &&
+            encabezados.includes("domingo")
+        ) {
+
+            filaEncabezados = numeroFila;
+
+            fila.eachCell((celda, numeroColumna) => {
+
+                const encabezado =
+                    normalizarTexto(celda.value);
+
+                if (encabezado) {
+                    indices[encabezado] = numeroColumna;
+                }
+
+            });
+
+            break;
+        }
+    }
+
+    if (!filaEncabezados) {
+
+        throw new Error(
+            'La hoja "Configuracion-Grupos" no contiene los encabezados requeridos.'
+        );
+    }
+
+    /*
+     * ------------------------------------------
+     * LEER GRUPOS
+     * ------------------------------------------
+     */
+
+    const configuraciones = [];
+
+    for (
+        let numeroFila = filaEncabezados + 1;
+        numeroFila <= hoja.rowCount;
+        numeroFila++
+    ) {
+
+        const fila = hoja.getRow(numeroFila);
+
+        const grupo = String(
+            fila.getCell(indices["grupo"]).value || ""
+        ).trim();
+
+        if (!grupo) {
+            continue;
         }
 
-        .btn-pdf {
-            background-color: #5c1d53;
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            font-size: 15px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: background 0.2s;
+        const dias = {};
+
+        DIAS_SEMANA.forEach(dia => {
+
+            const clave = normalizarTexto(dia);
+
+            const valor =
+                fila.getCell(indices[clave]).value;
+
+            dias[dia] = esDiaOperativo(valor);
+
+        });
+
+        configuraciones.push({
+            grupo,
+            dias
+        });
+    }
+
+    return configuraciones;
+}
+
+
+/* ============================================================
+   CARGAR GRUPOS EN EL SELECTOR
+============================================================ */
+
+function cargarGruposEnSelector(configuraciones) {
+
+    if (!filtroGrupo) {
+        return;
+    }
+
+
+    /*
+     * Conservar "Todos".
+     */
+
+    filtroGrupo.innerHTML = "";
+
+    const opcionTodos =
+        document.createElement("option");
+
+    opcionTodos.value = "todos";
+
+    opcionTodos.textContent = "Todos";
+
+    filtroGrupo.appendChild(opcionTodos);
+
+
+    /*
+     * --------------------------------------------------------
+     * ORDENAR ALFABÉTICAMENTE
+     * --------------------------------------------------------
+     */
+
+    const configuracionesOrdenadas =
+        [...configuraciones].sort((a, b) =>
+            a.grupo.localeCompare(
+                b.grupo,
+                "es",
+                {
+                    numeric: true,
+                    sensitivity: "base"
+                }
+            )
+        );
+
+
+    /*
+     * --------------------------------------------------------
+     * CREAR OPCIONES
+     * --------------------------------------------------------
+     */
+
+    configuracionesOrdenadas.forEach(configuracion => {
+
+        const opcion =
+            document.createElement("option");
+
+        opcion.value =
+            configuracion.grupo;
+
+        opcion.textContent =
+            configuracion.grupo;
+
+        filtroGrupo.appendChild(opcion);
+
+    });
+
+}
+
+
+/* ============================================================
+   MOSTRAR CONFIGURACIÓN EN CONSOLA
+============================================================ */
+
+function mostrarConfiguracionEnConsola(configuraciones) {
+
+    console.log(
+        "============================================"
+    );
+
+    console.log(
+        "CONFIGURACION-GRUPOS"
+    );
+
+    console.log(
+        "============================================"
+    );
+
+
+    configuraciones.forEach(configuracion => {
+
+        console.log(
+            configuracion.grupo,
+            configuracion.dias
+        );
+
+    });
+
+
+    console.log(
+        "============================================"
+    );
+
+}
+
+/* ============================================================
+   RECONOCER ENCABEZADO DE FECHA
+============================================================ */
+
+function convertirFechaExcel(valor) {
+
+    /*
+     * --------------------------------------------------------
+     * SI EXCEL ENTREGA UNA FECHA COMO OBJETO Date
+     * --------------------------------------------------------
+     */
+
+    if (valor instanceof Date) {
+
+        return new Date(
+            valor.getFullYear(),
+            valor.getMonth(),
+            valor.getDate()
+        );
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * SI EXCEL ENTREGA UN NÚMERO SERIAL
+     * --------------------------------------------------------
+     */
+
+    if (typeof valor === "number") {
+
+        const fecha =
+            new Date(
+                Math.round(
+                    (valor - 25569) *
+                    86400 *
+                    1000
+                )
+            );
+
+        if (!isNaN(fecha.getTime())) {
+
+            return new Date(
+                fecha.getFullYear(),
+                fecha.getMonth(),
+                fecha.getDate()
+            );
+
         }
 
-        .btn-pdf:hover {
-            background-color: #43133c;
+        return null;
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * ENCABEZADO DE TEXTO
+     *
+     * FORMATO REAL DEL EXCEL:
+     *
+     * 8 Aug 2026 3.00PM All students
+     *
+     * 15 Aug 2026 3.00PM All students
+     *
+     * 5 Sept 2026 3.00PM All students
+     *
+     * Aquí solamente extraemos:
+     *
+     * día + mes + año
+     * --------------------------------------------------------
+     */
+
+    const texto =
+        String(valor ?? "").trim();
+
+    if (!texto) {
+        return null;
+    }
+
+
+    const coincidencia =
+        texto.match(
+            /^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})\b/
+        );
+
+    if (!coincidencia) {
+        return null;
+    }
+
+
+    const dia =
+        parseInt(
+            coincidencia[1],
+            10
+        );
+
+    const mesTexto =
+        coincidencia[2]
+            .toLowerCase();
+
+    const anio =
+        parseInt(
+            coincidencia[3],
+            10
+        );
+
+
+    /*
+     * --------------------------------------------------------
+     * MESES EN INGLÉS
+     * --------------------------------------------------------
+     */
+
+    const meses = {
+
+        jan: 0,
+        january: 0,
+
+        feb: 1,
+        february: 1,
+
+        mar: 2,
+        march: 2,
+
+        apr: 3,
+        april: 3,
+
+        may: 4,
+
+        jun: 5,
+        june: 5,
+
+        jul: 6,
+        july: 6,
+
+        aug: 7,
+        august: 7,
+
+        sep: 8,
+        sept: 8,
+        september: 8,
+
+        oct: 9,
+        october: 9,
+
+        nov: 10,
+        november: 10,
+
+        dec: 11,
+        december: 11
+
+    };
+
+
+    if (!(mesTexto in meses)) {
+        return null;
+    }
+
+
+    return new Date(
+        anio,
+        meses[mesTexto],
+        dia
+    );
+
+}
+
+
+/* ============================================================
+   COMPROBAR SI UNA COLUMNA ES UNA SESIÓN
+============================================================ */
+
+function esColumnaSesion(valor) {
+
+    return convertirFechaExcel(valor) !== null;
+
+}
+
+
+/* ============================================================
+   LEER HOJA DE ASISTENCIA DE UN GRUPO
+============================================================ */
+
+function leerHojaGrupo(hoja) {
+
+    /*
+     * La fila 4 contiene los encabezados.
+     */
+
+    const filaEncabezados =
+        hoja.getRow(4);
+
+    const encabezados = [];
+
+    for (
+        let numeroColumna = 1;
+        numeroColumna <= hoja.columnCount;
+        numeroColumna++
+    ) {
+
+        encabezados[numeroColumna] =
+            filaEncabezados
+                .getCell(numeroColumna)
+                .value;
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * IDENTIFICAR LAS COLUMNAS DE SESIONES
+     * --------------------------------------------------------
+     */
+
+    const columnasSesiones = [];
+
+    for (
+        let numeroColumna = 5;
+        numeroColumna <= hoja.columnCount;
+        numeroColumna++
+    ) {
+
+        const encabezado =
+            encabezados[numeroColumna];
+
+        if (
+            esColumnaSesion(encabezado)
+        ) {
+
+            columnasSesiones.push({
+                columna: numeroColumna,
+                encabezado: encabezado,
+                fecha: convertirFechaExcel(
+                    encabezado
+                )
+            });
+
         }
 
-        /* Encabezado Superior */
-        .top-header {
-            background-color: #5c1d53;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            border-bottom: 3px solid #2872b9;
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * LEER ALUMNOS
+     * --------------------------------------------------------
+     */
+
+    const alumnos = [];
+
+    for (
+        let numeroFila = 5;
+        numeroFila <= hoja.rowCount;
+        numeroFila++
+    ) {
+
+        const fila =
+            hoja.getRow(numeroFila);
+
+        const apellidos =
+            String(
+                fila.getCell(1).value ?? ""
+            ).trim();
+
+        const nombres =
+            String(
+                fila.getCell(2).value ?? ""
+            ).trim();
+
+        const studentId =
+            String(
+                fila.getCell(3).value ?? ""
+            ).trim();
+
+        const email =
+            String(
+                fila.getCell(4).value ?? ""
+            ).trim();
+
+
+        /*
+         * Ignorar filas completamente vacías.
+         */
+
+        if (
+            !apellidos &&
+            !nombres &&
+            !studentId
+        ) {
+            continue;
         }
 
-        .top-header span {
-            font-size: 12px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
 
-        /* Contenedor Principal optimizado para A4 */
-        .main-container {
-            max-width: 1000px;
-            margin: 10px auto;
-            padding: 0 15px;
-        }
+        /*
+         * ----------------------------------------------------
+         * SESIONES DEL ALUMNO
+         * ----------------------------------------------------
+         */
 
-        /* Título de la Lección */
-        .lesson-title-area {
-            margin-bottom: 12px;
-        }
+        const sesiones = [];
 
-        .lesson-title-area h1 {
-            color: #5c1d53;
-            font-size: 26px;
-            margin-bottom: 2px;
-        }
+        columnasSesiones.forEach(
+            sesion => {
 
-        .lesson-title-area p {
-            color: #666;
-            font-size: 12px;
-        }
+                const valor =
+                    fila
+                        .getCell(
+                            sesion.columna
+                        )
+                        .value;
 
-        /* Layout en Grid (2 columnas) */
-        .content-grid {
-            display: grid;
-            grid-template-columns: 290px 1fr;
-            gap: 12px;
-            align-items: start;
-        }
+                let asistencia =
+                    String(
+                        valor ?? ""
+                    ).trim();
 
-        /* Cajas de Contenido (Cards) compactas para A4 */
-        .card {
-            background: #ffffff;
-            border-radius: 8px;
-            padding: 10px 14px;
-            margin-bottom: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid #e1e4e8;
-        }
+                asistencia =
+                    asistencia.toUpperCase();
 
-        /* Tarjeta de Grammar Formula interactiva */
-        .grammar-formula-box {
-            cursor: pointer;
-            position: relative;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-            border-left: 4px solid #d99b26;
-        }
 
-        .grammar-formula-box:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(217, 155, 38, 0.2);
-        }
+                sesiones.push({
 
-        .grammar-formula-box::after {
-            content: "💡 Clic para abrir pizarra";
-            display: block;
-            font-size: 10px;
-            color: #d99b26;
-            font-weight: bold;
-            margin-top: 4px;
-            text-align: right;
-            letter-spacing: 0.3px;
-        }
+                    fecha:
+                        sesion.fecha,
 
-        /* Estilos de Etiquetas / Badges */
-        .badge {
-            display: inline-block;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 15px;
-            font-size: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
-        }
+                    encabezado:
+                        sesion.encabezado,
 
-        .bg-blue { background-color: #2872b9; }
-        .bg-yellow { background-color: #d99b26; color: #fff; }
-        .bg-teal { background-color: #178a75; }
-        .bg-purple { background-color: #5c1d53; }
+                    asistencia:
+                        asistencia
 
-        /* Columna Izquierda */
-        .learning-goal-box p {
-            font-size: 13px;
-            color: #2c3e50;
-            line-height: 1.3;
-        }
+                });
 
-        .grammar-formula-box p {
-            font-size: 12px;
-            color: #4a4a4a;
-            line-height: 1.35;
-        }
-
-        .vocab-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 2px;
-        }
-
-        .vocab-tag {
-            background: white;
-            border: 1px solid #bce0d6;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 10px;
-            color: #2c3e50;
-        }
-
-        /* Columna Derecha (Lectura y Ejercicios) */
-        .reading-box h2 {
-            color: #5c1d53;
-            font-size: 16px;
-            margin-bottom: 6px;
-        }
-
-        .reading-box p {
-            font-size: 12px;
-            line-height: 1.4;
-            color: #444;
-            margin-bottom: 6px;
-        }
-
-        .reading-check-box {
-            background-color: #ebf3fa;
-            border: 1px solid #d0e3f5;
-            padding: 10px 14px;
-        }
-
-        .reading-check-box ol {
-            padding-left: 16px;
-            margin-top: 4px;
-        }
-
-        .reading-check-box li {
-            font-size: 11px;
-            line-height: 1.4;
-            color: #333;
-            margin-bottom: 4px;
-        }
-
-        /* Espacios interactivos */
-        .blank-input {
-            border: none;
-            border-bottom: 2px solid #2872b9;
-            background-color: transparent;
-            font-size: 11px;
-            padding: 1px 4px;
-            outline: none;
-            width: 100px;
-            color: #2c3e50;
-            text-align: center;
-        }
-
-        .answer-input {
-            display: inline-block;
-            border: none;
-            border-bottom: 2px solid #2872b9;
-            background-color: transparent;
-            font-size: 11px;
-            padding: 1px 4px;
-            outline: none;
-            width: 100%;
-            max-width: 260px;
-            margin-left: 5px;
-            color: #2c3e50;
-        }
-
-        /* Ventana Modal / Pizarra Interactiva */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .modal-container {
-            background: #fff9e6;
-            border: 3px solid #d99b26;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 600px;
-            padding: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            position: relative;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            border-bottom: 2px solid #e6d29c;
-            padding-bottom: 8px;
-        }
-
-        .modal-header h3 {
-            color: #8c6312;
-            font-size: 18px;
-        }
-
-        .close-modal-btn {
-            background: #d99b26;
-            color: white;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .close-modal-btn:hover {
-            background: #b57d19;
-        }
-
-        .board-textarea {
-            width: 100%;
-            height: 220px;
-            border: 1px dashed #d99b26;
-            background-color: #ffffff;
-            padding: 12px;
-            font-size: 14px;
-            color: #333;
-            border-radius: 6px;
-            resize: vertical;
-            outline: none;
-            line-height: 1.5;
-        }
-
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .btn-board-action {
-            background-color: #5c1d53;
-            color: white;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-board-action:hover {
-            background-color: #43133c;
-        }
-
-        /* Sección de la imagen integrada con tus clases exactas */
-        .image-section {
-            margin-top: 10px;
-            background: white;
-            border-radius: 8px;
-            padding: 4px;
-            border: 1px solid #e1e4e8;
-        }
-
-        .image-section img {
-            width: 100% !important;
-            height: auto !important;
-            max-width: 100%;
-            display: block;
-            margin: 0 auto;
-        }
-
-        /* Footer de la lección */
-        .lesson-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 6px;
-            font-size: 10px;
-            color: #666;
-            border-top: 1px solid #ddd;
-            padding-top: 4px;
-        }
-
-        /* Franja Inferior Decorativa */
-        .bottom-bar {
-            background-color: #5c1d53;
-            height: 15px;
-            margin-top: 10px;
-        }
-
-        /* CONFIGURACIÓN ESTRICTA PARA UNA SOLA PÁGINA A4 */
-        @media print {
-            @page {
-                size: A4;
-                margin: 5mm;
             }
-            body {
-                background-color: white;
-                -webkit-print-color-adjust: exact;
+        );
+
+
+        alumnos.push({
+
+            apellidos:
+                apellidos,
+
+            nombres:
+                nombres,
+
+            studentId:
+                studentId,
+
+            email:
+                email,
+
+            grupo:
+                hoja.name,
+
+            sesiones:
+                sesiones
+
+        });
+
+    }
+
+
+    return alumnos;
+
+}
+
+
+/* ============================================================
+   LEER TODAS LAS HOJAS DE ASISTENCIA
+============================================================ */
+
+function leerRegistrosAsistencia(workbook) {
+
+    const registros = [];
+
+
+    workbook.worksheets.forEach(
+        hoja => {
+
+            /*
+             * La hoja de configuración no es
+             * una hoja de asistencia.
+             */
+
+            if (
+                hoja.name ===
+                "Configuracion-Grupos"
+            ) {
+                return;
             }
-            .print-btn-container, .modal-overlay {
-                display: none !important;
-            }
-            .card, .image-section {
-                box-shadow: none;
-                border: 1px solid #bbb;
-                break-inside: avoid;
-            }
-            input {
-                border-bottom: 1px solid #000 !important;
-                color: #000 !important;
-            }
-            .grammar-formula-box::after {
-                display: none;
-            }
+
+
+            const alumnos =
+                leerHojaGrupo(
+                    hoja
+                );
+
+
+            registros.push(
+                ...alumnos
+            );
+
         }
-    </style>
-</head>
-<body>
+    );
 
-    <!-- Botón de Exportar a PDF / Imprimir -->
-    <div class="print-btn-container">
-        <button class="btn-pdf" onclick="window.print()">🖨️ Imprimir / Guardar en 1 Hoja A4</button>
-    </div>
 
-    <!-- Encabezado Superior -->
-    <header class="top-header">
-        <span>UNIT 1 / LESSON 4</span>
-        <span>LEARNING BRIDGE ENGLISH · A1 CEFR</span>
-    </header>
+    return registros;
 
-    <div class="main-container">
-        
-        <!-- Título -->
-        <div class="lesson-title-area">
-            <h1>Introducing a Friend</h1>
-            <p>Latin American Edition · Culture-based language learning</p>
-        </div>
+}
 
-        <!-- Contenedor en 2 Columnas -->
-        <div class="content-grid">
+/* ============================================================
+   PERSISTENCIA DE REGISTROS DE ASISTENCIA
+============================================================ */
+
+const CLAVE_PERSISTENCIA_ASISTENCIA =
+"learningBridgeRegistrosAsistenciaNuevo";
+
+const CLAVE_PERSISTENCIA_CONFIGURACION =
+"learningBridgeConfiguracionGruposNuevo";
+
+function guardarRegistrosAsistencia() {
+
+try {
+
+    const datos =
+        registrosAsistencia.map(
+            alumno => ({
+
+                apellidos:
+                    alumno.apellidos,
+
+                nombres:
+                    alumno.nombres,
+
+                studentId:
+                    alumno.studentId,
+
+                email:
+                    alumno.email,
+
+                grupo:
+                    alumno.grupo,
+
+                sesiones:
+                    alumno.sesiones.map(
+                        sesion => ({
+
+                            fecha:
+                                sesion.fecha
+                                    ? sesion.fecha.toISOString()
+                                    : null,
+
+                            asistencia:
+                                sesion.asistencia
+
+                        })
+                    )
+
+            })
+        );
+
+
+    localStorage.setItem(
+        CLAVE_PERSISTENCIA_ASISTENCIA,
+        JSON.stringify(datos)
+    );
+
+
+    localStorage.setItem(
+        CLAVE_PERSISTENCIA_CONFIGURACION,
+        JSON.stringify(
+            configuracionGrupos
+        )
+    );
+
+
+    console.log(
+        "Registros de asistencia guardados en localStorage."
+    );
+
+    console.log(
+        "Configuración de grupos guardada en localStorage."
+    );
+
+
+} catch (error) {
+
+    console.error(
+        "Error al guardar registros de asistencia:",
+        error
+    );
+
+}
+
+}
+
+function cargarRegistrosAsistenciaPersistidos() {
+
+try {
+
+    const datosGuardados =
+        localStorage.getItem(
+            CLAVE_PERSISTENCIA_ASISTENCIA
+        );
+
+
+    if (!datosGuardados) {
+
+        return false;
+
+    }
+
+
+    const datos =
+        JSON.parse(
+            datosGuardados
+        );
+
+
+    registrosAsistencia =
+        datos.map(
+            alumno => ({
+
+                apellidos:
+                    alumno.apellidos,
+
+                nombres:
+                    alumno.nombres,
+
+                studentId:
+                    alumno.studentId,
+
+                email:
+                    alumno.email,
+
+                grupo:
+                    alumno.grupo,
+
+                sesiones:
+                    (alumno.sesiones || [])
+                        .map(
+                            sesion => ({
+
+                                fecha:
+                                    sesion.fecha
+                                        ? new Date(
+                                            sesion.fecha
+                                        )
+                                        : null,
+
+                                asistencia:
+                                    sesion.asistencia
+
+                            })
+                        )
+
+            })
+        );
+
+
+    window.registrosAsistencia =
+        registrosAsistencia;
+
+
+    /*
+     * ----------------------------------------------------
+     * RECUPERAR CONFIGURACIÓN DE GRUPOS
+     * ----------------------------------------------------
+     */
+
+    const configuracionGuardada =
+        localStorage.getItem(
+            CLAVE_PERSISTENCIA_CONFIGURACION
+        );
+
+
+    if (configuracionGuardada) {
+
+        const configuracion =
+            JSON.parse(
+                configuracionGuardada
+            );
+
+
+        configuracionGrupos.length = 0;
+
+        configuracionGrupos.push(
+            ...configuracion
+        );
+
+
+        window.configuracionGrupos =
+            configuracionGrupos;
+
+    }
+
+
+    /*
+     * ----------------------------------------------------
+     * RECUPERAR SELECTOR DE GRUPOS
+     * ----------------------------------------------------
+     */
+
+    if (
+        configuracionGrupos &&
+        configuracionGrupos.length > 0
+    ) {
+
+        cargarGruposEnSelector(
+            configuracionGrupos
+        );
+
+    }
+
+
+    /*
+     * ----------------------------------------------------
+     * MOSTRAR REGISTROS RECUPERADOS
+     * ----------------------------------------------------
+     */
+
+    if (
+        registrosAsistencia &&
+        registrosAsistencia.length > 0
+    ) {
+
+        mostrarRegistrosAsistencia(
+            registrosAsistencia
+        );
+
+    }
+
+
+    console.log(
+        "Registros de asistencia recuperados desde localStorage:",
+        registrosAsistencia
+    );
+
+
+    console.log(
+        "Configuración de grupos recuperada desde localStorage:",
+        configuracionGrupos
+    );
+
+
+    return true;
+
+
+} catch (error) {
+
+    console.error(
+        "Error al recuperar registros de asistencia:",
+        error
+    );
+
+
+    return false;
+
+}
+
+}
+
+/* ============================================================
+CALCULAR PORCENTAJES DE ASISTENCIA
+============================================================ */
+
+function calcularPorcentajesAsistencia(alumno) {
+
+if (!alumno || !alumno.grupo) {
+    return {
+        porcentajeEfectivo: 0,
+        porcentajeProyectado: 0
+    };
+}
+
+/*
+ * ------------------------------------------------
+ * FECHA DE INICIO DEL CURSO DEL GRUPO
+ * ------------------------------------------------
+ */
+
+const fechaInicioGrupo =
+    obtenerPrimeraFechaGrupo(
+        alumno.grupo
+    );
+
+if (!fechaInicioGrupo) {
+    return {
+        porcentajeEfectivo: 0,
+        porcentajeProyectado: 0
+    };
+}
+
+/*
+ * ------------------------------------------------
+ * TOTAL DE CLASES DEL GRUPO EN LOS 7 MESES
+ * ------------------------------------------------
+ */
+
+const totalClases =
+calcularTotalClasesGrupo(
+alumno.grupo,
+fechaInicioGrupo
+);
+
+console.log(
+"CALCULO PORCENTAJES:",
+alumno.grupo,
+"fechaInicioGrupo:",
+fechaInicioGrupo,
+"totalClases:",
+totalClases,
+"sesiones:",
+alumno.sesiones
+);
+   
+if (totalClases <= 0) {
+    return {
+        porcentajeEfectivo: 0,
+        porcentajeProyectado: 0
+    };
+}
+
+/*
+ * ------------------------------------------------
+ * INICIO Y FIN DEL PERÍODO DEL CURSO
+ * ------------------------------------------------
+ */
+
+const inicioCurso =
+    new Date(fechaInicioGrupo);
+
+inicioCurso.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+const finCurso =
+    new Date(inicioCurso);
+
+finCurso.setMonth(
+    finCurso.getMonth() + 7
+);
+
+finCurso.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+/*
+ * ------------------------------------------------
+ * FECHA DE HOY
+ * ------------------------------------------------
+ */
+
+const hoy =
+    new Date();
+
+hoy.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+/*
+ * ------------------------------------------------
+ * LUNES DE LA SEMANA ACTUAL
+ * ------------------------------------------------
+ */
+
+const lunesActual =
+    new Date(hoy);
+
+const diaSemana =
+    lunesActual.getDay();
+
+const diferenciaLunes =
+    diaSemana === 0
+        ? 6
+        : diaSemana - 1;
+
+lunesActual.setDate(
+    lunesActual.getDate() -
+    diferenciaLunes
+);
+
+lunesActual.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+/*
+ * ------------------------------------------------
+ * CONTADORES DE INASISTENCIAS
+ * ------------------------------------------------
+ */
+
+let inasistenciasEfectivas = 0;
+
+let inasistenciasSemanaActual = 0;
+
+/*
+ * ------------------------------------------------
+ * RECORRER LAS SESIONES DEL ESTUDIANTE
+ * ------------------------------------------------
+ */
+
+if (Array.isArray(alumno.sesiones)) {
+
+    alumno.sesiones.forEach(
+        sesion => {
+
+            if (!sesion.fecha) {
+                return;
+            }
+
+            const fecha =
+                new Date(
+                    sesion.fecha
+                );
+
+            if (
+                isNaN(
+                    fecha.getTime()
+                )
+            ) {
+                return;
+            }
+
+            fecha.setHours(
+                0,
+                0,
+                0,
+                0
+            );
+
+            /*
+             * Solo cuentan las A
+             */
+
+            const asistencia =
+            String(
+            sesion.asistencia || ""
+            )
+            .trim()
+            .toUpperCase();
             
-            <!-- COLUMNA IZQUIERDA -->
-            <div class="left-column">
-                
-                <!-- Learning Goal -->
-                <div class="card learning-goal-box">
-                    <span class="badge bg-blue">Learning Goal</span>
-                    <p>I can use he, she, and this is to introduce another person or cultural topic.</p>
-                </div>
-
-                <!-- Grammar Formula (Interactiva - Abre la pizarra) -->
-                <div class="card grammar-formula-box" onclick="openWhiteboard()">
-                    <span class="badge bg-yellow">Grammar Formula</span>
-                    <p>
-                        This + is + person/topic<br>
-                        This + is + Cantuña.<br>
-                        Subject pronoun + be + complement<br>
-                        He + is + a builder.<br>
-                        She + is + important.<br>
-                        It + is + a legend.
-                    </p>
-                </div>
-
-                <!-- Key Vocabulary -->
-                <div class="card vocabulary-box">
-                    <span class="badge bg-teal">Key Vocabulary</span>
-                    <div class="vocab-tags">
-                        <span class="vocab-tag">legend</span>
-                        <span class="vocab-tag">church</span>
-                        <span class="vocab-tag">builder</span>
-                        <span class="vocab-tag">stone</span>
-                        <span class="vocab-tag">city</span>
-                        <span class="vocab-tag">story</span>
-                        <span class="vocab-tag">person</span>
-                        <span class="vocab-tag">man</span>
-                        <span class="vocab-tag">he</span>
-                        <span class="vocab-tag">she</span>
-                        <span class="vocab-tag">this is</span>
-                        <span class="vocab-tag">Quito</span>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- COLUMNA DERECHA -->
-            <div class="right-column">
-                
-                <!-- Culture Reading -->
-                <div class="card reading-box">
-                    <span class="badge bg-blue">Culture Reading</span>
-                    <h2>The Legend of Cantuña</h2>
-                    <p>The Legend of Cantuña is a famous story from Quito, Ecuador. It is connected with the old city and with the Church of San Francisco. This church is in the historic center of Quito. The legend is part of the oral tradition of the city. Oral tradition means that people tell a story from one generation to another.</p>
-                    <p>Cantuña is a man in the legend. He is a builder. The story says that he has to finish an important stone construction. The work is difficult, and the time is short. The legend has mystery, night, stones, and a problem that Cantuña must solve.</p>
-                    <p>In the story, one stone is missing. This detail is very important. Because one stone is missing, the work is not complete. The missing stone changes the ending of the legend. Many people remember this part because it shows intelligence and courage.</p>
-                    <p>The Legend of Cantuña is not only an old story. It is a cultural symbol of Quito. It connects a person, a church, a city, and the imagination of the people. Legends like this help communities remember their places, their values, and their history.</p>
-                </div>
-
-                <!-- Reading Check -->
-                <div class="card reading-check-box">
-                    <span class="badge bg-purple">Reading Check</span>
-                    <p style="font-size: 12px;"><strong>A. Read and answer.</strong></p>
-                    <ol>
-                        <li>Where is the legend from? <input type="text" class="blank-input" placeholder="..."></li>
-                        <li>What church is connected with the legend? <input type="text" class="blank-input" placeholder="..."></li>
-                        <li>Who is Cantuña? <input type="text" class="blank-input" placeholder="..."></li>
-                        <li>What is missing in the story? <input type="text" class="blank-input" placeholder="..."></li>
-                        <li>Why are legends important for communities? <input type="text" class="blank-input" placeholder="..."></li>
-                    </ol>
-
-                    <p style="margin-top: 8px; font-size: 12px;"><strong>B. Complete:</strong> This is <input type="text" class="blank-input" style="width: 60px;" placeholder="...">. He is a <input type="text" class="blank-input" style="width: 60px;" placeholder="...">.</p>
-                    
-                    <p style="margin-top: 8px; font-size: 12px;"><strong>C. Think:</strong> Write the name of one legend from your country. <input type="text" class="answer-input" placeholder="Escribe aquí..."></p>
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- Sección con la imagen LB4 integrada exactamente con tu código -->
-        <div class="image-section">
-            <div class="separator" style="clear: both;">
-                <a href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhNW1fetleGtPE6A318VKpX7dveGxHWPV4srxvGMntSewygmo9glJC1QeJxumJFIitITB8pF7xnW5uSaVesu1GS73f9WI1NntH4js1_HUw6BpnCwpMeFHEBpjOX6roVNXhIp7gEtkiZ96E6JN6hBOcnkWgXPjWyukNWK8Oq52e0IDpxkFi6qrvBrRSAuRAw/s1137/LB4.png" style="display: block; padding: 0.5em 0; text-align: center;">
-                    <img alt="" border="0" data-original-height="404" data-original-width="1137" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhNW1fetleGtPE6A318VKpX7dveGxHWPV4srxvGMntSewygmo9glJC1QeJxumJFIitITB8pF7xnW5uSaVesu1GS73f9WI1NntH4js1_HUw6BpnCwpMeFHEBpjOX6roVNXhIp7gEtkiZ96E6JN6hBOcnkWgXPjWyukNWK8Oq52e0IDpxkFi6qrvBrRSAuRAw/s320/LB4.png"/>
-                </a>
-            </div>
-            
-            <div class="lesson-footer">
-                <span>UNIT 1 | 14</span>
-                <span>LEARNING BRIDGE ENGLISH · A1 CEFR · LATIN AMERICAN EDITION</span>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Franja final -->
-    <div class="bottom-bar"></div>
-
-    <!-- VENTANA MODAL: Pizarra Interactiva para Grammar Formula -->
-    <div class="modal-overlay" id="whiteboardModal">
-        <div class="modal-container" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h3>💡 Pizarra Interactiva: Grammar Notes</h3>
-                <button class="close-modal-btn" onclick="closeWhiteboard()">×</button>
-            </div>
-            <textarea class="board-textarea" placeholder="Escribe aquí notas adicionales, ejemplos de la fórmula o explicaciones para la clase..."></textarea>
-            <div class="modal-footer">
-                <button class="btn-board-action" onclick="closeWhiteboard()">Guardar y Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Script para controlar la pizarra -->
-    <script>
-        function openWhiteboard() {
-            document.getElementById('whiteboardModal').style.display = 'flex';
-        }
-
-        function closeWhiteboard() {
-            document.getElementById('whiteboardModal').style.display = 'none';
-        }
-
-        window.onclick = function(event) {
-            let modal = document.getElementById('whiteboardModal');
-            if (event.target == modal) {
-                closeWhiteboard();
+            if (!asistencia.startsWith("A")) {
+            return;
             }
+
+            /*
+             * No contar fechas fuera
+             * del período del curso.
+             */
+
+            if (
+                fecha < inicioCurso ||
+                fecha >= finCurso
+            ) {
+                return;
+            }
+
+     /*
+         * ------------------------------------------------
+         * INASISTENCIA EFECTIVA
+         *
+         * Todo lo ocurrido antes del lunes
+         * de la semana actual.
+         * ------------------------------------------------
+         */
+
+        if (
+            fecha < lunesActual
+        ) {
+
+            inasistenciasEfectivas++;
+
+            return;
         }
-    </script>
-</body>
-</html>
+
+        /*
+         * ------------------------------------------------
+         * INASISTENCIA PROYECTADA
+         *
+         * Desde el lunes actual
+         * hasta HOY.
+         * ------------------------------------------------
+         */
+
+        if (
+            fecha >= lunesActual &&
+            fecha <= hoy
+        ) {
+
+            inasistenciasSemanaActual++;
+
+        }
+
+    }
+);
+
+}
+
+/*
+
+TOTAL PROYECTADO DE INASISTENCIAS
+
+*/
+
+const inasistenciasProyectadas =
+inasistenciasEfectivas +
+inasistenciasSemanaActual;
+
+/*
+
+PORCENTAJES
+
+*/
+
+const porcentajeEfectivo =
+(
+inasistenciasEfectivas /
+totalClases
+) * 100;
+
+const porcentajeProyectado =
+(
+inasistenciasProyectadas /
+totalClases
+) * 100;
+
+return {
+
+porcentajeEfectivo:
+    porcentajeEfectivo,
+
+porcentajeProyectado:
+    porcentajeProyectado
+
+};
+
+}
+
+/* ============================================================
+MOSTRAR ASISTENCIAS EN PANTALLA
+============================================================ */
+
+function mostrarRegistrosAsistencia(
+registros
+) {
+
+const contenedor =
+    document.getElementById(
+        "resultadoAsistencia"
+    );
+
+if (!contenedor) {
+    return;
+}
+
+contenedor.innerHTML = "";
+
+if (!registros.length) {
+
+    contenedor.textContent =
+        "No se encontraron registros de asistencia.";
+
+    return;
+
+}
+
+const tabla =
+    document.createElement("table");
+
+tabla.style.width = "100%";
+
+tabla.style.borderCollapse =
+    "collapse";
+
+/*
+ * --------------------------------------------------------
+ * OBTENER TODAS LAS FECHAS
+ * --------------------------------------------------------
+ */
+
+const fechas = [];
+
+registros.forEach(
+    alumno => {
+
+        alumno.sesiones.forEach(
+            sesion => {
+
+                if (
+                    sesion.fecha &&
+                    !fechas.some(
+                        fecha =>
+                            fecha.getTime() ===
+                            sesion.fecha.getTime()
+                    )
+                ) {
+
+                    fechas.push(
+                        sesion.fecha
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
+
+fechas.sort(
+    (a, b) =>
+        a.getTime() -
+        b.getTime()
+);
+
+/*
+ * --------------------------------------------------------
+ * ENCABEZADO
+ * --------------------------------------------------------
+ */
+
+const filaEncabezado =
+    document.createElement("tr");
+
+const encabezadoAlumno =
+    document.createElement("th");
+
+encabezadoAlumno.textContent =
+    "Alumno";
+
+encabezadoAlumno.style.color =
+    "white";
+
+encabezadoAlumno.style.backgroundColor =
+    "#5c1d53";
+
+encabezadoAlumno.style.position =
+    "sticky";
+
+encabezadoAlumno.style.left =
+    "0";
+
+encabezadoAlumno.style.top =
+    "0";
+
+encabezadoAlumno.style.zIndex =
+    "5";
+
+filaEncabezado.appendChild(
+    encabezadoAlumno
+);
+
+const encabezadoGrupo =
+    document.createElement("th");
+
+encabezadoGrupo.textContent =
+    "Grupo";
+
+filaEncabezado.appendChild(
+    encabezadoGrupo
+);
+
+/*
+ * ------------------------------------------------
+ * PORCENTAJE EFECTIVO
+ * ------------------------------------------------
+ */
+
+const encabezadoEfectivo =
+    document.createElement("th");
+
+encabezadoEfectivo.textContent =
+    "% efectivo";
+
+filaEncabezado.appendChild(
+    encabezadoEfectivo
+);
+
+/*
+ * ------------------------------------------------
+ * PORCENTAJE PROYECTADO
+ * ------------------------------------------------
+ */
+
+const encabezadoProyectado =
+    document.createElement("th");
+
+encabezadoProyectado.textContent =
+    "% proyectado";
+
+filaEncabezado.appendChild(
+    encabezadoProyectado
+);
+
+/*
+ * ------------------------------------------------
+ * FECHAS
+ * ------------------------------------------------
+ */
+
+fechas.forEach(
+    fecha => {
+
+        const th =
+            document.createElement("th");
+
+        th.textContent =
+            fecha.toLocaleDateString();
+
+        filaEncabezado.appendChild(
+            th
+        );
+
+    }
+);
+
+/*
+ * ------------------------------------------------
+ * JUSTIFICACIÓN
+ * ------------------------------------------------
+ */
+
+const encabezadoJustificacion =
+    document.createElement("th");
+
+encabezadoJustificacion.textContent =
+    "Justificación";
+
+filaEncabezado.appendChild(
+    encabezadoJustificacion
+);
+
+/*
+ * ------------------------------------------------
+ * ENVIAR MENSAJE
+ * ------------------------------------------------
+ */
+
+const encabezadoMensaje =
+    document.createElement("th");
+
+encabezadoMensaje.textContent =
+    "Enviar mensaje";
+
+filaEncabezado.appendChild(
+    encabezadoMensaje
+);
+
+/*
+ * ------------------------------------------------
+ * LLAMAR
+ * ------------------------------------------------
+ */
+
+const encabezadoLlamar =
+    document.createElement("th");
+
+encabezadoLlamar.textContent =
+    "Llamar";
+
+filaEncabezado.appendChild(
+    encabezadoLlamar
+);
+
+tabla.appendChild(
+    filaEncabezado
+);
+
+/*
+ * ------------------------------------------------
+ * ALUMNOS
+ * ------------------------------------------------
+ */
+
+registros.forEach(
+    alumno => {
+
+        const fila =
+            document.createElement("tr");
+
+        /*
+         * ------------------------------------------------
+         * NOMBRE DEL ALUMNO
+         * ------------------------------------------------
+         */
+
+        const celdaNombre =
+            document.createElement("td");
+
+        celdaNombre.textContent =
+            `${alumno.apellidos} ${alumno.nombres}`;
+
+        fila.appendChild(
+            celdaNombre
+        );
+
+        /*
+         * ------------------------------------------------
+         * GRUPO
+         * ------------------------------------------------
+         */
+
+        const celdaGrupo =
+            document.createElement("td");
+
+        celdaGrupo.textContent =
+            alumno.grupo;
+
+        fila.appendChild(
+            celdaGrupo
+        );
+
+        /*
+         * ------------------------------------------------
+         * CALCULAR PORCENTAJES
+         * ------------------------------------------------
+         */
+
+        const porcentajes =
+            calcularPorcentajesAsistencia(
+                alumno
+            );
+
+        /*
+         * ------------------------------------------------
+         * PORCENTAJE EFECTIVO
+         * ------------------------------------------------
+         */
+
+        const celdaEfectivo =
+            document.createElement("td");
+
+        celdaEfectivo.textContent =
+            porcentajes.porcentajeEfectivo.toFixed(2) + "%";
+
+        fila.appendChild(
+            celdaEfectivo
+        );
+
+        /*
+         * ------------------------------------------------
+         * PORCENTAJE PROYECTADO
+         * ------------------------------------------------
+         */
+
+        const celdaProyectado =
+            document.createElement("td");
+
+        celdaProyectado.textContent =
+            porcentajes.porcentajeProyectado.toFixed(2) + "%";
+
+        fila.appendChild(
+            celdaProyectado
+        );
+
+
+        /*
+         * ------------------------------------------------
+         * ASISTENCIAS
+         * ------------------------------------------------
+         */
+
+        fechas.forEach(
+            fecha => {
+
+                const celda =
+                    document.createElement("td");
+
+                const sesion =
+                    alumno.sesiones.find(
+                        registro =>
+                            registro.fecha &&
+                            registro.fecha.getTime() ===
+                            fecha.getTime()
+                    );
+
+                celda.textContent =
+                    sesion
+                        ? (
+                            (sesion.asistencia || "?")
+                                .charAt(0)
+                        )
+                        : "";
+
+                fila.appendChild(
+                    celda
+                );
+
+            }
+        );
+
+        /*
+         * ------------------------------------------------
+         * JUSTIFICACIÓN
+         * ------------------------------------------------
+         */
+
+        const celdaJustificacion =
+            document.createElement("td");
+
+        const campoJustificacion =
+            document.createElement("textarea");
+
+        campoJustificacion.placeholder =
+            "Escribir justificación...";
+
+        campoJustificacion.rows =
+            3;
+
+        campoJustificacion.style.width =
+            "220px";
+
+        campoJustificacion.style.minHeight =
+            "60px";
+
+        campoJustificacion.style.resize =
+            "vertical";
+
+        campoJustificacion.style.boxSizing =
+            "border-box";
+
+        campoJustificacion.value =
+            alumno.justificacion || "";
+
+        campoJustificacion.addEventListener(
+            "click",
+            function(evento) {
+
+                evento.stopPropagation();
+
+            }
+        );
+
+        campoJustificacion.addEventListener(
+            "input",
+            function(evento) {
+
+                evento.stopPropagation();
+
+                alumno.justificacion =
+                    campoJustificacion.value;
+
+            }
+        );
+
+        celdaJustificacion.appendChild(
+            campoJustificacion
+        );
+
+        fila.appendChild(
+            celdaJustificacion
+        );
+
+const celdaMensaje = document.createElement("td");
+
+const botonMensaje = document.createElement("button");
+
+botonMensaje.type = "button";
+
+botonMensaje.textContent = "Enviar mensaje";
+
+botonMensaje.style.backgroundColor = "#178a75";
+botonMensaje.style.color = "white";
+botonMensaje.style.border = "none";
+botonMensaje.style.padding = "8px 12px";
+botonMensaje.style.borderRadius = "5px";
+botonMensaje.style.cursor = "pointer";
+
+botonMensaje.addEventListener("click", function(event) {
+
+event.stopPropagation();
+
+const telefono = alumno.telefono || alumno.celular || alumno.whatsapp;
+
+if (!telefono) {
+    alert("El estudiante no tiene un número de teléfono registrado.");
+    return;
+}
+
+let numero = String(telefono).replace(/\D/g, "");
+
+if (numero.startsWith("0")) {
+    numero = "593" + numero.substring(1);
+}
+
+const urlWhatsApp =
+    "whatsapp://send?phone=" + numero;
+
+window.location.href = urlWhatsApp;
+
+});
+
+celdaMensaje.appendChild(botonMensaje);
+
+fila.appendChild(celdaMensaje);
+
+const celdaLlamar = document.createElement("td");
+
+const botonLlamar = document.createElement("button");
+
+botonLlamar.type = "button";
+
+botonLlamar.textContent = "Llamar";
+
+botonLlamar.style.backgroundColor = "#178a75";
+botonLlamar.style.color = "white";
+botonLlamar.style.border = "none";
+botonLlamar.style.padding = "8px 12px";
+botonLlamar.style.borderRadius = "5px";
+botonLlamar.style.cursor = "pointer";
+
+botonLlamar.addEventListener("click", function(event) {
+
+event.stopPropagation();
+
+const telefono = alumno.telefono || alumno.celular || alumno.whatsapp;
+
+if (!telefono) {
+    alert("El estudiante no tiene un número de teléfono registrado.");
+    return;
+}
+
+let numero = String(telefono).replace(/\D/g, "");
+
+if (numero.startsWith("0")) {
+    numero = "593" + numero.substring(1);
+}
+
+const urlWhatsApp =
+    "whatsapp://send?phone=" + numero;
+
+window.location.href = urlWhatsApp;
+
+});
+
+celdaLlamar.appendChild(botonLlamar);
+
+fila.appendChild(celdaLlamar);
+
+
+
+
+        /*
+         * ------------------------------------------------
+         * SELECCIONAR ALUMNO
+         * ------------------------------------------------
+         */
+
+        fila.style.cursor =
+            "pointer";
+
+        fila.addEventListener(
+            "click",
+            function() {
+
+                /*
+                 * Quitar selección anterior.
+                 */
+
+                tabla
+                    .querySelectorAll(
+                        "tr.fila-alumno-seleccionada"
+                    )
+                    .forEach(
+                        filaSeleccionada => {
+
+                            filaSeleccionada.classList.remove(
+                                "fila-alumno-seleccionada"
+                            );
+
+                            filaSeleccionada.style.backgroundColor =
+                                "";
+
+                        }
+                    );
+
+
+                /*
+                 * Seleccionar esta fila.
+                 */
+
+                fila.classList.add(
+                    "fila-alumno-seleccionada"
+                );
+
+                fila.style.backgroundColor =
+                    "#7fffd4";
+
+            }
+        );
+
+
+        /*
+         * ------------------------------------------------
+         * AGREGAR FILA A LA TABLA
+         * ------------------------------------------------
+         */
+
+        tabla.appendChild(
+            fila
+        );
+
+    }
+);
+
+    /*
+     * --------------------------------------------------------
+     * ESTILO BÁSICO
+     * --------------------------------------------------------
+     */
+
+tabla
+    .querySelectorAll("th, td")
+    .forEach(celda => {
+
+        celda.style.border =
+            "1px solid #ccc";
+
+        celda.style.padding =
+            "8px";
+
+        celda.style.textAlign =
+            "center";
+
+        celda.style.whiteSpace =
+            "nowrap";
+
+    });
+
+
+/*
+ * --------------------------------------------------------
+ * ALUMNO Y GRUPO ALINEADOS A LA IZQUIERDA
+ * --------------------------------------------------------
+ */
+
+tabla
+    .querySelectorAll("th:nth-child(1), td:nth-child(1), th:nth-child(2), td:nth-child(2)")
+    .forEach(celda => {
+
+        celda.style.textAlign =
+            "left";
+
+    });
+
+
+    contenedor.appendChild(
+        tabla
+    );
+
+}
+
+
+/* ============================================================
+   PROCESAR ARCHIVO EXCEL
+============================================================ */
+
+async function procesarArchivoExcel(file) {
+
+    if (!file) {
+        return;
+    }
+
+
+    mostrarEstado(
+        "Leyendo archivo Excel..."
+    );
+
+
+    try {
+
+        /*
+         * ----------------------------------------------------
+         * LEER ARCHIVO
+         * ----------------------------------------------------
+         */
+
+        const arrayBuffer =
+            await file.arrayBuffer();
+
+
+        /*
+         * ----------------------------------------------------
+         * CREAR WORKBOOK
+         * ----------------------------------------------------
+         */
+
+        const workbook =
+            new ExcelJS.Workbook();
+
+
+        await workbook.xlsx.load(
+            arrayBuffer
+        );
+
+
+        /*
+         * ----------------------------------------------------
+         * MOSTRAR HOJAS EN CONSOLA
+         * ----------------------------------------------------
+         */
+
+        console.log(
+            "Hojas encontradas en el archivo:"
+        );
+
+        workbook.worksheets.forEach(hoja => {
+
+            console.log(
+                "-",
+                hoja.name
+            );
+
+        });
+
+
+        /*
+         * ----------------------------------------------------
+         * LEER CONFIGURACIÓN
+         * ----------------------------------------------------
+         */
+
+        const configuraciones =
+            leerConfiguracionGrupos(
+                workbook
+            );
+
+
+        /*
+         * ----------------------------------------------------
+         * GUARDAR CONFIGURACIÓN
+         * ----------------------------------------------------
+         */
+
+        configuracionGrupos.length = 0;
+
+        configuracionGrupos.push(
+            ...configuraciones
+        );
+
+
+        window.configuracionGrupos =
+            configuracionGrupos;
+
+
+        /*
+         * ----------------------------------------------------
+         * CARGAR SELECTOR
+         * ----------------------------------------------------
+         */
+
+        cargarGruposEnSelector(
+            configuracionGrupos
+        );
+
+
+        /*
+         * ----------------------------------------------------
+         * MOSTRAR EN CONSOLA
+         * ----------------------------------------------------
+         */
+
+        mostrarConfiguracionEnConsola(
+            configuracionGrupos
+        );
+
+       /*
+ * ----------------------------------------------------
+ * LEER REGISTROS DE ASISTENCIA
+ * ----------------------------------------------------
+ */
+
+registrosAsistencia =
+    leerRegistrosAsistencia(
+        workbook
+    );
+
+window.registrosAsistencia =
+    registrosAsistencia;
+
+
+/*
+ * ----------------------------------------------------
+ * GUARDAR REGISTROS PERSISTENTES
+ * ----------------------------------------------------
+ */
+
+guardarRegistrosAsistencia();
+
+
+/*
+ * ----------------------------------------------------
+ * MOSTRAR ASISTENCIAS
+ * ----------------------------------------------------
+ */
+
+mostrarRegistrosAsistencia(
+    registrosAsistencia
+);
+
+console.log(
+    "Registros de asistencia:",
+    registrosAsistencia
+);
+
+        /*
+         * ----------------------------------------------------
+         * RESULTADO
+         * ----------------------------------------------------
+         */
+
+        mostrarEstado(
+            `Configuración cargada correctamente. ${configuracionGrupos.length} grupo(s) encontrado(s).`,
+            "exito"
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Error al procesar el archivo:",
+            error
+        );
+
+
+        mostrarEstado(
+            error.message ||
+            "No fue posible procesar el archivo Excel.",
+            "error"
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   EVENTO: SELECCIONAR ARCHIVO
+============================================================ */
+
+if (archivoAsistencia) {
+
+    archivoAsistencia.addEventListener(
+        "change",
+        async function() {
+
+            const file =
+                this.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            await procesarArchivoExcel(
+                file
+            );
+
+        }
+    );
+
+}
+
+/*
+ * ==================================================
+ * BOTÓN PREPARAR INFORME
+ * ==================================================
+ */
+
+document
+    .getElementById("btnPrepararInforme")
+    .addEventListener("click", function() {
+
+        /*
+         * ----------------------------------------------
+         * OBTENER FECHA ACTUAL
+         * ----------------------------------------------
+         */
+
+        const hoy = new Date();
+
+        hoy.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+        /*
+         * ----------------------------------------------
+         * CALCULAR EL LUNES DE LA SEMANA ACTUAL
+         * ----------------------------------------------
+         */
+
+        const lunesActual =
+            new Date(hoy);
+
+        const diaSemana =
+            hoy.getDay();
+
+        const diasDesdeLunes =
+            diaSemana === 0
+                ? 6
+                : diaSemana - 1;
+
+        lunesActual.setDate(
+            hoy.getDate() -
+            diasDesdeLunes
+        );
+
+        /*
+         * ----------------------------------------------
+         * FORMATEAR FECHA INICIAL
+         * ----------------------------------------------
+         */
+
+        const anioInicio =
+            lunesActual.getFullYear();
+
+        const mesInicio =
+            String(
+                lunesActual.getMonth() + 1
+            ).padStart(2, "0");
+
+        const diaInicio =
+            String(
+                lunesActual.getDate()
+            ).padStart(2, "0");
+
+        const fechaInicio =
+            anioInicio +
+            "-" +
+            mesInicio +
+            "-" +
+            diaInicio;
+
+        /*
+         * ----------------------------------------------
+         * FORMATEAR FECHA FINAL
+         * ----------------------------------------------
+         */
+
+        const anioFin =
+            hoy.getFullYear();
+
+        const mesFin =
+            String(
+                hoy.getMonth() + 1
+            ).padStart(2, "0");
+
+        const diaFin =
+            String(
+                hoy.getDate()
+            ).padStart(2, "0");
+
+        const fechaFin =
+            anioFin +
+            "-" +
+            mesFin +
+            "-" +
+            diaFin;
+
+        /*
+         * ----------------------------------------------
+         * CONFIGURAR FILTROS
+         * ----------------------------------------------
+         */
+
+        document
+            .getElementById(
+                "filtroAsistencia"
+            )
+            .value = "inasistentes";
+
+        document
+            .getElementById(
+                "fechaInicio"
+            )
+            .value = fechaInicio;
+
+        document
+            .getElementById(
+                "fechaFin"
+            )
+            .value = fechaFin;
+
+        document
+            .getElementById(
+                "filtroGrupo"
+            )
+            .value = "todos";
+
+        /*
+         * ----------------------------------------------
+         * ACTIVAR FILTRO
+         * ----------------------------------------------
+         */
+
+        const btnFiltrar =
+            document.getElementById(
+                "btnFiltrar"
+            );
+
+        if (btnFiltrar) {
+
+            btnFiltrar.click();
+
+        }
+
+    });
+
+
+
+/* ============================================================
+   BOTÓN FILTRAR
+============================================================ */
+
+const btnFiltrar =
+    document.getElementById("btnFiltrar");
+
+
+if (btnFiltrar) {
+
+    btnFiltrar.addEventListener(
+        "click",
+        function() {
+
+            /*
+             * ------------------------------------------------
+             * OBTENER FECHAS
+             * ------------------------------------------------
+             */
+
+            const fechaInicioInput =
+                document.getElementById(
+                    "fechaInicio"
+                ).value;
+
+            const fechaFinInput =
+                document.getElementById(
+                    "fechaFin"
+                ).value;
+
+
+            /*
+             * ------------------------------------------------
+             * OBTENER ESTADO DE ASISTENCIA
+             * ------------------------------------------------
+             */
+
+            const filtroEstado =
+                document.getElementById(
+                    "filtroAsistencia"
+                ).value;
+
+           const filtroGrupoSeleccionado =
+             document.getElementById(
+                 "filtroGrupo"
+             ).value;
+
+
+            /*
+             * ------------------------------------------------
+             * CONVERTIR FECHAS
+             * ------------------------------------------------
+             */
+
+            const fechaInicio =
+                fechaInicioInput
+                    ? new Date(
+                        fechaInicioInput +
+                        "T00:00:00"
+                    )
+                    : null;
+
+            const fechaFin =
+                fechaFinInput
+                    ? new Date(
+                        fechaFinInput +
+                        "T23:59:59"
+                    )
+                    : null;
+
+
+            /*
+             * ------------------------------------------------
+             * FILTRAR SESIONES POR FECHA
+             * ------------------------------------------------
+             */
+
+            const registrosFiltradosPorFecha =
+                registrosAsistencia
+                    .map(
+                        alumno => {
+
+                            const sesionesFiltradas =
+                                alumno.sesiones.filter(
+                                    sesion => {
+
+                                        if (
+                                            !sesion.fecha
+                                        ) {
+                                            return false;
+                                        }
+
+                                        if (
+                                            fechaInicio &&
+                                            sesion.fecha <
+                                            fechaInicio
+                                        ) {
+                                            return false;
+                                        }
+
+                                        if (
+                                            fechaFin &&
+                                            sesion.fecha >
+                                            fechaFin
+                                        ) {
+                                            return false;
+                                        }
+
+                                        return true;
+
+                                    }
+                                );
+
+
+                            return {
+                                ...alumno,
+                                sesiones:
+                                    sesionesFiltradas
+                            };
+
+                        }
+                    )
+                    .filter(
+                        alumno =>
+                            alumno.sesiones.length > 0
+                    );
+
+
+            /*
+             * ------------------------------------------------
+             * FILTRAR POR ESTADO DE ASISTENCIA
+             *
+             * ASISTENTE:
+             * No tiene ninguna A dentro del período.
+             *
+             * INASISTENTE:
+             * Tiene al menos una A dentro del período.
+             * ------------------------------------------------
+             */
+
+const registrosFiltrados =
+    registrosFiltradosPorFecha
+        .filter(
+            alumno => {
+
+                /*
+                 * ------------------------------------------------
+                 * FILTRO POR ESTADO DE ASISTENCIA
+                 * ------------------------------------------------
+                 */
+
+                const tieneInasistencia =
+                    alumno.sesiones.some(
+                        sesion => {
+
+                            const asistencia =
+                                String(
+                                    sesion.asistencia || ""
+                                )
+                                    .trim()
+                                    .toUpperCase();
+
+                            return (
+                                asistencia.charAt(0) ===
+                                "A"
+                            );
+
+                        }
+                    );
+
+
+                /*
+                 * TODOS
+                 */
+
+                if (
+                    filtroEstado ===
+                    "todos"
+                ) {
+                    return true;
+                }
+
+
+                /*
+                 * ASISTENTES
+                 *
+                 * No tiene ninguna A.
+                 */
+
+                if (
+                    filtroEstado ===
+                    "asistentes"
+                ) {
+                    return !tieneInasistencia;
+                }
+
+
+                /*
+                 * INASISTENTES
+                 *
+                 * Tiene al menos una A.
+                 */
+
+                if (
+                    filtroEstado ===
+                    "inasistentes"
+                ) {
+                    return tieneInasistencia;
+                }
+
+
+                return true;
+
+            }
+        )
+        .filter(
+            alumno => {
+
+                /*
+                 * ------------------------------------------------
+                 * FILTRO POR GRUPO
+                 * ------------------------------------------------
+                 *
+                 * "todos" = no filtrar por grupo.
+                 * Cualquier otro valor = solamente ese grupo.
+                 */
+
+                if (
+                    filtroGrupoSeleccionado ===
+                    "todos"
+                ) {
+                    return true;
+                }
+
+                return (
+                    alumno.grupo ===
+                    filtroGrupoSeleccionado
+                );
+
+            }
+        );
+
+
+            /*
+             * ------------------------------------------------
+             * MOSTRAR RESULTADO
+             * ------------------------------------------------
+             */
+
+            mostrarRegistrosAsistencia(
+                registrosFiltrados
+            );
+
+
+            /*
+             * ------------------------------------------------
+             * MOSTRAR INFORMACIÓN EN CONSOLA
+             * ------------------------------------------------
+             */
+
+            console.log(
+                "Filtros aplicados:",
+                {
+                    fechaInicio:
+                        fechaInicioInput ||
+                        "sin límite",
+
+                    fechaFin:
+                        fechaFinInput ||
+                        "sin límite",
+
+                    estado:
+                        filtroEstado,
+
+                    registros:
+                        registrosFiltrados
+                }
+            );
+
+        }
+    );
+
+}
+
+/* ============================================================
+   BOTÓN LIMPIAR DATOS
+============================================================ */
+
+const btnLimpiarDatos =
+    document.getElementById("btnLimpiarDatos");
+
+if (btnLimpiarDatos) {
+
+    btnLimpiarDatos.addEventListener(
+        "click",
+        function() {
+
+            /*
+             * ------------------------------------------------
+             * CONFIRMAR ELIMINACIÓN
+             * ------------------------------------------------
+             */
+
+            const confirmar =
+                confirm(
+                    "¿Está seguro de que desea borrar todos los datos de asistencia guardados?\n\n" +
+                    "Esta acción eliminará los datos de la persistencia local " +
+                    "y limpiará la información mostrada en pantalla."
+                );
+
+            if (!confirmar) {
+                return;
+            }
+
+            /*
+             * ------------------------------------------------
+             * BORRAR PERSISTENCIA
+             * ------------------------------------------------
+             */
+
+            localStorage.removeItem(
+                CLAVE_PERSISTENCIA_ASISTENCIA
+            );
+
+            /*
+             * ------------------------------------------------
+             * BORRAR REGISTROS EN MEMORIA
+             * ------------------------------------------------
+             */
+
+            registrosAsistencia = [];
+
+            window.registrosAsistencia =
+                registrosAsistencia;
+
+            /*
+             * ------------------------------------------------
+             * LIMPIAR PANTALLA
+             * ------------------------------------------------ */
+
+            mostrarRegistrosAsistencia(
+                registrosAsistencia
+            );
+
+            console.log(
+                "Registros de asistencia eliminados de la persistencia."
+            );
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   INICIALIZACIÓN
+============================================================ */
+
+console.log(
+    "Learning Bridge - nuevo sistema de asistencia cargado."
+);
+
+console.log(
+    "Etapa 1: lectura de Configuracion-Grupos."
+);
+
+
+/*
+ * ==================================================
+ * RECUPERAR REGISTROS PERSISTENTES
+ * ==================================================
+ */
+
+cargarRegistrosAsistenciaPersistidos();
