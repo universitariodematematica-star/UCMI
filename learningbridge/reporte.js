@@ -497,32 +497,11 @@ function cargarGruposEnSelector(configuraciones) {
 
 function mostrarConfiguracionEnConsola(configuraciones) {
 
-    console.log(
-        "============================================"
-    );
-
-    console.log(
-        "CONFIGURACION-GRUPOS"
-    );
-
-    console.log(
-        "============================================"
-    );
-
 
     configuraciones.forEach(configuracion => {
 
-        console.log(
-            configuracion.grupo,
-            configuracion.dias
-        );
-
     });
 
-
-    console.log(
-        "============================================"
-    );
 
 }
 
@@ -1003,15 +982,6 @@ try {
     );
 
 
-    console.log(
-        "Registros de asistencia guardados en localStorage."
-    );
-
-    console.log(
-        "Configuración de grupos guardada en localStorage."
-    );
-
-
 } catch (error) {
 
     console.error(
@@ -1160,18 +1130,6 @@ try {
     }
 
 
-    console.log(
-        "Registros de asistencia recuperados desde localStorage:",
-        registrosAsistencia
-    );
-
-
-    console.log(
-        "Configuración de grupos recuperada desde localStorage:",
-        configuracionGrupos
-    );
-
-
     return true;
 
 
@@ -1232,16 +1190,6 @@ alumno.grupo,
 fechaInicioGrupo
 );
 
-console.log(
-"CALCULO PORCENTAJES:",
-alumno.grupo,
-"fechaInicioGrupo:",
-fechaInicioGrupo,
-"totalClases:",
-totalClases,
-"sesiones:",
-alumno.sesiones
-);
    
 if (totalClases <= 0) {
     return {
@@ -2142,16 +2090,7 @@ async function procesarArchivoExcel(file) {
          * ----------------------------------------------------
          */
 
-        console.log(
-            "Hojas encontradas en el archivo:"
-        );
-
         workbook.worksheets.forEach(hoja => {
-
-            console.log(
-                "-",
-                hoja.name
-            );
 
         });
 
@@ -2237,11 +2176,6 @@ guardarRegistrosAsistencia();
  */
 
 mostrarRegistrosAsistencia(
-    registrosAsistencia
-);
-
-console.log(
-    "Registros de asistencia:",
     registrosAsistencia
 );
 
@@ -2712,25 +2646,6 @@ const registrosFiltrados =
              * ------------------------------------------------
              */
 
-            console.log(
-                "Filtros aplicados:",
-                {
-                    fechaInicio:
-                        fechaInicioInput ||
-                        "sin límite",
-
-                    fechaFin:
-                        fechaFinInput ||
-                        "sin límite",
-
-                    estado:
-                        filtroEstado,
-
-                    registros:
-                        registrosFiltrados
-                }
-            );
-
         }
     );
 
@@ -2796,10 +2711,6 @@ if (btnLimpiarDatos) {
                 registrosAsistencia
             );
 
-            console.log(
-                "Registros de asistencia eliminados de la persistencia."
-            );
-
         }
     );
 
@@ -2809,14 +2720,6 @@ if (btnLimpiarDatos) {
 /* ============================================================
    INICIALIZACIÓN
 ============================================================ */
-
-console.log(
-    "Learning Bridge - nuevo sistema de asistencia cargado."
-);
-
-console.log(
-    "Etapa 1: lectura de Configuracion-Grupos."
-);
 
 
 /*
