@@ -1267,44 +1267,46 @@ const primeraFecha =
      * --------------------------------------------------------
      */
 
-    let inasistenciasEfectivas = 0;
+let inasistenciasEfectivas = 0;
 
-    alumno.sesiones.forEach(
-        sesion => {
+alumno.sesiones.forEach(
+    sesion => {
 
-            if (
-                !(sesion.fecha instanceof Date)
-            ) {
-                return;
-            }
+        if (
+            !(sesion.fecha instanceof Date)
+        ) {
+            return;
+        }
 
-            const fecha =
-                new Date(
-                    sesion.fecha.getFullYear(),
-                    sesion.fecha.getMonth(),
-                    sesion.fecha.getDate()
-                );
+        const fecha =
+            new Date(
+                sesion.fecha.getFullYear(),
+                sesion.fecha.getMonth(),
+                sesion.fecha.getDate()
+            );
 
-            const asistencia =
-                String(
-                    sesion.asistencia || ""
-                )
-                    .trim()
-                    .toUpperCase()
-                    .charAt(0);
+        const asistencia =
+            String(
+                sesion.asistencia || ""
+            )
+                .trim()
+                .toUpperCase()
+                .charAt(0);
 
 
-            if (
-                fecha < lunesActual &&
-                asistencia === "A"
-            ) {
+        if (
+            fecha >= primeraFecha &&
+            fecha < fechaFinPeriodo &&
+            fecha < lunesActual &&
+            asistencia === "A"
+        ) {
 
-                inasistenciasEfectivas++;
-
-            }
+            inasistenciasEfectivas++;
 
         }
-    );
+
+    }
+);
 
 
     /*
@@ -1315,45 +1317,47 @@ const primeraFecha =
      * --------------------------------------------------------
      */
 
-    let inasistenciasSemanaActual = 0;
+let inasistenciasSemanaActual = 0;
 
-    alumno.sesiones.forEach(
-        sesion => {
+alumno.sesiones.forEach(
+    sesion => {
 
-            if (
-                !(sesion.fecha instanceof Date)
-            ) {
-                return;
-            }
+        if (
+            !(sesion.fecha instanceof Date)
+        ) {
+            return;
+        }
 
-            const fecha =
-                new Date(
-                    sesion.fecha.getFullYear(),
-                    sesion.fecha.getMonth(),
-                    sesion.fecha.getDate()
-                );
+        const fecha =
+            new Date(
+                sesion.fecha.getFullYear(),
+                sesion.fecha.getMonth(),
+                sesion.fecha.getDate()
+            );
 
-            const asistencia =
-                String(
-                    sesion.asistencia || ""
-                )
-                    .trim()
-                    .toUpperCase()
-                    .charAt(0);
+        const asistencia =
+            String(
+                sesion.asistencia || ""
+            )
+                .trim()
+                .toUpperCase()
+                .charAt(0);
 
 
-            if (
-                fecha >= lunesActual &&
-                fecha <= hoy &&
-                asistencia === "A"
-            ) {
+        if (
+            fecha >= primeraFecha &&
+            fecha < fechaFinPeriodo &&
+            fecha >= lunesActual &&
+            fecha <= hoy &&
+            asistencia === "A"
+        ) {
 
-                inasistenciasSemanaActual++;
-
-            }
+            inasistenciasSemanaActual++;
 
         }
-    );
+
+    }
+);
 
 
     /*
