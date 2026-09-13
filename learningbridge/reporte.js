@@ -63,6 +63,11 @@ CALCULAR TOTAL DE CLASES DEL GRUPO DURANTE 7 MESES
 CALCULAR TOTAL DE CLASES DEL GRUPO DURANTE 7 MESES
 ============================================================ */
 
+function calcularTotalClasesGrupo(
+grupo,
+fechaInicio
+) {
+
 if (!grupo || !fechaInicio) {
     return 0;
 }
@@ -82,7 +87,10 @@ const fechaInicioCurso =
     new Date(fechaInicio);
 
 fechaInicioCurso.setHours(
-    0, 0, 0, 0
+    0,
+    0,
+    0,
+    0
 );
 
 const fechaFinCurso =
@@ -93,7 +101,10 @@ fechaFinCurso.setMonth(
 );
 
 fechaFinCurso.setHours(
-    0, 0, 0, 0
+    0,
+    0,
+    0,
+    0
 );
 
 let totalClases = 0;
@@ -121,40 +132,8 @@ while (fechaActual < fechaFinCurso) {
 }
 
 return totalClases;
-    configuracionGrupos.find(
-        item =>
-            String(item.grupo).trim() ===
-            String(grupo).trim()
-    );
 
-if (!configuracion) {
-    return 0;
 }
-
-const fechaInicioCurso =
-    new Date(fechaInicio);
-
-fechaInicioCurso.setHours(
-    0,
-    0,
-    0,
-    0
-);
-
-const fechaFinCurso =
-    new Date(fechaInicioCurso);
-
-fechaFinCurso.setMonth(
-    fechaFinCurso.getMonth() + 7
-);
-
-fechaFinCurso.setHours(
-    0,
-    0,
-    0,
-    0
-);
-
 let totalClases = 0;
 
 const fechaActual =
