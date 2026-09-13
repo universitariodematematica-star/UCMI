@@ -1541,21 +1541,14 @@ if (btnFiltrar) {
 
             /*
              * ------------------------------------------------
-             * SIN FECHAS
+             * OBTENER ESTADO DE ASISTENCIA
              * ------------------------------------------------
              */
 
-            if (
-                !fechaInicioInput &&
-                !fechaFinInput
-            ) {
-
-                mostrarRegistrosAsistencia(
-                    registrosAsistencia
-                );
-
-                return;
-            }
+            const filtroEstado =
+                document.getElementById(
+                    "filtroAsistencia"
+                ).value;
 
 
             /*
@@ -1583,11 +1576,11 @@ if (btnFiltrar) {
 
             /*
              * ------------------------------------------------
-             * FILTRAR SESIONES
+             * FILTRAR SESIONES POR FECHA
              * ------------------------------------------------
              */
 
-            const registrosFiltrados =
+            const registrosFiltradosPorFecha =
                 registrosAsistencia
                     .map(
                         alumno => {
@@ -1640,6 +1633,94 @@ if (btnFiltrar) {
 
             /*
              * ------------------------------------------------
+             * FILTRAR POR ESTADO DE ASISTENCIA
+             *
+             * ASISTENTE:
+             * No tiene ninguna A dentro del período.
+             *
+             * INASISTENTE:
+             * Tiene al menos una A dentro del período.
+             * ------------------------------------------------
+             */
+
+            const registrosFiltrados =
+                registrosFiltradosPorFecha.filter(
+                    alumno => {
+
+                        /*
+                         * Obtener solamente las marcas
+                         * correspondientes a las sesiones
+                         * seleccionadas.
+                         */
+
+                        const tieneInasistencia =
+                            alumno.sesiones.some(
+                                sesion => {
+
+                                    const asistencia =
+                                        String(
+                                            sesion.asistencia || ""
+                                        )
+                                            .trim()
+                                            .toUpperCase();
+
+                                    return (
+                                        asistencia.charAt(0) ===
+                                        "A"
+                                    );
+
+                                }
+                            );
+
+
+                        /*
+                         * TODOS
+                         */
+
+                        if (
+                            filtroEstado ===
+                            "todos"
+                        ) {
+                            return true;
+                        }
+
+
+                        /*
+                         * ASISTENTES
+                         *
+                         * No debe existir ninguna A.
+                         */
+
+                        if (
+                            filtroEstado ===
+                            "asistentes"
+                        ) {
+                            return !tieneInasistencia;
+                        }
+
+
+                        /*
+                         * INASISTENTES
+                         *
+                         * Debe existir al menos una A.
+                         */
+
+                        if (
+                            filtroEstado ===
+                            "inasistentes"
+                        ) {
+                            return tieneInasistencia;
+                        }
+
+
+                        return true;
+
+                    }
+                );
+
+
+            /*
+             * ------------------------------------------------
              * MOSTRAR RESULTADO
              * ------------------------------------------------
              */
@@ -1649,8 +1730,14 @@ if (btnFiltrar) {
             );
 
 
+            /*
+             * ------------------------------------------------
+             * MOSTRAR INFORMACIÓN EN CONSOLA
+             * ------------------------------------------------
+             */
+
             console.log(
-                "Filtro por fecha aplicado:",
+                "Filtros aplicados:",
                 {
                     fechaInicio:
                         fechaInicioInput ||
@@ -1659,6 +1746,9 @@ if (btnFiltrar) {
                     fechaFin:
                         fechaFinInput ||
                         "sin límite",
+
+                    estado:
+                        filtroEstado,
 
                     registros:
                         registrosFiltrados
