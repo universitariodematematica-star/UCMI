@@ -783,39 +783,139 @@ function leerRegistrosAsistencia(workbook) {
 ============================================================ */
 
 const CLAVE_PERSISTENCIA_ASISTENCIA =
-    "learningBridgeRegistrosAsistenciaNuevo";
+"learningBridgeRegistrosAsistenciaNuevo";
 
+const CLAVE_PERSISTENCIA_CONFIGURACION =
+"learningBridgeConfiguracionGruposNuevo";
 
 function guardarRegistrosAsistencia() {
 
-    try {
+try {
 
-        const datos =
-            registrosAsistencia.map(
-                alumno => ({
+    const datos =
+        registrosAsistencia.map(
+            alumno => ({
 
-                    apellidos:
-                        alumno.apellidos,
+                apellidos:
+                    alumno.apellidos,
 
-                    nombres:
-                        alumno.nombres,
+                nombres:
+                    alumno.nombres,
 
-                    studentId:
-                        alumno.studentId,
+                studentId:
+                    alumno.studentId,
 
-                    email:
-                        alumno.email,
+                email:
+                    alumno.email,
 
-                    grupo:
-                        alumno.grupo,
+                grupo:
+                    alumno.grupo,
 
-                    sesiones:
-                        alumno.sesiones.map(
+                sesiones:
+                    alumno.sesiones.map(
+                        sesion => ({
+
+                            fecha:
+                                sesion.fecha
+                                    ? sesion.fecha.toISOString()
+                                    : null,
+
+                            asistencia:
+                                sesion.asistencia
+
+                        })
+                    )
+
+            })
+        );
+
+
+    localStorage.setItem(
+        CLAVE_PERSISTENCIA_ASISTENCIA,
+        JSON.stringify(datos)
+    );
+
+
+    localStorage.setItem(
+        CLAVE_PERSISTENCIA_CONFIGURACION,
+        JSON.stringify(
+            configuracionGrupos
+        )
+    );
+
+
+    console.log(
+        "Registros de asistencia guardados en localStorage."
+    );
+
+    console.log(
+        "Configuración de grupos guardada en localStorage."
+    );
+
+
+} catch (error) {
+
+    console.error(
+        "Error al guardar registros de asistencia:",
+        error
+    );
+
+}
+
+}
+
+function cargarRegistrosAsistenciaPersistidos() {
+
+try {
+
+    const datosGuardados =
+        localStorage.getItem(
+            CLAVE_PERSISTENCIA_ASISTENCIA
+        );
+
+
+    if (!datosGuardados) {
+
+        return false;
+
+    }
+
+
+    const datos =
+        JSON.parse(
+            datosGuardados
+        );
+
+
+    registrosAsistencia =
+        datos.map(
+            alumno => ({
+
+                apellidos:
+                    alumno.apellidos,
+
+                nombres:
+                    alumno.nombres,
+
+                studentId:
+                    alumno.studentId,
+
+                email:
+                    alumno.email,
+
+                grupo:
+                    alumno.grupo,
+
+                sesiones:
+                    (alumno.sesiones || [])
+                        .map(
                             sesion => ({
 
                                 fecha:
                                     sesion.fecha
-                                        ? sesion.fecha.toISOString()
+                                        ? new Date(
+                                            sesion.fecha
+                                        )
                                         : null,
 
                                 asistencia:
@@ -824,133 +924,109 @@ function guardarRegistrosAsistencia() {
                             })
                         )
 
-                })
+            })
+        );
+
+
+    window.registrosAsistencia =
+        registrosAsistencia;
+
+
+    /*
+     * ----------------------------------------------------
+     * RECUPERAR CONFIGURACIÓN DE GRUPOS
+     * ----------------------------------------------------
+     */
+
+    const configuracionGuardada =
+        localStorage.getItem(
+            CLAVE_PERSISTENCIA_CONFIGURACION
+        );
+
+
+    if (configuracionGuardada) {
+
+        const configuracion =
+            JSON.parse(
+                configuracionGuardada
             );
 
 
-        localStorage.setItem(
-            CLAVE_PERSISTENCIA_ASISTENCIA,
-            JSON.stringify(datos)
+        configuracionGrupos.length = 0;
+
+        configuracionGrupos.push(
+            ...configuracion
         );
 
 
-        console.log(
-            "Registros de asistencia guardados en localStorage."
-        );
+        window.configuracionGrupos =
+            configuracionGrupos;
+
+    }
 
 
-    } catch (error) {
+    /*
+     * ----------------------------------------------------
+     * RECUPERAR SELECTOR DE GRUPOS
+     * ----------------------------------------------------
+     */
 
-        console.error(
-            "Error al guardar registros de asistencia:",
-            error
+    if (
+        configuracionGrupos &&
+        configuracionGrupos.length > 0
+    ) {
+
+        cargarGruposEnSelector(
+            configuracionGrupos
         );
 
     }
 
-}
 
+    /*
+     * ----------------------------------------------------
+     * MOSTRAR REGISTROS RECUPERADOS
+     * ----------------------------------------------------
+     */
 
-function cargarRegistrosAsistenciaPersistidos() {
+    if (
+        registrosAsistencia &&
+        registrosAsistencia.length > 0
+    ) {
 
-    try {
-
-        const datosGuardados =
-            localStorage.getItem(
-                CLAVE_PERSISTENCIA_ASISTENCIA
-            );
-
-
-        if (!datosGuardados) {
-
-            return false;
-
-        }
-
-
-        const datos =
-            JSON.parse(
-                datosGuardados
-            );
-
-
-        registrosAsistencia =
-            datos.map(
-                alumno => ({
-
-                    apellidos:
-                        alumno.apellidos,
-
-                    nombres:
-                        alumno.nombres,
-
-                    studentId:
-                        alumno.studentId,
-
-                    email:
-                        alumno.email,
-
-                    grupo:
-                        alumno.grupo,
-
-                    sesiones:
-                        (alumno.sesiones || [])
-                            .map(
-                                sesion => ({
-
-                                    fecha:
-                                        sesion.fecha
-                                            ? new Date(
-                                                sesion.fecha
-                                            )
-                                            : null,
-
-                                    asistencia:
-                                        sesion.asistencia
-
-                                })
-                            )
-
-                })
-            );
-
-
-        window.registrosAsistencia =
-            registrosAsistencia;
-
-
-if (
-    configuracionGrupos &&
-    configuracionGrupos.length > 0
-) {
-
-    mostrarRegistrosAsistencia(
-        registrosAsistencia
-    );
-
-}
-
-
-        console.log(
-            "Registros de asistencia recuperados desde localStorage:",
+        mostrarRegistrosAsistencia(
             registrosAsistencia
         );
 
-
-        return true;
-
-
-    } catch (error) {
-
-        console.error(
-            "Error al recuperar registros de asistencia:",
-            error
-        );
-
-
-        return false;
-
     }
+
+
+    console.log(
+        "Registros de asistencia recuperados desde localStorage:",
+        registrosAsistencia
+    );
+
+
+    console.log(
+        "Configuración de grupos recuperada desde localStorage:",
+        configuracionGrupos
+    );
+
+
+    return true;
+
+
+} catch (error) {
+
+    console.error(
+        "Error al recuperar registros de asistencia:",
+        error
+    );
+
+
+    return false;
+
+}
 
 }
 
