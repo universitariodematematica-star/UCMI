@@ -930,42 +930,41 @@ function guardarRegistrosAsistencia() {
 
 try {
 
-    const datos =
-        registrosAsistencia.map(
-            alumno => ({
+        apellidos:
+            alumno.apellidos,
 
-                apellidos:
-                    alumno.apellidos,
+        nombres:
+            alumno.nombres,
 
-                nombres:
-                    alumno.nombres,
+        studentId:
+            alumno.studentId,
 
-                studentId:
-                    alumno.studentId,
+        telefono:
+            alumno.telefono,
 
-                email:
-                    alumno.email,
+        email:
+            alumno.email,
 
-                grupo:
-                    alumno.grupo,
+        grupo:
+            alumno.grupo,
 
-                sesiones:
-                    alumno.sesiones.map(
-                        sesion => ({
+        sesiones:
+            alumno.sesiones.map(
+                sesion => ({
 
-                            fecha:
-                                sesion.fecha
-                                    ? sesion.fecha.toISOString()
-                                    : null,
+                    fecha:
+                        sesion.fecha
+                            ? sesion.fecha.toISOString()
+                            : null,
 
-                            asistencia:
-                                sesion.asistencia
+                    asistencia:
+                        sesion.asistencia
 
-                        })
-                    )
+                })
+            )
 
-            })
-        );
+    })
+);
 
 
     localStorage.setItem(
@@ -2152,12 +2151,32 @@ async function procesarArchivoExcel(file) {
  */
 
 registrosAsistencia =
-    leerRegistrosAsistencia(
-        workbook
+leerRegistrosAsistencia(
+workbook
+);
+
+for (
+const alumno of registrosAsistencia
+) {
+
+if (!alumno.studentId) {
+
+    alumno.telefono =
+        "";
+
+    continue;
+
+}
+
+alumno.telefono =
+    await window.obtenerTelefonoAlumnoFirebase(
+        alumno.studentId
     );
 
+}
+
 window.registrosAsistencia =
-    registrosAsistencia;
+registrosAsistencia;
 
 
 /*
