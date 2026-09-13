@@ -1190,7 +1190,7 @@ try {
 }
 
 /* ============================================================
-   CALCULAR PORCENTAJES DE ASISTENCIA
+CALCULAR PORCENTAJES DE ASISTENCIA
 ============================================================ */
 
 function calcularPorcentajesAsistencia(alumno) {
@@ -1271,220 +1271,6 @@ finCurso.setHours(
 
 /*
  * ------------------------------------------------
- * LUNES DE LA SEMANA ACTUAL
- * ------------------------------------------------
- */
-
-const hoy =
-    new Date();
-
-hoy.setHours(
-    0,
-    0,
-    0,
-    0
-);
-
-const lunesActual =
-    new Date(hoy);
-
-const diaSemana =
-    lunesActual.getDay();
-
-const diferenciaLunes =
-    diaSemana === 0
-        ? 6
-        : diaSemana - 1;
-
-lunesActual.setDate(
-    lunesActual.getDate() -
-    diferenciaLunes
-);
-
-/*
- * ------------------------------------------------
- * CONTADORES DE INASISTENCIAS
- * ------------------------------------------------
- */
-
-let inasistenciasEfectivas = 0;
-
-let inasistenciasSemanaActual = 0;
-
-/*
- * ------------------------------------------------
- * RECORRER SESIONES DEL ESTUDIANTE
- * ------------------------------------------------
- */
-
-if (Array.isArray(alumno.sesiones)) {
-
-    alumno.sesiones.forEach(
-        sesion => {
-
-            if (!sesion.fecha) {
-                return;
-            }
-
-            if (
-                String(sesion.asistencia)
-                    .trim()
-                    .toUpperCase() !== "A"
-            ) {
-                return;
-            }
-
-            const fecha =
-                new Date(sesion.fecha);
-
-            if (
-                isNaN(
-                    fecha.getTime()
-                )
-            ) {
-                return;
-            }
-
-            fecha.setHours(
-                0,
-                0,
-                0,
-                0
-            );
-
-            /*
-             * Fuera del período del curso
-             */
-
-            if (
-                fecha < inicioCurso ||
-                fecha >= finCurso
-            ) {
-                return;
-            }
-
-            /*
-             * Inasistencia efectiva:
-             * hasta el domingo de la semana anterior
-             */
-
-            if (
-                fecha < lunesActual
-            ) {
-
-                inasistenciasEfectivas++;
-
-                return;
-            }
-
-            /*
-             * Inasistencia de la semana actual:
-             * desde lunes hasta hoy
-             */
-
-            if (
-                fecha >= lunesActual &&
-                fecha <= hoy
-            ) {
-
-                inasistenciasSemanaActual++;
-            }
-
-        }
-    );
-}
-
-/*
- * ------------------------------------------------
- * PORCENTAJES
- * ------------------------------------------------
- */
-
-const inasistenciasProyectadas =
-    inasistenciasEfectivas +
-    inasistenciasSemanaActual;
-
-const porcentajeEfectivo =
-    (
-        inasistenciasEfectivas /
-        totalClases
-    ) * 100;
-
-const porcentajeProyectado =
-    (
-        inasistenciasProyectadas /
-        totalClases
-    ) * 100;
-
-return {
-    porcentajeEfectivo,
-    porcentajeProyectado
-};
-
-}
-
-/*
- * ------------------------------------------------
- * FECHA DE INICIO DEL CURSO DEL GRUPO
- * ------------------------------------------------
- */
-
-const fechaInicioGrupo =
-    obtenerPrimeraFechaGrupo(
-        alumno.grupo
-    );
-
-if (!fechaInicioGrupo) {
-    return {
-        porcentajeEfectivo: 0,
-        porcentajeProyectado: 0
-    };
-}
-
-/*
- * ------------------------------------------------
- * TOTAL DE CLASES DEL GRUPO EN LOS 7 MESES
- * ------------------------------------------------
- */
-
-const totalClases =
-    calcularTotalClasesGrupo(
-        alumno.grupo,
-        fechaInicioGrupo
-    );
-
-if (totalClases <= 0) {
-    return {
-        porcentajeEfectivo: 0,
-        porcentajeProyectado: 0
-    };
-}
-
-/*
- * ------------------------------------------------
- * INICIO Y FIN DEL PERÍODO DEL CURSO
- * ------------------------------------------------
- */
-
-const inicioCurso =
-    new Date(fechaInicioGrupo);
-
-inicioCurso.setHours(
-    0,
-    0,
-    0,
-    0
-);
-
-const finCurso =
-    new Date(inicioCurso);
-
-finCurso.setMonth(
-    finCurso.getMonth() + 7
-);
-
-/*
- * ------------------------------------------------
  * FECHA DE HOY
  * ------------------------------------------------
  */
@@ -1530,7 +1316,7 @@ lunesActual.setHours(
 
 /*
  * ------------------------------------------------
- * CONTADORES
+ * CONTADORES DE INASISTENCIAS
  * ------------------------------------------------
  */
 
@@ -1601,12 +1387,8 @@ if (Array.isArray(alumno.sesiones)) {
             }
 
             /*
-             * ------------------------------------------------
-             * INASISTENCIA EFECTIVA
-             *
-             * Todo lo ocurrido antes del lunes
-             * de la semana actual.
-             * ------------------------------------------------
+             * Inasistencia efectiva:
+             * hasta el domingo de la semana anterior.
              */
 
             if (
@@ -1619,12 +1401,8 @@ if (Array.isArray(alumno.sesiones)) {
             }
 
             /*
-             * ------------------------------------------------
-             * INASISTENCIA PROYECTADA
-             *
-             * Desde el lunes actual
-             * hasta HOY.
-             * ------------------------------------------------
+             * Inasistencia de la semana actual:
+             * desde lunes hasta hoy.
              */
 
             if (
@@ -1633,17 +1411,15 @@ if (Array.isArray(alumno.sesiones)) {
             ) {
 
                 inasistenciasSemanaActual++;
-
             }
 
         }
     );
-
 }
 
 /*
  * ------------------------------------------------
- * TOTAL PROYECTADO DE INASISTENCIAS
+ * CALCULAR INASISTENCIAS PROYECTADAS
  * ------------------------------------------------
  */
 
@@ -1653,7 +1429,7 @@ const inasistenciasProyectadas =
 
 /*
  * ------------------------------------------------
- * PORCENTAJES
+ * CALCULAR PORCENTAJES
  * ------------------------------------------------
  */
 
@@ -1670,310 +1446,215 @@ const porcentajeProyectado =
     ) * 100;
 
 return {
+    porcentajeEfectivo,
+    porcentajeProyectado
+};
 
-    porcentajeEfectivo:
-        porcentajeEfectivo,
+}
+     /*
+         * ------------------------------------------------
+         * INASISTENCIA EFECTIVA
+         *
+         * Todo lo ocurrido antes del lunes
+         * de la semana actual.
+         * ------------------------------------------------
+         */
 
-    porcentajeProyectado:
-        porcentajeProyectado
+        if (
+            fecha < lunesActual
+        ) {
+
+            inasistenciasEfectivas++;
+
+            return;
+        }
+
+        /*
+         * ------------------------------------------------
+         * INASISTENCIA PROYECTADA
+         *
+         * Desde el lunes actual
+         * hasta HOY.
+         * ------------------------------------------------
+         */
+
+        if (
+            fecha >= lunesActual &&
+            fecha <= hoy
+        ) {
+
+            inasistenciasSemanaActual++;
+
+        }
+
+    }
+);
+
+}
+
+/*
+
+TOTAL PROYECTADO DE INASISTENCIAS
+
+*/
+
+const inasistenciasProyectadas =
+inasistenciasEfectivas +
+inasistenciasSemanaActual;
+
+/*
+
+PORCENTAJES
+
+*/
+
+const porcentajeEfectivo =
+(
+inasistenciasEfectivas /
+totalClases
+) * 100;
+
+const porcentajeProyectado =
+(
+inasistenciasProyectadas /
+totalClases
+) * 100;
+
+return {
+
+porcentajeEfectivo:
+    porcentajeEfectivo,
+
+porcentajeProyectado:
+    porcentajeProyectado
 
 };
 
 }
 
-
 /* ============================================================
-   MOSTRAR ASISTENCIAS EN PANTALLA
+MOSTRAR ASISTENCIAS EN PANTALLA
 ============================================================ */
 
 function mostrarRegistrosAsistencia(
-    registros
+registros
 ) {
 
-    const contenedor =
-        document.getElementById(
-            "resultadoAsistencia"
-        );
-
-    if (!contenedor) {
-        return;
-    }
-
-
-    contenedor.innerHTML = "";
-
-
-    if (!registros.length) {
-
-        contenedor.textContent =
-            "No se encontraron registros de asistencia.";
-
-        return;
-
-    }
-
-
-    const tabla =
-        document.createElement("table");
-
-    tabla.style.width = "100%";
-    tabla.style.borderCollapse =
-        "collapse";
-
-
-    /*
-     * --------------------------------------------------------
-     * OBTENER TODAS LAS FECHAS
-     * --------------------------------------------------------
-     */
-
-    const fechas = [];
-
-    registros.forEach(
-        alumno => {
-
-            alumno.sesiones.forEach(
-                sesion => {
-
-                    if (
-                        sesion.fecha &&
-                        !fechas.some(
-                            fecha =>
-                                fecha.getTime() ===
-                                sesion.fecha.getTime()
-                        )
-                    ) {
-
-                        fechas.push(
-                            sesion.fecha
-                        );
-
-                    }
-
-                }
-            );
-
-        }
+const contenedor =
+    document.getElementById(
+        "resultadoAsistencia"
     );
 
+if (!contenedor) {
+    return;
+}
 
-fechas.sort(
-(a, b) =>
-a.getTime() -
-b.getTime()
-);
+contenedor.innerHTML = "";
 
-/*
+if (!registros.length) {
 
-ENCABEZADO
+    contenedor.textContent =
+        "No se encontraron registros de asistencia.";
 
-*/
-
-const filaEncabezado =
-document.createElement("tr");
-
-const encabezadoAlumno =
-document.createElement("th");
-
-encabezadoAlumno.textContent =
-"Alumno";
-
-encabezadoAlumno.style.color =
-"white";
-
-encabezadoAlumno.style.backgroundColor =
-"#5c1d53";
-
-encabezadoAlumno.style.position =
-"sticky";
-
-encabezadoAlumno.style.left =
-"0";
-
-encabezadoAlumno.style.top =
-"0";
-
-encabezadoAlumno.style.zIndex =
-"5";
-
-filaEncabezado.appendChild(
-encabezadoAlumno
-);
-
-const encabezadoGrupo =
-document.createElement("th");
-
-encabezadoGrupo.textContent =
-"Grupo";
-
-filaEncabezado.appendChild(
-encabezadoGrupo
-);
-
-/*
-
-PORCENTAJE EFECTIVO
-
-*/
-
-const encabezadoEfectivo =
-document.createElement("th");
-
-encabezadoEfectivo.textContent =
-"% efectivo";
-
-filaEncabezado.appendChild(
-encabezadoEfectivo
-);
-
-/*
-
-PORCENTAJE PROYECTADO
-
-*/
-
-const encabezadoProyectado =
-document.createElement("th");
-
-encabezadoProyectado.textContent =
-"% proyectado";
-
-filaEncabezado.appendChild(
-encabezadoProyectado
-);
-
-/*
-
-FECHAS
-
-*/
-
-fechas.forEach(
-fecha => {
-
-    const th =
-        document.createElement("th");
-
-    th.textContent =
-        fecha.toLocaleDateString();
-
-    filaEncabezado.appendChild(
-        th
-    );
+    return;
 
 }
 
-);
+const tabla =
+    document.createElement("table");
+
+tabla.style.width = "100%";
+
+tabla.style.borderCollapse =
+    "collapse";
 
 /*
-
-JUSTIFICACIÓN
-
-*/
-
-const encabezadoJustificacion =
-document.createElement("th");
-
-encabezadoJustificacion.textContent =
-"Justificación";
-
-filaEncabezado.appendChild(
-encabezadoJustificacion
-);
-
-/*
-
-ENVIAR MENSAJE
-
-*/
-
-const encabezadoMensaje =
-document.createElement("th");
-
-encabezadoMensaje.textContent =
-"Enviar mensaje";
-
-filaEncabezado.appendChild(
-encabezadoMensaje
-);
-
-/*
-
-LLAMAR
-
-*/
-
-const encabezadoLlamar =
-document.createElement("th");
-
-encabezadoLlamar.textContent =
-"Llamar";
-
-filaEncabezado.appendChild(
-encabezadoLlamar
-);
-
-tabla.appendChild(
-filaEncabezado
-);
-
-/*
-
-ALUMNOS
-
-*/
-
-registros.forEach(
-alumno => {
-
-    const fila =
-        document.createElement("tr");
-
-
-    /*
-     * ------------------------------------------------
-     * NOMBRE DEL ALUMNO
-     * ------------------------------------------------
-     */
-
-    const celdaNombre =
-        document.createElement("td");
-
-    celdaNombre.textContent =
-        `${alumno.apellidos} ${alumno.nombres}`;
-
-    fila.appendChild(
-        celdaNombre
-    );
-
-
-    /*
-     * ------------------------------------------------
-     * GRUPO
-     * ------------------------------------------------
-     */
-const celdaGrupo =
-    document.createElement("td");
-
-celdaGrupo.textContent =
-    alumno.grupo;
-
-fila.appendChild(
-    celdaGrupo
-);
-
-
-/*
- * ------------------------------------------------
- * CALCULAR PORCENTAJES
- * ------------------------------------------------
+ * --------------------------------------------------------
+ * OBTENER TODAS LAS FECHAS
+ * --------------------------------------------------------
  */
 
-const porcentajes =
-    calcularPorcentajesAsistencia(
-        alumno
-    );
+const fechas = [];
 
+registros.forEach(
+    alumno => {
+
+        alumno.sesiones.forEach(
+            sesion => {
+
+                if (
+                    sesion.fecha &&
+                    !fechas.some(
+                        fecha =>
+                            fecha.getTime() ===
+                            sesion.fecha.getTime()
+                    )
+                ) {
+
+                    fechas.push(
+                        sesion.fecha
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
+
+fechas.sort(
+    (a, b) =>
+        a.getTime() -
+        b.getTime()
+);
+
+/*
+ * --------------------------------------------------------
+ * ENCABEZADO
+ * --------------------------------------------------------
+ */
+
+const filaEncabezado =
+    document.createElement("tr");
+
+const encabezadoAlumno =
+    document.createElement("th");
+
+encabezadoAlumno.textContent =
+    "Alumno";
+
+encabezadoAlumno.style.color =
+    "white";
+
+encabezadoAlumno.style.backgroundColor =
+    "#5c1d53";
+
+encabezadoAlumno.style.position =
+    "sticky";
+
+encabezadoAlumno.style.left =
+    "0";
+
+encabezadoAlumno.style.top =
+    "0";
+
+encabezadoAlumno.style.zIndex =
+    "5";
+
+filaEncabezado.appendChild(
+    encabezadoAlumno
+);
+
+const encabezadoGrupo =
+    document.createElement("th");
+
+encabezadoGrupo.textContent =
+    "Grupo";
+
+filaEncabezado.appendChild(
+    encabezadoGrupo
+);
 
 /*
  * ------------------------------------------------
@@ -1981,16 +1662,15 @@ const porcentajes =
  * ------------------------------------------------
  */
 
-const celdaEfectivo =
-    document.createElement("td");
+const encabezadoEfectivo =
+    document.createElement("th");
 
-celdaEfectivo.textContent =
-    porcentajes.porcentajeEfectivo.toFixed(2) + "%";
+encabezadoEfectivo.textContent =
+    "% efectivo";
 
-fila.appendChild(
-    celdaEfectivo
+filaEncabezado.appendChild(
+    encabezadoEfectivo
 );
-
 
 /*
  * ------------------------------------------------
@@ -1998,15 +1678,176 @@ fila.appendChild(
  * ------------------------------------------------
  */
 
-const celdaProyectado =
-    document.createElement("td");
+const encabezadoProyectado =
+    document.createElement("th");
 
-celdaProyectado.textContent =
-    porcentajes.porcentajeProyectado.toFixed(2) + "%";
+encabezadoProyectado.textContent =
+    "% proyectado";
 
-fila.appendChild(
-    celdaProyectado
+filaEncabezado.appendChild(
+    encabezadoProyectado
 );
+
+/*
+ * ------------------------------------------------
+ * FECHAS
+ * ------------------------------------------------
+ */
+
+fechas.forEach(
+    fecha => {
+
+        const th =
+            document.createElement("th");
+
+        th.textContent =
+            fecha.toLocaleDateString();
+
+        filaEncabezado.appendChild(
+            th
+        );
+
+    }
+);
+
+/*
+ * ------------------------------------------------
+ * JUSTIFICACIÓN
+ * ------------------------------------------------
+ */
+
+const encabezadoJustificacion =
+    document.createElement("th");
+
+encabezadoJustificacion.textContent =
+    "Justificación";
+
+filaEncabezado.appendChild(
+    encabezadoJustificacion
+);
+
+/*
+ * ------------------------------------------------
+ * ENVIAR MENSAJE
+ * ------------------------------------------------
+ */
+
+const encabezadoMensaje =
+    document.createElement("th");
+
+encabezadoMensaje.textContent =
+    "Enviar mensaje";
+
+filaEncabezado.appendChild(
+    encabezadoMensaje
+);
+
+/*
+ * ------------------------------------------------
+ * LLAMAR
+ * ------------------------------------------------
+ */
+
+const encabezadoLlamar =
+    document.createElement("th");
+
+encabezadoLlamar.textContent =
+    "Llamar";
+
+filaEncabezado.appendChild(
+    encabezadoLlamar
+);
+
+tabla.appendChild(
+    filaEncabezado
+);
+
+/*
+ * ------------------------------------------------
+ * ALUMNOS
+ * ------------------------------------------------
+ */
+
+registros.forEach(
+    alumno => {
+
+        const fila =
+            document.createElement("tr");
+
+        /*
+         * ------------------------------------------------
+         * NOMBRE DEL ALUMNO
+         * ------------------------------------------------
+         */
+
+        const celdaNombre =
+            document.createElement("td");
+
+        celdaNombre.textContent =
+            `${alumno.apellidos} ${alumno.nombres}`;
+
+        fila.appendChild(
+            celdaNombre
+        );
+
+        /*
+         * ------------------------------------------------
+         * GRUPO
+         * ------------------------------------------------
+         */
+
+        const celdaGrupo =
+            document.createElement("td");
+
+        celdaGrupo.textContent =
+            alumno.grupo;
+
+        fila.appendChild(
+            celdaGrupo
+        );
+
+        /*
+         * ------------------------------------------------
+         * CALCULAR PORCENTAJES
+         * ------------------------------------------------
+         */
+
+        const porcentajes =
+            calcularPorcentajesAsistencia(
+                alumno
+            );
+
+        /*
+         * ------------------------------------------------
+         * PORCENTAJE EFECTIVO
+         * ------------------------------------------------
+         */
+
+        const celdaEfectivo =
+            document.createElement("td");
+
+        celdaEfectivo.textContent =
+            porcentajes.porcentajeEfectivo.toFixed(2) + "%";
+
+        fila.appendChild(
+            celdaEfectivo
+        );
+
+        /*
+         * ------------------------------------------------
+         * PORCENTAJE PROYECTADO
+         * ------------------------------------------------
+         */
+
+        const celdaProyectado =
+            document.createElement("td");
+
+        celdaProyectado.textContent =
+            porcentajes.porcentajeProyectado.toFixed(2) + "%";
+
+        fila.appendChild(
+            celdaProyectado
+        );
 
 
         /*
