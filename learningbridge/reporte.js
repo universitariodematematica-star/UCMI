@@ -1058,53 +1058,97 @@ function calcularPorcentajesAsistencia(alumno) {
     }
 
 
-    /*
-     * --------------------------------------------------------
-     * OBTENER PRIMERA FECHA DEL PERÍODO
-     *
-     * Se utiliza la primera sesión registrada del alumno.
-     * --------------------------------------------------------
-     */
+/*
+ * --------------------------------------------------------
+ * OBTENER PRIMERA FECHA DEL PERÍODO
+ *
+ * La fecha inicial corresponde a la primera sesión
+ * registrada para TODO EL GRUPO en el archivo de asistencia.
+ *
+ * No se utiliza la primera fecha individual del alumno.
+ * --------------------------------------------------------
+ */
 
-    const fechasAlumno =
-        alumno.sesiones
-            .map(
-                sesion =>
-                    sesion.fecha instanceof Date
-                        ? new Date(
-                            sesion.fecha.getFullYear(),
-                            sesion.fecha.getMonth(),
-                            sesion.fecha.getDate()
-                        )
-                        : null
+const registrosGrupo =
+    registrosAsistencia.filter(
+        registro =>
+            registro.grupo === alumno.grupo
+    );
+
+
+const fechasGrupo = [];
+
+registrosGrupo.forEach(
+    registro => {
+
+        if (
+            !Array.isArray(
+                registro.sesiones
             )
-            .filter(
-                fecha =>
-                    fecha &&
-                    !isNaN(fecha.getTime())
-            )
-            .sort(
-                (a, b) =>
-                    a.getTime() -
-                    b.getTime()
-            );
+        ) {
+            return;
+        }
 
 
-    if (fechasAlumno.length === 0) {
+        registro.sesiones.forEach(
+            sesion => {
 
-        return {
-            totalClasesPeriodo: 0,
-            inasistenciasEfectivas: 0,
-            inasistenciasSemanaActual: 0,
-            porcentajeEfectivo: 0,
-            porcentajeProyectado: 0
-        };
+                if (
+                    !(sesion.fecha instanceof Date)
+                ) {
+                    return;
+                }
+
+
+                const fecha =
+                    new Date(
+                        sesion.fecha.getFullYear(),
+                        sesion.fecha.getMonth(),
+                        sesion.fecha.getDate()
+                    );
+
+
+                if (
+                    !isNaN(
+                        fecha.getTime()
+                    )
+                ) {
+
+                    fechasGrupo.push(
+                        fecha
+                    );
+
+                }
+
+            }
+        );
 
     }
+);
 
 
-    const primeraFecha =
-        fechasAlumno[0];
+if (fechasGrupo.length === 0) {
+
+    return {
+        totalClasesPeriodo: 0,
+        inasistenciasEfectivas: 0,
+        inasistenciasSemanaActual: 0,
+        porcentajeEfectivo: 0,
+        porcentajeProyectado: 0
+    };
+
+}
+
+
+fechasGrupo.sort(
+    (a, b) =>
+        a.getTime() -
+        b.getTime()
+);
+
+
+const primeraFecha =
+    fechasGrupo[0];
 
 
     /*
