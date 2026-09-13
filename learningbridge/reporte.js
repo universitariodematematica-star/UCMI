@@ -373,20 +373,37 @@ function mostrarConfiguracionEnConsola(configuraciones) {
 
 function convertirFechaExcel(valor) {
 
+    /*
+     * --------------------------------------------------------
+     * SI EXCEL ENTREGA UNA FECHA COMO OBJETO Date
+     * --------------------------------------------------------
+     */
+
     if (valor instanceof Date) {
+
         return new Date(
             valor.getFullYear(),
             valor.getMonth(),
             valor.getDate()
         );
+
     }
+
+
+    /*
+     * --------------------------------------------------------
+     * SI EXCEL ENTREGA UN NÚMERO SERIAL
+     * --------------------------------------------------------
+     */
 
     if (typeof valor === "number") {
 
         const fecha =
             new Date(
                 Math.round(
-                    (valor - 25569) * 86400 * 1000
+                    (valor - 25569) *
+                    86400 *
+                    1000
                 )
             );
 
@@ -400,7 +417,28 @@ function convertirFechaExcel(valor) {
 
         }
 
+        return null;
+
     }
+
+
+    /*
+     * --------------------------------------------------------
+     * ENCABEZADO DE TEXTO
+     *
+     * FORMATO REAL DEL EXCEL:
+     *
+     * 8 Aug 2026 3.00PM All students
+     *
+     * 15 Aug 2026 3.00PM All students
+     *
+     * 5 Sept 2026 3.00PM All students
+     *
+     * Aquí solamente extraemos:
+     *
+     * día + mes + año
+     * --------------------------------------------------------
+     */
 
     const texto =
         String(valor ?? "").trim();
@@ -409,20 +447,91 @@ function convertirFechaExcel(valor) {
         return null;
     }
 
-    const fecha =
-        new Date(texto);
 
-    if (!isNaN(fecha.getTime())) {
-
-        return new Date(
-            fecha.getFullYear(),
-            fecha.getMonth(),
-            fecha.getDate()
+    const coincidencia =
+        texto.match(
+            /^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})\b/
         );
 
+    if (!coincidencia) {
+        return null;
     }
 
-    return null;
+
+    const dia =
+        parseInt(
+            coincidencia[1],
+            10
+        );
+
+    const mesTexto =
+        coincidencia[2]
+            .toLowerCase();
+
+    const anio =
+        parseInt(
+            coincidencia[3],
+            10
+        );
+
+
+    /*
+     * --------------------------------------------------------
+     * MESES EN INGLÉS
+     * --------------------------------------------------------
+     */
+
+    const meses = {
+
+        jan: 0,
+        january: 0,
+
+        feb: 1,
+        february: 1,
+
+        mar: 2,
+        march: 2,
+
+        apr: 3,
+        april: 3,
+
+        may: 4,
+
+        jun: 5,
+        june: 5,
+
+        jul: 6,
+        july: 6,
+
+        aug: 7,
+        august: 7,
+
+        sep: 8,
+        sept: 8,
+        september: 8,
+
+        oct: 9,
+        october: 9,
+
+        nov: 10,
+        november: 10,
+
+        dec: 11,
+        december: 11
+
+    };
+
+
+    if (!(mesTexto in meses)) {
+        return null;
+    }
+
+
+    return new Date(
+        anio,
+        meses[mesTexto],
+        dia
+    );
 
 }
 
