@@ -1539,6 +1539,63 @@ if (btnFiltrar) {
 
 }
 
+/* ============================================================
+   BOTÓN LIMPIAR DATOS
+============================================================ */
+
+const btnLimpiarDatos =
+    document.getElementById("btnLimpiarDatos");
+
+
+if (btnLimpiarDatos) {
+
+    btnLimpiarDatos.addEventListener(
+        "click",
+        function() {
+
+            /*
+             * ------------------------------------------------
+             * BORRAR PERSISTENCIA
+             * ------------------------------------------------
+             */
+
+            localStorage.removeItem(
+                CLAVE_PERSISTENCIA_ASISTENCIA
+            );
+
+
+            /*
+             * ------------------------------------------------
+             * BORRAR REGISTROS EN MEMORIA
+             * ------------------------------------------------
+             */
+
+            registrosAsistencia = [];
+
+            window.registrosAsistencia =
+                registrosAsistencia;
+
+
+            /*
+             * ------------------------------------------------
+             * LIMPIAR PANTALLA
+             * ------------------------------------------------
+             */
+
+            mostrarRegistrosAsistencia(
+                registrosAsistencia
+            );
+
+
+            console.log(
+                "Registros de asistencia eliminados de la persistencia."
+            );
+
+        }
+    );
+
+}
+
 
 /* ============================================================
    INICIALIZACIÓN
