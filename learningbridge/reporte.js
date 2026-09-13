@@ -2057,7 +2057,6 @@ if (archivoAsistencia) {
 
 }
 
-```js
 /*
  * ==================================================
  * BOTÓN PREPARAR INFORME
@@ -2070,7 +2069,7 @@ document
 
         /*
          * ----------------------------------------------
-         * OBTENER FECHAS
+         * OBTENER FECHA ACTUAL
          * ----------------------------------------------
          */
 
@@ -2107,28 +2106,55 @@ document
 
         /*
          * ----------------------------------------------
-         * FORMATEAR FECHAS PARA LOS INPUT DATE
+         * FORMATEAR FECHA INICIAL
          * ----------------------------------------------
          */
 
-        const formatearFecha =
-            fecha => {
+        const anioInicio =
+            lunesActual.getFullYear();
 
-                const anio =
-                    fecha.getFullYear();
+        const mesInicio =
+            String(
+                lunesActual.getMonth() + 1
+            ).padStart(2, "0");
 
-                const mes =
-                    String(
-                        fecha.getMonth() + 1
-                    ).padStart(2, "0");
+        const diaInicio =
+            String(
+                lunesActual.getDate()
+            ).padStart(2, "0");
 
-                const dia =
-                    String(
-                        fecha.getDate()
-                    ).padStart(2, "0");
+        const fechaInicio =
+            anioInicio +
+            "-" +
+            mesInicio +
+            "-" +
+            diaInicio;
 
-                return `${anio}-${mes}-${dia}`;
-            };
+        /*
+         * ----------------------------------------------
+         * FORMATEAR FECHA FINAL
+         * ----------------------------------------------
+         */
+
+        const anioFin =
+            hoy.getFullYear();
+
+        const mesFin =
+            String(
+                hoy.getMonth() + 1
+            ).padStart(2, "0");
+
+        const diaFin =
+            String(
+                hoy.getDate()
+            ).padStart(2, "0");
+
+        const fechaFin =
+            anioFin +
+            "-" +
+            mesFin +
+            "-" +
+            diaFin;
 
         /*
          * ----------------------------------------------
@@ -2146,19 +2172,13 @@ document
             .getElementById(
                 "fechaInicio"
             )
-            .value =
-                formatearFecha(
-                    lunesActual
-                );
+            .value = fechaInicio;
 
         document
             .getElementById(
                 "fechaFin"
             )
-            .value =
-                formatearFecha(
-                    hoy
-                );
+            .value = fechaFin;
 
         document
             .getElementById(
@@ -2168,7 +2188,7 @@ document
 
         /*
          * ----------------------------------------------
-         * EJECUTAR EL FILTRO EXISTENTE
+         * ACTIVAR FILTRO
          * ----------------------------------------------
          */
 
@@ -2178,11 +2198,12 @@ document
             );
 
         if (btnFiltrar) {
+
             btnFiltrar.click();
+
         }
 
     });
-```
 
 
 
