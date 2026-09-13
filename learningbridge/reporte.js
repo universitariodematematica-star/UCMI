@@ -919,9 +919,16 @@ function cargarRegistrosAsistenciaPersistidos() {
             registrosAsistencia;
 
 
-        mostrarRegistrosAsistencia(
-            registrosAsistencia
-        );
+if (
+    configuracionGrupos &&
+    configuracionGrupos.length > 0
+) {
+
+    mostrarRegistrosAsistencia(
+        registrosAsistencia
+    );
+
+}
 
 
         console.log(
