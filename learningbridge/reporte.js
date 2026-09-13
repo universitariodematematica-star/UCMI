@@ -1191,11 +1191,234 @@ try {
    CALCULAR PORCENTAJES DE ASISTENCIA
 ============================================================ */
 
+function calcularPorcentajesAsistencia(alumno) {
+
 if (!alumno || !alumno.grupo) {
     return {
         porcentajeEfectivo: 0,
         porcentajeProyectado: 0
     };
+}
+
+/*
+ * ------------------------------------------------
+ * FECHA DE INICIO DEL CURSO DEL GRUPO
+ * ------------------------------------------------
+ */
+
+const fechaInicioGrupo =
+    obtenerPrimeraFechaGrupo(
+        alumno.grupo
+    );
+
+if (!fechaInicioGrupo) {
+    return {
+        porcentajeEfectivo: 0,
+        porcentajeProyectado: 0
+    };
+}
+
+/*
+ * ------------------------------------------------
+ * TOTAL DE CLASES DEL GRUPO EN LOS 7 MESES
+ * ------------------------------------------------
+ */
+
+const totalClases =
+    calcularTotalClasesGrupo(
+        alumno.grupo,
+        fechaInicioGrupo
+    );
+
+if (totalClases <= 0) {
+    return {
+        porcentajeEfectivo: 0,
+        porcentajeProyectado: 0
+    };
+}
+
+/*
+ * ------------------------------------------------
+ * INICIO Y FIN DEL PERÍODO DEL CURSO
+ * ------------------------------------------------
+ */
+
+const inicioCurso =
+    new Date(fechaInicioGrupo);
+
+inicioCurso.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+const finCurso =
+    new Date(inicioCurso);
+
+finCurso.setMonth(
+    finCurso.getMonth() + 7
+);
+
+finCurso.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+/*
+ * ------------------------------------------------
+ * LUNES DE LA SEMANA ACTUAL
+ * ------------------------------------------------
+ */
+
+const hoy =
+    new Date();
+
+hoy.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+const lunesActual =
+    new Date(hoy);
+
+const diaSemana =
+    lunesActual.getDay();
+
+const diferenciaLunes =
+    diaSemana === 0
+        ? 6
+        : diaSemana - 1;
+
+lunesActual.setDate(
+    lunesActual.getDate() -
+    diferenciaLunes
+);
+
+/*
+ * ------------------------------------------------
+ * CONTADORES DE INASISTENCIAS
+ * ------------------------------------------------
+ */
+
+let inasistenciasEfectivas = 0;
+
+let inasistenciasSemanaActual = 0;
+
+/*
+ * ------------------------------------------------
+ * RECORRER SESIONES DEL ESTUDIANTE
+ * ------------------------------------------------
+ */
+
+if (Array.isArray(alumno.sesiones)) {
+
+    alumno.sesiones.forEach(
+        sesion => {
+
+            if (!sesion.fecha) {
+                return;
+            }
+
+            if (
+                String(sesion.asistencia)
+                    .trim()
+                    .toUpperCase() !== "A"
+            ) {
+                return;
+            }
+
+            const fecha =
+                new Date(sesion.fecha);
+
+            if (
+                isNaN(
+                    fecha.getTime()
+                )
+            ) {
+                return;
+            }
+
+            fecha.setHours(
+                0,
+                0,
+                0,
+                0
+            );
+
+            /*
+             * Fuera del período del curso
+             */
+
+            if (
+                fecha < inicioCurso ||
+                fecha >= finCurso
+            ) {
+                return;
+            }
+
+            /*
+             * Inasistencia efectiva:
+             * hasta el domingo de la semana anterior
+             */
+
+            if (
+                fecha < lunesActual
+            ) {
+
+                inasistenciasEfectivas++;
+
+                return;
+            }
+
+            /*
+             * Inasistencia de la semana actual:
+             * desde lunes hasta hoy
+             */
+
+            if (
+                fecha >= lunesActual &&
+                fecha <= hoy
+            ) {
+
+                inasistenciasSemanaActual++;
+            }
+
+        }
+    );
+}
+
+/*
+ * ------------------------------------------------
+ * PORCENTAJES
+ * ------------------------------------------------
+ */
+
+const inasistenciasProyectadas =
+    inasistenciasEfectivas +
+    inasistenciasSemanaActual;
+
+const porcentajeEfectivo =
+    (
+        inasistenciasEfectivas /
+        totalClases
+    ) * 100;
+
+const porcentajeProyectado =
+    (
+        inasistenciasProyectadas /
+        totalClases
+    ) * 100;
+
+return {
+    porcentajeEfectivo,
+    porcentajeProyectado
+};
+
 }
 
 /*
