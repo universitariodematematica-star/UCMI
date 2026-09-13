@@ -1040,15 +1040,33 @@ function mostrarRegistrosAsistencia(
         document.createElement("tr");
 
 
-    const encabezadoAlumno =
-        document.createElement("th");
+const encabezadoAlumno =
+    document.createElement("th");
 
-    encabezadoAlumno.textContent =
-        "Alumno";
+encabezadoAlumno.textContent =
+    "Alumno";
 
-    filaEncabezado.appendChild(
-        encabezadoAlumno
-    );
+encabezadoAlumno.style.color =
+    "white";
+
+encabezadoAlumno.style.backgroundColor =
+    "#5c1d53";
+
+encabezadoAlumno.style.position =
+    "sticky";
+
+encabezadoAlumno.style.left =
+    "0";
+
+encabezadoAlumno.style.top =
+    "0";
+
+encabezadoAlumno.style.zIndex =
+    "5";
+
+filaEncabezado.appendChild(
+    encabezadoAlumno
+);
 
 
     const encabezadoGrupo =
