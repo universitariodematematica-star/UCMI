@@ -778,6 +778,175 @@ function leerRegistrosAsistencia(workbook) {
 
 }
 
+/* ============================================================
+   PERSISTENCIA DE REGISTROS DE ASISTENCIA
+============================================================ */
+
+const CLAVE_PERSISTENCIA_ASISTENCIA =
+    "learningBridgeRegistrosAsistenciaNuevo";
+
+
+function guardarRegistrosAsistencia() {
+
+    try {
+
+        const datos =
+            registrosAsistencia.map(
+                alumno => ({
+
+                    apellidos:
+                        alumno.apellidos,
+
+                    nombres:
+                        alumno.nombres,
+
+                    studentId:
+                        alumno.studentId,
+
+                    email:
+                        alumno.email,
+
+                    grupo:
+                        alumno.grupo,
+
+                    sesiones:
+                        alumno.sesiones.map(
+                            sesion => ({
+
+                                fecha:
+                                    sesion.fecha
+                                        ? sesion.fecha.toISOString()
+                                        : null,
+
+                                asistencia:
+                                    sesion.asistencia
+
+                            })
+                        )
+
+                })
+            );
+
+
+        localStorage.setItem(
+            CLAVE_PERSISTENCIA_ASISTENCIA,
+            JSON.stringify(datos)
+        );
+
+
+        console.log(
+            "Registros de asistencia guardados en localStorage."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Error al guardar registros de asistencia:",
+            error
+        );
+
+    }
+
+}
+
+
+function cargarRegistrosAsistenciaPersistidos() {
+
+    try {
+
+        const datosGuardados =
+            localStorage.getItem(
+                CLAVE_PERSISTENCIA_ASISTENCIA
+            );
+
+
+        if (!datosGuardados) {
+
+            return false;
+
+        }
+
+
+        const datos =
+            JSON.parse(
+                datosGuardados
+            );
+
+
+        registrosAsistencia =
+            datos.map(
+                alumno => ({
+
+                    apellidos:
+                        alumno.apellidos,
+
+                    nombres:
+                        alumno.nombres,
+
+                    studentId:
+                        alumno.studentId,
+
+                    email:
+                        alumno.email,
+
+                    grupo:
+                        alumno.grupo,
+
+                    sesiones:
+                        (alumno.sesiones || [])
+                            .map(
+                                sesion => ({
+
+                                    fecha:
+                                        sesion.fecha
+                                            ? new Date(
+                                                sesion.fecha
+                                            )
+                                            : null,
+
+                                    asistencia:
+                                        sesion.asistencia
+
+                                })
+                            )
+
+                })
+            );
+
+
+        window.registrosAsistencia =
+            registrosAsistencia;
+
+
+        mostrarRegistrosAsistencia(
+            registrosAsistencia
+        );
+
+
+        console.log(
+            "Registros de asistencia recuperados desde localStorage:",
+            registrosAsistencia
+        );
+
+
+        return true;
+
+
+    } catch (error) {
+
+        console.error(
+            "Error al recuperar registros de asistencia:",
+            error
+        );
+
+
+        return false;
+
+    }
+
+}
+
 
 /* ============================================================
    MOSTRAR ASISTENCIAS EN PANTALLA
