@@ -930,48 +930,50 @@ function guardarRegistrosAsistencia() {
 
 try {
 
-        apellidos:
-            alumno.apellidos,
+    const datos =
+        registrosAsistencia.map(
+            alumno => ({
 
-        nombres:
-            alumno.nombres,
+                apellidos:
+                    alumno.apellidos,
 
-        studentId:
-            alumno.studentId,
+                nombres:
+                    alumno.nombres,
 
-        telefono:
-            alumno.telefono,
+                studentId:
+                    alumno.studentId,
 
-        email:
-            alumno.email,
+                telefono:
+                    alumno.telefono,
 
-        grupo:
-            alumno.grupo,
+                email:
+                    alumno.email,
 
-        sesiones:
-            alumno.sesiones.map(
-                sesion => ({
+                grupo:
+                    alumno.grupo,
 
-                    fecha:
-                        sesion.fecha
-                            ? sesion.fecha.toISOString()
-                            : null,
+                sesiones:
+                    alumno.sesiones.map(
+                        sesion => ({
 
-                    asistencia:
-                        sesion.asistencia
+                            fecha:
+                                sesion.fecha
+                                    ? sesion.fecha.toISOString()
+                                    : null,
 
-                })
-            )
+                            asistencia:
+                                sesion.asistencia
 
-    })
-);
+                        })
+                    )
 
+            })
+        );
 
     localStorage.setItem(
         CLAVE_PERSISTENCIA_ASISTENCIA,
         JSON.stringify(datos)
     );
-
 
     localStorage.setItem(
         CLAVE_PERSISTENCIA_CONFIGURACION,
@@ -980,6 +982,18 @@ try {
         )
     );
 
+    console.log(
+        "Registros de asistencia guardados en localStorage."
+    );
+
+} catch (error) {
+
+    console.error(
+        "Error al guardar registros de asistencia:",
+        error
+    );
+
+}
 
 } catch (error) {
 
