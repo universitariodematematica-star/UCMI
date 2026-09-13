@@ -1185,44 +1185,34 @@ CALCULAR PORCENTAJES DE ASISTENCIA
 
 function calcularPorcentajesAsistencia(alumno) {
 
-if (!alumno || !alumno.grupo) {
+if (
+    !alumno ||
+    !alumno.grupo
+) {
     return {
         porcentajeEfectivo: 0,
         porcentajeProyectado: 0
     };
 }
 
-/*
- * ------------------------------------------------
- * FECHA DE INICIO DEL CURSO DEL GRUPO
- * ------------------------------------------------
- */
-
-const fechaInicioGrupo =
+const fechaInicio =
     obtenerPrimeraFechaGrupo(
         alumno.grupo
     );
 
-if (!fechaInicioGrupo) {
+if (!fechaInicio) {
     return {
         porcentajeEfectivo: 0,
         porcentajeProyectado: 0
     };
 }
 
-/*
- * ------------------------------------------------
- * TOTAL DE CLASES DEL GRUPO EN LOS 7 MESES
- * ------------------------------------------------
- */
-
 const totalClases =
-calcularTotalClasesGrupo(
-alumno.grupo,
-fechaInicioGrupo
-);
+    calcularTotalClasesGrupo(
+        alumno.grupo,
+        fechaInicio
+    );
 
-   
 if (totalClases <= 0) {
     return {
         porcentajeEfectivo: 0,
@@ -1230,14 +1220,24 @@ if (totalClases <= 0) {
     };
 }
 
+const hoy =
+    new Date();
+
+hoy.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
 /*
  * ------------------------------------------------
- * INICIO Y FIN DEL PERÍODO DEL CURSO
+ * INICIO Y FIN DEL CURSO
  * ------------------------------------------------
  */
 
 const inicioCurso =
-    new Date(fechaInicioGrupo);
+    new Date(fechaInicio);
 
 inicioCurso.setHours(
     0,
@@ -1262,47 +1262,24 @@ finCurso.setHours(
 
 /*
  * ------------------------------------------------
- * FECHA DE HOY
- * ------------------------------------------------
- */
-
-const hoy =
-    new Date();
-
-hoy.setHours(
-    0,
-    0,
-    0,
-    0
-);
-
-/*
- * ------------------------------------------------
  * LUNES DE LA SEMANA ACTUAL
  * ------------------------------------------------
  */
 
-const lunesActual =
+const lunesSemana =
     new Date(hoy);
 
 const diaSemana =
-    lunesActual.getDay();
+    lunesSemana.getDay();
 
 const diferenciaLunes =
     diaSemana === 0
         ? 6
         : diaSemana - 1;
 
-lunesActual.setDate(
-    lunesActual.getDate() -
+lunesSemana.setDate(
+    lunesSemana.getDate() -
     diferenciaLunes
-);
-
-lunesActual.setHours(
-    0,
-    0,
-    0,
-    0
 );
 
 /*
@@ -1311,7 +1288,7 @@ lunesActual.setHours(
  * ------------------------------------------------
  */
 
-let inasistenciasEfectivas = 0;
+let inasistenciasAntesSemana = 0;
 
 let inasistenciasSemanaActual = 0;
 
@@ -1321,7 +1298,11 @@ let inasistenciasSemanaActual = 0;
  * ------------------------------------------------
  */
 
-if (Array.isArray(alumno.sesiones)) {
+if (
+    Array.isArray(
+        alumno.sesiones
+    )
+) {
 
     alumno.sesiones.forEach(
         sesion => {
@@ -1351,23 +1332,25 @@ if (Array.isArray(alumno.sesiones)) {
             );
 
             /*
-             * Solo cuentan las A
+             * Solo cuentan las A.
              */
 
             const asistencia =
-            String(
-            sesion.asistencia || ""
-            )
-            .trim()
-            .toUpperCase();
-            
-            if (!asistencia.startsWith("A")) {
-            return;
+                String(
+                    sesion.asistencia || ""
+                )
+                .trim()
+                .toUpperCase();
+
+            if (
+                !asistencia.startsWith("A")
+            ) {
+                return;
             }
 
             /*
              * No contar fechas fuera
-             * del período del curso.
+             * del período de 7 meses.
              */
 
             if (
@@ -1377,81 +1360,78 @@ if (Array.isArray(alumno.sesiones)) {
                 return;
             }
 
-     /*
-         * ------------------------------------------------
-         * INASISTENCIA EFECTIVA
-         *
-         * Todo lo ocurrido antes del lunes
-         * de la semana actual.
-         * ------------------------------------------------
-         */
+            /*
+             * INASISTENCIAS HASTA
+             * LA SEMANA ANTERIOR
+             */
 
-        if (
-            fecha < lunesActual
-        ) {
+            if (
+                fecha < lunesSemana
+            ) {
 
-            inasistenciasEfectivas++;
+                inasistenciasAntesSemana++;
 
-            return;
-        }
+                return;
+            }
 
-        /*
-         * ------------------------------------------------
-         * INASISTENCIA PROYECTADA
-         *
-         * Desde el lunes actual
-         * hasta HOY.
-         * ------------------------------------------------
-         */
+            /*
+             * INASISTENCIAS DE LA
+             * SEMANA ACTUAL HASTA HOY
+             */
 
-        if (
-            fecha >= lunesActual &&
-            fecha <= hoy
-        ) {
+            if (
+                fecha >= lunesSemana &&
+                fecha <= hoy
+            ) {
 
-            inasistenciasSemanaActual++;
+                inasistenciasSemanaActual++;
+
+            }
 
         }
-
-    }
-);
-
+    );
 }
 
 /*
-
-TOTAL PROYECTADO DE INASISTENCIAS
-
-*/
-
-const inasistenciasProyectadas =
-inasistenciasEfectivas +
-inasistenciasSemanaActual;
-
-/*
-
-PORCENTAJES
-
-*/
+ * ------------------------------------------------
+ * PORCENTAJE EFECTIVO
+ * ------------------------------------------------
+ *
+ * A hasta la semana pasada
+ * --------------------------------
+ * total de clases del grupo
+ */
 
 const porcentajeEfectivo =
-(
-inasistenciasEfectivas /
-totalClases
-) * 100;
+    (
+        inasistenciasAntesSemana /
+        totalClases
+    ) * 100;
+
+/*
+ * ------------------------------------------------
+ * PORCENTAJE PROYECTADO
+ * ------------------------------------------------
+ *
+ * A hasta hoy
+ * --------------------------------
+ * total de clases del grupo
+ */
+
+const inasistenciasHastaHoy =
+    inasistenciasAntesSemana +
+    inasistenciasSemanaActual;
 
 const porcentajeProyectado =
-(
-inasistenciasProyectadas /
-totalClases
-) * 100;
+    (
+        inasistenciasHastaHoy /
+        totalClases
+    ) * 100;
 
 return {
 
-porcentajeEfectivo:
     porcentajeEfectivo,
 
-porcentajeProyectado:
     porcentajeProyectado
 
 };
