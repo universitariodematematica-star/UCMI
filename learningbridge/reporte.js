@@ -1185,75 +1185,65 @@ CALCULAR PORCENTAJES DE ASISTENCIA
 
 function calcularPorcentajesAsistencia(alumno) {
 
-if (
-    !alumno ||
-    !alumno.grupo
-) {
+if (!alumno || !alumno.grupo) {
     return {
         porcentajeEfectivo: 0,
         porcentajeProyectado: 0
     };
 }
 
-const fechaInicio =
+/*
+ * ------------------------------------------------
+ * FECHA INICIAL DEL GRUPO
+ * ------------------------------------------------
+ */
+
+const primeraFechaGrupo =
     obtenerPrimeraFechaGrupo(
         alumno.grupo
     );
 
-if (!fechaInicio) {
+if (!primeraFechaGrupo) {
     return {
         porcentajeEfectivo: 0,
         porcentajeProyectado: 0
     };
 }
 
-const totalClases =
+/*
+ * ------------------------------------------------
+ * TOTAL DE CLASES DEL GRUPO EN 7 MESES
+ *
+ * ESTE ES EL DENOMINADOR.
+ *
+ * NO DEPENDE DEL RANGO SELECCIONADO
+ * EN EL INFORME.
+ * ------------------------------------------------
+ */
+
+const totalClasesCurso =
     calcularTotalClasesGrupo(
         alumno.grupo,
-        fechaInicio
+        primeraFechaGrupo
     );
 
-if (totalClases <= 0) {
+if (totalClasesCurso <= 0) {
     return {
         porcentajeEfectivo: 0,
         porcentajeProyectado: 0
     };
 }
+
+/*
+ * ------------------------------------------------
+ * HOY
+ * ------------------------------------------------
+ */
 
 const hoy =
     new Date();
 
 hoy.setHours(
-    0,
-    0,
-    0,
-    0
-);
-
-/*
- * ------------------------------------------------
- * INICIO Y FIN DEL CURSO
- * ------------------------------------------------
- */
-
-const inicioCurso =
-    new Date(fechaInicio);
-
-inicioCurso.setHours(
-    0,
-    0,
-    0,
-    0
-);
-
-const finCurso =
-    new Date(inicioCurso);
-
-finCurso.setMonth(
-    finCurso.getMonth() + 7
-);
-
-finCurso.setHours(
     0,
     0,
     0,
@@ -1282,9 +1272,48 @@ lunesSemana.setDate(
     diferenciaLunes
 );
 
+lunesSemana.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
 /*
  * ------------------------------------------------
- * CONTADORES DE INASISTENCIAS
+ * FIN DEL CURSO
+ *
+ * SOLO SE CONSIDERAN LAS SESIONES DENTRO
+ * DE LOS 7 MESES DEL CURSO.
+ * ------------------------------------------------
+ */
+
+const finCurso =
+    new Date(
+        primeraFechaGrupo
+    );
+
+finCurso.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+finCurso.setMonth(
+    finCurso.getMonth() + 7
+);
+
+finCurso.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+/*
+ * ------------------------------------------------
+ * CONTADORES
  * ------------------------------------------------
  */
 
@@ -1294,7 +1323,11 @@ let inasistenciasSemanaActual = 0;
 
 /*
  * ------------------------------------------------
- * RECORRER LAS SESIONES DEL ESTUDIANTE
+ * RECORRER TODAS LAS SESIONES DEL ALUMNO
+ *
+ * IMPORTANTE:
+ * NO SE UTILIZA fechaInicioFiltro.
+ * NO SE UTILIZA fechaFinFiltro.
  * ------------------------------------------------
  */
 
@@ -1332,6 +1365,31 @@ if (
             );
 
             /*
+             * Fuera del período del curso
+             * no cuenta.
+             */
+
+            if (
+                fecha <
+                primeraFechaGrupo ||
+                fecha >=
+                finCurso
+            ) {
+                return;
+            }
+
+            /*
+             * No contar fechas futuras.
+             */
+
+            if (
+                fecha >
+                hoy
+            ) {
+                return;
+            }
+
+            /*
              * Solo cuentan las A.
              */
 
@@ -1349,24 +1407,17 @@ if (
             }
 
             /*
-             * No contar fechas fuera
-             * del período de 7 meses.
+             * ------------------------------------
+             * EFECTIVO
+             *
+             * Todas las A anteriores al lunes
+             * de la semana actual.
+             * ------------------------------------
              */
 
             if (
-                fecha < inicioCurso ||
-                fecha >= finCurso
-            ) {
-                return;
-            }
-
-            /*
-             * INASISTENCIAS HASTA
-             * LA SEMANA ANTERIOR
-             */
-
-            if (
-                fecha < lunesSemana
+                fecha <
+                lunesSemana
             ) {
 
                 inasistenciasAntesSemana++;
@@ -1375,17 +1426,21 @@ if (
             }
 
             /*
-             * INASISTENCIAS DE LA
-             * SEMANA ACTUAL HASTA HOY
+             * ------------------------------------
+             * PROYECTADO
+             *
+             * A de lunes hasta hoy.
+             * ------------------------------------
              */
 
             if (
-                fecha >= lunesSemana &&
-                fecha <= hoy
+                fecha >=
+                lunesSemana &&
+                fecha <=
+                hoy
             ) {
 
                 inasistenciasSemanaActual++;
-
             }
 
         }
@@ -1395,38 +1450,36 @@ if (
 /*
  * ------------------------------------------------
  * PORCENTAJE EFECTIVO
- * ------------------------------------------------
  *
- * A hasta la semana pasada
- * --------------------------------
- * total de clases del grupo
+ * TODAS LAS A HASTA EL DOMINGO ANTERIOR
+ * ------------------------------------------------
  */
 
 const porcentajeEfectivo =
     (
         inasistenciasAntesSemana /
-        totalClases
-    ) * 100;
+        totalClasesCurso
+    ) *
+    100;
 
 /*
  * ------------------------------------------------
  * PORCENTAJE PROYECTADO
- * ------------------------------------------------
  *
- * A hasta hoy
- * --------------------------------
- * total de clases del grupo
+ * TODAS LAS A HASTA HOY
+ * ------------------------------------------------
  */
 
-const inasistenciasHastaHoy =
+const totalInasistenciasProyectadas =
     inasistenciasAntesSemana +
     inasistenciasSemanaActual;
 
 const porcentajeProyectado =
     (
-        inasistenciasHastaHoy /
-        totalClases
-    ) * 100;
+        totalInasistenciasProyectadas /
+        totalClasesCurso
+    ) *
+    100;
 
 return {
 
