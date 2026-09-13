@@ -1849,8 +1849,12 @@ fila.appendChild(
             celdaJustificacion
         );
 
+const celdaMensaje = document.createElement("td");
+
 const botonMensaje = document.createElement("button");
+
 botonMensaje.type = "button";
+
 botonMensaje.textContent = "Enviar mensaje";
 
 botonMensaje.style.backgroundColor = "#178a75";
@@ -1860,32 +1864,76 @@ botonMensaje.style.padding = "8px 12px";
 botonMensaje.style.borderRadius = "5px";
 botonMensaje.style.cursor = "pointer";
 
-botonMensaje.addEventListener("click", function(evento) {
-evento.stopPropagation();
-});
+botonMensaje.addEventListener(
+"click",
+function(event) {
 
-celdaMensaje.appendChild(botonMensaje);
-fila.appendChild(celdaMensaje);
+    event.stopPropagation();
 
-       const celdaLlamar = document.createElement("td");
+    // Aquí se incorporará posteriormente
+    // la lógica para enviar el mensaje.
 
-const botonLlamar = document.createElement("button");
+}
+
+);
+
+celdaMensaje.appendChild(
+botonMensaje
+);
+
+fila.appendChild(
+celdaMensaje
+);
+
+const celdaLlamar =
+document.createElement("td");
+
+const botonLlamar =
+document.createElement("button");
+
 botonLlamar.type = "button";
-botonLlamar.textContent = "Llamar";
 
-botonLlamar.style.backgroundColor = "#178a75";
-botonLlamar.style.color = "white";
-botonLlamar.style.border = "none";
-botonLlamar.style.padding = "8px 12px";
-botonLlamar.style.borderRadius = "5px";
-botonLlamar.style.cursor = "pointer";
+botonLlamar.textContent =
+"Llamar";
 
-botonLlamar.addEventListener("click", function(evento) {
-evento.stopPropagation();
-});
+botonLlamar.style.backgroundColor =
+"#178a75";
 
-celdaLlamar.appendChild(botonLlamar);
-fila.appendChild(celdaLlamar);
+botonLlamar.style.color =
+"white";
+
+botonLlamar.style.border =
+"none";
+
+botonLlamar.style.padding =
+"8px 12px";
+
+botonLlamar.style.borderRadius =
+"5px";
+
+botonLlamar.style.cursor =
+"pointer";
+
+botonLlamar.addEventListener(
+"click",
+function(event) {
+
+    event.stopPropagation();
+
+    // Aquí se incorporará posteriormente
+    // la lógica para llamar.
+
+}
+
+);
+
+celdaLlamar.appendChild(
+botonLlamar
+);
+
+fila.appendChild(
+celdaLlamar
+);
 
 
 
