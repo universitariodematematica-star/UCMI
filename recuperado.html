@@ -1,1972 +1,197 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learning Bridge - Control de Asistencia</title>
-
-    <style>
-
-        body {
-            font-family: Arial, sans-serif;
-        }
-
-        #archivoAsistencia {
-            margin-bottom: 20px;
-        }
-
-        #filtroAsistencia,
-        #fechaInicio,
-        #fechaFin,
-        #filtroGrupo,
-        #btnFiltrar {
-            margin-right: 10px;
-            margin-bottom: 15px;
-        }
-
-        #resultadoAsistencia {
-            margin-top: 15px;
-        }
-
-        #resultadoAsistencia div {
-            margin-bottom: 8px;
-        }
-
-                .btn-enviar-mensaje {
-            border: none;
-            border-radius: 6px;
-            padding: 8px 12px;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .mensaje-no-enviado {
-            background-color: #28a745;
-        }
-
-        .mensaje-enviado {
-            background-color: #e91e63;
-        }
-
-    </style>
-</head>
-
-<body>
-
-    <h1>Learning Bridge</h1>
-    <h2>Control de Asistencia</h2>
-
-<div>
-    <label for="archivoAsistencia">Archivo de asistencias:</label>
-    <input type="file" id="archivoAsistencia" accept=".xlsx,.xls">
-</div>    
-
-<div>
-    <label for="filtroAsistencia">Alumnos:</label>
-    <select id="filtroAsistencia">
-        <option value="todos">Todos</option>
-        <option value="asistentes">Asistentes</option>
-        <option value="inasistentes">Inasistentes</option>
-    </select>
-
-    <label for="fechaInicio">Fecha de inicio:</label>
-    <input type="date" id="fechaInicio">
-
-    <label for="fechaFin">Fecha de fin:</label>
-    <input type="date" id="fechaFin">
-
-    <label for="filtroGrupo">Grupo:</label>
-    <select id="filtroGrupo">
-        <option value="todos">Todos</option>
-    </select>
-
-        <button type="button" id="btnFiltrar">Filtrar</button>
-    <button type="button" id="btnPrepararInforme">Preparar informe</button>
-    
-</div>
-
-<div id="resultadoAsistencia"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
-
-    <script>
-
-        const alumnos = [
-
-            {apellidos:"CABASCANGO TANDAYAMO",nombres:"CARLOS ALBERTO",telefono:"593985064883",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"ALMEIDA ANDRADE",nombres:"DAYANA PAMELA",telefono:"593968347157",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"CHASIPANTA BRAVO",nombres:"HEYDI ESLENY",telefono:"593989412589",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"DELGADO CANDO",nombres:"NADIA TAHIS",telefono:"593994622051",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"ESPINOSA FLORES",nombres:"LEYDI BRIGITH",telefono:"593989895665",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"HIDALGO BENAVIDES",nombres:"JESSICA ESTEFANIA",telefono:"593998823674",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"LEIVA CARVAJAL",nombres:"FERNANDA LORENA",telefono:"593980965958",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"RUIZ FLORES",nombres:"JOSE ALEJANDRO",telefono:"593989503379",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"TIBANQUIZA REASCO",nombres:"LISBETH ALEXANDRA",telefono:"593985502167",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"TITUAÑA GUAJAN",nombres:"CRISTINA BELEN",telefono:"593979190736",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"CARRERA PESANTEZ",nombres:"JENNY ELIZABETH",telefono:"593990504827",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"MANTILLA AMAGUA",nombres:"ADRIANA PAOLA",telefono:"593987274212",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"CUASPA GELPUD",nombres:"ADRIANA ELIZABETH",telefono:"661406964",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"AULES AULES",nombres:"DINA MARIBEL",telefono:"593968177039",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"PEREZ ARELLANO",nombres:"JILTON ADRIAN",telefono:"593994688028",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"TITUAÑA TUQUEREZ",nombres:"YADIRA ANABEL",telefono:"593939094099",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"ORVES ARELLANO",nombres:"JENIFFER NICOL",telefono:"593984287574",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"CALVACHI DIAZ",nombres:"SANDRA JACQUELINE",telefono:"593987638219",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"DAVALOS GUADIR",nombres:"PATRICIA ELIZABETH",telefono:"593995312405",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"MERINO CARDENAS",nombres:"PATRICIA NICOLE",telefono:"593978866029",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"OCAÑA NARVAEZ",nombres:"KAREN JHOAN",telefono:"593962098175",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"RIVERA CABEZAS",nombres:"JOHANNA ARACELI",telefono:"593988724760",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"TUPIZA CUMBAL",nombres:"EVELIN JOHANA",telefono:"593994145937",grupo:"CONAPICH (2) A1 A L5PM"},
-            {apellidos:"VELOZ ANDAGOYA",nombres:"ALAN MATIAS",telefono:"593969720827",grupo:"CONAPICH (2) A1 A L5PM"},
-
-            {apellidos:"CABASCANGO AULES",nombres:"WILMER GUSTAVO",telefono:"593989891904",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"GUERRERO PILLAJO",nombres:"ELIANA ALEJANDRA",telefono:"593988310169",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"HIDALGO MOYA",nombres:"ROSA PAULINA",telefono:"593992078049",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"LOPEZ OCHOA",nombres:"CHRISTIAN ALBERTO",telefono:"593988473419",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"NASIMBA GUALOTUÑA",nombres:"ANTHONY JOSUE",telefono:"593995407200",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"PAREDES ANDRANGO",nombres:"MARITZA MERCEDES",telefono:"593987443260",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"SANCHEZ FLORES",nombres:"SAMANTHA CAROLINA",telefono:"593984920095",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"TONGUINO TOCAGON",nombres:"HELEN MALENA",telefono:"593988439468",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"RODRIGUEZ CAMPAÑA",nombres:"TANIA BELEN",telefono:"593980796693",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"MORA SIMBAÑA",nombres:"CHRISTIAN ALEXANDER",telefono:"593983123699",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"PERINGUEZA CUMBAL",nombres:"NATALY SILVANA",telefono:"593979781038",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"JAUREGUI GALARZA",nombres:"CRISTIAN DANIEL",telefono:"593991104683",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"LUGMAÑA REA",nombres:"MELANIE MIREYA",telefono:"593987680547",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"BORJA VARGAS",nombres:"DANIELA ALEJANDRA",telefono:"593984437760",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"CANIZARES ARIAS",nombres:"CRISTINA ANABEL",telefono:"593961026388",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"CASTILLO CUASES",nombres:"JORGE ARNULFO",telefono:"593996634460",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"CUMBA ANRANGO",nombres:"ERIKA PAOLA",telefono:"593997829711",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"GONZALEZ BRACHO",nombres:"MARIANGELA JOSE",telefono:"593984136818",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"GRANDA ORTIZ",nombres:"MANUEL DE JESUS",telefono:"593999116824",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"LUPERA MACIAS",nombres:"ALEX FABRICIO",telefono:"593981369471",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"MOURGHUEYTTIO AGUAYO",nombres:"PAUL ALEJANDRO",telefono:"593979418756",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"PACHANO TORREALBA",nombres:"ROSSYBELL MARILIN",telefono:"99262737",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"PINCAY TRIANA",nombres:"LISSETH VANESSA",telefono:"593968421329",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"RUIZ HEREDIA",nombres:"DIEGO PATRICIO",telefono:"593984480203",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-            {apellidos:"TAPIA ARAUJO",nombres:"NAYELI ESTEFANIA",telefono:"593962613316",grupo:"CONAPICH (2) A1 A L7PM (A)"},
-
-            {apellidos:"CHIPANTASI PAEZ",nombres:"NATHALIE NO DATO",telefono:"593979779547",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"AREVALO DELGADO",nombres:"LADY CAROLINA",telefono:"593984437768",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"AIMARA SUNTAXI",nombres:"LESLIE DANIELA",telefono:"593997894350",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"BENAVIDES NAZARENO",nombres:"DIANA CAROLINA",telefono:"593993154630",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"BRAVO AGUAR",nombres:"ALEX ARIEL",telefono:"593968654100",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"CHAUCALA CHUMAÑA",nombres:"ANTONY DANIEL",telefono:"593982030292",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"CHAUCALA CHUMAÑA",nombres:"ISSAC NICOLAS",telefono:"593960804602",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"CHAUCALA PINTO",nombres:"ADRIANA RAQUEL",telefono:"593984585766",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"JIMENEZ YEPEZ",nombres:"BERSABE FRANCELINA",telefono:"593984491664",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"MOREIRA CUMBAL",nombres:"JOEL ISAAC",telefono:"593991289081",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"PACHACAMA PACHACAMA",nombres:"NATALIA ABIGAIL",telefono:"593988380343",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"PEREZ GARCIA",nombres:"LUIS NEPTALI",telefono:"593985141456",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"RIVERA ENRIQUEZ",nombres:"DAPHNE YIELENA",telefono:"593964169890",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"VILLAMARIN CUMBAL",nombres:"ZAMYA MISHELL",telefono:"593992703192",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"DUCHI CUENCA",nombres:"JHOSELIN NICOLE",telefono:"593984947237",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"MESA ORTIZ",nombres:"DANIELA",telefono:"573337097935",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"CALAGLAS IPIACO",nombres:"ROBIN CLEVER",telefono:"593999234156",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"CASA GUANO",nombres:"DIEGO VINICIO",telefono:"593962672658",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"CONDOR ALVARO",nombres:"AMBAR DANIELA",telefono:"593984864102",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"GUASTAY MUÑOZ",nombres:"DIANA ELIZABETH",telefono:"593991505456",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"LINCANGO TIPANTUÑA",nombres:"DAYANA MARICELA",telefono:"593998092099",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"MENESES MUESES",nombres:"DIEGO JAVIER",telefono:"593962741418",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"PACHACAMA LLUMIQUINGA",nombres:"JHON MICHAEL",telefono:"593982939321",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"PEREZ TACO",nombres:"JANETH JADIRA",telefono:"593988483361",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"PILICITA LLUMIQUINGA",nombres:"LESLY ANAHY",telefono:"593991107054",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"PILLAJO TIGSE",nombres:"ZAYLA ELIZABETH",telefono:"593987683234",grupo:"CONAPICH (2) A1 A S3PM"},
-            {apellidos:"URIBE HERRERA",nombres:"MARIANA MARIANA",telefono:"3246877720",grupo:"CONAPICH (2) A1 A S3PM"},
-
-            {apellidos:"CEPEDA ORTIZ",nombres:"SOFÍA ALEJANDRA",telefono:"593982387822",grupo:"CONAPICH (2) A1 D L3PM"},
-            {apellidos:"GONZALEZ ENRIQUEZ",nombres:"MARTIN ANDRES",telefono:"593979338060",grupo:"CONAPICH (2) A1 D L3PM"},
-            {apellidos:"PACHACAMA LLUMIQUINGA",nombres:"KAREN MILENA",telefono:"593992255885",grupo:"CONAPICH (2) A1 D L3PM"},
-            {apellidos:"CUERO JIMENEZ",nombres:"DENISSE LUCIA",telefono:"593969561181",grupo:"CONAPICH (2) A1 D L3PM"},
-            {apellidos:"PROCEL VALAREZO",nombres:"ANDREA ESTEFANIA",telefono:"9969465553",grupo:"CONAPICH (2) A1 D L3PM"},
-            {apellidos:"CANTUÑA PAZMIÑO",nombres:"VICTORIA ANAHI",telefono:"593968871679",grupo:"CONAPICH (2) A1 D L3PM"},
-            {apellidos:"CARRILLO CAHUEÑAS",nombres:"JAVIER ALEXANDER",telefono:"593992502242",grupo:"CONAPICH (2) A1 D L3PM"},
-            {apellidos:"CHOTO NACIMBA",nombres:"DAYANARA KRISTELL",telefono:"593985607851",grupo:"CONAPICH (2) A1 D L3PM"},
-            {apellidos:"LLUMIQUINGA PACHACAMA",nombres:"BRADLEY ISAAC",telefono:"593960848807",grupo:"CONAPICH (2) A1 D L3PM"},
-            {apellidos:"NIETO ALVEAR",nombres:"DIANA CRISTELL",telefono:"593995328566",grupo:"CONAPICH (2) A1 D L3PM"},
-            {apellidos:"SANCHEZ ROMERO",nombres:"SAMANTA RUBBI",telefono:"593960867322",grupo:"CONAPICH (2) A1 D L3PM"},
-            {apellidos:"VALDIVIESO HIDALGO",nombres:"IGNACIO DAVID",telefono:"593963604240",grupo:"CONAPICH (2) A1 D L3PM"},
-
-            {apellidos:"AMAGUAÑA ANGAMARCA",nombres:"JENNIFER ANAHI",telefono:"593982892271",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"AMAGUAÑA ANGAMARCA",nombres:"MELANY MARIANA",telefono:"593982892271",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"PADILLA RAMIREZ",nombres:"VICTORIA CHARLOTT",telefono:"593998028608",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"AGUIRRE PULLAS",nombres:"MADELINE ABIGAIL",telefono:"593986709314",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"AGUIRRE SUNTAXI",nombres:"TERESA DEL ROCIO",telefono:"593986698756",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"ANANGONO CHALA",nombres:"ANGIELA GABRIELA",telefono:"593959732575",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"BAEZ SANTILLAN",nombres:"EVELIN VANESSA",telefono:"593994945457",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"CASTELLANOS ZAMBRANO",nombres:"JUAN DAVID",telefono:"593984805906",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"GORDON LLUMIQUINGA",nombres:"BRITHANY DANIELA",telefono:"593988741574",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"PAEZ GUEVARA",nombres:"LYAN GAEL",telefono:"593988136632",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"QUISHPE TIPAN",nombres:"NICOLE VALENTINA",telefono:"593995205662",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"ALMEIDA MARTINEZ",nombres:"JUAN SEBASTIAN",telefono:"593969016160",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"CHILLAGANA FAJARDO",nombres:"MELANY PAULIANA",telefono:"593964069577",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"GUAMAN VELA",nombres:"JOHANNA ANAHI",telefono:"593988491785",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"MALDONADO CHALA",nombres:"ARIANNA DOMENICA",telefono:"1755682018",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"ZARATE AMBI",nombres:"DOMÉNICA MIRANDA",telefono:"593987376714",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"ALVAREZ LOACHAMIN",nombres:"LESLY ABIGAIL",telefono:"593993836780",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"CALDERON VASQUEZ",nombres:"SOLANGE FERNANDA",telefono:"593995510245",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"DURAN PACHANO",nombres:"SAMUEL DAVID",telefono:"593939824623",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"GORDON GORDON",nombres:"EMILY GABRIELA",telefono:"593967327068",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"GUANOCHANGA ROCHA",nombres:"JEFFERSON JAIR",telefono:"593939063836",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"LOACHAMIN RAMIREZ",nombres:"CAMILO ALEJANDRO",telefono:"593997737500",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"RIZZO LUCAS",nombres:"BIANCA JULIETH",telefono:"593991309284",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"RODRIGUEZ GALIANO",nombres:"EDISON SEBASTIAN",telefono:"593993785027",grupo:"CONAPICH (2) A1 D MJ6PM"},
-            {apellidos:"ALVAREZ LOACHAMIN",nombres:"JOSTIN ISMAEL",telefono:"593993836111",grupo:"CONAPICH (2) A1 D MJ6PM"},
-
-            {apellidos:"CHASIPANTA LLULLUNA",nombres:"SHIRLEY ARACELY",telefono:"593960483808",grupo:"CONAPICH (2) A1 J L10AM"},
-            {apellidos:"GUALLICHICO VILLEGAS",nombres:"ALISON DOMENICA",telefono:"593987779929",grupo:"CONAPICH (2) A1 J L10AM"},
-            {apellidos:"MALDONADO PAREDES",nombres:"TERRY JHOSUA",telefono:"593999934744",grupo:"CONAPICH (2) A1 J L10AM"},
-            {apellidos:"TUPIZA CUASQUEN",nombres:"LISBETH CAROLINA",telefono:"593968672166",grupo:"CONAPICH (2) A1 J L10AM"},
-            {apellidos:"ZAMBRANO BRAVO",nombres:"LICETH CAROLINA",telefono:"593988263187",grupo:"CONAPICH (2) A1 J L10AM"},
-            {apellidos:"BENITEZ LECHON",nombres:"MATIAS MARCELO",telefono:"593998312223",grupo:"CONAPICH (2) A1 J L10AM"},
-            {apellidos:"CHAVEZ FARINANGO",nombres:"YURI ESTEFANIA",telefono:"593988717757",grupo:"CONAPICH (2) A1 J L10AM"},
-            {apellidos:"TUTILLO SIMBAÑA",nombres:"ANGEL DAVID",telefono:"593969296548",grupo:"CONAPICH (2) A1 J L10AM"},
-            {apellidos:"AIGAJE REA",nombres:"ADRIANA BRIGGITTE",telefono:"593984829353",grupo:"CONAPICH (2) A1 J L10AM"},
-            {apellidos:"BONILLA CALPA",nombres:"ALINA FERNANDA",telefono:"593980643323",grupo:"CONAPICH (2) A1 J L10AM"},
-            {apellidos:"CATAGÑA ALOMOTO",nombres:"ARACELI MABEL",telefono:"593980124699",grupo:"CONAPICH (2) A1 J L10AM"},
-            {apellidos:"CHOLANGO COYAGO",nombres:"ANDREA ELIZABETH",telefono:"593989198206",grupo:"CONAPICH (2) A1 J L10AM"},
-            {apellidos:"RODRIGUEZ CEVALLOS",nombres:"ALISON DAYANA",telefono:"593987743689",grupo:"CONAPICH (2) A1 J L10AM"},
-
-            {apellidos:"ESTEVEZ SIMBAÑA",nombres:"ISIS SCARLETH",telefono:"593991556704",grupo:"CONAPICH (2) A1 K L8AM"},
-            {apellidos:"ACERO QUISHPE",nombres:"JEISBELLY MYKAELA",telefono:"593999778555",grupo:"CONAPICH (2) A1 K L8AM"},
-            {apellidos:"GANCHALA ALTAMIRANO",nombres:"ALEXIS FERNANDO",telefono:"593996024890",grupo:"CONAPICH (2) A1 K L8AM"},
-            {apellidos:"RAMIREZ LOACHAMIN",nombres:"MIGUEL ANTONIO",telefono:"593960039507",grupo:"CONAPICH (2) A1 K L8AM"},
-
-            {apellidos:"ALVAREZ VELA",nombres:"ANTONY MATEO",telefono:"593985995552",grupo:"CONAPICH (2) B1 L6PM"},
-            {apellidos:"SOTALIN PILLAJO",nombres:"GLADYS FERNANDA",telefono:"593995555730",grupo:"CONAPICH (2) B1 L6PM"},
-            {apellidos:"TOAPANTA QUINTANA",nombres:"MIKEYLA SALOME",telefono:"593963031469",grupo:"CONAPICH (2) B1 L6PM"},
-            {apellidos:"GUALOTUÑA LUGMAÑA",nombres:"KAREN ANDREA",telefono:"593983952534",grupo:"CONAPICH (2) B1 L6PM"},
-            {apellidos:"HENAO ALZATE",nombres:"JORGE IVAN",telefono:"573207850047",grupo:"CONAPICH (2) B1 L6PM"},
-            {apellidos:"LIBERIO PARRAGA",nombres:"LARISSA MAYERLY",telefono:"593990325236",grupo:"CONAPICH (2) B1 L6PM"},
-            {apellidos:"MACHASILLA QUIMCHIGUANO",nombres:"RITA ELIZABETH",telefono:"593997404479",grupo:"CONAPICH (2) B1 L6PM"},
-            {apellidos:"RAMIREZ LOACHAMIN",nombres:"LESLY LUCIA",telefono:"593960039507",grupo:"CONAPICH (2) B1 L6PM"},
-            {apellidos:"RODRIGUEZ CAZAR",nombres:"JOSUE ISMAEL",telefono:"593992908510",grupo:"CONAPICH (2) B1 L6PM"},
-            {apellidos:"CHASIPANTA RONQUILLO",nombres:"MARIA AUGUSTA",telefono:"593995242371",grupo:"CONAPICH (2) B1 L6PM"},
-            {apellidos:"PAILLACHO PROAÑO",nombres:"ALBA IVETTE",telefono:"9957770095",grupo:"CONAPICH (2) B1 L6PM"},
-            {apellidos:"ROGEL MARROQUIN",nombres:"ERICK ALEJANDRO",telefono:"593990458691",grupo:"CONAPICH (2) B1 L6PM"},
-
-            {apellidos:"TITUAÑA CUMBAL",nombres:"ERIKA TATIANA",telefono:"593980916880",grupo:"CONAPICH (2) B1 S9AM"},
-            {apellidos:"CARRILLO CARRILLO",nombres:"MARIA MONSERRATE",telefono:"593985855315",grupo:"CONAPICH (2) B1 S9AM"},
-            {apellidos:"CHANGOLUISA NUÑEZ",nombres:"DENNIS OMAR",telefono:"593996724902",grupo:"CONAPICH (2) B1 S9AM"},
-            {apellidos:"GUEVARA AGUILERA",nombres:"CAMILA SHAMILEX",telefono:"593990150055",grupo:"CONAPICH (2) B1 S9AM"},
-            {apellidos:"MORAN CHALAN",nombres:"RUTH STEFANIE",telefono:"593994612683",grupo:"CONAPICH (2) B1 S9AM"},
-            {apellidos:"SAENZ TROYA",nombres:"ANA MARIA",telefono:"593998638249",grupo:"CONAPICH (2) B1 S9AM"},
-            {apellidos:"POZO MORENO",nombres:"ROSA MICHELLE",telefono:"593978899891",grupo:"CONAPICH (2) B1 S9AM"},
-            {apellidos:"BASTIDAS CASTELLANOS",nombres:"ESTEFANI CAROLINA",telefono:"593981516293",grupo:"CONAPICH (2) B1 S9AM"},
-            {apellidos:"CACHIPUENDO CACUANGO",nombres:"JESSICA DAYANA",telefono:"593992757266",grupo:"CONAPICH (2) B1 S9AM"},
-            {apellidos:"CAIZA MORALES",nombres:"GEREMY SEBASTIAN",telefono:"593963126088",grupo:"CONAPICH (2) B1 S9AM"},
-            {apellidos:"GUERRA VALENCIA",nombres:"JHONATAN",telefono:"3016195257",grupo:"CONAPICH (2) B1 S9AM"},
-            {apellidos:"IBAÑEZ MALEZA",nombres:"KEVIN ANDRES",telefono:"593980236269",grupo:"CONAPICH (2) B1 S9AM"},
-            {apellidos:"MASABANDA GARCES",nombres:"ADAMARIS YAMILETH",telefono:"593990767798",grupo:"CONAPICH (2) B1 S9AM"},
-            {apellidos:"VELEZ VILLEGAS",nombres:"MILDREY GIOVANNA",telefono:"3054048543",grupo:"CONAPICH (2) B1 S9AM"}
-
-        ];
-
-         const filtroGrupo = document.getElementById("filtroGrupo");
-
-        const grupos = [...new Set(alumnos.map(alumno => alumno.grupo))].sort();
-
-        grupos.forEach(grupo => {
-            const opcion = document.createElement("option");
-            opcion.value = grupo;
-            opcion.textContent = grupo;
-            filtroGrupo.appendChild(opcion);
-        });
+/*
+ * ============================================================
+ * LEARNING BRIDGE
+ * NUEVO SISTEMA DE ASISTENCIA
+ * ============================================================
+ *
+ * Archivo:
+ * learningbridge/reporte.js
+ *
+ * ETAPA 1:
+ * - Leer archivo Excel
+ * - Leer hoja Configuracion-Grupos
+ * - Validar los días operativos
+ * - Cargar grupos en el selector
+ *
+ * IMPORTANTE:
+ * Este archivo pertenece al NUEVO sistema.
+ * No modifica el sistema antiguo.
+ * ============================================================
+ */
 
 
-const resultadoAsistencia = document.getElementById("resultadoAsistencia");
+/* ============================================================
+   ELEMENTOS DE LA PÁGINA
+============================================================ */
+
+const archivoAsistencia =
+    document.getElementById("archivoAsistencia");
+
+const filtroGrupo =
+    document.getElementById("filtroGrupo");
+
+const estadoAsistencia =
+    document.getElementById("estadoAsistencia");
+
+
+/* ============================================================
+   VARIABLES PRINCIPALES
+============================================================ */
+
+let configuracionGrupos = [];
 
 let registrosAsistencia = [];
 
-let primeraFechaExcel = null;        
-
-/*
- * ==================================================
- * CALCULAR TOTAL PROYECTADO DE CLASES DEL GRUPO
- * ==================================================
- *
- * Se toma la primera fecha registrada en el Excel
- * como inicio del curso y se proyectan 7 meses.
- *
- * El total depende del horario del grupo:
- *
- * L  = lunes, miércoles y viernes
- * MJ = martes y jueves
- * S  = sábado
- *
- * No se cuentan otros días.
- */
-
-function calcularTotalClasesProyectadas(
-    grupo,
-    primeraFecha
-) {
-
-    if (!grupo || !primeraFecha) {
-        return 0;
-    }
-
-    /*
-     * Determinar días de clase del grupo
-     */
-
-    let diasClase = [];
-
-    if (/\bMJ\d/.test(grupo)) {
-
-        diasClase = [2, 4];
-
-    }
-    else if (/\bL\d/.test(grupo)) {
-
-        diasClase = [1, 3, 5];
-
-    }
-    else if (/\bS\d/.test(grupo)) {
-
-        diasClase = [6];
-
-    }
-
-    /*
-     * Si no conocemos el horario,
-     * no podemos calcular el total.
-     */
-
-    if (diasClase.length === 0) {
-        return 0;
-    }
-
-    /*
-     * Fecha inicial
-     */
-
-    const inicio = new Date(primeraFecha);
-
-    inicio.setHours(0, 0, 0, 0);
-
-    /*
-     * Fecha final:
-     * exactamente 7 meses después.
-     */
-
-    const fin = new Date(inicio);
-
-    fin.setMonth(fin.getMonth() + 7);
-
-    /*
-     * Recorrer todos los días proyectados
-     * y contar solamente los días de clase.
-     */
-
-    let totalClases = 0;
-
-    const fechaActual = new Date(inicio);
-
-    while (fechaActual <= fin) {
-
-        if (diasClase.includes(fechaActual.getDay())) {
-
-            totalClases++;
-
-        }
-
-        fechaActual.setDate(
-            fechaActual.getDate() + 1
-        );
-
-    }
-
-    return totalClases;
-}        
-
-function obtenerDatosInasistencia(alumno) {
-
-    const primerNombre =
-        String(alumno.nombres || "")
-        .trim()
-        .split(/\s+/)[0];
-
-    const diasInasistencias = [];
-
-    if (alumno.sesiones) {
-
-        alumno.sesiones.forEach(sesion => {
-
-            const asistencia =
-                String(sesion.asistencia || "")
-                .trim()
-                .charAt(0);
-
-            if (asistencia !== "A") {
-                return;
-            }
-
-            if (!sesion.fecha) {
-                return;
-            }
-
-            const textoFecha = String(sesion.fecha);
-
-            const coincidencia = textoFecha.match(
-                /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
-            );
-
-            if (!coincidencia) {
-                return;
-            }
-
-            const dia = parseInt(coincidencia[1]);
-            const mesTexto = coincidencia[2];
-            const año = parseInt(coincidencia[3]);
-
-            const meses = {
-                Jan: 0,
-                Feb: 1,
-                Mar: 2,
-                Apr: 3,
-                May: 4,
-                Jun: 5,
-                Jul: 6,
-                Aug: 7,
-                Sep: 8,
-                Oct: 9,
-                Nov: 10,
-                Dec: 11
-            };
-
-            const mesesTexto = {
-                Jan: "enero",
-                Feb: "febrero",
-                Mar: "marzo",
-                Apr: "abril",
-                May: "mayo",
-                Jun: "junio",
-                Jul: "julio",
-                Aug: "agosto",
-                Sep: "septiembre",
-                Oct: "octubre",
-                Nov: "noviembre",
-                Dec: "diciembre"
-            };
-
-            if (meses[mesTexto] === undefined) {
-                return;
-            }
-
-            const fecha = new Date(
-                año,
-                meses[mesTexto],
-                dia
-            );
-
-            const diasSemana = [
-                "domingo",
-                "lunes",
-                "martes",
-                "miércoles",
-                "jueves",
-                "viernes",
-                "sábado"
-            ];
-
-            diasInasistencias.push(
-                `${diasSemana[fecha.getDay()]} ${dia} de ${mesesTexto[mesTexto]}`
-            );
-
-        });
-
-    }
-
-    return {
-        primerNombre,
-        diasInasistencias,
-        porcentajeActual: null,
-        porcentajeProyectado: null,
-        limiteInasistencia: 10
-    };
-
-}     
-
-/*
- * ==================================================
- * OBTENER DATOS PARA MENSAJE DE INASISTENCIA
- * ==================================================
- */
-
-/*
- * ==================================================
- * OBTENER DATOS PARA MENSAJE DE INASISTENCIA
- * ==================================================
- */
-
-function obtenerDatosInasistencia(
-    alumno,
-    fechaInicioSemana,
-    fechaFinSemana
-) {
-
-    /*
-     * --------------------------------------------------
-     * PRIMER NOMBRE
-     * --------------------------------------------------
-     */
-
-    const primerNombre =
-        String(alumno.nombres || "")
-        .trim()
-        .split(/\s+/)[0];
-
-    /*
-     * --------------------------------------------------
-     * TOTAL DE CLASES DEL CURSO
-     * --------------------------------------------------
-     */
-
-    const totalClasesCurso =
-        calcularTotalClasesProyectadas(
-            alumno.grupo,
-            primeraFechaExcel
-        );
-
-    /*
-     * --------------------------------------------------
-     * FECHAS DE LA SEMANA CORRIENTE
-     * --------------------------------------------------
-     */
-
-    const inicioSemana =
-        new Date(fechaInicioSemana + "T00:00:00");
-
-    const finSemana =
-        new Date(fechaFinSemana + "T00:00:00");
-
-    /*
-     * --------------------------------------------------
-     * CONTADORES
-     * --------------------------------------------------
-     */
-
-    let inasistenciasAntesSemana = 0;
-
-    let inasistenciasSemana = 0;
-
-    const diasInasistencias = [];
-
-    /*
-     * --------------------------------------------------
-     * RECORRER SESIONES
-     * --------------------------------------------------
-     */
-
-    if (alumno.sesiones) {
-
-        alumno.sesiones.forEach(sesion => {
-
-            /*
-             * Solo A = inasistencia
-             */
-
-            const asistencia =
-                String(sesion.asistencia || "")
-                .trim()
-                .charAt(0);
-
-            if (asistencia !== "A") {
-                return;
-            }
-
-            if (!sesion.fecha) {
-                return;
-            }
-
-            /*
-             * --------------------------------------------------
-             * INTERPRETAR FECHA DEL EXCEL
-             * --------------------------------------------------
-             */
-
-            const textoFecha =
-                String(sesion.fecha);
-
-            const coincidencia =
-                textoFecha.match(
-                    /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
-                );
-
-            if (!coincidencia) {
-                return;
-            }
-
-            const dia =
-                parseInt(coincidencia[1]);
-
-            const mesTexto =
-                coincidencia[2];
-
-            const año =
-                parseInt(coincidencia[3]);
-
-            const meses = {
-
-                Jan: 0,
-                Feb: 1,
-                Mar: 2,
-                Apr: 3,
-                May: 4,
-                Jun: 5,
-                Jul: 6,
-                Aug: 7,
-                Sep: 8,
-                Oct: 9,
-                Nov: 10,
-                Dec: 11
-
-            };
-
-            const mesesTexto = {
-
-                Jan: "enero",
-                Feb: "febrero",
-                Mar: "marzo",
-                Apr: "abril",
-                May: "mayo",
-                Jun: "junio",
-                Jul: "julio",
-                Aug: "agosto",
-                Sep: "septiembre",
-                Oct: "octubre",
-                Nov: "noviembre",
-                Dec: "diciembre"
-
-            };
-
-            const mes =
-                meses[mesTexto];
-
-            if (mes === undefined) {
-                return;
-            }
-
-            const fecha =
-                new Date(año, mes, dia);
-
-            fecha.setHours(0, 0, 0, 0);
-
-            /*
-             * --------------------------------------------------
-             * INASISTENCIAS ANTERIORES A LA SEMANA
-             * --------------------------------------------------
-             */
-
-            if (fecha < inicioSemana) {
-
-                inasistenciasAntesSemana++;
-
-            }
-
-            /*
-             * --------------------------------------------------
-             * INASISTENCIAS DE LA SEMANA CORRIENTE
-             * --------------------------------------------------
-             */
-
-            else if (
-                fecha >= inicioSemana &&
-                fecha <= finSemana
-            ) {
-
-                inasistenciasSemana++;
-
-                const diasSemana = [
-
-                    "domingo",
-                    "lunes",
-                    "martes",
-                    "miércoles",
-                    "jueves",
-                    "viernes",
-                    "sábado"
-
-                ];
-
-                diasInasistencias.push({
-
-                    fecha,
-
-                    texto:
-                        `${diasSemana[fecha.getDay()]} ${dia} de ${mesesTexto[mesTexto]}`
-
-                });
-
-            }
-
-        });
-
-    }
-
-    /*
-     * --------------------------------------------------
-     * INASISTENCIAS ACUMULADAS DESPUÉS DE LA SEMANA
-     * --------------------------------------------------
-     */
-
-    const inasistenciasAcumuladas =
-        inasistenciasAntesSemana +
-        inasistenciasSemana;
-
-    /*
-     * --------------------------------------------------
-     * ORDENAR DÍAS
-     * --------------------------------------------------
-     */
-
-    diasInasistencias.sort(
-        (a, b) => a.fecha - b.fecha
-    );
-
-    /*
-     * --------------------------------------------------
-     * TEXTO DE LOS DÍAS
-     * --------------------------------------------------
-     */
-
-    const textoDiasInasistencias =
-        diasInasistencias
-        .map(item => item.texto)
-        .join(", ");
-
-    /*
-     * --------------------------------------------------
-     * PORCENTAJE ACTUAL
-     * --------------------------------------------------
-     *
-     * Se consideran solamente las A anteriores
-     * a la semana que se está notificando.
-     */
-
-    const porcentajeActual =
-        totalClasesCurso > 0
-            ? (
-                inasistenciasAntesSemana /
-                totalClasesCurso
-            ) * 100
-            : 0;
-
-    /*
-     * --------------------------------------------------
-     * PORCENTAJE SI NO JUSTIFICA
-     * --------------------------------------------------
-     *
-     * Se agregan las A de la semana corriente.
-     */
-
-    const porcentajeProyectado =
-        totalClasesCurso > 0
-            ? (
-                inasistenciasAcumuladas /
-                totalClasesCurso
-            ) * 100
-            : 0;
-
-    /*
-     * --------------------------------------------------
-     * RESULTADO
-     * --------------------------------------------------
-     */
-
-    return {
-
-        primerNombre,
-
-        diasInasistencias:
-            diasInasistencias.map(
-                item => item.texto
-            ),
-
-        textoDiasInasistencias,
-
-        inasistenciasAntesSemana,
-
-        inasistenciasSemana,
-
-        inasistenciasAcumuladas,
-
-        totalClasesCurso,
-
-        porcentajeActual,
-
-        porcentajeProyectado,
-
-        limiteInasistencia: 10
-
-    };
-
-}        
-
-/*
- * ==================================================
- * MODELOS DE MENSAJES DE INASISTENCIA
- * ==================================================
- *
- * Cada modelo es una función que recibe "datos".
- * Esto permite utilizar:
- *
- * datos.primerNombre
- * datos.textoDiasInasistencias
- * datos.porcentajeActual
- * datos.porcentajeProyectado
- *
- * Posteriormente se seleccionará uno de estos
- * modelos de forma aleatoria.
- */
-
-const modelosMensajeInasistencia = [
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Hemos notado que esta semana tuviste inasistencias los días ${datos.textoDiasInasistencias}. Nos preocupa que estés perdiendo algunas de tus clases y queremos animarte a continuar asistiendo con regularidad. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Te pedimos que por favor **justifiques estas inasistencias**; una vez justificadas, dejarán de contabilizarse como inasistencias. Si no son justificadas, tu porcentaje acumulado subiría al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al alcanzar el **10 % de inasistencias se pierde el curso**. Tienes hasta el domingo a las 11 AM para justificar. Después de esa hora, el reporte de inasistencia se habrá enviado y te quedarás con las nuevas inasistencias. Esperamos contar contigo en las próximas clases y que continúes con nosotros.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos informarte que durante esta semana registramos inasistencias tuyas los días ${datos.textoDiasInasistencias}. Sabemos que pueden presentarse diferentes situaciones, pero nos gustaría que puedas mantener una asistencia constante para no perder el ritmo del curso. En este momento tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Por favor, **justifica las inasistencias correspondientes** antes del plazo establecido. Una vez justificadas, dejarán de contabilizarse como inasistencias. Si no las justificas, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten presente que al llegar al **10 % de inasistencias se pierde el curso**. Puedes justificar hasta el domingo a las 11 AM. Después de esa hora se enviará el reporte correspondiente y las nuevas inasistencias quedarán registradas. ¡Esperamos verte nuevamente en las próximas clases!`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Esta semana observamos que no pudiste asistir a las clases de los días ${datos.textoDiasInasistencias}. Queremos recordarte la importancia de mantener una asistencia regular, ya que cada clase es importante para avanzar en el curso. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si alguna de estas faltas tiene una justificación válida, por favor **realiza la justificación antes del domingo a las 11 AM**. Las inasistencias justificadas dejarán de contabilizarse. Si no se justifican, tu porcentaje podría pasar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que con un **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte de inasistencia y las nuevas faltas permanecerán contabilizadas. ¡Te esperamos en las próximas clases!`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Nos comunicamos contigo porque esta semana aparecen inasistencias correspondientes a los días ${datos.textoDiasInasistencias}. Queremos ayudarte a mantener tu curso al día y evitar que estas ausencias afecten tu proceso. Actualmente registras un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si las inasistencias se deben a una situación que puede ser justificada, por favor **presenta la justificación antes del domingo a las 11 AM**. Una vez aceptada, dejará de contabilizarse como inasistencia. Si no justificas estas faltas, podrías quedar con un **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} % de inasistencias**. Ten presente que el **10 % es el límite para conservar el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Esperamos seguir contando contigo.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos hacerte una pequeña alerta sobre tu asistencia. Esta semana registramos inasistencias los días ${datos.textoDiasInasistencias}. Actualmente tu porcentaje acumulado es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Todavía estás a tiempo de **justificar las inasistencias que correspondan**. Las faltas justificadas dejan de contabilizarse como inasistencias. Si no realizas la justificación, tu porcentaje podría aumentar hasta **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al alcanzar el **10 % de inasistencias se pierde el curso**. El plazo para justificar termina el domingo a las 11 AM. Una vez pasado ese horario, se enviará el reporte y las nuevas inasistencias quedarán contabilizadas. Queremos que puedas continuar tu curso sin inconvenientes, así que esperamos verte en las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Hemos revisado tu asistencia de esta semana y encontramos inasistencias los días ${datos.textoDiasInasistencias}. Queremos recordarte que la asistencia es fundamental para mantener el ritmo de aprendizaje y completar satisfactoriamente el curso. Por ahora tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de estas ausencias puede justificarse, te pedimos que **realices el proceso de justificación antes del domingo a las 11 AM**. Las inasistencias justificadas dejan de contabilizarse. Si permanecen sin justificar, tu porcentaje subiría al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias implica la pérdida del curso**. Después del domingo a las 11 AM se enviará el reporte correspondiente. ¡Ánimo y esperamos contar contigo en las siguientes clases!`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Esta semana tuvimos registro de inasistencias tuyas los días ${datos.textoDiasInasistencias}. Queremos avisarte con tiempo para que puedas revisar la situación y, si corresponde, **justificar estas inasistencias**. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Las ausencias que sean justificadas dejarán de contabilizarse. En caso de no justificarlas, tu porcentaje podría llegar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Es importante que tengas presente que al alcanzar el **10 % de inasistencias se pierde el curso**. Puedes realizar la justificación hasta el domingo a las 11 AM. Luego de ese momento se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que puedas acompañarnos con mayor regularidad en las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos compartir contigo una observación sobre tu asistencia. Durante esta semana registraste inasistencias los días ${datos.textoDiasInasistencias}. Actualmente cuentas con un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de estas ausencias fue por una razón justificable, todavía puedes **presentar la justificación hasta el domingo a las 11 AM**. Las inasistencias justificadas dejan de formar parte del porcentaje de inasistencia. Si no son justificadas, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el límite es del **10 % de inasistencias; al alcanzarlo se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas faltas permanecerán contabilizadas. Queremos verte avanzar, así que esperamos contar contigo en las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Notamos que esta semana no pudiste asistir a las clases de los días ${datos.textoDiasInasistencias}. Queremos aprovechar este mensaje para recordarte que aún puedes revisar y justificar las ausencias que correspondan. En este momento tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Las faltas que sean justificadas dejarán de contabilizarse. Si no se justifican, tu porcentaje aumentaría al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten mucho presente que el **10 % de inasistencias representa la pérdida del curso**. El plazo para justificar es hasta el domingo a las 11 AM. Después de esa hora se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que esta semana puedas retomar tus clases con normalidad.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos saber que estás bien y, al mismo tiempo, llamarte la atención sobre tu asistencia. Esta semana registramos inasistencias los días ${datos.textoDiasInasistencias}. Tu porcentaje actual de inasistencias es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} %**. Si las ausencias tienen una razón que pueda ser justificada, te recomendamos realizar la **justificación antes del domingo a las 11 AM**. Las inasistencias justificadas ya no se contabilizarán. Si no justificas estas faltas, tu porcentaje podría alcanzar el **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al llegar al **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte correspondiente. Esperamos que puedas continuar asistiendo regularmente y seguir avanzando con nosotros.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Revisamos los registros de asistencia y esta semana aparecen inasistencias correspondientes a ${datos.textoDiasInasistencias}. Queremos avisarte antes de cerrar el reporte para que tengas la oportunidad de revisar estas faltas. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de ellas debe ser justificada, puedes hacerlo hasta el domingo a las 11 AM. Una vez justificadas, dejarán de contabilizarse. Si no realizas la justificación, tu porcentaje acumulado subiría al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que alcanzar el **10 % de inasistencias significa perder el curso**. Después del plazo indicado se enviará el reporte de inasistencia. Esperamos que puedas acompañarnos en las próximas clases y mantener una asistencia constante.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Te escribimos porque durante esta semana registramos inasistencias tuyas los días ${datos.textoDiasInasistencias}. Sabemos que pueden existir circunstancias que impidan asistir, por eso queremos darte la oportunidad de **justificar las faltas que correspondan**. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Las inasistencias justificadas dejan de contabilizarse. Si no justificas las de esta semana, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el máximo permitido es el **10 % de inasistencias; al alcanzar este porcentaje se pierde el curso**. Puedes justificar hasta el domingo a las 11 AM. Después de esa hora se enviará el reporte y las nuevas inasistencias quedarán contabilizadas. ¡Esperamos verte nuevamente en clase!`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Esta semana tu registro muestra inasistencias los días ${datos.textoDiasInasistencias}. Queremos informarte para que puedas tomar las medidas necesarias y evitar que estas faltas afecten tu porcentaje de asistencia. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si corresponde, recuerda **justificar las inasistencias antes del domingo a las 11 AM**. Las faltas justificadas dejarán de contabilizarse. De no justificarlas, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten presente que al llegar al **10 % de inasistencias se pierde el curso**. Una vez cumplido el plazo, se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que puedas continuar asistiendo con regularidad y avanzar satisfactoriamente en tu curso.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos recordarte que esta semana aparecen inasistencias en tu registro correspondientes a los días ${datos.textoDiasInasistencias}. Actualmente tu porcentaje de inasistencias acumuladas es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} %**. Si alguna de estas faltas tiene una justificación, te pedimos que la presentes antes del domingo a las 11 AM. Una vez justificadas, las inasistencias dejan de contabilizarse. Si no se justifican, el porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias es el límite para conservar el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Estamos seguros de que puedes retomar el ritmo. ¡Te esperamos en las próximas clases!`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Durante esta semana registramos que no asististe los días ${datos.textoDiasInasistencias}. Queremos hacerte llegar esta información antes de que se cierre el reporte para que puedas revisar tu situación. En este momento acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si las faltas corresponden a situaciones justificables, puedes **presentar la justificación hasta el domingo a las 11 AM**. Las inasistencias justificadas dejarán de contabilizarse. Si no se justifican, el porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al alcanzar el **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte definitivo de inasistencia. Esperamos contar contigo nuevamente en las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Hemos revisado tu asistencia y queremos avisarte que esta semana se registraron inasistencias los días ${datos.textoDiasInasistencias}. Tu porcentaje actual es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de estas faltas debe ser justificada, recuerda hacerlo antes del domingo a las 11 AM. Las faltas justificadas dejarán de contabilizarse como inasistencias. Si no realizas la justificación, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Es importante recordar que al llegar al **10 % de inasistencias se pierde el curso**. Una vez terminado el plazo se enviará el reporte y las nuevas inasistencias permanecerán registradas. Queremos que sigas avanzando con nosotros, así que esperamos verte en las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos ponerte al tanto de tu asistencia esta semana. Se registraron inasistencias los días ${datos.textoDiasInasistencias}. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si existe alguna razón que permita justificar estas faltas, todavía estás a tiempo de hacerlo. El plazo termina el domingo a las 11 AM. Las inasistencias justificadas dejarán de contabilizarse; si no son justificadas, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que alcanzar el **10 % de inasistencias implica la pérdida del curso**. Después de las 11 AM del domingo se enviará el reporte correspondiente y las nuevas faltas quedarán registradas. Esperamos que puedas asistir regularmente a las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Esta semana tuvimos algunas inasistencias registradas a tu nombre, específicamente los días ${datos.textoDiasInasistencias}. Queremos informarte para que puedas revisar si alguna de ellas necesita ser justificada. Tu porcentaje actual de inasistencias es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} %**. Puedes presentar las justificaciones correspondientes hasta el domingo a las 11 AM; después de ese momento se enviará el reporte. Las inasistencias justificadas dejarán de contabilizarse. Si no justificas estas faltas, tu porcentaje podría quedar en **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que con un **10 % de inasistencias se pierde el curso**. Esperamos que esta información te ayude a tomar las medidas necesarias y que podamos contar contigo en las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos hacerte llegar un aviso relacionado con tu asistencia. Durante esta semana aparecen inasistencias los días ${datos.textoDiasInasistencias}. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si alguna de estas ausencias tiene una justificación, recuerda que puedes presentarla hasta el domingo a las 11 AM. Una vez justificadas, esas faltas dejarán de contabilizarse. Si permanecen sin justificar, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten presente que al alcanzar el **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Ojalá puedas acompañarnos regularmente en las próximas clases y continuar avanzando en tu proceso.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Notamos algunas ausencias en tu registro de esta semana: ${datos.textoDiasInasistencias}. Antes de cerrar el reporte queremos recordarte que puedes **justificar las inasistencias que correspondan hasta el domingo a las 11 AM**. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Las faltas justificadas dejarán de contabilizarse. Si no son justificadas, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias es el límite establecido y al alcanzarlo se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Esperamos que puedas regularizar tu asistencia y continuar participando en las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Esta semana registramos inasistencias correspondientes a los días ${datos.textoDiasInasistencias} y queremos avisarte antes de que se cierre el periodo de justificación. Actualmente tu porcentaje acumulado es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si alguna de estas faltas puede justificarse, tienes hasta el domingo a las 11 AM para hacerlo. Una vez justificadas, dejarán de contabilizarse como inasistencias. Si no realizas la justificación, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al alcanzar el **10 % de inasistencias se pierde el curso**. Después de las 11 AM del domingo se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que puedas estar presente en las próximas clases y seguir adelante con tu curso.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos llamar tu atención sobre un aspecto importante de esta semana: registramos inasistencias los días ${datos.textoDiasInasistencias}. En este momento tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si estas ausencias tienen una causa que pueda justificarse, te recomendamos presentar la justificación antes del domingo a las 11 AM. Las inasistencias justificadas dejarán de contabilizarse. Si no son justificadas, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias representa la pérdida del curso**. Una vez terminado el plazo, se enviará el reporte y las nuevas inasistencias quedarán registradas. Esperamos que puedas recuperar la regularidad en tu asistencia y que sigamos contando contigo.`;
-
-    }
-
+const DIAS_SEMANA_CALCULO = [
+"Domingo",
+"Lunes",
+"Martes",
+"Miércoles",
+"Jueves",
+"Viernes",
+"Sábado"
 ];
 
-console.log("MODELOS DE MENSAJE DE INASISTENCIA:", modelosMensajeInasistencia.length);
-console.log("MODELOS:", modelosMensajeInasistencia);   
-
 /*
- * ==================================================
- * CALCULAR DATOS PARA MENSAJE DE INASISTENCIA
- * ==================================================
- */
 
-function calcularDatosInasistencia(alumno) {
+============================================================
+CALCULAR TOTAL DE CLASES DEL GRUPO DURANTE 7 MESES
+============================================================
+*/
 
-    /*
-     * ----------------------------------------------
-     * FECHA DE HOY
-     * ----------------------------------------------
-     */
+/* ============================================================
+CALCULAR TOTAL DE CLASES DEL GRUPO DURANTE 7 MESES
+============================================================ */
 
-    const hoy = new Date();
+function calcularTotalClasesGrupo(
 
-    hoy.setHours(0, 0, 0, 0);
+grupo,
 
+fechaInicio
 
-    /*
-     * ----------------------------------------------
-     * LUNES DE LA SEMANA CORRIENTE
-     * ----------------------------------------------
-     */
+) {
 
-    const lunesActual = new Date(hoy);
+if (!grupo || !fechaInicio) {
 
-    const diasDesdeLunes = hoy.getDay() === 0
-        ? 6
-        : hoy.getDay() - 1;
-
-    lunesActual.setDate(
-        hoy.getDate() - diasDesdeLunes
-    );
-
-    lunesActual.setHours(0, 0, 0, 0);
-
-
-    /*
-     * ----------------------------------------------
-     * DETERMINAR DÍAS DE CLASE DEL GRUPO
-     * ----------------------------------------------
-     */
-
-    let diasClase = [];
-
-    if (alumno.grupo) {
-
-        if (/\bMJ\d/.test(alumno.grupo)) {
-
-            diasClase = [2, 4];
-
-        }
-        else if (/\bL\d/.test(alumno.grupo)) {
-
-            diasClase = [1, 3, 5];
-
-        }
-        else if (/\bS\d/.test(alumno.grupo)) {
-
-            diasClase = [6];
-
-        }
-
-    }
-
-
-    /*
-     * ----------------------------------------------
-     * OBTENER TODAS LAS SESIONES VÁLIDAS
-     * ----------------------------------------------
-     */
-
-    const sesionesValidas = [];
-
-    if (alumno.sesiones) {
-
-        alumno.sesiones.forEach(sesion => {
-
-            if (!sesion.fecha) {
-                return;
-            }
-
-            const textoFecha = String(sesion.fecha);
-
-            const coincidencia = textoFecha.match(
-                /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
-            );
-
-            if (!coincidencia) {
-                return;
-            }
-
-            const dia = parseInt(coincidencia[1]);
-            const mesTexto = coincidencia[2];
-            const año = parseInt(coincidencia[3]);
-
-            const meses = {
-                Jan: 0,
-                Feb: 1,
-                Mar: 2,
-                Apr: 3,
-                May: 4,
-                Jun: 5,
-                Jul: 6,
-                Aug: 7,
-                Sep: 8,
-                Oct: 9,
-                Nov: 10,
-                Dec: 11
-            };
-
-            const mes = meses[mesTexto];
-
-            if (mes === undefined) {
-                return;
-            }
-
-            const fecha = new Date(
-                año,
-                mes,
-                dia
-            );
-
-            fecha.setHours(0, 0, 0, 0);
-
-            /*
-             * Solo considerar días correspondientes
-             * al horario del alumno.
-             */
-
-            if (!diasClase.includes(fecha.getDay())) {
-                return;
-            }
-
-            sesionesValidas.push({
-                fecha,
-                asistencia: String(
-                    sesion.asistencia || ""
-                )
-                .trim()
-                .charAt(0)
-            });
-
-        });
-
-    }
-
-
-    /*
-     * ----------------------------------------------
-     * INASISTENCIAS HASTA LA SEMANA ANTERIOR
-     * ----------------------------------------------
-     */
-
-    const inasistenciasAcumuladas =
-        sesionesValidas.filter(sesion => {
-
-            return (
-                sesion.fecha < lunesActual &&
-                sesion.asistencia === "A"
-            );
-
-        }).length;
-
-
-    /*
-     * ----------------------------------------------
-     * INASISTENCIAS DE LA SEMANA CORRIENTE
-     * ----------------------------------------------
-     */
-
-    const inasistenciasSemana = sesionesValidas.filter(sesion => {
-
-        return (
-            sesion.fecha >= lunesActual &&
-            sesion.fecha <= hoy &&
-            sesion.asistencia === "A"
-        );
-
-    });
-
-
-    /*
-     * ----------------------------------------------
-     * TEXTO DE LOS DÍAS DE INASISTENCIA
-     * ----------------------------------------------
-     */
-
-    const nombresDias = [
-        "domingo",
-        "lunes",
-        "martes",
-        "miércoles",
-        "jueves",
-        "viernes",
-        "sábado"
-    ];
-
-    const textoDiasInasistencias =
-        inasistenciasSemana
-            .sort((a, b) => a.fecha - b.fecha)
-            .map(sesion => {
-
-                const dia = nombresDias[
-                    sesion.fecha.getDay()
-                ];
-
-                const numero = String(
-                    sesion.fecha.getDate()
-                ).padStart(2, "0");
-
-                const mes = String(
-                    sesion.fecha.getMonth() + 1
-                ).padStart(2, "0");
-
-                return `${dia} ${numero}/${mes}`;
-
-            })
-            .join(" y ");
-
-
-    /*
-     * ----------------------------------------------
-     * FECHA MÍNIMA DEL EXCEL
-     * ----------------------------------------------
-     */
-
-    if (!primeraFechaExcel) {
-
-        console.warn(
-            "No existe primeraFechaExcel."
-        );
-
-        return {
-            textoDiasInasistencias,
-            porcentajeActual: 0,
-            porcentajeProyectado: 0
-        };
-
-    }
-
-
-    /*
-     * ----------------------------------------------
-     * FIN DEL PERÍODO PROYECTADO
-     * 7 MESES DESDE LA PRIMERA FECHA DEL EXCEL
-     * ----------------------------------------------
-     */
-
-    const fechaFinProyeccion =
-        new Date(primeraFechaExcel);
-
-    fechaFinProyeccion.setMonth(
-        fechaFinProyeccion.getMonth() + 7
-    );
-
-    fechaFinProyeccion.setHours(0, 0, 0, 0);
-
-
-/*
- * ----------------------------------------------
- * CONTAR TODAS LAS CLASES DEL PERÍODO
- * 7 MESES SEGÚN LOS DÍAS DEL GRUPO
- * ----------------------------------------------
- */
-
-let cantidadClasesPeriodo = 0;
-
-const fechaPeriodo =
-    new Date(primeraFechaExcel);
-
-fechaPeriodo.setHours(0, 0, 0, 0);
-
-while (fechaPeriodo < fechaFinProyeccion) {
-
-    if (
-        diasClase.includes(
-            fechaPeriodo.getDay()
-        )
-    ) {
-
-        cantidadClasesPeriodo++;
-
-    }
-
-    fechaPeriodo.setDate(
-        fechaPeriodo.getDate() + 1
-    );
+    return 0;
 
 }
 
-console.log(
-    "CLASES PROYECTADAS EN 7 MESES:",
-    alumno.nombres,
-    {
-        grupo: alumno.grupo,
-        diasClase,
-        primeraFechaExcel,
-        fechaFinProyeccion,
-        cantidadClasesPeriodo
-    }
+const configuracion =
+
+    configuracionGrupos.find(
+
+        item =>
+
+            String(item.grupo).trim() ===
+
+            String(grupo).trim()
+
+    );
+
+if (!configuracion) {
+
+    return 0;
+
+}
+
+const fechaInicioCurso =
+
+    new Date(fechaInicio);
+
+fechaInicioCurso.setHours(
+
+    0,
+
+    0,
+
+    0,
+
+    0
+
 );
 
+const fechaFinCurso =
 
-    /*
-     * ----------------------------------------------
-     * PORCENTAJE ACTUAL
-     * ----------------------------------------------
-     */
+    new Date(fechaInicioCurso);
 
-    const porcentajeActual =
-        cantidadClasesPeriodo > 0
-            ? (
-                inasistenciasAcumuladas /
-                cantidadClasesPeriodo
-            ) * 100
-            : 0;
+fechaFinCurso.setMonth(
 
+    fechaFinCurso.getMonth() + 7
 
-    /*
-     * ----------------------------------------------
-     * PORCENTAJE PROYECTADO
-     * ----------------------------------------------
-     */
+);
 
-    const totalInasistenciasProyectadas =
-        inasistenciasAcumuladas +
-        inasistenciasSemana.length;
+fechaFinCurso.setHours(
 
-    const porcentajeProyectado =
-        cantidadClasesPeriodo > 0
-            ? (
-                totalInasistenciasProyectadas /
-                cantidadClasesPeriodo
-            ) * 100
-            : 0;
+    0,
 
+    0,
 
-    /*
-     * ----------------------------------------------
-     * RESULTADO
-     * ----------------------------------------------
-     */
+    0,
 
-    const resultado = {
+    0
 
-        textoDiasInasistencias,
+);
 
-        porcentajeActual,
+let totalClases = 0;
 
-        porcentajeProyectado
+const fechaActual =
 
-    };
+    new Date(fechaInicioCurso);
 
+while (
 
-    console.log(
-        "DATOS CALCULADOS PARA INASISTENCIA:",
-        alumno.nombres,
-        resultado
-    );
+    fechaActual <
 
+    fechaFinCurso
 
-    return resultado;
+) {
 
-}        
-        
-function mostrarAlumnos(lista, fechaInicioFiltro = "", fechaFinFiltro = "") {
+    const nombreDia =
 
-    resultadoAsistencia.innerHTML = "";
+        DIAS_SEMANA_CALCULO[
 
-    if (lista.length === 0) {
-        return;
-    }
+            fechaActual.getDay()
 
-    const tabla = document.createElement("table");
+        ];
 
-    tabla.style.borderCollapse = "collapse";
-    tabla.style.width = "100%";
+    if (
 
-    /*
-     * --------------------------------------------------
-     * OBTENER LAS FECHAS REALES DEL EXCEL
-     * --------------------------------------------------
-     */
+        configuracion.dias &&
 
-    const fechasRegistradas = [];
+        configuracion.dias[nombreDia] === true
 
-    lista.forEach(alumno => {
+    ) {
 
-        if (!alumno.sesiones) {
-            return;
-        }
-
-        alumno.sesiones.forEach(sesion => {
-
-            if (!sesion.fecha) {
-                return;
-            }
-
-            const textoFecha = String(sesion.fecha);
-
-            const coincidencia = textoFecha.match(
-                /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
-            );
-
-            if (!coincidencia) {
-                return;
-            }
-
-            const dia = parseInt(coincidencia[1]);
-            const mesTexto = coincidencia[2];
-            const año = parseInt(coincidencia[3]);
-
-            const meses = {
-                Jan: 0,
-                Feb: 1,
-                Mar: 2,
-                Apr: 3,
-                May: 4,
-                Jun: 5,
-                Jul: 6,
-                Aug: 7,
-                Sep: 8,
-                Oct: 9,
-                Nov: 10,
-                Dec: 11
-            };
-
-            const mes = meses[mesTexto];
-
-            if (mes === undefined) {
-                return;
-            }
-
-            const fecha = new Date(año, mes, dia);
-
-            if (!fechasRegistradas.some(
-                fechaExistente =>
-                    fechaExistente.getTime() === fecha.getTime()
-            )) {
-                fechasRegistradas.push(fecha);
-            }
-
-        });
-
-    });
-
-    if (fechasRegistradas.length === 0) {
-        return;
-    }
-
-    /*
-     * Ordenar fechas
-     */
-
-    fechasRegistradas.sort((a, b) => a - b);
-
-    /*
-     * --------------------------------------------------
-     * CREAR CALENDARIO CONTINUO
-     * --------------------------------------------------
-     */
-
-    const fechaInicial = fechaInicioFiltro
-        ? new Date(fechaInicioFiltro + "T00:00:00")
-        : new Date(fechasRegistradas[0]);
-
-    const fechaFinal = fechaFinFiltro
-        ? new Date(fechaFinFiltro + "T00:00:00")
-        : new Date(
-            fechasRegistradas[fechasRegistradas.length - 1]
-        );
-
-    const fechas = [];
-
-    const fechaActual = new Date(fechaInicial);
-
-    while (fechaActual <= fechaFinal) {
-
-        fechas.push(new Date(fechaActual));
-
-        fechaActual.setDate(fechaActual.getDate() + 1);
+        totalClases++;
 
     }
 
-    /*
-     * --------------------------------------------------
-     * ENCABEZADO
-     * --------------------------------------------------
-     */
+    fechaActual.setDate(
 
-    const filaEncabezado = document.createElement("tr");
+        fechaActual.getDate() + 1
 
-    const thAlumno = document.createElement("th");
-
-    thAlumno.textContent = "Alumnos";
-
-    thAlumno.style.border = "1px solid #ccc";
-    thAlumno.style.padding = "8px";
-    thAlumno.style.whiteSpace = "nowrap";
-
-    filaEncabezado.appendChild(thAlumno);
-
-    fechas.forEach(fecha => {
-
-        const th = document.createElement("th");
-
-        const dia = String(fecha.getDate()).padStart(2, "0");
-        const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-        const año = fecha.getFullYear();
-
-        th.textContent = `${dia}/${mes}/${año}`;
-
-        th.style.border = "1px solid #ccc";
-        th.style.padding = "8px";
-        th.style.textAlign = "center";
-        th.style.whiteSpace = "nowrap";
-
-        filaEncabezado.appendChild(th);
-
-    });
-
-    /*
-     * --------------------------------------------------
-     * COLUMNA PARA MENSAJES
-     * --------------------------------------------------
-     */
-
-    const thMensaje = document.createElement("th");
-
-    thMensaje.textContent = "Mensaje";
-
-    thMensaje.style.border = "1px solid #ccc";
-    thMensaje.style.padding = "8px";
-    thMensaje.style.textAlign = "center";
-    thMensaje.style.whiteSpace = "nowrap";
-
-    filaEncabezado.appendChild(thMensaje);
-
-    tabla.appendChild(filaEncabezado);
-
-    /*
-     * --------------------------------------------------
-     * FILAS DE ALUMNOS
-     * --------------------------------------------------
-     */
-
-    lista.forEach(alumno => {
-
-        const fila = document.createElement("tr");
-
-        /*
-         * Nombre completo en una sola línea
-         */
-
-        const celdaAlumno = document.createElement("td");
-
-        celdaAlumno.textContent =
-            `${alumno.apellidos} ${alumno.nombres}`;
-
-        celdaAlumno.style.border = "1px solid #ccc";
-        celdaAlumno.style.padding = "8px";
-        celdaAlumno.style.whiteSpace = "nowrap";
-
-        fila.appendChild(celdaAlumno);
-
-        /*
-         * Crear mapa de asistencia
-         */
-
-        const asistenciaPorFecha = {};
-
-        if (alumno.sesiones) {
-
-            alumno.sesiones.forEach(sesion => {
-
-                if (!sesion.fecha) {
-                    return;
-                }
-
-                const textoFecha = String(sesion.fecha);
-
-                const coincidencia = textoFecha.match(
-                    /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
-                );
-
-                if (!coincidencia) {
-                    return;
-                }
-
-                const dia = parseInt(coincidencia[1]);
-                const mesTexto = coincidencia[2];
-                const año = parseInt(coincidencia[3]);
-
-                const meses = {
-                    Jan: 0,
-                    Feb: 1,
-                    Mar: 2,
-                    Apr: 3,
-                    May: 4,
-                    Jun: 5,
-                    Jul: 6,
-                    Aug: 7,
-                    Sep: 8,
-                    Oct: 9,
-                    Nov: 10,
-                    Dec: 11
-                };
-
-                const mes = meses[mesTexto];
-
-                if (mes === undefined) {
-                    return;
-                }
-
-                const fecha = new Date(año, mes, dia);
-
-                const clave =
-                    `${fecha.getFullYear()}-${String(
-                        fecha.getMonth() + 1
-                    ).padStart(2, "0")}-${String(
-                        fecha.getDate()
-                    ).padStart(2, "0")}`;
-
-                /*
-                 * Solo guardar P, L, E o A
-                 */
-
-                const asistencia = String(
-                    sesion.asistencia || ""
-                ).trim();
-
-                const resultado = asistencia.charAt(0);
-
-                asistenciaPorFecha[clave] =
-                    ["P", "L", "E", "A"].includes(resultado)
-                        ? resultado
-                        : "?";
-
-            });
-
-        }
-
-        /*
-         * --------------------------------------------------
-         * DETERMINAR DÍAS DE CLASE SEGÚN EL GRUPO
-         * --------------------------------------------------
-         */
-
-        let tipoHorario = "";
-
-        if (alumno.grupo) {
-
-            if (/\bMJ\d/.test(alumno.grupo)) {
-                tipoHorario = "MJ";
-            }
-            else if (/\bL\d/.test(alumno.grupo)) {
-                tipoHorario = "L";
-            }
-            else if (/\bS\d/.test(alumno.grupo)) {
-                tipoHorario = "S";
-            }
-
-        }
-
-        /*
-         * --------------------------------------------------
-         * CREAR CELDAS
-         * --------------------------------------------------
-         */
-
-        fechas.forEach(fecha => {
-
-            const celda = document.createElement("td");
-
-            const diaSemana = fecha.getDay();
-
-            let correspondeClase = false;
-
-            /*
-             * getDay():
-             * 0 = domingo
-             * 1 = lunes
-             * 2 = martes
-             * 3 = miércoles
-             * 4 = jueves
-             * 5 = viernes
-             * 6 = sábado
-             */
-
-            if (tipoHorario === "L") {
-
-                correspondeClase =
-                    diaSemana === 1 ||
-                    diaSemana === 3 ||
-                    diaSemana === 5;
-
-            }
-            else if (tipoHorario === "MJ") {
-
-                correspondeClase =
-                    diaSemana === 2 ||
-                    diaSemana === 4;
-
-            }
-            else if (tipoHorario === "S") {
-
-                correspondeClase =
-                    diaSemana === 6;
-
-            }
-
-            const clave =
-                `${fecha.getFullYear()}-${String(
-                    fecha.getMonth() + 1
-                ).padStart(2, "0")}-${String(
-                    fecha.getDate()
-                ).padStart(2, "0")}`;
-
-            if (!correspondeClase) {
-
-                celda.textContent = "---";
-
-            }
-            else if (asistenciaPorFecha[clave]) {
-
-                celda.textContent =
-                    asistenciaPorFecha[clave];
-
-            }
-            else {
-
-                celda.textContent = "?";
-
-            }
-
-            celda.style.border = "1px solid #ccc";
-            celda.style.padding = "8px";
-            celda.style.textAlign = "center";
-
-            fila.appendChild(celda);
-
-        });
-
-        /*
-         * --------------------------------------------------
-         * BOTÓN ENVIAR MENSAJE
-         * --------------------------------------------------
-         */
-
-        const celdaMensaje = document.createElement("td");
-
-        celdaMensaje.style.border = "1px solid #ccc";
-        celdaMensaje.style.padding = "8px";
-        celdaMensaje.style.textAlign = "center";
-
-        const botonMensaje = document.createElement("button");
-
-        botonMensaje.type = "button";
-        botonMensaje.textContent = "Enviar mensaje";
-
-        botonMensaje.classList.add(
-            "btn-enviar-mensaje",
-            "mensaje-no-enviado"
-        );
-
-/*
- * --------------------------------------------------
- * ENVIAR MENSAJE POR WHATSAPP
- * --------------------------------------------------
- */
-
-botonMensaje.addEventListener("click", function() {
-
-    /*
-     * Evitar un segundo envío
-     */
-
-    if (botonMensaje.classList.contains("mensaje-enviado")) {
-        return;
-    }
-
-    /*
-     * Seleccionar uno de los modelos
-     */
-
-    const indiceAleatorio =
-        Math.floor(
-            Math.random() *
-            modelosMensajeInasistencia.length
-        );
-
-    const modelo =
-        modelosMensajeInasistencia[indiceAleatorio];
-
-
-    /*
-     * Preparar datos del alumno
-     */
-
-    const primerNombre =
-        String(alumno.nombres || "")
-        .trim()
-        .split(/\s+/)[0];
-
-    const datosInasistencia =
-        calcularDatosInasistencia(alumno);
-
-    const datos = {
-        primerNombre: primerNombre,
-        textoDiasInasistencias:
-            datosInasistencia.textoDiasInasistencias,
-        porcentajeActual:
-            datosInasistencia.porcentajeActual,
-        porcentajeProyectado:
-            datosInasistencia.porcentajeProyectado
-    };
-
-
-    /*
-     * Generar mensaje
-     */
-
-    const mensaje = modelo(datos);
-
-
-    /*
-     * Preparar número de WhatsApp
-     */
-
-    const telefono =
-        String(alumno.telefono || "")
-        .replace(/\D/g, "");
-
-
-    /*
-     * Verificar que exista teléfono
-     */
-
-    if (!telefono) {
-
-        console.warn(
-            "El alumno no tiene número de teléfono:",
-            `${alumno.apellidos} ${alumno.nombres}`
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * Crear enlace de WhatsApp
-     */
-
-/*
- * --------------------------------------------------
- * ABRIR APLICACIÓN DE WHATSAPP
- * --------------------------------------------------
- */
-
-const urlWhatsApp =
-    `whatsapp://send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
-
-window.location.href = urlWhatsApp;
-
-
-    /*
-     * Registrar información
-     */
-
-    console.log(
-        "MENSAJE SELECCIONADO:",
-        indiceAleatorio + 1
     );
-
-    console.log(
-        "ALUMNO:",
-        `${alumno.apellidos} ${alumno.nombres}`
-    );
-
-    console.log(
-        "TELÉFONO:",
-        telefono
-    );
-
-    console.log(
-        "MENSAJE:",
-        mensaje
-    );
-
-
-    /*
-     * Cambiar botón de verde a rosado
-     */
-
-    botonMensaje.classList.remove(
-        "mensaje-no-enviado"
-    );
-
-    botonMensaje.classList.add(
-        "mensaje-enviado"
-    );
-
-});
-
-        celdaMensaje.appendChild(botonMensaje);
-
-        fila.appendChild(celdaMensaje);
-
-        tabla.appendChild(fila);
-
-    });
-
-    resultadoAsistencia.appendChild(tabla);
 
 }
 
-document.getElementById("btnFiltrar").addEventListener("click", function() {
+return totalClases;
 
-    const grupoSeleccionado = filtroGrupo.value;
-    const filtroAlumnos = document.getElementById("filtroAsistencia").value;
+}
 
-    const fechaInicio = document.getElementById("fechaInicio").value;
-    const fechaFin = document.getElementById("fechaFin").value;
+function obtenerPrimeraFechaGrupo(grupo) {
 
-    /*
-     * --------------------------------------------------
-     * FILTRAR POR GRUPO
-     * --------------------------------------------------
-     */
+const fechas = [];
 
-    let alumnosFiltrados = grupoSeleccionado === "todos"
-        ? registrosAsistencia
-        : registrosAsistencia.filter(
-            alumno => alumno.grupo === grupoSeleccionado
-        );
+registrosAsistencia.forEach(alumno => {
 
+    if (alumno.grupo !== grupo) {
+        return;
+    }
 
-    /*
-     * --------------------------------------------------
-     * FILTRAR POR ASISTENCIA
-     * --------------------------------------------------
-     */
-
-    if (filtroAlumnos === "asistentes" ||
-        filtroAlumnos === "inasistentes") {
-
-        /*
-         * Fecha de hoy.
-         * Solo se evalúan los días operativos
-         * que ya han ocurrido.
-         */
-
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-
-        alumnosFiltrados = alumnosFiltrados.filter(alumno => {
-
-            /*
-             * Determinar los días de clase del grupo
-             */
-
-            let diasClase = [];
-
-            if (alumno.grupo) {
-
-                if (/\bMJ\d/.test(alumno.grupo)) {
-
-                    diasClase = [2, 4];
-
-                }
-                else if (/\bL\d/.test(alumno.grupo)) {
-
-                    diasClase = [1, 3, 5];
-
-                }
-                else if (/\bS\d/.test(alumno.grupo)) {
-
-                    diasClase = [6];
-
-                }
-
-            }
-
-            /*
-             * Si no conocemos el horario,
-             * no podemos determinar asistencia.
-             */
-
-            if (diasClase.length === 0) {
-                return false;
-            }
-
-            /*
-             * Obtener las fechas de las sesiones
-             * que ya corresponden al horario del alumno.
-             */
-
-/*
- * Obtener las fechas de las sesiones
- * que corresponden al período seleccionado.
- */
-
-const fechasOperativas = [];
-
-if (alumno.sesiones) {
+    if (!Array.isArray(alumno.sesiones)) {
+        return;
+    }
 
     alumno.sesiones.forEach(sesion => {
 
@@ -1974,498 +199,2603 @@ if (alumno.sesiones) {
             return;
         }
 
-        const textoFecha = String(sesion.fecha);
+        const fecha =
+            new Date(sesion.fecha);
 
-        const coincidencia = textoFecha.match(
-            /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
+        if (isNaN(fecha.getTime())) {
+            return;
+        }
+
+        fecha.setHours(
+            0,
+            0,
+            0,
+            0
         );
 
-        if (!coincidencia) {
-            return;
-        }
+        fechas.push(fecha);
 
-        const dia = parseInt(coincidencia[1]);
-        const mesTexto = coincidencia[2];
-        const año = parseInt(coincidencia[3]);
+    });
 
-        const meses = {
-            Jan: 0,
-            Feb: 1,
-            Mar: 2,
-            Apr: 3,
-            May: 4,
-            Jun: 5,
-            Jul: 6,
-            Aug: 7,
-            Sep: 8,
-            Oct: 9,
-            Nov: 10,
-            Dec: 11
-        };
+});
 
-        const mes = meses[mesTexto];
+if (fechas.length === 0) {
+    return null;
+}
 
-        if (mes === undefined) {
-            return;
-        }
+fechas.sort(
+    (a, b) => a - b
+);
 
-        const fecha = new Date(año, mes, dia);
+return fechas[0];
 
-        fecha.setHours(0, 0, 0, 0);
+}
 
-        /*
-         * Solo incluir:
-         *
-         * 1. días que corresponden al horario
-         * 2. fechas dentro del período seleccionado
-         * 3. días que ya ocurrieron
-         */
+/* ============================================================
+REFERENCIAS GLOBALES
+============================================================ */
 
-        const fechaInicioDate = fechaInicio
-            ? new Date(fechaInicio + "T00:00:00")
-            : null;
+window.configuracionGrupos =
+configuracionGrupos;
 
-        const fechaFinDate = fechaFin
-            ? new Date(fechaFin + "T00:00:00")
-            : hoy;
+window.registrosAsistencia =
+registrosAsistencia;
+
+/* ============================================================
+DÍAS DE LA SEMANA
+============================================================ */
+
+const DIAS_SEMANA = [
+"Lunes",
+"Martes",
+"Miércoles",
+"Jueves",
+"Viernes",
+"Sábado",
+"Domingo"
+];
+
+
+/* ============================================================
+   MOSTRAR ESTADO
+============================================================ */
+
+function mostrarEstado(mensaje, tipo = "normal") {
+
+    if (!estadoAsistencia) {
+        return;
+    }
+
+    estadoAsistencia.style.display = "block";
+
+    estadoAsistencia.textContent = mensaje;
+
+    if (tipo === "error") {
+
+        estadoAsistencia.style.backgroundColor = "#f8d7da";
+        estadoAsistencia.style.color = "#842029";
+
+    } else if (tipo === "exito") {
+
+        estadoAsistencia.style.backgroundColor = "#d1e7dd";
+        estadoAsistencia.style.color = "#0f5132";
+
+    } else {
+
+        estadoAsistencia.style.backgroundColor = "#e9ecef";
+        estadoAsistencia.style.color = "#222";
+
+    }
+}
+
+
+/* ============================================================
+   NORMALIZAR TEXTO
+============================================================ */
+
+function normalizarTexto(valor) {
+
+    return String(valor ?? "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+}
+
+
+/* ============================================================
+   CONVERTIR SÍ / NO
+============================================================ */
+
+function esDiaOperativo(valor) {
+
+    const texto = normalizarTexto(valor);
+
+    return (
+        texto === "si" ||
+        texto === "sí" ||
+        texto === "s" ||
+        texto === "yes" ||
+        texto === "1" ||
+        texto === "true"
+    );
+
+}
+
+
+/* ============================================================
+   BUSCAR COLUMNA POR NOMBRE
+============================================================ */
+
+function encontrarColumna(encabezados, nombreBuscado) {
+
+    const objetivo =
+        normalizarTexto(nombreBuscado);
+
+    return encabezados.findIndex(encabezado =>
+        normalizarTexto(encabezado) === objetivo
+    );
+
+}
+
+
+/* ============================================================
+   LEER CONFIGURACION-GRUPOS
+============================================================ */
+
+function leerConfiguracionGrupos(workbook) {
+
+    const hoja = workbook.getWorksheet("Configuracion-Grupos");
+
+    if (!hoja) {
+        throw new Error(
+            'No se encontró la hoja "Configuracion-Grupos".'
+        );
+    }
+
+    let filaEncabezados = null;
+    let indices = {};
+
+    /*
+     * ------------------------------------------
+     * BUSCAR ENCABEZADOS
+     * ------------------------------------------
+     */
+
+    for (
+        let numeroFila = 1;
+        numeroFila <= Math.min(20, hoja.rowCount);
+        numeroFila++
+    ) {
+
+        const fila = hoja.getRow(numeroFila);
+
+        const encabezados = fila.values
+            .map(valor => normalizarTexto(valor))
+            .filter(valor => valor !== "");
 
         if (
-            diasClase.includes(fecha.getDay()) &&
-            (!fechaInicioDate || fecha >= fechaInicioDate) &&
-            fecha <= fechaFinDate &&
-            fecha <= hoy
+            encabezados.includes("grupo") &&
+            encabezados.includes("lunes") &&
+            encabezados.includes("martes") &&
+            encabezados.includes("miercoles") &&
+            encabezados.includes("jueves") &&
+            encabezados.includes("viernes") &&
+            encabezados.includes("sabado") &&
+            encabezados.includes("domingo")
         ) {
 
-            fechasOperativas.push({
-                fecha,
-                asistencia:
-                    String(
-                        sesion.asistencia || ""
-                    )
-                    .trim()
-                    .charAt(0)
+            filaEncabezados = numeroFila;
+
+            fila.eachCell((celda, numeroColumna) => {
+
+                const encabezado =
+                    normalizarTexto(celda.value);
+
+                if (encabezado) {
+                    indices[encabezado] = numeroColumna;
+                }
+
             });
 
+            break;
         }
+    }
+
+    if (!filaEncabezados) {
+
+        throw new Error(
+            'La hoja "Configuracion-Grupos" no contiene los encabezados requeridos.'
+        );
+    }
+
+    /*
+     * ------------------------------------------
+     * LEER GRUPOS
+     * ------------------------------------------
+     */
+
+    const configuraciones = [];
+
+    for (
+        let numeroFila = filaEncabezados + 1;
+        numeroFila <= hoja.rowCount;
+        numeroFila++
+    ) {
+
+        const fila = hoja.getRow(numeroFila);
+
+        const grupo = String(
+            fila.getCell(indices["grupo"]).value || ""
+        ).trim();
+
+        if (!grupo) {
+            continue;
+        }
+
+        const dias = {};
+
+        DIAS_SEMANA.forEach(dia => {
+
+            const clave = normalizarTexto(dia);
+
+            const valor =
+                fila.getCell(indices[clave]).value;
+
+            dias[dia] = esDiaOperativo(valor);
+
+        });
+
+        configuraciones.push({
+            grupo,
+            dias
+        });
+    }
+
+    return configuraciones;
+}
+
+
+/* ============================================================
+   CARGAR GRUPOS EN EL SELECTOR
+============================================================ */
+
+function cargarGruposEnSelector(configuraciones) {
+
+    if (!filtroGrupo) {
+        return;
+    }
+
+
+    /*
+     * Conservar "Todos".
+     */
+
+    filtroGrupo.innerHTML = "";
+
+    const opcionTodos =
+        document.createElement("option");
+
+    opcionTodos.value = "todos";
+
+    opcionTodos.textContent = "Todos";
+
+    filtroGrupo.appendChild(opcionTodos);
+
+
+    /*
+     * --------------------------------------------------------
+     * ORDENAR ALFABÉTICAMENTE
+     * --------------------------------------------------------
+     */
+
+    const configuracionesOrdenadas =
+        [...configuraciones].sort((a, b) =>
+            a.grupo.localeCompare(
+                b.grupo,
+                "es",
+                {
+                    numeric: true,
+                    sensitivity: "base"
+                }
+            )
+        );
+
+
+    /*
+     * --------------------------------------------------------
+     * CREAR OPCIONES
+     * --------------------------------------------------------
+     */
+
+    configuracionesOrdenadas.forEach(configuracion => {
+
+        const opcion =
+            document.createElement("option");
+
+        opcion.value =
+            configuracion.grupo;
+
+        opcion.textContent =
+            configuracion.grupo;
+
+        filtroGrupo.appendChild(opcion);
 
     });
 
 }
 
-            /*
-             * Si todavía no existe ningún día operativo
-             * para este alumno, no se considera asistente
-             * ni inasistente.
-             */
 
-            if (fechasOperativas.length === 0) {
-                return false;
-            }
+/* ============================================================
+   MOSTRAR CONFIGURACIÓN EN CONSOLA
+============================================================ */
 
-            /*
-             * ASISTENTES:
-             *
-             * Todas las fechas operativas ya ocurridas
-             * deben tener P.
-             */
+function mostrarConfiguracionEnConsola(configuraciones) {
 
-            const esAsistente =
-                fechasOperativas.every(
-                    sesion => sesion.asistencia === "P"
-                );
 
-            /*
-             * INASISTENTES:
-             *
-             * Basta con que una fecha operativa ya ocurrida
-             * no tenga P.
-             */
+    configuraciones.forEach(configuracion => {
 
-            const esInasistente =
-                fechasOperativas.some(
-                    sesion => sesion.asistencia !== "P"
-                );
+    });
 
-            if (filtroAlumnos === "asistentes") {
-                return esAsistente;
-            }
 
-            return esInasistente;
+}
 
-        });
+/* ============================================================
+   RECONOCER ENCABEZADO DE FECHA
+============================================================ */
 
-    }
-    else if (filtroAlumnos === "inasistentes") {
+function convertirFechaExcel(valor) {
 
-        alumnosFiltrados = alumnosFiltrados.filter(alumno => {
+    /*
+     * --------------------------------------------------------
+     * SI EXCEL ENTREGA UNA FECHA COMO OBJETO Date
+     * --------------------------------------------------------
+     */
 
-            if (!alumno.sesiones) {
-                return true;
-            }
+    if (valor instanceof Date) {
 
-            return !alumno.sesiones.some(sesion => {
-
-                const asistencia =
-                    String(sesion.asistencia || "")
-                    .trim()
-                    .charAt(0);
-
-                return ["P", "L", "E"].includes(asistencia);
-
-            });
-
-        });
+        return new Date(
+            valor.getFullYear(),
+            valor.getMonth(),
+            valor.getDate()
+        );
 
     }
 
 
     /*
-     * --------------------------------------------------
-     * MENSAJES CUANDO NO HAY COINCIDENCIAS
-     * --------------------------------------------------
+     * --------------------------------------------------------
+     * SI EXCEL ENTREGA UN NÚMERO SERIAL
+     * --------------------------------------------------------
      */
 
-    if (alumnosFiltrados.length === 0) {
+    if (typeof valor === "number") {
 
-        resultadoAsistencia.innerHTML = "";
+        const fecha =
+            new Date(
+                Math.round(
+                    (valor - 25569) *
+                    86400 *
+                    1000
+                )
+            );
 
-        const mensaje = document.createElement("div");
+        if (!isNaN(fecha.getTime())) {
 
-        mensaje.style.padding = "15px";
-        mensaje.style.fontWeight = "bold";
-
-        if (
-            grupoSeleccionado === "todos" &&
-            filtroAlumnos === "asistentes"
-        ) {
-
-            mensaje.textContent =
-                "Ningún grupo ha terminado su semana operativa.";
-
-        }
-        else if (grupoSeleccionado !== "todos") {
-
-            mensaje.textContent =
-                "El grupo seleccionado aún se encuentra en semana operativa.";
-
-        }
-        else if (filtroAlumnos === "inasistentes") {
-
-            mensaje.textContent =
-                "No se encontraron alumnos inasistentes.";
-
-        }
-        else {
-
-            mensaje.textContent =
-                "No se encontraron resultados.";
+            return new Date(
+                fecha.getFullYear(),
+                fecha.getMonth(),
+                fecha.getDate()
+            );
 
         }
 
-        resultadoAsistencia.appendChild(mensaje);
-
-        return;
+        return null;
 
     }
 
 
     /*
-     * --------------------------------------------------
-     * MOSTRAR RESULTADOS
-     * --------------------------------------------------
-     */
-
-    mostrarAlumnos(
-        alumnosFiltrados,
-        fechaInicio,
-        fechaFin
-    );
-
-});
-
-document.getElementById("btnPrepararInforme").addEventListener("click", function() {
-
-    /*
-     * --------------------------------------------------
-     * PREPARAR INFORME DE INASISTENTES
-     * --------------------------------------------------
-     */
-
-    /*
-     * Alumnos → Inasistentes
-     */
-
-    document.getElementById("filtroAsistencia").value = "inasistentes";
-
-
-    /*
-     * Grupo → Todos
-     */
-
-    document.getElementById("filtroGrupo").value = "todos";
-
-
-    /*
-     * Fecha de hoy
-     */
-
-    const hoy = new Date();
-
-    hoy.setHours(0, 0, 0, 0);
-
-
-    /*
-     * Buscar el lunes pasado más reciente.
+     * --------------------------------------------------------
+     * ENCABEZADO DE TEXTO
      *
-     * getDay():
-     * 0 = domingo
-     * 1 = lunes
-     * 2 = martes
-     * 3 = miércoles
-     * 4 = jueves
-     * 5 = viernes
-     * 6 = sábado
+     * FORMATO REAL DEL EXCEL:
+     *
+     * 8 Aug 2026 3.00PM All students
+     *
+     * 15 Aug 2026 3.00PM All students
+     *
+     * 5 Sept 2026 3.00PM All students
+     *
+     * Aquí solamente extraemos:
+     *
+     * día + mes + año
+     * --------------------------------------------------------
      */
 
-    const lunes = new Date(hoy);
+    const texto =
+        String(valor ?? "").trim();
 
-    const diasDesdeLunes = hoy.getDay() === 0
-        ? 6
-        : hoy.getDay() - 1;
-
-    lunes.setDate(
-        hoy.getDate() - diasDesdeLunes
-    );
-
-
-    /*
-     * Convertir fechas a formato YYYY-MM-DD
-     */
-
-    const convertirFechaInput = function(fecha) {
-
-        const año = fecha.getFullYear();
-
-        const mes = String(
-            fecha.getMonth() + 1
-        ).padStart(2, "0");
-
-        const dia = String(
-            fecha.getDate()
-        ).padStart(2, "0");
-
-        return `${año}-${mes}-${dia}`;
-
-    };
-
-
-    /*
-     * Fecha de inicio → lunes
-     * Fecha de fin → hoy
-     */
-
-    document.getElementById("fechaInicio").value =
-        convertirFechaInput(lunes);
-
-    document.getElementById("fechaFin").value =
-        convertirFechaInput(hoy);
-
-
-    /*
-     * Ejecutar el filtrado
-     */
-
-    document.getElementById("btnFiltrar").click();
-
-});        
-
-document.getElementById("archivoAsistencia").addEventListener("change", async function() {
-
-    const archivo = this.files[0];
-
-    if (!archivo) {
-        return;
+    if (!texto) {
+        return null;
     }
 
-    const datos = await archivo.arrayBuffer();
 
-    const libro = new ExcelJS.Workbook();
-
-    await libro.xlsx.load(datos);
-
-    console.log("Archivo cargado correctamente");
-
-
-    libro.worksheets.forEach(hoja => {
-
-        console.log("Hoja:", hoja.name);
-
-        const filaEncabezados = hoja.getRow(4);
-
-        const encabezados = filaEncabezados.values;
-
-console.log("Encabezados:", encabezados);
-
-
-/*
- * --------------------------------------------------
- * OBTENER PRIMERA FECHA DEL EXCEL
- * --------------------------------------------------
- */
-
-for (let i = 5; i < encabezados.length; i++) {
-
-    const encabezado = encabezados[i];
-
-    if (!encabezado) {
-        continue;
-    }
-
-    const textoFecha = String(encabezado);
-
-    const coincidencia = textoFecha.match(
-        /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/
-    );
+    const coincidencia =
+        texto.match(
+            /^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})\b/
+        );
 
     if (!coincidencia) {
-        continue;
+        return null;
     }
 
-    const dia = parseInt(coincidencia[1]);
-    const mesTexto = coincidencia[2];
-    const año = parseInt(coincidencia[3]);
+
+    const dia =
+        parseInt(
+            coincidencia[1],
+            10
+        );
+
+    const mesTexto =
+        coincidencia[2]
+            .toLowerCase();
+
+    const anio =
+        parseInt(
+            coincidencia[3],
+            10
+        );
+
+
+    /*
+     * --------------------------------------------------------
+     * MESES EN INGLÉS
+     * --------------------------------------------------------
+     */
 
     const meses = {
-        Jan: 0,
-        Feb: 1,
-        Mar: 2,
-        Apr: 3,
-        May: 4,
-        Jun: 5,
-        Jul: 6,
-        Aug: 7,
-        Sep: 8,
-        Oct: 9,
-        Nov: 10,
-        Dec: 11
+
+        jan: 0,
+        january: 0,
+
+        feb: 1,
+        february: 1,
+
+        mar: 2,
+        march: 2,
+
+        apr: 3,
+        april: 3,
+
+        may: 4,
+
+        jun: 5,
+        june: 5,
+
+        jul: 6,
+        july: 6,
+
+        aug: 7,
+        august: 7,
+
+        sep: 8,
+        sept: 8,
+        september: 8,
+
+        oct: 9,
+        october: 9,
+
+        nov: 10,
+        november: 10,
+
+        dec: 11,
+        december: 11
+
     };
 
-    const mes = meses[mesTexto];
 
-    if (mes === undefined) {
-        continue;
+    if (!(mesTexto in meses)) {
+        return null;
     }
 
-    const fechaEncontrada = new Date(
-        año,
-        mes,
+
+    return new Date(
+        anio,
+        meses[mesTexto],
         dia
     );
 
-    fechaEncontrada.setHours(0, 0, 0, 0);
-
-    if (
-        primeraFechaExcel === null ||
-        fechaEncontrada < primeraFechaExcel
-    ) {
-
-        primeraFechaExcel = fechaEncontrada;
-
-    }
-
-    break;
 }
 
-console.log(
-    "PRIMERA FECHA DEL EXCEL:",
-    primeraFechaExcel
-);
 
-        const indiceInicioSesiones = 6;
-        const indiceFinSesiones = encabezados.findIndex(
-            encabezado => encabezado === "P"
-        );
+/* ============================================================
+   COMPROBAR SI UNA COLUMNA ES UNA SESIÓN
+============================================================ */
 
-        console.log(
-            "Índice inicio sesiones:",
-            indiceInicioSesiones
-        );
+function esColumnaSesion(valor) {
 
-        console.log(
-            "Índice fin sesiones:",
-            indiceFinSesiones
-        );
+    return convertirFechaExcel(valor) !== null;
 
-hoja.eachRow((fila, numeroFila) => {
+}
 
-    if (numeroFila < 5) {
-        return;
-    }
 
-    const valores = fila.values;
+/* ============================================================
+   LEER HOJA DE ASISTENCIA DE UN GRUPO
+============================================================ */
 
-const apellido = valores[1];
-const nombre = valores[2];
-const studentId = valores[3];
-const email = valores[4];
+function leerHojaGrupo(hoja) {
 
-    const sesiones = [];
+    /*
+     * La fila 4 contiene los encabezados.
+     */
+
+    const filaEncabezados =
+        hoja.getRow(4);
+
+    const encabezados = [];
 
     for (
-        let indice = indiceInicioSesiones;
-        indice < indiceFinSesiones;
-        indice++
+        let numeroColumna = 1;
+        numeroColumna <= hoja.columnCount;
+        numeroColumna++
     ) {
 
-        sesiones.push({
-            fecha: encabezados[indice],
-            asistencia: valores[indice]
+        encabezados[numeroColumna] =
+            filaEncabezados
+                .getCell(numeroColumna)
+                .value;
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * IDENTIFICAR LAS COLUMNAS DE SESIONES
+     * --------------------------------------------------------
+     */
+
+    const columnasSesiones = [];
+
+    for (
+        let numeroColumna = 5;
+        numeroColumna <= hoja.columnCount;
+        numeroColumna++
+    ) {
+
+        const encabezado =
+            encabezados[numeroColumna];
+
+        if (
+            esColumnaSesion(encabezado)
+        ) {
+
+            columnasSesiones.push({
+                columna: numeroColumna,
+                encabezado: encabezado,
+                fecha: convertirFechaExcel(
+                    encabezado
+                )
+            });
+
+        }
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * LEER ALUMNOS
+     * --------------------------------------------------------
+     */
+
+    const alumnos = [];
+
+    for (
+        let numeroFila = 5;
+        numeroFila <= hoja.rowCount;
+        numeroFila++
+    ) {
+
+        const fila =
+            hoja.getRow(numeroFila);
+
+        const apellidos =
+            String(
+                fila.getCell(1).value ?? ""
+            ).trim();
+
+        const nombres =
+            String(
+                fila.getCell(2).value ?? ""
+            ).trim();
+
+        const studentId =
+            String(
+                fila.getCell(3).value ?? ""
+            ).trim();
+
+        const email =
+            String(
+                fila.getCell(4).value ?? ""
+            ).trim();
+
+
+        /*
+         * Ignorar filas completamente vacías.
+         */
+
+        if (
+            !apellidos &&
+            !nombres &&
+            !studentId
+        ) {
+            continue;
+        }
+
+
+        /*
+         * ----------------------------------------------------
+         * SESIONES DEL ALUMNO
+         * ----------------------------------------------------
+         */
+
+        const sesiones = [];
+
+        columnasSesiones.forEach(
+            sesion => {
+
+                const valor =
+                    fila
+                        .getCell(
+                            sesion.columna
+                        )
+                        .value;
+
+                let asistencia =
+                    String(
+                        valor ?? ""
+                    ).trim();
+
+                asistencia =
+                    asistencia.toUpperCase();
+
+
+                sesiones.push({
+
+                    fecha:
+                        sesion.fecha,
+
+                    encabezado:
+                        sesion.encabezado,
+
+                    asistencia:
+                        asistencia
+
+                });
+
+            }
+        );
+
+
+        alumnos.push({
+
+            apellidos:
+                apellidos,
+
+            nombres:
+                nombres,
+
+            studentId:
+                studentId,
+
+            email:
+                email,
+
+            grupo:
+                hoja.name,
+
+            sesiones:
+                sesiones
+
         });
 
     }
 
-const alumnoEncontrado = alumnos.find(alumno =>
-    alumno.apellidos === apellido &&
-    alumno.nombres === nombre
+
+    return alumnos;
+
+}
+
+
+/* ============================================================
+   LEER TODAS LAS HOJAS DE ASISTENCIA
+============================================================ */
+
+function leerRegistrosAsistencia(workbook) {
+
+    const registros = [];
+
+
+    workbook.worksheets.forEach(
+        hoja => {
+
+            /*
+             * La hoja de configuración no es
+             * una hoja de asistencia.
+             */
+
+            if (
+                hoja.name ===
+                "Configuracion-Grupos"
+            ) {
+                return;
+            }
+
+
+            const alumnos =
+                leerHojaGrupo(
+                    hoja
+                );
+
+
+            registros.push(
+                ...alumnos
+            );
+
+        }
+    );
+
+
+    return registros;
+
+}
+
+/* ============================================================
+   PERSISTENCIA DE REGISTROS DE ASISTENCIA
+============================================================ */
+
+const CLAVE_PERSISTENCIA_ASISTENCIA =
+"learningBridgeRegistrosAsistenciaNuevo";
+
+const CLAVE_PERSISTENCIA_CONFIGURACION =
+"learningBridgeConfiguracionGruposNuevo";
+
+function guardarRegistrosAsistencia() {
+
+try {
+
+const datos =
+    registrosAsistencia.map(
+        alumno => ({
+
+            apellidos:
+                alumno.apellidos,
+
+            nombres:
+                alumno.nombres,
+
+            studentId:
+                alumno.studentId,
+
+            telefono:
+                alumno.telefono,
+
+            email:
+                alumno.email,
+
+            grupo:
+                alumno.grupo,
+
+            sesiones:
+                alumno.sesiones.map(
+                    sesion => ({
+
+                        fecha:
+                            sesion.fecha
+                                ? sesion.fecha.toISOString()
+                                : null,
+
+                        asistencia:
+                            sesion.asistencia
+
+                    })
+                )
+
+        })
+    );
+
+localStorage.setItem(
+    CLAVE_PERSISTENCIA_ASISTENCIA,
+    JSON.stringify(datos)
 );
 
-    if (alumnoEncontrado) {
+localStorage.setItem(
+    CLAVE_PERSISTENCIA_CONFIGURACION,
+    JSON.stringify(
+        configuracionGrupos
+    )
+);
 
-        const registroAlumno = {
-            apellidos: alumnoEncontrado.apellidos,
-            nombres: alumnoEncontrado.nombres,
-            telefono: alumnoEncontrado.telefono,
-            grupo: alumnoEncontrado.grupo,
-            studentId,
-            email,
-            sesiones
-        };
+console.log(
+    "Registros de asistencia guardados en localStorage."
+);
 
-        registrosAsistencia.push(registroAlumno);
+} catch (error) {
 
-        console.log("REGISTRO COMPLETO:", registroAlumno);
+console.error(
+    "Error al guardar registros de asistencia:",
+    error
+);
+
+}
+
+}
+
+function cargarRegistrosAsistenciaPersistidos() {
+
+try {
+
+const datosGuardados =
+    localStorage.getItem(
+        CLAVE_PERSISTENCIA_ASISTENCIA
+    );
+
+
+if (!datosGuardados) {
+
+    return false;
+
+}
+
+
+const datos =
+    JSON.parse(
+        datosGuardados
+    );
+
+
+registrosAsistencia =
+    datos.map(
+        alumno => ({
+            apellidos:
+                alumno.apellidos,
+
+            nombres:
+                alumno.nombres,
+
+            studentId:
+                alumno.studentId,
+
+            telefono:
+                alumno.telefono || "",
+
+            email:
+                alumno.email,
+
+            grupo:
+                alumno.grupo,
+
+            sesiones:
+                (alumno.sesiones || [])
+                    .map(
+                        sesion => ({
+                            fecha:
+                                sesion.fecha
+                                    ? new Date(
+                                        sesion.fecha
+                                    )
+                                    : null,
+
+                            asistencia:
+                                sesion.asistencia
+                        })
+                    )
+        })
+    );
+
+
+window.registrosAsistencia =
+    registrosAsistencia;
+
+
+/*
+ * ----------------------------------------------------
+ * RECUPERAR CONFIGURACIÓN DE GRUPOS
+ * ----------------------------------------------------
+ */
+
+const configuracionGuardada =
+
+La diferencia importante es que desaparece completamente este segundo bloque:
+
+} catch (error) {
+
+console.error(
+    "Error al guardar registros de asistencia:",
+    error
+);
+
+}
+        localStorage.getItem(
+            CLAVE_PERSISTENCIA_CONFIGURACION
+        );
+
+
+    if (configuracionGuardada) {
+
+        const configuracion =
+            JSON.parse(
+                configuracionGuardada
+            );
+
+
+        configuracionGrupos.length = 0;
+
+        configuracionGrupos.push(
+            ...configuracion
+        );
+
+
+        window.configuracionGrupos =
+            configuracionGrupos;
 
     }
+
+
+    /*
+     * ----------------------------------------------------
+     * RECUPERAR SELECTOR DE GRUPOS
+     * ----------------------------------------------------
+     */
+
+    if (
+        configuracionGrupos &&
+        configuracionGrupos.length > 0
+    ) {
+
+        cargarGruposEnSelector(
+            configuracionGrupos
+        );
+
+    }
+
+
+    /*
+     * ----------------------------------------------------
+     * MOSTRAR REGISTROS RECUPERADOS
+     * ----------------------------------------------------
+     */
+
+    if (
+        registrosAsistencia &&
+        registrosAsistencia.length > 0
+    ) {
+
+        mostrarRegistrosAsistencia(
+            registrosAsistencia
+        );
+
+    }
+
+
+    return true;
+
+
+} catch (error) {
+
+    console.error(
+        "Error al recuperar registros de asistencia:",
+        error
+    );
+
+
+    return false;
+
+}
+
+}
+
+/* ============================================================
+CALCULAR PORCENTAJES DE ASISTENCIA
+============================================================ */
+
+function calcularPorcentajesAsistencia(alumno) {
+
+if (!alumno || !alumno.grupo) {
+    return {
+        porcentajeEfectivo: 0,
+        porcentajeProyectado: 0
+    };
+}
+
+/*
+ * ------------------------------------------------
+ * FECHA DE INICIO DEL CURSO DEL GRUPO
+ * ------------------------------------------------
+ */
+
+const fechaInicioGrupo =
+    obtenerPrimeraFechaGrupo(
+        alumno.grupo
+    );
+
+if (!fechaInicioGrupo) {
+    return {
+        porcentajeEfectivo: 0,
+        porcentajeProyectado: 0
+    };
+}
+
+/*
+ * ------------------------------------------------
+ * TOTAL DE CLASES DEL GRUPO EN LOS 7 MESES
+ * ------------------------------------------------
+ */
+
+const totalClases =
+calcularTotalClasesGrupo(
+alumno.grupo,
+fechaInicioGrupo
+);
+
+   
+if (totalClases <= 0) {
+    return {
+        porcentajeEfectivo: 0,
+        porcentajeProyectado: 0
+    };
+}
+
+/*
+ * ------------------------------------------------
+ * INICIO Y FIN DEL PERÍODO DEL CURSO
+ * ------------------------------------------------
+ */
+
+const inicioCurso =
+    new Date(fechaInicioGrupo);
+
+inicioCurso.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+const finCurso =
+    new Date(inicioCurso);
+
+finCurso.setMonth(
+    finCurso.getMonth() + 7
+);
+
+finCurso.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+/*
+ * ------------------------------------------------
+ * FECHA DE HOY
+ * ------------------------------------------------
+ */
+
+const hoy =
+    new Date();
+
+hoy.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+/*
+ * ------------------------------------------------
+ * LUNES DE LA SEMANA ACTUAL
+ * ------------------------------------------------
+ */
+
+const lunesActual =
+    new Date(hoy);
+
+const diaSemana =
+    lunesActual.getDay();
+
+const diferenciaLunes =
+    diaSemana === 0
+        ? 6
+        : diaSemana - 1;
+
+lunesActual.setDate(
+    lunesActual.getDate() -
+    diferenciaLunes
+);
+
+lunesActual.setHours(
+    0,
+    0,
+    0,
+    0
+);
+
+/*
+ * ------------------------------------------------
+ * CONTADORES DE INASISTENCIAS
+ * ------------------------------------------------
+ */
+
+let inasistenciasEfectivas = 0;
+
+let inasistenciasSemanaActual = 0;
+
+/*
+ * ------------------------------------------------
+ * RECORRER LAS SESIONES DEL ESTUDIANTE
+ * ------------------------------------------------
+ */
+
+if (Array.isArray(alumno.sesiones)) {
+
+    alumno.sesiones.forEach(
+        sesion => {
+
+            if (!sesion.fecha) {
+                return;
+            }
+
+            const fecha =
+                new Date(
+                    sesion.fecha
+                );
+
+            if (
+                isNaN(
+                    fecha.getTime()
+                )
+            ) {
+                return;
+            }
+
+            fecha.setHours(
+                0,
+                0,
+                0,
+                0
+            );
+
+            /*
+             * Solo cuentan las A
+             */
+
+            const asistencia =
+            String(
+            sesion.asistencia || ""
+            )
+            .trim()
+            .toUpperCase();
+            
+            if (!asistencia.startsWith("A")) {
+            return;
+            }
+
+            /*
+             * No contar fechas fuera
+             * del período del curso.
+             */
+
+            if (
+                fecha < inicioCurso ||
+                fecha >= finCurso
+            ) {
+                return;
+            }
+
+     /*
+         * ------------------------------------------------
+         * INASISTENCIA EFECTIVA
+         *
+         * Todo lo ocurrido antes del lunes
+         * de la semana actual.
+         * ------------------------------------------------
+         */
+
+        if (
+            fecha < lunesActual
+        ) {
+
+            inasistenciasEfectivas++;
+
+            return;
+        }
+
+        /*
+         * ------------------------------------------------
+         * INASISTENCIA PROYECTADA
+         *
+         * Desde el lunes actual
+         * hasta HOY.
+         * ------------------------------------------------
+         */
+
+        if (
+            fecha >= lunesActual &&
+            fecha <= hoy
+        ) {
+
+            inasistenciasSemanaActual++;
+
+        }
+
+    }
+);
+
+}
+
+/*
+
+TOTAL PROYECTADO DE INASISTENCIAS
+
+*/
+
+const inasistenciasProyectadas =
+inasistenciasEfectivas +
+inasistenciasSemanaActual;
+
+/*
+
+PORCENTAJES
+
+*/
+
+const porcentajeEfectivo =
+(
+inasistenciasEfectivas /
+totalClases
+) * 100;
+
+const porcentajeProyectado =
+(
+inasistenciasProyectadas /
+totalClases
+) * 100;
+
+return {
+
+porcentajeEfectivo:
+    porcentajeEfectivo,
+
+porcentajeProyectado:
+    porcentajeProyectado
+
+};
+
+}
+
+/* ============================================================
+MOSTRAR ASISTENCIAS EN PANTALLA
+============================================================ */
+
+function mostrarRegistrosAsistencia(
+registros
+) {
+
+const contenedor =
+    document.getElementById(
+        "resultadoAsistencia"
+    );
+
+if (!contenedor) {
+    return;
+}
+
+contenedor.innerHTML = "";
+
+if (!registros.length) {
+
+    contenedor.textContent =
+        "No se encontraron registros de asistencia.";
+
+    return;
+
+}
+
+const tabla =
+    document.createElement("table");
+
+tabla.style.width = "100%";
+
+tabla.style.borderCollapse =
+    "collapse";
+
+/*
+ * --------------------------------------------------------
+ * OBTENER TODAS LAS FECHAS
+ * --------------------------------------------------------
+ */
+
+const fechas = [];
+
+registros.forEach(
+    alumno => {
+
+        alumno.sesiones.forEach(
+            sesion => {
+
+                if (
+                    sesion.fecha &&
+                    !fechas.some(
+                        fecha =>
+                            fecha.getTime() ===
+                            sesion.fecha.getTime()
+                    )
+                ) {
+
+                    fechas.push(
+                        sesion.fecha
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
+
+fechas.sort(
+    (a, b) =>
+        a.getTime() -
+        b.getTime()
+);
+
+/*
+ * --------------------------------------------------------
+ * ENCABEZADO
+ * --------------------------------------------------------
+ */
+
+const filaEncabezado =
+    document.createElement("tr");
+
+const encabezadoAlumno =
+    document.createElement("th");
+
+encabezadoAlumno.textContent =
+    "Alumno";
+
+encabezadoAlumno.style.color =
+    "white";
+
+encabezadoAlumno.style.backgroundColor =
+    "#5c1d53";
+
+encabezadoAlumno.style.position =
+    "sticky";
+
+encabezadoAlumno.style.left =
+    "0";
+
+encabezadoAlumno.style.top =
+    "0";
+
+encabezadoAlumno.style.zIndex =
+    "5";
+
+filaEncabezado.appendChild(
+    encabezadoAlumno
+);
+
+const encabezadoGrupo =
+    document.createElement("th");
+
+encabezadoGrupo.textContent =
+    "Grupo";
+
+filaEncabezado.appendChild(
+    encabezadoGrupo
+);
+
+/*
+ * ------------------------------------------------
+ * PORCENTAJE EFECTIVO
+ * ------------------------------------------------
+ */
+
+const encabezadoEfectivo =
+    document.createElement("th");
+
+encabezadoEfectivo.textContent =
+    "% efectivo";
+
+filaEncabezado.appendChild(
+    encabezadoEfectivo
+);
+
+/*
+ * ------------------------------------------------
+ * PORCENTAJE PROYECTADO
+ * ------------------------------------------------
+ */
+
+const encabezadoProyectado =
+    document.createElement("th");
+
+encabezadoProyectado.textContent =
+    "% proyectado";
+
+filaEncabezado.appendChild(
+    encabezadoProyectado
+);
+
+/*
+ * ------------------------------------------------
+ * FECHAS
+ * ------------------------------------------------
+ */
+
+fechas.forEach(
+    fecha => {
+
+        const th =
+            document.createElement("th");
+
+        th.textContent =
+            fecha.toLocaleDateString();
+
+        filaEncabezado.appendChild(
+            th
+        );
+
+    }
+);
+
+/*
+ * ------------------------------------------------
+ * JUSTIFICACIÓN
+ * ------------------------------------------------
+ */
+
+const encabezadoJustificacion =
+    document.createElement("th");
+
+encabezadoJustificacion.textContent =
+    "Justificación";
+
+filaEncabezado.appendChild(
+    encabezadoJustificacion
+);
+
+/*
+ * ------------------------------------------------
+ * ENVIAR MENSAJE
+ * ------------------------------------------------
+ */
+
+const encabezadoMensaje =
+    document.createElement("th");
+
+encabezadoMensaje.textContent =
+    "Enviar mensaje";
+
+filaEncabezado.appendChild(
+    encabezadoMensaje
+);
+
+/*
+ * ------------------------------------------------
+ * LLAMAR
+ * ------------------------------------------------
+ */
+
+const encabezadoLlamar =
+    document.createElement("th");
+
+encabezadoLlamar.textContent =
+    "Llamar";
+
+filaEncabezado.appendChild(
+    encabezadoLlamar
+);
+
+tabla.appendChild(
+    filaEncabezado
+);
+
+/*
+ * ------------------------------------------------
+ * ALUMNOS
+ * ------------------------------------------------
+ */
+
+registros.forEach(
+    alumno => {
+
+        const fila =
+            document.createElement("tr");
+
+        /*
+         * ------------------------------------------------
+         * NOMBRE DEL ALUMNO
+         * ------------------------------------------------
+         */
+
+        const celdaNombre =
+            document.createElement("td");
+
+        celdaNombre.textContent =
+            `${alumno.apellidos} ${alumno.nombres}`;
+
+        fila.appendChild(
+            celdaNombre
+        );
+
+        /*
+         * ------------------------------------------------
+         * GRUPO
+         * ------------------------------------------------
+         */
+
+        const celdaGrupo =
+            document.createElement("td");
+
+        celdaGrupo.textContent =
+            alumno.grupo;
+
+        fila.appendChild(
+            celdaGrupo
+        );
+
+        /*
+         * ------------------------------------------------
+         * CALCULAR PORCENTAJES
+         * ------------------------------------------------
+         */
+
+        const porcentajes =
+            calcularPorcentajesAsistencia(
+                alumno
+            );
+
+        /*
+         * ------------------------------------------------
+         * PORCENTAJE EFECTIVO
+         * ------------------------------------------------
+         */
+
+        const celdaEfectivo =
+            document.createElement("td");
+
+        celdaEfectivo.textContent =
+            porcentajes.porcentajeEfectivo.toFixed(2) + "%";
+
+        fila.appendChild(
+            celdaEfectivo
+        );
+
+        /*
+         * ------------------------------------------------
+         * PORCENTAJE PROYECTADO
+         * ------------------------------------------------
+         */
+
+        const celdaProyectado =
+            document.createElement("td");
+
+        celdaProyectado.textContent =
+            porcentajes.porcentajeProyectado.toFixed(2) + "%";
+
+        fila.appendChild(
+            celdaProyectado
+        );
+
+
+        /*
+         * ------------------------------------------------
+         * ASISTENCIAS
+         * ------------------------------------------------
+         */
+
+        fechas.forEach(
+            fecha => {
+
+                const celda =
+                    document.createElement("td");
+
+                const sesion =
+                    alumno.sesiones.find(
+                        registro =>
+                            registro.fecha &&
+                            registro.fecha.getTime() ===
+                            fecha.getTime()
+                    );
+
+                celda.textContent =
+                    sesion
+                        ? (
+                            (sesion.asistencia || "?")
+                                .charAt(0)
+                        )
+                        : "";
+
+                fila.appendChild(
+                    celda
+                );
+
+            }
+        );
+
+        /*
+         * ------------------------------------------------
+         * JUSTIFICACIÓN
+         * ------------------------------------------------
+         */
+
+        const celdaJustificacion =
+            document.createElement("td");
+
+        const campoJustificacion =
+            document.createElement("textarea");
+
+        campoJustificacion.placeholder =
+            "Escribir justificación...";
+
+        campoJustificacion.rows =
+            3;
+
+        campoJustificacion.style.width =
+            "220px";
+
+        campoJustificacion.style.minHeight =
+            "60px";
+
+        campoJustificacion.style.resize =
+            "vertical";
+
+        campoJustificacion.style.boxSizing =
+            "border-box";
+
+        campoJustificacion.value =
+            alumno.justificacion || "";
+
+        campoJustificacion.addEventListener(
+            "click",
+            function(evento) {
+
+                evento.stopPropagation();
+
+            }
+        );
+
+        campoJustificacion.addEventListener(
+            "input",
+            function(evento) {
+
+                evento.stopPropagation();
+
+                alumno.justificacion =
+                    campoJustificacion.value;
+
+            }
+        );
+
+        celdaJustificacion.appendChild(
+            campoJustificacion
+        );
+
+        fila.appendChild(
+            celdaJustificacion
+        );
+
+const celdaMensaje = document.createElement("td");
+
+const botonMensaje = document.createElement("button");
+
+botonMensaje.type = "button";
+
+botonMensaje.textContent = "Enviar mensaje";
+
+botonMensaje.style.backgroundColor = "#178a75";
+botonMensaje.style.color = "white";
+botonMensaje.style.border = "none";
+botonMensaje.style.padding = "8px 12px";
+botonMensaje.style.borderRadius = "5px";
+botonMensaje.style.cursor = "pointer";
+
+botonMensaje.addEventListener("click", function(event) {
+
+event.stopPropagation();
+
+const telefono = alumno.telefono || alumno.celular || alumno.whatsapp;
+
+if (!telefono) {
+    alert("El estudiante no tiene un número de teléfono registrado.");
+    return;
+}
+
+let numero = String(telefono).replace(/\D/g, "");
+
+if (numero.startsWith("0")) {
+    numero = "593" + numero.substring(1);
+}
+
+const urlWhatsApp =
+    "whatsapp://send?phone=" + numero;
+
+window.location.href = urlWhatsApp;
+
 });
+
+celdaMensaje.appendChild(botonMensaje);
+
+fila.appendChild(celdaMensaje);
+
+const celdaLlamar = document.createElement("td");
+
+const botonLlamar = document.createElement("button");
+
+botonLlamar.type = "button";
+
+botonLlamar.textContent = "Llamar";
+
+botonLlamar.style.backgroundColor = "#178a75";
+botonLlamar.style.color = "white";
+botonLlamar.style.border = "none";
+botonLlamar.style.padding = "8px 12px";
+botonLlamar.style.borderRadius = "5px";
+botonLlamar.style.cursor = "pointer";
+
+botonLlamar.addEventListener("click", function(event) {
+
+event.stopPropagation();
+
+const telefono = alumno.telefono || alumno.celular || alumno.whatsapp;
+
+if (!telefono) {
+    alert("El estudiante no tiene un número de teléfono registrado.");
+    return;
+}
+
+let numero = String(telefono).replace(/\D/g, "");
+
+if (numero.startsWith("0")) {
+    numero = "593" + numero.substring(1);
+}
+
+const urlWhatsApp =
+    "whatsapp://send?phone=" + numero;
+
+window.location.href = urlWhatsApp;
+
+});
+
+celdaLlamar.appendChild(botonLlamar);
+
+fila.appendChild(celdaLlamar);
+
+
+
+
+        /*
+         * ------------------------------------------------
+         * SELECCIONAR ALUMNO
+         * ------------------------------------------------
+         */
+
+        fila.style.cursor =
+            "pointer";
+
+        fila.addEventListener(
+            "click",
+            function() {
+
+                /*
+                 * Quitar selección anterior.
+                 */
+
+                tabla
+                    .querySelectorAll(
+                        "tr.fila-alumno-seleccionada"
+                    )
+                    .forEach(
+                        filaSeleccionada => {
+
+                            filaSeleccionada.classList.remove(
+                                "fila-alumno-seleccionada"
+                            );
+
+                            filaSeleccionada.style.backgroundColor =
+                                "";
+
+                        }
+                    );
+
+
+                /*
+                 * Seleccionar esta fila.
+                 */
+
+                fila.classList.add(
+                    "fila-alumno-seleccionada"
+                );
+
+                fila.style.backgroundColor =
+                    "#7fffd4";
+
+            }
+        );
+
+
+        /*
+         * ------------------------------------------------
+         * AGREGAR FILA A LA TABLA
+         * ------------------------------------------------
+         */
+
+        tabla.appendChild(
+            fila
+        );
+
+    }
+);
+
+    /*
+     * --------------------------------------------------------
+     * ESTILO BÁSICO
+     * --------------------------------------------------------
+     */
+
+tabla
+    .querySelectorAll("th, td")
+    .forEach(celda => {
+
+        celda.style.border =
+            "1px solid #ccc";
+
+        celda.style.padding =
+            "8px";
+
+        celda.style.textAlign =
+            "center";
+
+        celda.style.whiteSpace =
+            "nowrap";
 
     });
 
-console.log("TOTAL REGISTROS ENCONTRADOS:", registrosAsistencia.length);
 
-mostrarAlumnos(registrosAsistencia);    
+/*
+ * --------------------------------------------------------
+ * ALUMNO Y GRUPO ALINEADOS A LA IZQUIERDA
+ * --------------------------------------------------------
+ */
 
-if (registrosAsistencia.length > 0) {
+tabla
+    .querySelectorAll("th:nth-child(1), td:nth-child(1), th:nth-child(2), td:nth-child(2)")
+    .forEach(celda => {
 
-    console.log(
-        "SESIONES PRIMER ALUMNO:",
-        registrosAsistencia[0].sesiones
+        celda.style.textAlign =
+            "left";
+
+    });
+
+
+    contenedor.appendChild(
+        tabla
     );
 
-}    
+}
 
-});        
 
-    </script>
+/* ============================================================
+   PROCESAR ARCHIVO EXCEL
+============================================================ */
 
-</body>
-</html>
+async function procesarArchivoExcel(file) {
+
+    if (!file) {
+        return;
+    }
+
+
+    mostrarEstado(
+        "Leyendo archivo Excel..."
+    );
+
+
+    try {
+
+        /*
+         * ----------------------------------------------------
+         * LEER ARCHIVO
+         * ----------------------------------------------------
+         */
+
+        const arrayBuffer =
+            await file.arrayBuffer();
+
+
+        /*
+         * ----------------------------------------------------
+         * CREAR WORKBOOK
+         * ----------------------------------------------------
+         */
+
+        const workbook =
+            new ExcelJS.Workbook();
+
+
+        await workbook.xlsx.load(
+            arrayBuffer
+        );
+
+
+        /*
+         * ----------------------------------------------------
+         * MOSTRAR HOJAS EN CONSOLA
+         * ----------------------------------------------------
+         */
+
+        workbook.worksheets.forEach(hoja => {
+
+        });
+
+
+        /*
+         * ----------------------------------------------------
+         * LEER CONFIGURACIÓN
+         * ----------------------------------------------------
+         */
+
+        const configuraciones =
+            leerConfiguracionGrupos(
+                workbook
+            );
+
+
+        /*
+         * ----------------------------------------------------
+         * GUARDAR CONFIGURACIÓN
+         * ----------------------------------------------------
+         */
+
+        configuracionGrupos.length = 0;
+
+        configuracionGrupos.push(
+            ...configuraciones
+        );
+
+
+        window.configuracionGrupos =
+            configuracionGrupos;
+
+
+        /*
+         * ----------------------------------------------------
+         * CARGAR SELECTOR
+         * ----------------------------------------------------
+         */
+
+        cargarGruposEnSelector(
+            configuracionGrupos
+        );
+
+
+        /*
+         * ----------------------------------------------------
+         * MOSTRAR EN CONSOLA
+         * ----------------------------------------------------
+         */
+
+        mostrarConfiguracionEnConsola(
+            configuracionGrupos
+        );
+
+       /*
+ * ----------------------------------------------------
+ * LEER REGISTROS DE ASISTENCIA
+ * ----------------------------------------------------
+ */
+
+registrosAsistencia =
+leerRegistrosAsistencia(
+workbook
+);
+
+for (
+const alumno of registrosAsistencia
+) {
+
+if (!alumno.studentId) {
+
+    alumno.telefono =
+        "";
+
+    continue;
+
+}
+
+alumno.telefono =
+    await window.obtenerTelefonoAlumnoFirebase(
+        alumno.studentId
+    );
+
+}
+
+window.registrosAsistencia =
+registrosAsistencia;
+
+
+/*
+ * ----------------------------------------------------
+ * GUARDAR REGISTROS PERSISTENTES
+ * ----------------------------------------------------
+ */
+
+guardarRegistrosAsistencia();
+
+
+/*
+ * ----------------------------------------------------
+ * MOSTRAR ASISTENCIAS
+ * ----------------------------------------------------
+ */
+
+mostrarRegistrosAsistencia(
+    registrosAsistencia
+);
+
+        /*
+         * ----------------------------------------------------
+         * RESULTADO
+         * ----------------------------------------------------
+         */
+
+        mostrarEstado(
+            `Configuración cargada correctamente. ${configuracionGrupos.length} grupo(s) encontrado(s).`,
+            "exito"
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Error al procesar el archivo:",
+            error
+        );
+
+
+        mostrarEstado(
+            error.message ||
+            "No fue posible procesar el archivo Excel.",
+            "error"
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   EVENTO: SELECCIONAR ARCHIVO
+============================================================ */
+
+if (archivoAsistencia) {
+
+    archivoAsistencia.addEventListener(
+        "change",
+        async function() {
+
+            const file =
+                this.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            await procesarArchivoExcel(
+                file
+            );
+
+        }
+    );
+
+}
+
+/*
+ * ==================================================
+ * BOTÓN PREPARAR INFORME
+ * ==================================================
+ */
+
+document
+    .getElementById("btnPrepararInforme")
+    .addEventListener("click", function() {
+
+        /*
+         * ----------------------------------------------
+         * OBTENER FECHA ACTUAL
+         * ----------------------------------------------
+         */
+
+        const hoy = new Date();
+
+        hoy.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+        /*
+         * ----------------------------------------------
+         * CALCULAR EL LUNES DE LA SEMANA ACTUAL
+         * ----------------------------------------------
+         */
+
+        const lunesActual =
+            new Date(hoy);
+
+        const diaSemana =
+            hoy.getDay();
+
+        const diasDesdeLunes =
+            diaSemana === 0
+                ? 6
+                : diaSemana - 1;
+
+        lunesActual.setDate(
+            hoy.getDate() -
+            diasDesdeLunes
+        );
+
+        /*
+         * ----------------------------------------------
+         * FORMATEAR FECHA INICIAL
+         * ----------------------------------------------
+         */
+
+        const anioInicio =
+            lunesActual.getFullYear();
+
+        const mesInicio =
+            String(
+                lunesActual.getMonth() + 1
+            ).padStart(2, "0");
+
+        const diaInicio =
+            String(
+                lunesActual.getDate()
+            ).padStart(2, "0");
+
+        const fechaInicio =
+            anioInicio +
+            "-" +
+            mesInicio +
+            "-" +
+            diaInicio;
+
+        /*
+         * ----------------------------------------------
+         * FORMATEAR FECHA FINAL
+         * ----------------------------------------------
+         */
+
+        const anioFin =
+            hoy.getFullYear();
+
+        const mesFin =
+            String(
+                hoy.getMonth() + 1
+            ).padStart(2, "0");
+
+        const diaFin =
+            String(
+                hoy.getDate()
+            ).padStart(2, "0");
+
+        const fechaFin =
+            anioFin +
+            "-" +
+            mesFin +
+            "-" +
+            diaFin;
+
+        /*
+         * ----------------------------------------------
+         * CONFIGURAR FILTROS
+         * ----------------------------------------------
+         */
+
+        document
+            .getElementById(
+                "filtroAsistencia"
+            )
+            .value = "inasistentes";
+
+        document
+            .getElementById(
+                "fechaInicio"
+            )
+            .value = fechaInicio;
+
+        document
+            .getElementById(
+                "fechaFin"
+            )
+            .value = fechaFin;
+
+        document
+            .getElementById(
+                "filtroGrupo"
+            )
+            .value = "todos";
+
+        /*
+         * ----------------------------------------------
+         * ACTIVAR FILTRO
+         * ----------------------------------------------
+         */
+
+        const btnFiltrar =
+            document.getElementById(
+                "btnFiltrar"
+            );
+
+        if (btnFiltrar) {
+
+            btnFiltrar.click();
+
+        }
+
+    });
+
+
+
+/* ============================================================
+   BOTÓN FILTRAR
+============================================================ */
+
+const btnFiltrar =
+    document.getElementById("btnFiltrar");
+
+
+if (btnFiltrar) {
+
+    btnFiltrar.addEventListener(
+        "click",
+        function() {
+
+            /*
+             * ------------------------------------------------
+             * OBTENER FECHAS
+             * ------------------------------------------------
+             */
+
+            const fechaInicioInput =
+                document.getElementById(
+                    "fechaInicio"
+                ).value;
+
+            const fechaFinInput =
+                document.getElementById(
+                    "fechaFin"
+                ).value;
+
+
+            /*
+             * ------------------------------------------------
+             * OBTENER ESTADO DE ASISTENCIA
+             * ------------------------------------------------
+             */
+
+            const filtroEstado =
+                document.getElementById(
+                    "filtroAsistencia"
+                ).value;
+
+           const filtroGrupoSeleccionado =
+             document.getElementById(
+                 "filtroGrupo"
+             ).value;
+
+
+            /*
+             * ------------------------------------------------
+             * CONVERTIR FECHAS
+             * ------------------------------------------------
+             */
+
+            const fechaInicio =
+                fechaInicioInput
+                    ? new Date(
+                        fechaInicioInput +
+                        "T00:00:00"
+                    )
+                    : null;
+
+            const fechaFin =
+                fechaFinInput
+                    ? new Date(
+                        fechaFinInput +
+                        "T23:59:59"
+                    )
+                    : null;
+
+
+            /*
+             * ------------------------------------------------
+             * FILTRAR SESIONES POR FECHA
+             * ------------------------------------------------
+             */
+
+            const registrosFiltradosPorFecha =
+                registrosAsistencia
+                    .map(
+                        alumno => {
+
+                            const sesionesFiltradas =
+                                alumno.sesiones.filter(
+                                    sesion => {
+
+                                        if (
+                                            !sesion.fecha
+                                        ) {
+                                            return false;
+                                        }
+
+                                        if (
+                                            fechaInicio &&
+                                            sesion.fecha <
+                                            fechaInicio
+                                        ) {
+                                            return false;
+                                        }
+
+                                        if (
+                                            fechaFin &&
+                                            sesion.fecha >
+                                            fechaFin
+                                        ) {
+                                            return false;
+                                        }
+
+                                        return true;
+
+                                    }
+                                );
+
+
+                            return {
+                                ...alumno,
+                                sesiones:
+                                    sesionesFiltradas
+                            };
+
+                        }
+                    )
+                    .filter(
+                        alumno =>
+                            alumno.sesiones.length > 0
+                    );
+
+
+            /*
+             * ------------------------------------------------
+             * FILTRAR POR ESTADO DE ASISTENCIA
+             *
+             * ASISTENTE:
+             * No tiene ninguna A dentro del período.
+             *
+             * INASISTENTE:
+             * Tiene al menos una A dentro del período.
+             * ------------------------------------------------
+             */
+
+const registrosFiltrados =
+    registrosFiltradosPorFecha
+        .filter(
+            alumno => {
+
+                /*
+                 * ------------------------------------------------
+                 * FILTRO POR ESTADO DE ASISTENCIA
+                 * ------------------------------------------------
+                 */
+
+                const tieneInasistencia =
+                    alumno.sesiones.some(
+                        sesion => {
+
+                            const asistencia =
+                                String(
+                                    sesion.asistencia || ""
+                                )
+                                    .trim()
+                                    .toUpperCase();
+
+                            return (
+                                asistencia.charAt(0) ===
+                                "A"
+                            );
+
+                        }
+                    );
+
+
+                /*
+                 * TODOS
+                 */
+
+                if (
+                    filtroEstado ===
+                    "todos"
+                ) {
+                    return true;
+                }
+
+
+                /*
+                 * ASISTENTES
+                 *
+                 * No tiene ninguna A.
+                 */
+
+                if (
+                    filtroEstado ===
+                    "asistentes"
+                ) {
+                    return !tieneInasistencia;
+                }
+
+
+                /*
+                 * INASISTENTES
+                 *
+                 * Tiene al menos una A.
+                 */
+
+                if (
+                    filtroEstado ===
+                    "inasistentes"
+                ) {
+                    return tieneInasistencia;
+                }
+
+
+                return true;
+
+            }
+        )
+        .filter(
+            alumno => {
+
+                /*
+                 * ------------------------------------------------
+                 * FILTRO POR GRUPO
+                 * ------------------------------------------------
+                 *
+                 * "todos" = no filtrar por grupo.
+                 * Cualquier otro valor = solamente ese grupo.
+                 */
+
+                if (
+                    filtroGrupoSeleccionado ===
+                    "todos"
+                ) {
+                    return true;
+                }
+
+                return (
+                    alumno.grupo ===
+                    filtroGrupoSeleccionado
+                );
+
+            }
+        );
+
+
+            /*
+             * ------------------------------------------------
+             * MOSTRAR RESULTADO
+             * ------------------------------------------------
+             */
+
+            mostrarRegistrosAsistencia(
+                registrosFiltrados
+            );
+
+
+            /*
+             * ------------------------------------------------
+             * MOSTRAR INFORMACIÓN EN CONSOLA
+             * ------------------------------------------------
+             */
+
+        }
+    );
+
+}
+
+/* ============================================================
+   BOTÓN LIMPIAR DATOS
+============================================================ */
+
+const btnLimpiarDatos =
+    document.getElementById("btnLimpiarDatos");
+
+if (btnLimpiarDatos) {
+
+    btnLimpiarDatos.addEventListener(
+        "click",
+        function() {
+
+            /*
+             * ------------------------------------------------
+             * CONFIRMAR ELIMINACIÓN
+             * ------------------------------------------------
+             */
+
+            const confirmar =
+                confirm(
+                    "¿Está seguro de que desea borrar todos los datos de asistencia guardados?\n\n" +
+                    "Esta acción eliminará los datos de la persistencia local " +
+                    "y limpiará la información mostrada en pantalla."
+                );
+
+            if (!confirmar) {
+                return;
+            }
+
+            /*
+             * ------------------------------------------------
+             * BORRAR PERSISTENCIA
+             * ------------------------------------------------
+             */
+
+            localStorage.removeItem(
+                CLAVE_PERSISTENCIA_ASISTENCIA
+            );
+
+            /*
+             * ------------------------------------------------
+             * BORRAR REGISTROS EN MEMORIA
+             * ------------------------------------------------
+             */
+
+            registrosAsistencia = [];
+
+            window.registrosAsistencia =
+                registrosAsistencia;
+
+            /*
+             * ------------------------------------------------
+             * LIMPIAR PANTALLA
+             * ------------------------------------------------ */
+
+            mostrarRegistrosAsistencia(
+                registrosAsistencia
+            );
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   INICIALIZACIÓN
+============================================================ */
+
+
+/*
+ * ==================================================
+ * RECUPERAR REGISTROS PERSISTENTES
+ * ==================================================
+ */
+
+cargarRegistrosAsistenciaPersistidos();
