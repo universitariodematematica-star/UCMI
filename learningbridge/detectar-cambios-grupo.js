@@ -1,12 +1,5 @@
 const UCMI_CAMBIOS_GRUPO = [];
 
-/*
-
-============================================================
-CONFIGURACIÓN
-============================================================
-*/
-
 const ESTADOS_ACTIVIDAD_CAMBIO_GRUPO = [
 "P",
 "L",
@@ -17,170 +10,213 @@ const ESTADOS_ACTIVIDAD_CAMBIO_GRUPO = [
 /*
 
 ============================================================
-NORMALIZAR ESTADO
+UTILIDADES
 ============================================================
 */
 
-function normalizarEstadoCambioGrupo(valor) {
+function normalizarTextoCambioGrupo(valor) {
+return String(valor || "")
+.trim()
+.toUpperCase();
+}
 
-return String(
-    valor || ""
-)
-    .trim()
-    .toUpperCase();
+function obtenerFechaSesionCambioGrupo(sesion) {
+if (!sesion || !sesion.fecha) {
+return null;
+}
+
+const fecha = new Date(sesion.fecha);
+
+if (isNaN(fecha.getTime())) {
+    return null;
+}
+
+return fecha;
 
 }
 
-/*
+function esActividadRealCambioGrupo(asistencia) {
+const texto =
+normalizarTextoCambioGrupo(asistencia);
 
-============================================================
-OBTENER ACTIVIDAD REAL
-============================================================
-*/
-
-function tieneActividadRealCambioGrupo(alumno) {
-
-if (!alumno) {
-    return false;
-}
-
-const sesiones =
-    alumno.sesiones || {};
-
-return Object.values(
-    sesiones
-).some(
-    valor => {
-
-        const estado =
-            normalizarEstadoCambioGrupo(
-                valor
-            );
-
-        return ESTADOS_ACTIVIDAD_CAMBIO_GRUPO
-            .includes(estado);
-
+return ESTADOS_ACTIVIDAD_CAMBIO_GRUPO.some(
+    estado => {
+        return (
+            texto === estado ||
+            texto.startsWith(
+                estado + " "
+            ) ||
+            texto.startsWith(
+                estado + "("
+            )
+        );
     }
 );
 
 }
 
-/*
-
-============================================================
-OBTENER FECHA DE ÚLTIMA ACTIVIDAD REAL
-============================================================
-*/
-
-function obtenerUltimaActividadCambioGrupo(alumno) {
-
-if (!alumno) {
-    return null;
-}
-
-const sesiones =
-    alumno.sesiones || {};
-
-const fechas =
-    Object.keys(sesiones)
-        .filter(
-            fecha => {
-
-                const estado =
-                    normalizarEstadoCambioGrupo(
-                        sesiones[fecha]
-                    );
-
-                return ESTADOS_ACTIVIDAD_CAMBIO_GRUPO
-                    .includes(estado);
-
-            }
-        )
-        .map(
-            fecha => new Date(fecha)
-        )
-        .filter(
-            fecha => !isNaN(
-                fecha.getTime()
-            )
-        )
-        .sort(
-            (a, b) =>
-                a - b
-        );
-
-if (!fechas.length) {
-    return null;
-}
-
-return fechas[
-    fechas.length - 1
-];
-
-}
-
-/*
-
-============================================================
-DETECTAR ENROLMENT SUSPENDED
-============================================================
-*/
-
-function contieneEnrolmentSuspendedCambioGrupo(alumno) {
-
-if (!alumno) {
-    return false;
-}
-
-const sesiones =
-    alumno.sesiones || {};
-
-return Object.values(
-    sesiones
-).some(
-    valor =>
-        String(
-            valor || ""
-        )
-            .toLowerCase()
-            .includes(
-                "enrolment suspended"
-            )
+function esSuspensionCambioGrupo(asistencia) {
+return normalizarTextoCambioGrupo(
+asistencia
+).includes(
+"ENROLMENT SUSPENDED"
 );
+}
 
+function esInterrogacionCambioGrupo(asistencia) {
+return (
+normalizarTextoCambioGrupo(
+asistencia
+) === "?"
+);
+}
+
+function esFlechaCambioGrupo(asistencia) {
+return (
+normalizarTextoCambioGrupo(
+asistencia
+) === "←"
+);
 }
 
 /*
 
 ============================================================
-CONTAR SIGNOS ?
+ORDENAR SESIONES
 ============================================================
 */
 
-function contarInterrogacionesCambioGrupo(alumno) {
-
-if (!alumno) {
-    return 0;
+function obtenerSesionesOrdenadasCambioGrupo(
+alumno
+) {
+if (
+!alumno ||
+!Array.isArray(alumno.sesiones)
+) {
+return [];
 }
 
-const sesiones =
-    alumno.sesiones || {};
-
-return Object.values(
-    sesiones
-).filter(
-    valor =>
-        String(
-            valor || ""
-        ).trim() === "?"
-).length;
+return alumno.sesiones
+    .map(sesion => {
+        return {
+            ...sesion,
+            fecha:
+                obtenerFechaSesionCambioGrupo(
+                    sesion
+                )
+        };
+    })
+    .filter(sesion => sesion.fecha)
+    .sort(
+        (a, b) =>
+            a.fecha.getTime() -
+            b.fecha.getTime()
+    );
 
 }
 
 /*
 
 ============================================================
-OBTENER TODOS LOS REGISTROS DEL ESTUDIANTE
+ACTIVIDAD REAL
+============================================================
+*/
+
+function obtenerActividadesRealesCambioGrupo(
+alumno
+) {
+return obtenerSesionesOrdenadasCambioGrupo(
+alumno
+).filter(
+sesion =>
+esActividadRealCambioGrupo(
+sesion.asistencia
+)
+);
+}
+
+/*
+
+============================================================
+ENROLMENT SUSPENDED
+============================================================
+*/
+
+function obtenerSuspensionesCambioGrupo(
+alumno
+) {
+return obtenerSesionesOrdenadasCambioGrupo(
+alumno
+).filter(
+sesion =>
+esSuspensionCambioGrupo(
+sesion.asistencia
+)
+);
+}
+
+/*
+
+============================================================
+FLECHAS POSTERIORES A LA ACTIVIDAD
+============================================================
+*/
+
+function obtenerFlechasPosterioresCambioGrupo(
+alumno,
+fechaReferencia
+) {
+if (!fechaReferencia) {
+return [];
+}
+
+return obtenerSesionesOrdenadasCambioGrupo(
+    alumno
+).filter(sesion => {
+    return (
+        sesion.fecha.getTime() >
+            fechaReferencia.getTime() &&
+        esFlechaCambioGrupo(
+            sesion.asistencia
+        )
+    );
+});
+
+}
+
+/*
+
+============================================================
+INTERROGACIONES ANTES DE UNA ACTIVIDAD
+============================================================
+*/
+
+function obtenerInterrogacionesAntesCambioGrupo(
+alumno,
+fechaReferencia
+) {
+if (!fechaReferencia) {
+return [];
+}
+
+return obtenerSesionesOrdenadasCambioGrupo(
+    alumno
+).filter(sesion => {
+    return (
+        sesion.fecha.getTime() <
+            fechaReferencia.getTime() &&
+        esInterrogacionCambioGrupo(
+            sesion.asistencia
+        )
+    );
+});
+
+}
+
+/*
+
+============================================================
+OBTENER REGISTROS DEL MISMO ESTUDIANTE
 ============================================================
 */
 
@@ -188,14 +224,13 @@ function obtenerRegistrosEstudianteCambioGrupo(
 studentId,
 registros
 ) {
-
-const id =
-    String(
-        studentId || ""
-    ).trim();
+const idBuscado =
+String(
+studentId || ""
+).trim();
 
 if (
-    !id ||
+    !idBuscado ||
     !Array.isArray(registros)
 ) {
     return [];
@@ -205,7 +240,7 @@ return registros.filter(
     alumno =>
         String(
             alumno.studentId || ""
-        ).trim() === id
+        ).trim() === idBuscado
 );
 
 }
@@ -213,7 +248,7 @@ return registros.filter(
 /*
 
 ============================================================
-DETECTAR POSIBLE CAMBIO
+ANALIZAR UNA POSIBLE TRANSFERENCIA
 ============================================================
 */
 
@@ -221,12 +256,11 @@ function analizarCambioGrupoEstudiante(
 studentId,
 registros
 ) {
-
 const registrosEstudiante =
-    obtenerRegistrosEstudianteCambioGrupo(
-        studentId,
-        registros
-    );
+obtenerRegistrosEstudianteCambioGrupo(
+studentId,
+registros
+);
 
 if (
     registrosEstudiante.length < 2
@@ -241,16 +275,44 @@ for (
     i < registrosEstudiante.length;
     i++
 ) {
-
-    const grupoAntiguo =
+    const grupoAnterior =
         registrosEstudiante[i];
+
+    const actividadesAnteriores =
+        obtenerActividadesRealesCambioGrupo(
+            grupoAnterior
+        );
+
+    if (
+        actividadesAnteriores.length === 0
+    ) {
+        continue;
+    }
+
+    const ultimaActividadAnterior =
+        actividadesAnteriores[
+            actividadesAnteriores.length - 1
+        ];
+
+    const fechaUltimaActividadAnterior =
+        ultimaActividadAnterior.fecha;
+
+    const suspensiones =
+        obtenerSuspensionesCambioGrupo(
+            grupoAnterior
+        );
+
+    const flechasPosteriores =
+        obtenerFlechasPosterioresCambioGrupo(
+            grupoAnterior,
+            fechaUltimaActividadAnterior
+        );
 
     for (
         let j = 0;
         j < registrosEstudiante.length;
         j++
     ) {
-
         if (i === j) {
             continue;
         }
@@ -260,111 +322,267 @@ for (
 
         if (
             String(
-                grupoAntiguo.grupo || ""
+                grupoAnterior.grupo ||
+                ""
             ).trim() ===
             String(
-                grupoNuevo.grupo || ""
+                grupoNuevo.grupo ||
+                ""
             ).trim()
         ) {
             continue;
         }
 
-        const tieneSuspension =
-            contieneEnrolmentSuspendedCambioGrupo(
-                grupoAntiguo
-            );
-
-        const interrogaciones =
-            contarInterrogacionesCambioGrupo(
-                grupoAntiguo
-            );
-
-        const ultimaActividadAntigua =
-            obtenerUltimaActividadCambioGrupo(
-                grupoAntiguo
-            );
-
-        const tieneActividadNueva =
-            tieneActividadRealCambioGrupo(
+        const actividadesNuevas =
+            obtenerActividadesRealesCambioGrupo(
                 grupoNuevo
             );
 
         if (
-            !tieneActividadNueva
+            actividadesNuevas.length === 0
         ) {
             continue;
         }
 
-        let nivelAlerta = 0;
+        /*
+         * ------------------------------------------------
+         * Primera actividad del posible nuevo grupo
+         * ------------------------------------------------
+         */
 
-        if (tieneSuspension) {
-            nivelAlerta += 2;
+        const primeraActividadNueva =
+            actividadesNuevas[0];
+
+        const fechaPrimeraActividadNueva =
+            primeraActividadNueva.fecha;
+
+        /*
+         * El nuevo grupo debe comenzar después
+         * de que existió actividad en el anterior.
+         */
+
+        if (
+            fechaPrimeraActividadNueva.getTime() <
+            fechaUltimaActividadAnterior.getTime()
+        ) {
+            continue;
         }
 
-        if (interrogaciones > 0) {
-            nivelAlerta += 1;
+        /*
+         * ------------------------------------------------
+         * Interrogaciones anteriores al nuevo grupo
+         * ------------------------------------------------
+         */
+
+        const interrogacionesAntes =
+            obtenerInterrogacionesAntesCambioGrupo(
+                grupoNuevo,
+                fechaPrimeraActividadNueva
+            );
+
+        /*
+         * ------------------------------------------------
+         * Evidencias
+         * ------------------------------------------------
+         */
+
+        let puntuacion = 0;
+
+        const evidencias = [];
+
+        if (
+            suspensiones.length > 0
+        ) {
+            puntuacion += 2;
+
+            evidencias.push(
+                "ENROLMENT SUSPENDED en el grupo anterior"
+            );
         }
 
-        if (ultimaActividadAntigua) {
-            nivelAlerta += 1;
+        if (
+            flechasPosteriores.length > 0
+        ) {
+            puntuacion += 2;
+
+            evidencias.push(
+                "marcadores posteriores a la última actividad del grupo anterior"
+            );
         }
 
-        if (tieneActividadNueva) {
-            nivelAlerta += 2;
+        if (
+            interrogacionesAntes.length >= 2
+        ) {
+            puntuacion += 2;
+
+            evidencias.push(
+                "interrogaciones antes de iniciar actividad en el nuevo grupo"
+            );
         }
 
-        if (nivelAlerta < 4) {
+        /*
+         * Actividad posterior en el nuevo grupo.
+         */
+
+        if (
+            actividadesNuevas.length >= 2
+        ) {
+            puntuacion += 2;
+
+            evidencias.push(
+                "actividad real posterior en el nuevo grupo"
+            );
+        }
+
+        /*
+         * Si existe una suspensión en el grupo
+         * anterior y actividad posterior en el nuevo,
+         * la evidencia es especialmente fuerte.
+         */
+
+        if (
+            suspensiones.length > 0 &&
+            actividadesNuevas.length > 0
+        ) {
+            puntuacion += 1;
+        }
+
+        /*
+         * ------------------------------------------------
+         * UMBRAL
+         * ------------------------------------------------
+         */
+
+        if (puntuacion < 5) {
+            continue;
+        }
+
+        /*
+         * ------------------------------------------------
+         * FECHA PROBABLE DEL CAMBIO
+         * ------------------------------------------------
+         *
+         * Preferimos la primera actividad real del
+         * nuevo grupo. Es el primer punto objetivo en
+         * que podemos afirmar que el estudiante ya
+         * aparece activo en el nuevo grupo.
+         */
+
+        const fechaCambio =
+            fechaPrimeraActividadNueva;
+
+        /*
+         * ------------------------------------------------
+         * GRUPO ACTUAL DE FIREBASE
+         * ------------------------------------------------
+         */
+
+        const grupoFirebase =
+            typeof window
+                .obtenerGrupoActualFirebase ===
+            "function"
+                ? window.obtenerGrupoActualFirebase(
+                      studentId
+                  )
+                : "";
+
+        const grupoAnteriorTexto =
+            String(
+                grupoAnterior.grupo ||
+                ""
+            ).trim();
+
+        const grupoNuevoTexto =
+            String(
+                grupoNuevo.grupo ||
+                ""
+            ).trim();
+
+        /*
+         * Solo nos interesa el cambio que no coincide
+         * con Firebase.
+         */
+
+        if (
+            grupoFirebase &&
+            grupoFirebase ===
+                grupoNuevoTexto
+        ) {
             continue;
         }
 
         resultados.push({
-
             studentId:
                 String(
                     studentId
                 ).trim(),
 
-            alumno:
-                `${grupoAntiguo.apellidos || ""} ${grupoAntiguo.nombres || ""}`
-                    .trim(),
-
-            grupoFirebase:
-                obtenerGrupoActualFirebase(
-                    studentId
-                ),
-
-            grupoAntiguo:
+            apellidos:
                 String(
-                    grupoAntiguo.grupo || ""
+                    grupoAnterior.apellidos ||
+                    grupoNuevo.apellidos ||
+                    ""
                 ).trim(),
+
+            nombres:
+                String(
+                    grupoAnterior.nombres ||
+                    grupoNuevo.nombres ||
+                    ""
+                ).trim(),
+
+            grupoAnterior:
+                grupoAnteriorTexto,
 
             grupoNuevo:
-                String(
-                    grupoNuevo.grupo || ""
-                ).trim(),
+                grupoNuevoTexto,
 
-            tieneSuspension:
-                tieneSuspension,
+            grupoFirebase:
+                grupoFirebase,
 
-            interrogaciones:
-                interrogaciones,
+            fechaCambio:
+                fechaCambio,
 
-            ultimaActividadAntigua:
-                ultimaActividadAntigua,
+            puntuacion:
+                puntuacion,
 
-            tieneActividadNueva:
-                tieneActividadNueva,
-
-            nivelAlerta:
-                nivelAlerta
-
+            evidencias:
+                evidencias
         });
-
     }
-
 }
 
-return resultados;
+/*
+ * --------------------------------------------------------
+ * ELIMINAR DUPLICADOS
+ * --------------------------------------------------------
+ */
+
+const unicos = [];
+
+resultados.forEach(
+    resultado => {
+        const existe =
+            unicos.some(item => {
+                return (
+                    item.studentId ===
+                        resultado.studentId &&
+                    item.grupoAnterior ===
+                        resultado.grupoAnterior &&
+                    item.grupoNuevo ===
+                        resultado.grupoNuevo
+                );
+            });
+
+        if (!existe) {
+            unicos.push(
+                resultado
+            );
+        }
+    }
+);
+
+return unicos;
 
 }
 
@@ -376,44 +594,42 @@ DETECTAR TODOS LOS CAMBIOS
 */
 
 function detectarCambiosGrupo() {
-
 const registros =
-    window.registrosAsistencia || [];
+window.registrosAsistencia || [];
 
 if (
-    !Array.isArray(
-        registros
-    ) ||
-    !registros.length
+    !Array.isArray(registros) ||
+    registros.length === 0
 ) {
+    UCMI_CAMBIOS_GRUPO.length = 0;
 
-    console.log(
-        "Detector de cambios: no hay registros de asistencia."
-    );
+    mostrarCambiosGrupo();
 
     return [];
-
 }
 
 const estudiantes =
-    [
-        ...new Set(
-            registros
-                .map(
-                    alumno =>
-                        String(
-                            alumno.studentId || ""
-                        ).trim()
-                )
-                .filter(Boolean)
-        )
-    ];
+    new Set();
 
-UCMI_CAMBIOS_GRUPO.length = 0;
+registros.forEach(
+    alumno => {
+        const studentId =
+            String(
+                alumno.studentId || ""
+            ).trim();
+
+        if (studentId) {
+            estudiantes.add(
+                studentId
+            );
+        }
+    }
+);
+
+const resultados = [];
 
 estudiantes.forEach(
     studentId => {
-
         const cambios =
             analizarCambioGrupoEstudiante(
                 studentId,
@@ -422,23 +638,39 @@ estudiantes.forEach(
 
         cambios.forEach(
             cambio => {
-
-                UCMI_CAMBIOS_GRUPO.push(
+                resultados.push(
                     cambio
                 );
-
             }
         );
-
     }
 );
 
-console.log(
-    "Posibles cambios de grupo detectados:",
-    UCMI_CAMBIOS_GRUPO
+/*
+ * --------------------------------------------------------
+ * COPIAR RESULTADOS AL ARRAY GLOBAL
+ * --------------------------------------------------------
+ */
+
+UCMI_CAMBIOS_GRUPO.length = 0;
+
+resultados.forEach(
+    cambio => {
+        UCMI_CAMBIOS_GRUPO.push(
+            cambio
+        );
+    }
 );
 
+window.ucmiCambiosGrupo =
+    UCMI_CAMBIOS_GRUPO;
+
 mostrarCambiosGrupo();
+
+console.log(
+    "Cambios de grupo detectados:",
+    UCMI_CAMBIOS_GRUPO
+);
 
 return UCMI_CAMBIOS_GRUPO;
 
@@ -447,19 +679,54 @@ return UCMI_CAMBIOS_GRUPO;
 /*
 
 ============================================================
-MOSTRAR ALERTAS
+FORMATEAR FECHA
+============================================================
+*/
+
+function formatearFechaCambioGrupo(
+fecha
+) {
+if (!fecha) {
+return "";
+}
+
+const dia =
+    String(
+        fecha.getDate()
+    ).padStart(2, "0");
+
+const mes =
+    String(
+        fecha.getMonth() + 1
+    ).padStart(2, "0");
+
+const año =
+    fecha.getFullYear();
+
+return (
+    dia +
+    "/" +
+    mes +
+    "/" +
+    año
+);
+
+}
+
+/*
+
+============================================================
+MOSTRAR AVISO
 ============================================================
 */
 
 function mostrarCambiosGrupo() {
-
 let contenedor =
-    document.getElementById(
-        "alertasCambiosGrupo"
-    );
+document.getElementById(
+"alertasCambiosGrupo"
+);
 
 if (!contenedor) {
-
     contenedor =
         document.createElement(
             "div"
@@ -468,40 +735,47 @@ if (!contenedor) {
     contenedor.id =
         "alertasCambiosGrupo";
 
-    contenedor.style.margin =
-        "20px 0";
-
     const resultado =
         document.getElementById(
             "resultadoAsistencia"
         );
 
-    if (resultado) {
-
+    if (
+        resultado &&
+        resultado.parentNode
+    ) {
         resultado.parentNode.insertBefore(
             contenedor,
             resultado
         );
-
     } else {
-
-        document.body.prepend(
+        document.body.appendChild(
             contenedor
         );
-
     }
-
 }
 
-contenedor.innerHTML = "";
+/*
+ * --------------------------------------------------------
+ * SI NO HAY DISCREPANCIAS, EL AVISO DESAPARECE
+ * --------------------------------------------------------
+ */
 
 if (
     !UCMI_CAMBIOS_GRUPO.length
 ) {
+    contenedor.innerHTML = "";
+
+    contenedor.style.display =
+        "none";
 
     return;
-
 }
+
+contenedor.style.display =
+    "block";
+
+contenedor.innerHTML = "";
 
 const titulo =
     document.createElement(
@@ -509,64 +783,156 @@ const titulo =
     );
 
 titulo.textContent =
-    "⚠️ POSIBLES CAMBIOS DE GRUPO";
+    "⚠️ CAMBIOS DE GRUPO DETECTADOS — " +
+    UCMI_CAMBIOS_GRUPO.length +
+    " estudiante" +
+    (
+        UCMI_CAMBIOS_GRUPO.length ===
+        1
+            ? ""
+            : "s"
+    );
 
 titulo.style.fontWeight =
-    "bold";
+    "700";
 
 titulo.style.fontSize =
     "18px";
 
 titulo.style.marginBottom =
-    "10px";
+    "14px";
 
 contenedor.appendChild(
     titulo
 );
 
-UCMI_CAMBIOS_GRUPO.forEach(
-    cambio => {
+const explicacion =
+    document.createElement(
+        "div"
+    );
 
-        const tarjeta =
+explicacion.textContent =
+    "Estos estudiantes presentan una discrepancia entre el cambio detectado en el Excel y el grupo registrado actualmente en Firebase. Actualiza Firebase manualmente para eliminar este aviso.";
+
+explicacion.style.marginBottom =
+    "16px";
+
+contenedor.appendChild(
+    explicacion
+);
+
+const tabla =
+    document.createElement(
+        "table"
+    );
+
+tabla.style.width =
+    "100%";
+
+tabla.style.borderCollapse =
+    "collapse";
+
+const encabezado =
+    document.createElement(
+        "tr"
+    );
+
+[
+    "Estudiante",
+    "ID",
+    "Fecha de cambio",
+    "Grupo anterior",
+    "Nuevo grupo",
+    "Grupo en Firebase"
+].forEach(
+    texto => {
+        const th =
             document.createElement(
-                "div"
+                "th"
             );
 
-        tarjeta.style.border =
-            "1px solid #d99";
+        th.textContent =
+            texto;
 
-        tarjeta.style.padding =
-            "12px";
-
-        tarjeta.style.marginBottom =
+        th.style.padding =
             "10px";
 
-        tarjeta.style.borderRadius =
-            "6px";
+        th.style.border =
+            "1px solid #ccc";
 
-        tarjeta.style.background =
-            "#fff5f5";
+        th.style.textAlign =
+            "left";
 
-        tarjeta.innerHTML = `
-            <strong>${cambio.studentId}</strong>
-            — ${cambio.alumno}<br>
-            <strong>Firebase:</strong>
-            ${cambio.grupoFirebase || "No registrado"}<br>
-            <strong>Grupo anterior:</strong>
-            ${cambio.grupoAntiguo}<br>
-            <strong>Grupo detectado:</strong>
-            ${cambio.grupoNuevo}<br>
-            <strong>Enrolment suspended:</strong>
-            ${cambio.tieneSuspension ? "Sí" : "No"}<br>
-            <strong>Signos ?:</strong>
-            ${cambio.interrogaciones}
-        `;
+        encabezado.appendChild(
+            th
+        );
+    }
+);
 
-        contenedor.appendChild(
-            tarjeta
+tabla.appendChild(
+    encabezado
+);
+
+UCMI_CAMBIOS_GRUPO.forEach(
+    cambio => {
+        const fila =
+            document.createElement(
+                "tr"
+            );
+
+        const nombre =
+            (
+                String(
+                    cambio.apellidos ||
+                    ""
+                ).trim() +
+                " " +
+                String(
+                    cambio.nombres ||
+                    ""
+                ).trim()
+            ).trim();
+
+        [
+            nombre,
+            cambio.studentId,
+            formatearFechaCambioGrupo(
+                cambio.fechaCambio
+            ),
+            cambio.grupoAnterior,
+            cambio.grupoNuevo,
+            cambio.grupoFirebase ||
+                "NO REGISTRADO"
+        ].forEach(
+            texto => {
+                const td =
+                    document.createElement(
+                        "td"
+                    );
+
+                td.textContent =
+                    texto;
+
+                td.style.padding =
+                    "10px";
+
+                td.style.border =
+                    "1px solid #ccc";
+
+                fila.appendChild(
+                    td
+                );
+            }
         );
 
+        tabla.appendChild(
+            fila
+        );
     }
+);
+
+contenedor.appendChild(
+    tabla
 );
 
 }
@@ -587,28 +953,92 @@ UCMI_CAMBIOS_GRUPO;
 /*
 
 ============================================================
-ESPERAR LOS REGISTROS DE ASISTENCIA
+ESPERAR LOS DATOS
+============================================================
+No modificamos reporte.js.
+Detectamos automáticamente cuando el Excel ya fue
+cargado y volvemos a analizar si cambian los datos.
 ============================================================
 */
 
-(function esperarRegistrosAsistencia() {
+let firmaAnteriorCambiosGrupo =
+"";
+
+function obtenerFirmaRegistrosCambioGrupo() {
+const registros =
+window.registrosAsistencia || [];
 
 if (
-    Array.isArray(
-        window.registrosAsistencia
-    ) &&
-    window.registrosAsistencia.length
+    !Array.isArray(registros) ||
+    registros.length === 0
 ) {
+    return "";
+}
 
-    detectarCambiosGrupo();
+return registros
+    .map(alumno => {
+        const id =
+            String(
+                alumno.studentId ||
+                ""
+            ).trim();
 
-    return;
+        const grupo =
+            String(
+                alumno.grupo ||
+                ""
+            ).trim();
+
+        const sesiones =
+            Array.isArray(
+                alumno.sesiones
+            )
+                ? alumno.sesiones.length
+                : 0;
+
+        return (
+            id +
+            "|" +
+            grupo +
+            "|" +
+            sesiones
+        );
+    })
+    .sort()
+    .join("||");
 
 }
 
-setTimeout(
-    esperarRegistrosAsistencia,
-    500
-);
+function vigilarCambiosGrupo() {
+const firma =
+obtenerFirmaRegistrosCambioGrupo();
 
-})();
+if (
+    firma &&
+    firma !==
+        firmaAnteriorCambiosGrupo
+) {
+    firmaAnteriorCambiosGrupo =
+        firma;
+
+    setTimeout(
+        function() {
+            detectarCambiosGrupo();
+        },
+        300
+    );
+
+    return;
+}
+
+if (!firma) {
+    firmaAnteriorCambiosGrupo =
+        "";
+}
+
+}
+
+setInterval(
+vigilarCambiosGrupo,
+1000
+);
