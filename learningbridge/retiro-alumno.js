@@ -542,26 +542,124 @@ document.addEventListener(
 
 
 document.addEventListener(
-    "click",
-    function(evento) {
+    "contextmenu",
+    async function(evento) {
 
-        const menu =
-            document.getElementById(
-                MENU_RETIRO_ID
+        const celda =
+            evento.target.closest(
+                "#resultadoAsistencia table tr td:first-child"
             );
 
-        if (
-            menu &&
-            !menu.contains(
-                evento.target
-            )
-        ) {
-            ocultarMenuContextualRetiro();
+        if (!celda) {
+            return;
+        }
+
+        console.log(
+            "CLIC DERECHO DETECTADO SOBRE NOMBRE:",
+            celda.textContent
+        );
+
+        const fila =
+            celda.closest(
+                "tr"
+            );
+
+        const alumno =
+            obtenerAlumnoDesdeFilaRetiro(
+                fila
+            );
+
+        if (!alumno) {
+            return;
+        }
+
+        evento.preventDefault();
+
+        try {
+
+            const db =
+                window.learningBridgeFirebaseDB;
+
+            if (!db) {
+                throw new Error(
+                    "Firebase todavía no está disponible."
+                );
+            }
+
+            const {
+                doc,
+                getDoc
+            } =
+                await import(
+                    "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+                );
+
+            const studentId =
+                String(
+                    alumno.studentId || ""
+                ).trim();
+
+            if (!studentId) {
+                throw new Error(
+                    "No se encontró el studentId del estudiante."
+                );
+            }
+
+            const referenciaAlumno =
+                doc(
+                    db,
+                    "alumnos",
+                    studentId
+                );
+
+            const documentoAlumno =
+                await getDoc(
+                    referenciaAlumno
+                );
+
+            if (
+                documentoAlumno.exists()
+            ) {
+
+                const datosFirebase =
+                    documentoAlumno.data();
+
+                alumno.faseRetiro =
+                    datosFirebase.faseRetiro === true;
+
+                console.log(
+                    "FASE DE RETIRO ACTUAL EN FIREBASE:",
+                    alumno.faseRetiro
+                );
+
+            } else {
+
+                alumno.faseRetiro =
+                    false;
+
+            }
+
+            mostrarMenuContextualRetiro(
+                evento.clientX,
+                evento.clientY,
+                alumno
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Error al consultar fase de retiro en Firebase:",
+                error
+            );
+
+            alert(
+                "No se pudo consultar el estado de retiro del estudiante."
+            );
+
         }
 
     }
 );
-
 
 window.addEventListener(
     "scroll",
