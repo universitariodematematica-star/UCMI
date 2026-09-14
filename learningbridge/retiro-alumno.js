@@ -398,89 +398,147 @@ CAMBIAR FASE DE RETIRO EN FIREBASE
 */
 
 function actualizarAspectoFilaRetiro(
-    fila,
-    faseRetiro
+fila,
+faseRetiro
 ) {
 
-    if (!fila) {
-        return;
+if (!fila) {
+    return;
+}
+
+const celdas =
+    fila.querySelectorAll(
+        "td"
+    );
+
+celdas.forEach(
+    celda => {
+
+        if (faseRetiro === true) {
+
+            /*
+             * Gris un poco más oscuro
+             * para que la fila se distinga claramente.
+             */
+
+            celda.style.backgroundColor =
+                "#d6d6d6";
+
+            celda.style.color =
+                "#666666";
+
+        } else {
+
+            celda.style.backgroundColor =
+                "";
+
+            celda.style.color =
+                "";
+
+        }
+
     }
+);
 
-    const celdas =
-        fila.querySelectorAll(
-            "td"
-        );
 
-    celdas.forEach(
-        celda => {
+/*
+ * ==================================================
+ * BOTONES DE MENSAJE Y LLAMADA
+ * ==================================================
+ */
 
-            if (faseRetiro === true) {
-
-                celda.style.backgroundColor =
-                    "#eeeeee";
-
-                celda.style.color =
-                    "#777";
-
-            } else {
-
-                celda.style.backgroundColor =
-                    "";
-
-                celda.style.color =
-                    "";
-
-            }
-
-        }
+const botones =
+    fila.querySelectorAll(
+        ".btn-enviar-mensaje, .btn-llamar-whatsapp"
     );
 
-    const botones =
-        fila.querySelectorAll(
-            ".btn-enviar-mensaje, .btn-llamar-whatsapp"
-        );
 
-    botones.forEach(
-        boton => {
+botones.forEach(
+    boton => {
 
-            if (faseRetiro === true) {
+        if (faseRetiro === true) {
 
-                boton.disabled =
-                    true;
+            /*
+             * Inhabilitar completamente.
+             */
 
-                boton.style.backgroundColor =
-                    "#bdbdbd";
+            boton.disabled =
+                true;
 
-                boton.style.color =
-                    "#666";
+            boton.setAttribute(
+                "disabled",
+                "disabled"
+            );
 
-                boton.style.cursor =
-                    "not-allowed";
+            boton.setAttribute(
+                "aria-disabled",
+                "true"
+            );
 
-                boton.style.opacity =
-                    "0.75";
+            boton.style.backgroundColor =
+                "#78909c";
 
-            } else {
+            boton.style.color =
+                "#e0e0e0";
 
-                boton.disabled =
-                    false;
+            boton.style.borderColor =
+                "#78909c";
 
-                boton.style.backgroundColor =
-                    "";
+            boton.style.cursor =
+                "not-allowed";
 
-                boton.style.color =
-                    "";
+            boton.style.opacity =
+                "1";
 
-                boton.style.cursor =
-                    "";
+            boton.style.pointerEvents =
+                "none";
 
-                boton.style.opacity =
-                    "";
+            boton.style.boxShadow =
+                "none";
 
-            }
+        } else {
+
+            /*
+             * Restaurar funcionamiento normal.
+             */
+
+            boton.disabled =
+                false;
+
+            boton.removeAttribute(
+                "disabled"
+            );
+
+            boton.setAttribute(
+                "aria-disabled",
+                "false"
+            );
+
+            boton.style.backgroundColor =
+                "";
+
+            boton.style.color =
+                "";
+
+            boton.style.borderColor =
+                "";
+
+            boton.style.cursor =
+                "";
+
+            boton.style.opacity =
+                "";
+
+            boton.style.pointerEvents =
+                "";
+
+            boton.style.boxShadow =
+                "";
 
         }
-    );
+
+    }
+);
 
 }
 
