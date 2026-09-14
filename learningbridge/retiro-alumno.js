@@ -502,14 +502,15 @@ document.addEventListener(
     "contextmenu",
     function(evento) {
 
-        const celda =
-            evento.target.closest(
-                "#resultadoAsistencia table tbody tr td:first-child"
-            );
 
         if (!celda) {
             return;
         }
+
+        console.log(
+        "CLIC DERECHO DETECTADO SOBRE NOMBRE:",
+        celda.textContent
+        );
 
         const fila =
             celda.closest(
