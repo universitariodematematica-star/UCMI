@@ -9,7 +9,6 @@ const UCMI_GRUPOS_FIREBASE = {};
 
 async function cargarGruposActualesFirebase() {
 
-```
 try {
 
     const db =
@@ -114,7 +113,6 @@ try {
     return {};
 
 }
-```
 
 }
 
@@ -129,7 +127,6 @@ function obtenerGrupoActualFirebase(
 studentId
 ) {
 
-```
 const id =
     String(
         studentId || ""
@@ -145,7 +142,7 @@ return (
     UCMI_GRUPOS_FIREBASE[id] ||
     ""
 );
-```
+
 
 }
 
@@ -168,7 +165,6 @@ function filtrarRegistrosPorGrupoActualFirebase(
 registros
 ) {
 
-```
 if (
     !Array.isArray(
         registros
@@ -213,7 +209,6 @@ return registros.filter(
 
     }
 );
-```
 
 }
 
@@ -247,7 +242,6 @@ filtrarRegistrosPorGrupoActualFirebase;
 
 (function esperarFirebase() {
 
-```
 if (
     window.learningBridgeFirebaseDB
 ) {
@@ -263,7 +257,7 @@ setTimeout(
     esperarFirebase,
     100
 );
-```
+
 
 })();
 
