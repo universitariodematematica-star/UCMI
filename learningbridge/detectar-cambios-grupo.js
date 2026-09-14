@@ -822,117 +822,209 @@ contenedor.appendChild(
 );
 
 const tabla =
-    document.createElement(
-        "table"
-    );
+document.createElement(
+"table"
+);
 
 tabla.style.width =
-    "100%";
+"100%";
 
 tabla.style.borderCollapse =
-    "collapse";
+"separate";
+
+tabla.style.borderSpacing =
+"0";
+
+tabla.style.backgroundColor =
+"white";
+
+tabla.style.borderRadius =
+"8px";
+
+tabla.style.overflow =
+"hidden";
+
+tabla.style.boxShadow =
+"0 2px 6px rgba(0,0,0,0.08)";
 
 const encabezado =
-    document.createElement(
-        "tr"
-    );
+document.createElement(
+"tr"
+);
 
 [
-    "Estudiante",
-    "ID",
-    "Fecha de cambio",
-    "Grupo anterior",
-    "Nuevo grupo",
-    "Grupo en Firebase"
+"Alumno",
+"ID",
+"Fecha de cambio",
+"Grupo anterior",
+"Nuevo grupo",
+"Grupo en Firebase"
 ].forEach(
-    texto => {
-        const th =
-            document.createElement(
-                "th"
-            );
+texto => {
 
-        th.textContent =
-            texto;
-
-        th.style.padding =
-            "10px";
-
-        th.style.border =
-            "1px solid #ccc";
-
-        th.style.textAlign =
-            "left";
-
-        encabezado.appendChild(
-            th
+    const th =
+        document.createElement(
+            "th"
         );
-    }
+
+    th.textContent =
+        texto;
+
+    th.style.padding =
+        "12px 14px";
+
+    th.style.backgroundColor =
+        "#5c1d53";
+
+    th.style.color =
+        "white";
+
+    th.style.border =
+        "1px solid #4b1744";
+
+    th.style.textAlign =
+        "center";
+
+    th.style.fontWeight =
+        "700";
+
+    th.style.whiteSpace =
+        "nowrap";
+
+    encabezado.appendChild(
+        th
+    );
+}
+
 );
 
 tabla.appendChild(
-    encabezado
+encabezado
 );
 
 UCMI_CAMBIOS_GRUPO.forEach(
-    cambio => {
-        const fila =
-            document.createElement(
-                "tr"
-            );
+(cambio, indice) => {
 
-        const nombre =
-            (
-                String(
-                    cambio.apellidos ||
-                    ""
-                ).trim() +
-                " " +
-                String(
-                    cambio.nombres ||
-                    ""
-                ).trim()
-            ).trim();
+    const fila =
+        document.createElement(
+            "tr"
+        );
 
-        [
-            nombre,
-            cambio.studentId,
-            formatearFechaCambioGrupo(
-                cambio.fechaCambio
-            ),
-            cambio.grupoAnterior,
-            cambio.grupoNuevo,
-            cambio.grupoFirebase ||
-                "NO REGISTRADO"
-        ].forEach(
-            texto => {
-                const td =
-                    document.createElement(
-                        "td"
-                    );
+    const nombre =
+        (
+            String(
+                cambio.apellidos ||
+                ""
+            ).trim() +
+            " " +
+            String(
+                cambio.nombres ||
+                ""
+            ).trim()
+        ).trim();
 
-                td.textContent =
-                    texto;
+    const valores = [
+        nombre,
+        cambio.studentId,
+        formatearFechaCambioGrupo(
+            cambio.fechaCambio
+        ),
+        cambio.grupoAnterior,
+        cambio.grupoNuevo,
+        cambio.grupoFirebase ||
+            "NO REGISTRADO"
+    ];
 
-                td.style.padding =
-                    "10px";
+    valores.forEach(
+        (texto, indiceColumna) => {
 
-                td.style.border =
-                    "1px solid #ccc";
-
-                fila.appendChild(
-                    td
+            const td =
+                document.createElement(
+                    "td"
                 );
-            }
-        );
 
-        tabla.appendChild(
-            fila
-        );
-    }
+            td.textContent =
+                texto;
+
+            td.style.padding =
+                "11px 14px";
+
+            td.style.border =
+                "1px solid #ddd";
+
+            td.style.textAlign =
+                indiceColumna === 0
+                    ? "left"
+                    : "center";
+
+            td.style.verticalAlign =
+                "middle";
+
+            if (
+                indice % 2 === 1
+            ) {
+                td.style.backgroundColor =
+                    "#faf7fb";
+            }
+
+            if (
+                indiceColumna === 0
+            ) {
+                td.style.fontWeight =
+                    "600";
+
+                td.style.color =
+                    "#333";
+
+                td.style.whiteSpace =
+                    "nowrap";
+            }
+
+            if (
+                indiceColumna === 3
+            ) {
+                td.style.color =
+                    "#8b1e1e";
+
+                td.style.fontWeight =
+                    "600";
+            }
+
+            if (
+                indiceColumna === 4
+            ) {
+                td.style.color =
+                    "#178a75";
+
+                td.style.fontWeight =
+                    "700";
+            }
+
+            if (
+                indiceColumna === 5
+            ) {
+                td.style.color =
+                    "#5c1d53";
+
+                td.style.fontWeight =
+                    "600";
+            }
+
+            fila.appendChild(
+                td
+            );
+        }
+    );
+
+    tabla.appendChild(
+        fila
+    );
+}
+
 );
 
 contenedor.appendChild(
-    tabla
+tabla
 );
 
 }
