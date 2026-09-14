@@ -232,3 +232,38 @@ obtenerGrupoActualFirebase;
 
 window.filtrarRegistrosPorGrupoActualFirebase =
 filtrarRegistrosPorGrupoActualFirebase;
+
+/*
+
+* ==================================================
+* INICIAR AUTOMÁTICAMENTE
+* ==================================================
+*
+* Firebase se inicializa en asistencia.html.
+* Este archivo espera a que Firebase esté disponible.
+*
+* ==================================================
+  */
+
+(function esperarFirebase() {
+
+```
+if (
+    window.learningBridgeFirebaseDB
+) {
+
+    cargarGruposActualesFirebase();
+
+    return;
+
+}
+
+
+setTimeout(
+    esperarFirebase,
+    100
+);
+```
+
+})();
+
