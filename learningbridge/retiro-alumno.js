@@ -494,6 +494,7 @@ try {
 DETECTAR CLIC DERECHO SOBRE EL NOMBRE
 ============================================================
 */
+console.log("RETIRO-ALUMNO.JS ESTÁ CARGADO Y EL MENÚ FUE INICIADO");
 
 function iniciarMenuRetiroAlumno() {
 
