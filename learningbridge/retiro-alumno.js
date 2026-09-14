@@ -101,46 +101,51 @@ opcion.addEventListener(
 
 
 opcion.addEventListener(
-    "click",
-    async function() {
+"click",
+async function() {
 
-        if (
-            !alumnoSeleccionadoRetiro
-        ) {
-            return;
-        }
+    if (
+        !alumnoSeleccionadoRetiro
+    ) {
+        return;
+    }
 
-        const alumno =
-            alumnoSeleccionadoRetiro;
+    const alumno =
+        alumnoSeleccionadoRetiro;
 
-        ocultarMenuContextualRetiro();
+    const fila =
+        alumno.__filaRetiro;
 
-        const faseActual =
-            alumno.faseRetiro === true;
+    const faseActual =
+        alumno.faseRetiro === true;
 
-        const nuevoEstado =
-            !faseActual;
+    const nuevoEstado =
+        !faseActual;
 
-        const mensaje =
-            nuevoEstado
-                ? "¿Deseas iniciar la fase de retiro de este estudiante?"
-                : "¿Deseas cancelar la fase de retiro de este estudiante?";
+    ocultarMenuContextualRetiro();
 
-        const confirmar =
-            window.confirm(
-                mensaje
-            );
+    const mensaje =
+        nuevoEstado
+            ? "¿Deseas iniciar la fase de retiro de este estudiante?"
+            : "¿Deseas cancelar la fase de retiro de este estudiante?";
 
-        if (!confirmar) {
-            return;
-        }
-
-        await cambiarFaseRetiroAlumno(
-            alumno.studentId,
-            nuevoEstado
+    const confirmar =
+        window.confirm(
+            mensaje
         );
 
+    if (!confirmar) {
+        return;
     }
+
+    await cambiarFaseRetiroAlumno(
+        alumno.studentId,
+        nuevoEstado,
+        fila
+    );
+
+}
+
 );
 
 
@@ -479,9 +484,232 @@ function actualizarAspectoFilaRetiro(
 
 }
 
+/*
+ESTADOS DE RETIRO CARGADOS DESDE FIREBASE
+
+*/
+
+const ESTADOS_RETIRO_FIREBASE = {};
+
+async function cargarEstadosRetiroFirebase() {
+
+try {
+
+    const db =
+        window.learningBridgeFirebaseDB;
+
+    if (!db) {
+        return;
+    }
+
+    const {
+        collection,
+        getDocs
+    } =
+        await import(
+            "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+        );
+
+    const snapshot =
+        await getDocs(
+            collection(
+                db,
+                "alumnos"
+            )
+        );
+
+    Object.keys(
+        ESTADOS_RETIRO_FIREBASE
+    ).forEach(
+        studentId => {
+
+            delete ESTADOS_RETIRO_FIREBASE[
+                studentId
+            ];
+
+        }
+    );
+
+    snapshot.forEach(
+        documento => {
+
+            const datos =
+                documento.data();
+
+            const studentId =
+                String(
+                    datos.studentId ||
+                    documento.id ||
+                    ""
+                ).trim();
+
+            if (!studentId) {
+                return;
+            }
+
+            ESTADOS_RETIRO_FIREBASE[
+                studentId
+            ] =
+                datos.faseRetiro === true;
+
+        }
+    );
+
+    aplicarEstadosRetiroATabla();
+
+} catch (error) {
+
+    console.error(
+        "Error al cargar estados de retiro desde Firebase:",
+        error
+    );
+
+}
+
+}
+
+function aplicarEstadosRetiroATabla() {
+
+const tabla =
+    document.querySelector(
+        "#resultadoAsistencia table"
+    );
+
+if (!tabla) {
+    return;
+}
+
+const filas =
+    tabla.querySelectorAll(
+        "tr"
+    );
+
+filas.forEach(
+    (fila, indice) => {
+
+        if (
+            indice === 0
+        ) {
+            return;
+        }
+
+        const alumno =
+            obtenerAlumnoDesdeFilaRetiro(
+                fila
+            );
+
+        if (!alumno) {
+            return;
+        }
+
+        const studentId =
+            String(
+                alumno.studentId ||
+                ""
+            ).trim();
+
+        if (!studentId) {
+            return;
+        }
+
+        const faseRetiro =
+            ESTADOS_RETIRO_FIREBASE[
+                studentId
+            ] === true;
+
+        alumno.faseRetiro =
+            faseRetiro;
+
+        actualizarAspectoFilaRetiro(
+            fila,
+            faseRetiro
+        );
+
+    }
+);
+
+}
+
+/*
+VIGILAR RECARGA DE LA TABLA
+
+*/
+
+function iniciarVigilanciaRetiroTabla() {
+
+const contenedor =
+    document.getElementById(
+        "resultadoAsistencia"
+    );
+
+if (!contenedor) {
+
+    setTimeout(
+        iniciarVigilanciaRetiroTabla,
+        200
+    );
+
+    return;
+}
+
+let temporizador =
+    null;
+
+const observer =
+    new MutationObserver(
+        function() {
+
+            clearTimeout(
+                temporizador
+            );
+
+            temporizador =
+                setTimeout(
+                    function() {
+
+                        cargarEstadosRetiroFirebase();
+
+                    },
+                    300
+                );
+
+        }
+    );
+
+observer.observe(
+    contenedor,
+    {
+        childList: true,
+        subtree: true
+    }
+);
+
+cargarEstadosRetiroFirebase();
+
+}
+
+(function esperarFirebaseRetiro() {
+
+if (
+    window.learningBridgeFirebaseDB
+) {
+
+    iniciarVigilanciaRetiroTabla();
+
+    return;
+}
+
+setTimeout(
+    esperarFirebaseRetiro,
+    100
+);
+
+})();
+
 async function cambiarFaseRetiroAlumno(
 studentId,
-nuevoEstado
+nuevoEstado,
+fila
 ) {
 
 try {
@@ -533,24 +761,47 @@ try {
     );
 
     /*
-     * Actualizar también el registro local
-     * para que el siguiente clic derecho
-     * muestre inmediatamente la opción correcta.
+     * Actualizar el registro local.
      */
 
-if (
-    alumnoSeleccionadoRetiro
-) {
+    if (
+        window.registrosAsistencia &&
+        Array.isArray(
+            window.registrosAsistencia
+        )
+    ) {
 
-    alumnoSeleccionadoRetiro.faseRetiro =
-        nuevoEstado;
+        window.registrosAsistencia
+            .forEach(
+                alumno => {
+
+                    if (
+                        String(
+                            alumno.studentId ||
+                            ""
+                        ).trim() ===
+                        id
+                    ) {
+
+                        alumno.faseRetiro =
+                            nuevoEstado;
+
+                    }
+
+                }
+            );
+
+    }
+
+    /*
+     * Actualizar inmediatamente
+     * el aspecto visual de la fila.
+     */
 
     actualizarAspectoFilaRetiro(
-        alumnoSeleccionadoRetiro.__filaRetiro,
+        fila,
         nuevoEstado
     );
-
-}
 
     alert(
         nuevoEstado
@@ -579,7 +830,6 @@ if (
 }
 
 }
-
 /*
 
 ============================================================
