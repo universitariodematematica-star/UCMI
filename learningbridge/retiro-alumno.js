@@ -392,6 +392,93 @@ CAMBIAR FASE DE RETIRO EN FIREBASE
 ============================================================
 */
 
+function actualizarAspectoFilaRetiro(
+    fila,
+    faseRetiro
+) {
+
+    if (!fila) {
+        return;
+    }
+
+    const celdas =
+        fila.querySelectorAll(
+            "td"
+        );
+
+    celdas.forEach(
+        celda => {
+
+            if (faseRetiro === true) {
+
+                celda.style.backgroundColor =
+                    "#eeeeee";
+
+                celda.style.color =
+                    "#777";
+
+            } else {
+
+                celda.style.backgroundColor =
+                    "";
+
+                celda.style.color =
+                    "";
+
+            }
+
+        }
+    );
+
+    const botones =
+        fila.querySelectorAll(
+            ".btn-enviar-mensaje, .btn-llamar-whatsapp"
+        );
+
+    botones.forEach(
+        boton => {
+
+            if (faseRetiro === true) {
+
+                boton.disabled =
+                    true;
+
+                boton.style.backgroundColor =
+                    "#bdbdbd";
+
+                boton.style.color =
+                    "#666";
+
+                boton.style.cursor =
+                    "not-allowed";
+
+                boton.style.opacity =
+                    "0.75";
+
+            } else {
+
+                boton.disabled =
+                    false;
+
+                boton.style.backgroundColor =
+                    "";
+
+                boton.style.color =
+                    "";
+
+                boton.style.cursor =
+                    "";
+
+                boton.style.opacity =
+                    "";
+
+            }
+
+        }
+    );
+
+}
+
 async function cambiarFaseRetiroAlumno(
 studentId,
 nuevoEstado
@@ -451,14 +538,19 @@ try {
      * muestre inmediatamente la opción correcta.
      */
 
-    if (
-        alumnoSeleccionadoRetiro
-    ) {
+if (
+    alumnoSeleccionadoRetiro
+) {
 
-        alumnoSeleccionadoRetiro.faseRetiro =
-            nuevoEstado;
+    alumnoSeleccionadoRetiro.faseRetiro =
+        nuevoEstado;
 
-    }
+    actualizarAspectoFilaRetiro(
+        alumnoSeleccionadoRetiro.__filaRetiro,
+        nuevoEstado
+    );
+
+}
 
     alert(
         nuevoEstado
@@ -521,16 +613,19 @@ document.addEventListener(
                 "tr"
             );
 
-        const alumno =
-            obtenerAlumnoDesdeFilaRetiro(
-                fila
-            );
+const alumno =
+    obtenerAlumnoDesdeFilaRetiro(
+        fila
+    );
 
-        if (!alumno) {
-            return;
-        }
+if (!alumno) {
+    return;
+}
 
-        evento.preventDefault();
+alumno.__filaRetiro =
+    fila;
+
+evento.preventDefault();
 
         mostrarMenuContextualRetiro(
             evento.clientX,
