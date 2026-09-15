@@ -594,6 +594,8 @@ const texto =
 
 if (texto === "enviar mensaje") {
 
+    console.log("ESTADO CONTACTO: CLIC EN ENVIAR MENSAJE");
+
     registrarMensajeEnviado(boton);
 
     return;
