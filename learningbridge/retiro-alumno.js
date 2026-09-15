@@ -406,6 +406,13 @@ if (!fila) {
     return;
 }
 
+
+/*
+ * ==================================================
+ * CELDAS DE LA FILA
+ * ==================================================
+ */
+
 const celdas =
     fila.querySelectorAll(
         "td"
@@ -414,26 +421,31 @@ const celdas =
 celdas.forEach(
     celda => {
 
-        if (faseRetiro === true) {
+        if (
+            faseRetiro === true
+        ) {
 
-            /*
-             * Gris un poco más oscuro
-             * para que la fila se distinga claramente.
-             */
+            celda.style.setProperty(
+                "background-color",
+                "#d2d2d2",
+                "important"
+            );
 
-            celda.style.backgroundColor =
-                "#d6d6d6";
-
-            celda.style.color =
-                "#666666";
+            celda.style.setProperty(
+                "color",
+                "#666666",
+                "important"
+            );
 
         } else {
 
-            celda.style.backgroundColor =
-                "";
+            celda.style.removeProperty(
+                "background-color"
+            );
 
-            celda.style.color =
-                "";
+            celda.style.removeProperty(
+                "color"
+            );
 
         }
 
@@ -443,23 +455,73 @@ celdas.forEach(
 
 /*
  * ==================================================
- * BOTONES DE MENSAJE Y LLAMADA
+ * TODOS LOS BOTONES DE LA FILA
  * ==================================================
  */
 
 const botones =
     fila.querySelectorAll(
-        ".btn-enviar-mensaje, .btn-llamar-whatsapp"
+        "button"
     );
 
 
 botones.forEach(
     boton => {
 
-        if (faseRetiro === true) {
+        const texto =
+            String(
+                boton.textContent ||
+                ""
+            )
+            .trim()
+            .toLowerCase();
+
+
+        /*
+         * Detectar botón de mensaje.
+         */
+
+        const esMensaje =
+            texto.includes(
+                "mensaje"
+            );
+
+
+        /*
+         * Detectar botón de llamada
+         * o WhatsApp.
+         */
+
+        const esLlamada =
+            texto.includes(
+                "llamar"
+            ) ||
+            texto.includes(
+                "whatsapp"
+            );
+
+
+        /*
+         * Ignorar cualquier otro botón
+         * que pudiera existir en la fila.
+         */
+
+        if (
+            !esMensaje &&
+            !esLlamada
+        ) {
+            return;
+        }
+
+
+        if (
+            faseRetiro === true
+        ) {
 
             /*
-             * Inhabilitar completamente.
+             * ==========================================
+             * BOTÓN COMPLETAMENTE INHABILITADO
+             * ==========================================
              */
 
             boton.disabled =
@@ -475,31 +537,54 @@ botones.forEach(
                 "true"
             );
 
-            boton.style.backgroundColor =
-                "#78909c";
+            boton.style.setProperty(
+                "background-color",
+                "#607d8b",
+                "important"
+            );
 
-            boton.style.color =
-                "#e0e0e0";
+            boton.style.setProperty(
+                "color",
+                "#eeeeee",
+                "important"
+            );
 
-            boton.style.borderColor =
-                "#78909c";
+            boton.style.setProperty(
+                "border-color",
+                "#607d8b",
+                "important"
+            );
 
-            boton.style.cursor =
-                "not-allowed";
+            boton.style.setProperty(
+                "cursor",
+                "not-allowed",
+                "important"
+            );
 
-            boton.style.opacity =
-                "1";
+            boton.style.setProperty(
+                "opacity",
+                "0.85",
+                "important"
+            );
 
-            boton.style.pointerEvents =
-                "none";
+            boton.style.setProperty(
+                "pointer-events",
+                "none",
+                "important"
+            );
 
-            boton.style.boxShadow =
-                "none";
+            boton.style.setProperty(
+                "box-shadow",
+                "none",
+                "important"
+            );
 
         } else {
 
             /*
-             * Restaurar funcionamiento normal.
+             * ==========================================
+             * RESTAURAR BOTÓN
+             * ==========================================
              */
 
             boton.disabled =
@@ -514,26 +599,33 @@ botones.forEach(
                 "false"
             );
 
-            boton.style.backgroundColor =
-                "";
+            boton.style.removeProperty(
+                "background-color"
+            );
 
-            boton.style.color =
-                "";
+            boton.style.removeProperty(
+                "color"
+            );
 
-            boton.style.borderColor =
-                "";
+            boton.style.removeProperty(
+                "border-color"
+            );
 
-            boton.style.cursor =
-                "";
+            boton.style.removeProperty(
+                "cursor"
+            );
 
-            boton.style.opacity =
-                "";
+            boton.style.removeProperty(
+                "opacity"
+            );
 
-            boton.style.pointerEvents =
-                "";
+            boton.style.removeProperty(
+                "pointer-events"
+            );
 
-            boton.style.boxShadow =
-                "";
+            boton.style.removeProperty(
+                "box-shadow"
+            );
 
         }
 
