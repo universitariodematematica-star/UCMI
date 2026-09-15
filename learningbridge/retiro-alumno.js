@@ -827,51 +827,66 @@ VIGILAR RECARGA DE LA TABLA
 function iniciarVigilanciaRetiroTabla() {
 
 const contenedor =
-    document.getElementById(
-        "resultadoAsistencia"
-    );
+document.getElementById(
+"resultadoAsistencia"
+);
 
 if (!contenedor) {
 
-    setTimeout(
-        iniciarVigilanciaRetiroTabla,
-        200
-    );
+setTimeout(
+    iniciarVigilanciaRetiroTabla,
+    200
+);
 
-    return;
+return;
+
 }
 
+/*
+
+==================================================
+VIGILAR CAMBIOS EN LA TABLA
+==================================================
+*/
+
 let temporizador =
-    null;
+null;
 
 const observer =
-    new MutationObserver(
-        function() {
+new MutationObserver(
+function() {
 
-            clearTimeout(
-                temporizador
+        clearTimeout(
+            temporizador
+        );
+
+        temporizador =
+            setTimeout(
+                function() {
+
+                    cargarEstadosRetiroFirebase();
+
+                },
+                100
             );
 
-            temporizador =
-                setTimeout(
-                    function() {
-
-                        cargarEstadosRetiroFirebase();
-
-                    },
-                    300
-                );
-
-        }
-    );
-
-observer.observe(
-    contenedor,
-    {
-        childList: true,
-        subtree: true
     }
 );
+
+observer.observe(
+contenedor,
+{
+childList: true,
+subtree: true
+}
+);
+
+/*
+
+==================================================
+CARGA INICIAL INMEDIATA
+==================================================
+*/
 
 cargarEstadosRetiroFirebase();
 
