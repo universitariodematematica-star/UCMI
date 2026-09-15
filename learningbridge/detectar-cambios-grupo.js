@@ -478,38 +478,53 @@ for (
          */
 
         const grupoFirebase =
-            typeof window
-                .obtenerGrupoActualFirebase ===
-            "function"
-                ? window.obtenerGrupoActualFirebase(
-                      studentId
-                  )
-                : "";
+typeof window
+.obtenerGrupoActualFirebase ===
+"function"
+? window.obtenerGrupoActualFirebase(
+studentId
+)
+: "";
 
-        const grupoAnteriorTexto =
-            String(
-                grupoAnterior.grupo ||
-                ""
-            ).trim();
+const grupoAnteriorTexto =
+String(
+grupoAnterior.grupo ||
+""
+).trim();
 
-        const grupoNuevoTexto =
-            String(
-                grupoNuevo.grupo ||
-                ""
-            ).trim();
+const grupoNuevoTexto =
+String(
+grupoNuevo.grupo ||
+""
+).trim();
 
-        /*
-         * Solo nos interesa el cambio que no coincide
-         * con Firebase.
-         */
+/*
 
-        if (
-            grupoFirebase &&
-            grupoFirebase ===
-                grupoNuevoTexto
-        ) {
-            continue;
-        }
+FIREBASE ES LA REFERENCIA DEL GRUPO ACTUAL
+Si el estudiante no existe en Firebase,
+no mostramos este cambio.
+Si Firebase ya tiene el nuevo grupo,
+el cambio queda resuelto y no se muestra.
+Solo mostramos la alerta cuando el nuevo
+grupo detectado en Excel es diferente del
+grupo actualmente registrado en Firebase.
+
+*/
+
+if (
+!grupoFirebase
+) {
+continue;
+}
+
+if (
+String(
+grupoFirebase
+).trim() ===
+grupoNuevoTexto
+) {
+continue;
+}
 
         resultados.push({
             studentId:
