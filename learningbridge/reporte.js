@@ -2232,6 +2232,11 @@ if (numero.startsWith("0")) {
 const mensaje =
 generarMensajeInasistencia(alumno);
 
+const mensaje =
+generarMensajeInasistencia(alumno);
+
+console.log("MENSAJE GENERADO:", mensaje);
+
 const urlWhatsApp =
 "https://api.whatsapp.com/send?phone=" +
 numero +
