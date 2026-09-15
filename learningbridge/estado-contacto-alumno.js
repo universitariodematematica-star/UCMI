@@ -1,464 +1,751 @@
-const MENU_RETIRO_ID = "menuContextualRetiroAlumno";
-let alumnoSeleccionadoRetiro = null;
+const CLAVE_ESTADOS_CONTACTO =
+"learningBridgeEstadosContactoNuevo";
 
-/* ============================================================
-   CREAR MENÚ CONTEXTUAL
-============================================================ */
-function crearMenuContextualRetiro() {
-    let menu = document.getElementById(MENU_RETIRO_ID);
-    if (menu) {
-        return menu;
-    }
+let estadosContactoAlumno = {};
 
-    menu = document.createElement("div");
-    menu.id = MENU_RETIRO_ID;
-    menu.style.position = "fixed";
-    menu.style.display = "none";
-    menu.style.zIndex = "99999";
-    menu.style.backgroundColor = "white";
-    menu.style.border = "1px solid #d8d8d8";
-    menu.style.borderRadius = "8px";
-    menu.style.boxShadow = "0 4px 14px rgba(0,0,0,0.18)";
-    menu.style.minWidth = "220px";
-    menu.style.overflow = "hidden";
+/*
 
-    const opcion = document.createElement("div");
-    opcion.id = "opcionRetiroAlumno";
-    opcion.style.padding = "12px 16px";
-    opcion.style.cursor = "pointer";
-    opcion.style.fontSize = "14px";
-    opcion.style.fontWeight = "600";
-    opcion.style.color = "#333";
+==================================================
+CARGAR ESTADOS GUARDADOS
+==================================================
+*/
 
-    opcion.addEventListener("mouseenter", function () {
-        opcion.style.backgroundColor = "#f3eef3";
-    });
+function cargarEstadosContacto() {
 
-    opcion.addEventListener("mouseleave", function () {
-        opcion.style.backgroundColor = "white";
-    });
+try {
 
-    opcion.addEventListener("click", async function () {
-        if (!alumnoSeleccionadoRetiro) {
-            return;
-        }
+    const datos =
+        localStorage.getItem(
+            CLAVE_ESTADOS_CONTACTO
+        );
 
-        const alumno = alumnoSeleccionadoRetiro;
-        const fila = alumno.__filaRetiro;
-        const faseActual = alumno.faseRetiro === true;
-        const nuevoEstado = !faseActual;
+    estadosContactoAlumno =
+        datos
+            ? JSON.parse(datos)
+            : {};
 
-        ocultarMenuContextualRetiro();
+} catch (error) {
 
-        const mensaje = nuevoEstado
-            ? "¿Deseas iniciar la fase de retiro de este estudiante?"
-            : "¿Deseas cancelar la fase de retiro de este estudiante?";
+    console.error(
+        "Error cargando estados de contacto:",
+        error
+    );
 
-        const confirmar = window.confirm(mensaje);
-        if (!confirmar) {
-            return;
-        }
-
-        await cambiarFaseRetiroAlumno(alumno.studentId, nuevoEstado, fila);
-    });
-
-    menu.appendChild(opcion);
-    document.body.appendChild(menu);
-
-    return menu;
+    estadosContactoAlumno = {};
 }
 
-/* ============================================================
-   ACTUALIZAR TEXTO DEL MENÚ
-============================================================ */
-function actualizarMenuContextualRetiro(faseRetiro) {
-    const menu = crearMenuContextualRetiro();
-    const opcion = document.getElementById("opcionRetiroAlumno");
-    if (!opcion) {
-        return;
-    }
-    opcion.textContent = faseRetiro === true ? "Cancelar fase de retiro" : "Iniciar fase de retiro";
 }
 
-/* ============================================================
-   MOSTRAR MENÚ
-============================================================ */
-function mostrarMenuContextualRetiro(x, y, alumno) {
-    alumnoSeleccionadoRetiro = alumno;
-    actualizarMenuContextualRetiro(alumno.faseRetiro === true);
+/*
 
-    const menu = crearMenuContextualRetiro();
-    menu.style.display = "block";
+==================================================
+GUARDAR ESTADOS
+==================================================
+*/
 
-    const ancho = menu.offsetWidth;
-    const alto = menu.offsetHeight;
+function guardarEstadosContacto() {
 
-    let posicionX = x;
-    let posicionY = y;
+try {
 
-    if (posicionX + ancho > window.innerWidth) {
-        posicionX = window.innerWidth - ancho - 10;
-    }
-    if (posicionY + alto > window.innerHeight) {
-        posicionY = window.innerHeight - alto - 10;
-    }
+    localStorage.setItem(
+        CLAVE_ESTADOS_CONTACTO,
+        JSON.stringify(
+            estadosContactoAlumno
+        )
+    );
 
-    menu.style.left = Math.max(10, posicionX) + "px";
-    menu.style.top = Math.max(10, posicionY) + "px";
+} catch (error) {
+
+    console.error(
+        "Error guardando estados de contacto:",
+        error
+    );
 }
 
-/* ============================================================
-   OCULTAR MENÚ
-============================================================ */
-function ocultarMenuContextualRetiro() {
-    const menu = document.getElementById(MENU_RETIRO_ID);
-    if (menu) {
-        menu.style.display = "none";
-    }
-    alumnoSeleccionadoRetiro = null;
 }
 
-/* ============================================================
-   OBTENER ALUMNO DESDE LA FILA
-============================================================ */
-function obtenerAlumnoDesdeFilaRetiro(fila) {
-    if (!fila) {
-        return null;
-    }
+/*
 
-    const celdas = fila.querySelectorAll("td");
-    if (celdas.length < 2) {
-        return null;
-    }
+==================================================
+OBTENER ALUMNO DE UNA FILA
+==================================================
+*/
 
-    const nombre = String(celdas[0].textContent || "").trim();
-    const grupo = String(celdas[1].textContent || "").trim();
+function obtenerAlumnoContactoDesdeFila(fila) {
 
-    if (!nombre || !grupo) {
-        return null;
-    }
+if (!fila) {
+    return null;
+}
 
-    const registros = window.registrosAsistencia || [];
-    const coincidencias = registros.filter(alumno => {
-        const nombreAlumno = (String(alumno.apellidos || "").trim() + " " + String(alumno.nombres || "").trim()).trim();
-        const grupoAlumno = String(alumno.grupo || "").trim();
-        return (nombreAlumno === nombre && grupoAlumno === grupo);
+const celdas =
+    fila.querySelectorAll("td");
+
+if (celdas.length < 2) {
+    return null;
+}
+
+const nombre =
+    celdas[0].textContent.trim();
+
+const grupo =
+    celdas[1].textContent.trim();
+
+const registros =
+    window.registrosAsistencia || [];
+
+const coincidencias =
+    registros.filter(alumno => {
+
+        const nombreAlumno =
+            (
+                String(alumno.apellidos || "") +
+                " " +
+                String(alumno.nombres || "")
+            ).trim();
+
+        return (
+            nombreAlumno === nombre &&
+            String(alumno.grupo || "").trim() === grupo
+        );
     });
 
-    if (coincidencias.length !== 1) {
-        if (coincidencias.length > 1) {
-            console.warn("No se pudo determinar de forma segura el estudiante para iniciar/cancelar la fase de retiro:", nombre, grupo);
-        }
-        return null;
-    }
-
+if (coincidencias.length === 1) {
     return coincidencias[0];
 }
 
-/* ============================================================
-   ACTUALIZAR ASPECTO FILA RETIRO
-============================================================ */
-function actualizarAspectoFilaRetiro(fila, faseRetiro) {
-    if (!fila) {
-        return;
-    }
+if (coincidencias.length > 1) {
 
-    /* ==================================================
-       CELDAS DE LA FILA
-    ================================================== */
-    const celdas = fila.querySelectorAll("td");
-    celdas.forEach(celda => {
-        if (faseRetiro === true) {
-            celda.style.setProperty("background-color", "#d2d2d2", "important");
-            celda.style.setProperty("color", "#666666", "important");
-        } else {
-            celda.style.removeProperty("background-color");
-            celda.style.removeProperty("color");
-        }
-    });
-
-    /* ==================================================
-       BOTONES DE MENSAJE Y WHATSAPP
-    ================================================== */
-    const botones = fila.querySelectorAll("button");
-    botones.forEach(boton => {
-        const texto = String(boton.textContent || "").trim().toLowerCase();
-        const esMensaje = texto.includes("mensaje");
-        const esLlamada = texto.includes("llamar") || texto.includes("whatsapp");
-
-        if (!esMensaje && !esLlamada) {
-            return;
-        }
-
-        if (faseRetiro === true) {
-            /* ==========================================
-               GUARDAR ESTADO ORIGINAL
-            ========================================== */
-            if (!boton.dataset.estilosRetiroGuardados) {
-                boton.dataset.backgroundOriginal = boton.style.backgroundColor || "";
-                boton.dataset.colorOriginal = boton.style.color || "";
-                boton.dataset.borderOriginal = boton.style.borderColor || "";
-                boton.dataset.cursorOriginal = boton.style.cursor || "";
-                boton.dataset.opacityOriginal = boton.style.opacity || "";
-                boton.dataset.pointerOriginal = boton.style.pointerEvents || "";
-                boton.dataset.shadowOriginal = boton.style.boxShadow || "";
-                boton.dataset.estilosRetiroGuardados = "true";
-            }
-
-            /* ==========================================
-               INHABILITAR COMPLETAMENTE
-            ========================================== */
-            boton.disabled = true;
-            boton.setAttribute("disabled", "disabled");
-            boton.setAttribute("aria-disabled", "true");
-            boton.style.setProperty("background-color", "#607d8b", "important");
-            boton.style.setProperty("color", "#eeeeee", "important");
-            boton.style.setProperty("border-color", "#607d8b", "important");
-            boton.style.setProperty("cursor", "not-allowed", "important");
-            boton.style.setProperty("opacity", "0.85", "important");
-            boton.style.setProperty("pointer-events", "none", "important");
-            boton.style.setProperty("box-shadow", "none", "important");
-        } else {
-            /* ==========================================
-               RESTAURAR BOTÓN ORIGINAL
-            ========================================== */
-            boton.disabled = false;
-            boton.removeAttribute("disabled");
-            boton.setAttribute("aria-disabled", "false");
-
-            /* Quitar solamente los estilos que colocó esta función. */
-            boton.style.removeProperty("background-color");
-            boton.style.removeProperty("color");
-            boton.style.removeProperty("border-color");
-            boton.style.removeProperty("cursor");
-            boton.style.removeProperty("opacity");
-            boton.style.removeProperty("pointer-events");
-            boton.style.removeProperty("box-shadow");
-
-            delete boton.dataset.estilosRetiroGuardados;
-            delete boton.dataset.backgroundOriginal;
-            delete boton.dataset.colorOriginal;
-            delete boton.dataset.borderOriginal;
-            delete boton.dataset.cursorOriginal;
-            delete boton.dataset.opacityOriginal;
-            delete boton.dataset.pointerOriginal;
-            delete boton.dataset.shadowOriginal;
-        }
-    });
+    console.warn(
+        "ESTADO-CONTACTO: se encontraron varios alumnos para:",
+        nombre,
+        grupo
+    );
 }
 
-/* ============================================================
-   ESTADOS DE RETIRO CARGADOS DESDE FIREBASE
-============================================================ */
-const ESTADOS_RETIRO_FIREBASE = {};
+return null;
 
-async function cargarEstadosRetiroFirebase() {
-    try {
-        const db = window.learningBridgeFirebaseDB;
-        if (!db) {
-            return;
-        }
-
-        const { collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-        const snapshot = await getDocs(collection(db, "alumnos"));
-
-        Object.keys(ESTADOS_RETIRO_FIREBASE).forEach(studentId => {
-            delete ESTADOS_RETIRO_FIREBASE[studentId];
-        });
-
-        snapshot.forEach(documento => {
-            const datos = documento.data();
-            const studentId = String(datos.studentId || documento.id || "").trim();
-            if (!studentId) {
-                return;
-            }
-            ESTADOS_RETIRO_FIREBASE[studentId] = datos.faseRetiro === true;
-        });
-
-        aplicarEstadosRetiroATabla();
-    } catch (error) {
-        console.error("Error al cargar estados de retiro desde Firebase:", error);
-    }
 }
 
-function aplicarEstadosRetiroATabla() {
-    const tabla = document.querySelector("#resultadoAsistencia table");
-    if (!tabla) {
-        return;
-    }
+/*
 
-    const filas = tabla.querySelectorAll("tr");
-    filas.forEach((fila, indice) => {
-        if (indice === 0) {
-            return;
-        }
+==================================================
+APLICAR ESTILO A BOTÓN DE MENSAJE
+==================================================
+*/
 
-        const alumno = obtenerAlumnoDesdeFilaRetiro(fila);
-        if (!alumno) {
-            return;
-        }
+function aplicarEstadoBotonMensaje(
+boton,
+estado
+) {
 
-        const studentId = String(alumno.studentId || "").trim();
-        if (!studentId) {
-            return;
-        }
-
-        const faseRetiro = ESTADOS_RETIRO_FIREBASE[studentId] === true;
-        alumno.faseRetiro = faseRetiro;
-        actualizarAspectoFilaRetiro(fila, faseRetiro);
-    });
+if (!boton) {
+    return;
 }
 
-/* ============================================================
-   VIGILAR RECARGA DE LA TABLA
-============================================================ */
-function iniciarVigilanciaRetiroTabla() {
-    const contenedor = document.getElementById("resultadoAsistencia");
-    if (!contenedor) {
-        setTimeout(iniciarVigilanciaRetiroTabla, 200);
-        return;
-    }
+if (estado === true) {
 
-    /* ==================================================
-       VIGILAR CAMBIOS EN LA TABLA
-    ================================================== */
-    let temporizador = null;
-    const observer = new MutationObserver(function () {
-        clearTimeout(temporizador);
-        temporizador = setTimeout(function () {
-            cargarEstadosRetiroFirebase();
-        }, 100);
-    });
+    boton.textContent =
+        "Mensaje enviado";
 
-    observer.observe(contenedor, { childList: true, subtree: true });
+    boton.disabled = true;
 
-    /* ==================================================
-       CARGA INICIAL INMEDIATA
-    ================================================== */
-    cargarEstadosRetiroFirebase();
-}
+    boton.style.setProperty(
+        "background-color",
+        "#c62828",
+        "important"
+    );
 
-(function esperarFirebaseRetiro() {
-    if (window.learningBridgeFirebaseDB) {
-        iniciarVigilanciaRetiroTabla();
-        return;
-    }
-    setTimeout(esperarFirebaseRetiro, 100);
-})();
+    boton.style.setProperty(
+        "color",
+        "#ffffff",
+        "important"
+    );
 
-async function cambiarFaseRetiroAlumno(studentId, nuevoEstado, fila) {
-    try {
-        const db = window.learningBridgeFirebaseDB;
-        if (!db) {
-            alert("Firebase todavía no está disponible.");
-            return;
-        }
+    boton.style.setProperty(
+        "cursor",
+        "not-allowed",
+        "important"
+    );
 
-        const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-        const id = String(studentId || "").trim();
-        if (!id) {
-            alert("No se pudo identificar al estudiante.");
-            return;
-        }
+    boton.style.setProperty(
+        "opacity",
+        "0.85",
+        "important"
+    );
 
-        await updateDoc(doc(db, "alumnos", id), { faseRetiro: nuevoEstado });
+    boton.setAttribute(
+        "aria-disabled",
+        "true"
+    );
 
-        /* Actualizar el registro local. */
-        if (window.registrosAsistencia && Array.isArray(window.registrosAsistencia)) {
-            window.registrosAsistencia.forEach(alumno => {
-                if (String(alumno.studentId || "").trim() === id) {
-                    alumno.faseRetiro = nuevoEstado;
-                }
-            });
-        }
-
-        /* Actualizar inmediatamente el aspecto visual de la fila. */
-        actualizarAspectoFilaRetiro(fila, nuevoEstado);
-
-        alert(nuevoEstado ? "Se inició la fase de retiro del estudiante." : "Se canceló la fase de retiro del estudiante.");
-        console.log(nuevoEstado ? "Fase de retiro iniciada:" : "Fase de retiro cancelada:", id);
-    } catch (error) {
-        console.error("Error al cambiar la fase de retiro:", error);
-        alert("No se pudo actualizar la fase de retiro en Firebase.");
-    }
-}
-
-/* ============================================================
-   DETECTAR CLIC DERECHO SOBRE EL NOMBRE
-============================================================ */
-console.log("RETIRO-ALUMNO.JS ESTÁ CARGADO Y EL MENÚ FUE INICIADO");
-
-function iniciarMenuRetiroAlumno() {
-    document.addEventListener("contextmenu", function (evento) {
-        const celda = evento.target.closest("#resultadoAsistencia table tr td:first-child");
-        if (!celda) {
-            return;
-        }
-
-        console.log("CLIC DERECHO DETECTADO SOBRE NOMBRE:", celda.textContent);
-        const fila = celda.closest("tr");
-        const alumno = obtenerAlumnoDesdeFilaRetiro(fila);
-        if (!alumno) {
-            return;
-        }
-
-        alumno.__filaRetiro = fila;
-        evento.preventDefault();
-        mostrarMenuContextualRetiro(evento.clientX, evento.clientY, alumno);
-    });
-
-    document.addEventListener("contextmenu", async function (evento) {
-        const celda = evento.target.closest("#resultadoAsistencia table tr td:first-child");
-        if (!celda) {
-            return;
-        }
-
-        console.log("CLIC DERECHO DETECTADO SOBRE NOMBRE:", celda.textContent);
-        const fila = celda.closest("tr");
-        const alumno = obtenerAlumnoDesdeFilaRetiro(fila);
-        if (!alumno) {
-            return;
-        }
-
-        evento.preventDefault();
-        try {
-            const db = window.learningBridgeFirebaseDB;
-            if (!db) {
-                throw new Error("Firebase todavía no está disponible.");
-            }
-
-            const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-            const studentId = String(alumno.studentId || "").trim();
-            if (!studentId) {
-                throw new Error("No se encontró el studentId del estudiante.");
-            }
-
-            const referenciaAlumno = doc(db, "alumnos", studentId);
-            const documentoAlumno = await getDoc(referenciaAlumno);
-
-            if (documentoAlumno.exists()) {
-                const datosFirebase = documentoAlumno.data();
-                alumno.faseRetiro = datosFirebase.faseRetiro === true;
-                console.log("FASE DE RETIRO ACTUAL EN FIREBASE:", alumno.faseRetiro);
-            } else {
-                alumno.faseRetiro = false;
-            }
-
-            mostrarMenuContextualRetiro(evento.clientX, evento.clientY, alumno);
-        } catch (error) {
-            console.error("Error al consultar fase de retiro en Firebase:", error);
-            alert("No se pudo consultar el estado de retiro del estudiante.");
-        }
-    });
-
-    window.addEventListener("scroll", ocultarMenuContextualRetiro);
-}
-
-/* ============================================================
-   INICIAR
-============================================================ */
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", iniciarMenuRetiroAlumno);
 } else {
-    iniciarMenuRetiroAlumno();
+
+    boton.textContent =
+        "Enviar mensaje";
+
+    boton.disabled = false;
+
+    boton.style.setProperty(
+        "background-color",
+        "#178a75",
+        "important"
+    );
+
+    boton.style.setProperty(
+        "color",
+        "#ffffff",
+        "important"
+    );
+
+    boton.style.setProperty(
+        "cursor",
+        "pointer",
+        "important"
+    );
+
+    boton.style.setProperty(
+        "opacity",
+        "1",
+        "important"
+    );
+
+    boton.setAttribute(
+        "aria-disabled",
+        "false"
+    );
 }
+
+}
+
+/*
+
+==================================================
+APLICAR ESTILO A BOTÓN DE LLAMADA
+==================================================
+*/
+
+function aplicarEstadoBotonLlamada(
+boton,
+estado
+) {
+
+if (!boton) {
+    return;
+}
+
+if (estado === true) {
+
+    boton.textContent =
+        "Llamada hecha";
+
+    boton.disabled = true;
+
+    boton.style.setProperty(
+        "background-color",
+        "#c62828",
+        "important"
+    );
+
+    boton.style.setProperty(
+        "color",
+        "#ffffff",
+        "important"
+    );
+
+    boton.style.setProperty(
+        "cursor",
+        "not-allowed",
+        "important"
+    );
+
+    boton.style.setProperty(
+        "opacity",
+        "0.85",
+        "important"
+    );
+
+    boton.setAttribute(
+        "aria-disabled",
+        "true"
+    );
+
+} else {
+
+    boton.textContent =
+        "Llamar";
+
+    boton.disabled = false;
+
+    boton.style.setProperty(
+        "background-color",
+        "#178a75",
+        "important"
+    );
+
+    boton.style.setProperty(
+        "color",
+        "#ffffff",
+        "important"
+    );
+
+    boton.style.setProperty(
+        "cursor",
+        "pointer",
+        "important"
+    );
+
+    boton.style.setProperty(
+        "opacity",
+        "1",
+        "important"
+    );
+
+    boton.setAttribute(
+        "aria-disabled",
+        "false"
+    );
+}
+
+}
+
+/*
+
+==================================================
+RESTAURAR ESTADOS EN LA TABLA
+==================================================
+*/
+
+function restaurarEstadosContactoTabla() {
+
+const tabla =
+    document.querySelector(
+        "#resultadoAsistencia table"
+    );
+
+if (!tabla) {
+    return;
+}
+
+const filas =
+    tabla.querySelectorAll("tr");
+
+filas.forEach((fila, indice) => {
+
+    if (indice === 0) {
+        return;
+    }
+
+    const alumno =
+        obtenerAlumnoContactoDesdeFila(
+            fila
+        );
+
+    if (!alumno) {
+        return;
+    }
+
+    const studentId =
+        String(
+            alumno.studentId || ""
+        ).trim();
+
+    if (!studentId) {
+        return;
+    }
+
+    /*
+     * ==================================================
+     * FASE DE RETIRO TIENE PRIORIDAD ABSOLUTA
+     * ==================================================
+     */
+
+    const celdaNombre =
+        fila.querySelector("td:first-child");
+
+    const filaEstaGris =
+        celdaNombre &&
+        (
+            getComputedStyle(
+                celdaNombre
+            ).backgroundColor ===
+            "rgb(210, 210, 210)"
+        );
+
+    const faseRetiro =
+        alumno.faseRetiro === true ||
+        filaEstaGris;
+
+    if (faseRetiro) {
+
+        return;
+    }
+
+    /*
+     * ==================================================
+     * ESTADO NORMAL DE CONTACTO
+     * ==================================================
+     */
+
+    const estado =
+        estadosContactoAlumno[studentId] ||
+        {};
+
+    const botones =
+        fila.querySelectorAll(
+            "button"
+        );
+
+    botones.forEach(boton => {
+
+        const texto =
+            boton.textContent
+                .trim()
+                .toLowerCase();
+
+        /*
+         * ----------------------------------------------
+         * MENSAJE
+         * ----------------------------------------------
+         */
+
+        if (
+            texto === "enviar mensaje" ||
+            texto === "mensaje enviado"
+        ) {
+
+            aplicarEstadoBotonMensaje(
+                boton,
+                estado.mensajeEnviado === true
+            );
+
+            return;
+        }
+
+        /*
+         * ----------------------------------------------
+         * LLAMADA
+         * ----------------------------------------------
+         */
+
+        if (
+            texto === "llamar" ||
+            texto === "llamada hecha"
+        ) {
+
+            aplicarEstadoBotonLlamada(
+                boton,
+                estado.llamadaHecha === true
+            );
+
+        }
+
+    });
+
+});
+
+}
+
+==================================================
+REGISTRAR MENSAJE ENVIADO
+==================================================
+*/
+
+function registrarMensajeEnviado(
+boton
+) {
+
+const fila =
+boton.closest("tr");
+
+const alumno =
+obtenerAlumnoContactoDesdeFila(
+fila
+);
+
+if (!alumno) {
+return;
+}
+
+/*
+
+==================================================
+FASE DE RETIRO TIENE PRIORIDAD
+==================================================
+*/
+
+const celdaNombre =
+    fila.querySelector(
+        "td:first-child"
+    );
+
+const filaEstaGris =
+    celdaNombre &&
+    (
+        getComputedStyle(
+            celdaNombre
+        ).backgroundColor ===
+        "rgb(210, 210, 210)"
+    );
+
+if (filaEstaGris) {
+    return;
+}
+
+const studentId =
+String(
+alumno.studentId || ""
+).trim();
+
+if (!studentId) {
+return;
+}
+
+if (
+!estadosContactoAlumno[studentId]
+) {
+
+estadosContactoAlumno[studentId] = {};
+
+}
+
+estadosContactoAlumno[studentId]
+.mensajeEnviado = true;
+
+guardarEstadosContacto();
+
+aplicarEstadoBotonMensaje(
+boton,
+true
+);
+
+}
+
+/*
+
+==================================================
+REGISTRAR LLAMADA REALIZADA
+==================================================
+*/
+
+function registrarLlamadaHecha(
+boton
+) {
+
+const fila =
+    boton.closest("tr");
+
+const alumno =
+    obtenerAlumnoContactoDesdeFila(
+        fila
+    );
+
+if (!alumno) {
+    return;
+}
+
+const studentId =
+    String(
+        alumno.studentId || ""
+    ).trim();
+
+if (!studentId) {
+    return;
+}
+
+if (
+    !estadosContactoAlumno[studentId]
+) {
+
+    estadosContactoAlumno[studentId] = {};
+}
+
+estadosContactoAlumno[studentId]
+    .llamadaHecha = true;
+
+guardarEstadosContacto();
+
+aplicarEstadoBotonLlamada(
+    boton,
+    true
+);
+
+}
+
+/*
+
+==================================================
+DETECTAR CLICS
+==================================================
+*/
+
+document.addEventListener(
+"click",
+function(event) {
+
+    const boton =
+        event.target.closest(
+            "button"
+        );
+
+    if (!boton) {
+        return;
+    }
+
+    const texto =
+        boton.textContent
+            .trim()
+            .toLowerCase();
+
+    if (
+        texto === "enviar mensaje"
+    ) {
+
+        registrarMensajeEnviado(
+            boton
+        );
+
+        return;
+    }
+
+    if (
+        texto === "llamar"
+    ) {
+
+        registrarLlamadaHecha(
+            boton
+        );
+
+        return;
+    }
+},
+true
+
+);
+
+/*
+
+==================================================
+VIGILAR TABLA
+==================================================
+*/
+
+function iniciarVigilanciaEstadosContacto() {
+
+const contenedor =
+    document.getElementById(
+        "resultadoAsistencia"
+    );
+
+if (!contenedor) {
+
+    setTimeout(
+        iniciarVigilanciaEstadosContacto,
+        300
+    );
+
+    return;
+}
+
+let temporizador = null;
+
+const observer =
+    new MutationObserver(
+        function() {
+
+            clearTimeout(
+                temporizador
+            );
+
+            temporizador =
+                setTimeout(
+                    function() {
+
+                        restaurarEstadosContactoTabla();
+
+                    },
+                    100
+                );
+        }
+    );
+
+observer.observe(
+    contenedor,
+    {
+        childList: true,
+        subtree: true
+    }
+);
+
+restaurarEstadosContactoTabla();
+
+}
+
+/*
+
+==================================================
+LIMPIAR ESTADOS
+==================================================
+*/
+
+function iniciarLimpiezaEstadosContacto() {
+
+const botonLimpiar =
+    document.getElementById(
+        "btnLimpiarDatos"
+    );
+
+if (!botonLimpiar) {
+
+    setTimeout(
+        iniciarLimpiezaEstadosContacto,
+        300
+    );
+
+    return;
+}
+
+botonLimpiar.addEventListener(
+    "click",
+    function() {
+
+        /*
+         * Esperamos a que el botón
+         * termine su proceso normal
+         * de limpieza.
+         */
+
+        setTimeout(
+            function() {
+
+                estadosContactoAlumno = {};
+
+                localStorage.removeItem(
+                    CLAVE_ESTADOS_CONTACTO
+                );
+
+                restaurarEstadosContactoTabla();
+
+            },
+            150
+        );
+    }
+);
+
+}
+
+/*
+
+==================================================
+INICIO
+==================================================
+*/
+
+cargarEstadosContacto();
+
+iniciarVigilanciaEstadosContacto();
+
+iniciarLimpiezaEstadosContacto();
+
+console.log(
+"ESTADO-CONTACTO-ALUMNO.JS ESTÁ CARGADO"
+);
