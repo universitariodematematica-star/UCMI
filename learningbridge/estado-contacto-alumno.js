@@ -474,24 +474,21 @@ FASE DE RETIRO TIENE PRIORIDAD
 */
 
 const celdaNombre =
-fila.querySelector(
-"td:first-child"
-);
+    fila.querySelector(
+        "td:first-child"
+    );
 
 const filaEstaGris =
-celdaNombre &&
-(
-getComputedStyle(
-celdaNombre
-).backgroundColor ===
-"rgb(210, 210, 210)"
-);
+    celdaNombre &&
+    (
+        getComputedStyle(
+            celdaNombre
+        ).backgroundColor ===
+        "rgb(210, 210, 210)"
+    );
 
-if (
-alumno.faseRetiro === true ||
-filaEstaGris
-) {
-return;
+if (filaEstaGris) {
+    return;
 }
 
 const studentId =
