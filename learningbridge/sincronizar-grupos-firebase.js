@@ -80,11 +80,6 @@ try {
     window.ucmiGruposFirebase =
         UCMI_GRUPOS_FIREBASE;
 
-    console.log(
-        "Grupos actuales cargados desde Firebase:",
-        UCMI_GRUPOS_FIREBASE
-    );
-
     return UCMI_GRUPOS_FIREBASE;
 
 } catch (error) {
