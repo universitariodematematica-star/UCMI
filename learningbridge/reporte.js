@@ -2115,8 +2115,175 @@ botonMensaje.addEventListener("click", function(event) {
             numero.substring(1);
     }
 
-    const mensaje =
-        generarMensajeInasistencia(alumno);
+const porcentajes =
+calcularPorcentajesAsistencia(alumno);
+
+const nombresDias = [
+"domingo",
+"lunes",
+"martes",
+"miércoles",
+"jueves",
+"viernes",
+"sábado"
+];
+
+const mesesTexto = [
+"enero",
+"febrero",
+"marzo",
+"abril",
+"mayo",
+"junio",
+"julio",
+"agosto",
+"septiembre",
+"octubre",
+"noviembre",
+"diciembre"
+];
+
+const hoyMensaje =
+new Date();
+
+hoyMensaje.setHours(
+0,
+0,
+0,
+0
+);
+
+const lunesMensaje =
+new Date(hoyMensaje);
+
+const diaSemanaMensaje =
+lunesMensaje.getDay();
+
+const diferenciaLunesMensaje =
+diaSemanaMensaje === 0
+? 6
+: diaSemanaMensaje - 1;
+
+lunesMensaje.setDate(
+lunesMensaje.getDate() -
+diferenciaLunesMensaje
+);
+
+lunesMensaje.setHours(
+0,
+0,
+0,
+0
+);
+
+const diasInasistenciasMensaje = [];
+
+if (
+Array.isArray(alumno.sesiones)
+) {
+
+alumno.sesiones.forEach(
+    sesion => {
+
+        const asistencia =
+            String(
+                sesion.asistencia || ""
+            )
+            .trim()
+            .toUpperCase();
+
+        if (
+            !asistencia.startsWith("A")
+        ) {
+            return;
+        }
+
+        if (!sesion.fecha) {
+            return;
+        }
+
+        const fecha =
+            convertirFechaExcel(
+                sesion.fecha
+            );
+
+        if (!fecha) {
+            return;
+        }
+
+        fecha.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+        if (
+            fecha >= lunesMensaje &&
+            fecha <= hoyMensaje
+        ) {
+
+            diasInasistenciasMensaje.push(
+                fecha
+            );
+
+        }
+
+    }
+);
+
+}
+
+diasInasistenciasMensaje.sort(
+(a, b) => a - b
+);
+
+const textoDiasInasistencias =
+diasInasistenciasMensaje.length > 0
+? diasInasistenciasMensaje
+.map(fecha => {
+
+            return (
+                nombresDias[
+                    fecha.getDay()
+                ] +
+                " " +
+                fecha.getDate() +
+                " de " +
+                mesesTexto[
+                    fecha.getMonth()
+                ]
+            );
+
+        })
+        .join(", ")
+    : "no registra inasistencias";
+
+const primerNombre =
+String(
+alumno.nombres || ""
+)
+.trim()
+.split(/\s+/)[0];
+
+const datosMensaje = {
+
+primerNombre,
+
+textoDiasInasistencias,
+
+porcentajeActual:
+    porcentajes.porcentajeEfectivo,
+
+porcentajeProyectado:
+    porcentajes.porcentajeProyectado
+
+};
+
+const mensaje =
+generarMensajeInasistencia(
+datosMensaje
+);
 
     if (!mensaje) {
         alert(
