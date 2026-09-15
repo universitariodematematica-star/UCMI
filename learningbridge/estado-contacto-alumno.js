@@ -582,44 +582,128 @@ document.addEventListener(
 "click",
 function(event) {
 
-    const boton =
-        event.target.closest(
-            "button"
+const boton =
+    event.target.closest(
+        "button"
+    );
+
+if (!boton) {
+    return;
+}
+
+const texto =
+    boton.textContent
+        .trim()
+        .toLowerCase();
+
+if (
+    texto === "enviar mensaje"
+) {
+
+    const fila =
+        boton.closest("tr");
+
+    const alumno =
+        obtenerAlumnoContactoDesdeFila(
+            fila
         );
 
-    if (!boton) {
+    if (!alumno) {
         return;
     }
 
-    const texto =
-        boton.textContent
-            .trim()
-            .toLowerCase();
+    const studentId =
+        String(
+            alumno.studentId || ""
+        ).trim();
+
+    if (!studentId) {
+        return;
+    }
 
     if (
-        texto === "enviar mensaje"
+        !estadosContactoAlumno[studentId]
     ) {
 
-        registrarMensajeEnviado(
-            boton
+        estadosContactoAlumno[studentId] = {};
+
+    }
+
+    estadosContactoAlumno[studentId]
+        .mensajeEnviado = true;
+
+    guardarEstadosContacto();
+
+    setTimeout(
+        function() {
+
+            aplicarEstadoBotonMensaje(
+                boton,
+                true
+            );
+
+        },
+        0
+    );
+
+    return;
+}
+
+if (
+    texto === "llamar"
+) {
+
+    const fila =
+        boton.closest("tr");
+
+    const alumno =
+        obtenerAlumnoContactoDesdeFila(
+            fila
         );
 
+    if (!alumno) {
+        return;
+    }
+
+    const studentId =
+        String(
+            alumno.studentId || ""
+        ).trim();
+
+    if (!studentId) {
         return;
     }
 
     if (
-        texto === "llamar"
+        !estadosContactoAlumno[studentId]
     ) {
 
-        registrarLlamadaHecha(
-            boton
-        );
+        estadosContactoAlumno[studentId] = {};
 
-        return;
     }
+
+    estadosContactoAlumno[studentId]
+        .llamadaHecha = true;
+
+    guardarEstadosContacto();
+
+    setTimeout(
+        function() {
+
+            aplicarEstadoBotonLlamada(
+                boton,
+                true
+            );
+
+        },
+        0
+    );
+
+    return;
+}
+
 },
 true
-
 );
 
 /*
