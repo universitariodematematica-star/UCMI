@@ -315,6 +315,8 @@ RESTAURAR ESTADOS EN LA TABLA
 ==================================================
 */
 
+function restaurarEstadosContactoTabla() {
+
 const tabla =
     document.querySelector(
         "#resultadoAsistencia table"
@@ -353,25 +355,30 @@ filas.forEach((fila, indice) => {
 
     /*
      * ==================================================
-     * FASE DE RETIRO TIENE PRIORIDAD
+     * FASE DE RETIRO TIENE PRIORIDAD ABSOLUTA
      * ==================================================
-     *
-     * Si retiro-alumno.js ya marcó esta fila
-     * como retirada, NO tocamos sus botones.
-     *
-     * De esta manera retiro-alumno.js mantiene:
-     * - gris
-     * - deshabilitado
-     * - sin interacción
      */
 
+    const celdaNombre =
+        fila.querySelector("td:first-child");
+
+    const filaEstaGris =
+        celdaNombre &&
+        (
+            getComputedStyle(
+                celdaNombre
+            ).backgroundColor ===
+            "rgb(210, 210, 210)"
+        );
+
     const faseRetiro =
-        alumno.faseRetiro === true;
+        alumno.faseRetiro === true ||
+        filaEstaGris;
 
     if (faseRetiro) {
+
         return;
     }
-
 
     /*
      * ==================================================
@@ -395,7 +402,6 @@ filas.forEach((fila, indice) => {
                 .trim()
                 .toLowerCase();
 
-
         /*
          * ----------------------------------------------
          * MENSAJE
@@ -415,7 +421,6 @@ filas.forEach((fila, indice) => {
             return;
         }
 
-
         /*
          * ----------------------------------------------
          * LLAMADA
@@ -431,13 +436,14 @@ filas.forEach((fila, indice) => {
                 boton,
                 estado.llamadaHecha === true
             );
+
         }
 
     });
 
 });
 
-/*
+}
 
 ==================================================
 REGISTRAR MENSAJE ENVIADO
