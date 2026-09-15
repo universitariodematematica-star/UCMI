@@ -455,7 +455,7 @@ celdas.forEach(
 
 /*
  * ==================================================
- * TODOS LOS BOTONES DE LA FILA
+ * BOTONES DE MENSAJE Y WHATSAPP
  * ==================================================
  */
 
@@ -477,20 +477,11 @@ botones.forEach(
             .toLowerCase();
 
 
-        /*
-         * Detectar botón de mensaje.
-         */
-
         const esMensaje =
             texto.includes(
                 "mensaje"
             );
 
-
-        /*
-         * Detectar botón de llamada
-         * o WhatsApp.
-         */
 
         const esLlamada =
             texto.includes(
@@ -500,11 +491,6 @@ botones.forEach(
                 "whatsapp"
             );
 
-
-        /*
-         * Ignorar cualquier otro botón
-         * que pudiera existir en la fila.
-         */
 
         if (
             !esMensaje &&
@@ -520,7 +506,44 @@ botones.forEach(
 
             /*
              * ==========================================
-             * BOTÓN COMPLETAMENTE INHABILITADO
+             * GUARDAR ESTADO ORIGINAL
+             * ==========================================
+             */
+
+            if (
+                !boton.dataset.estilosRetiroGuardados
+            ) {
+
+                boton.dataset.backgroundOriginal =
+                    boton.style.backgroundColor || "";
+
+                boton.dataset.colorOriginal =
+                    boton.style.color || "";
+
+                boton.dataset.borderOriginal =
+                    boton.style.borderColor || "";
+
+                boton.dataset.cursorOriginal =
+                    boton.style.cursor || "";
+
+                boton.dataset.opacityOriginal =
+                    boton.style.opacity || "";
+
+                boton.dataset.pointerOriginal =
+                    boton.style.pointerEvents || "";
+
+                boton.dataset.shadowOriginal =
+                    boton.style.boxShadow || "";
+
+                boton.dataset.estilosRetiroGuardados =
+                    "true";
+
+            }
+
+
+            /*
+             * ==========================================
+             * INHABILITAR COMPLETAMENTE
              * ==========================================
              */
 
@@ -583,7 +606,7 @@ botones.forEach(
 
             /*
              * ==========================================
-             * RESTAURAR BOTÓN
+             * RESTAURAR BOTÓN ORIGINAL
              * ==========================================
              */
 
@@ -598,6 +621,12 @@ botones.forEach(
                 "aria-disabled",
                 "false"
             );
+
+
+            /*
+             * Quitar solamente los estilos
+             * que colocó esta función.
+             */
 
             boton.style.removeProperty(
                 "background-color"
@@ -626,6 +655,16 @@ botones.forEach(
             boton.style.removeProperty(
                 "box-shadow"
             );
+
+
+            delete boton.dataset.estilosRetiroGuardados;
+            delete boton.dataset.backgroundOriginal;
+            delete boton.dataset.colorOriginal;
+            delete boton.dataset.borderOriginal;
+            delete boton.dataset.cursorOriginal;
+            delete boton.dataset.opacityOriginal;
+            delete boton.dataset.pointerOriginal;
+            delete boton.dataset.shadowOriginal;
 
         }
 
