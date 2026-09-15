@@ -2230,7 +2230,10 @@ if (numero.startsWith("0")) {
 }
 
 const urlWhatsApp =
-    "whatsapp://send?phone=" + numero;
+"https://api.whatsapp.com/send?phone=" +
+numero +
+"&text=" +
+encodeURIComponent(mensaje);
 
 const mensaje =
     generarMensajeInasistencia(alumno);
