@@ -2229,14 +2229,14 @@ if (numero.startsWith("0")) {
     numero = "593" + numero.substring(1);
 }
 
+const mensaje =
+generarMensajeInasistencia(alumno);
+
 const urlWhatsApp =
 "https://api.whatsapp.com/send?phone=" +
 numero +
 "&text=" +
 encodeURIComponent(mensaje);
-
-const mensaje =
-    generarMensajeInasistencia(alumno);
 
 function marcarMensajeComoEnviado() {
 
