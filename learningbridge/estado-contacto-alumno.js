@@ -580,8 +580,6 @@ DETECTAR CLICS
 
 document.addEventListener("click", function(event) {
 
-document.addEventListener("click", function(event) {
-
 const boton =
     event.target.closest("button");
 
