@@ -445,9 +445,9 @@ filas.forEach((fila, indice) => {
 
 }
 
-==================================================
+/*
 REGISTRAR MENSAJE ENVIADO
-==================================================
+
 */
 
 function registrarMensajeEnviado(
