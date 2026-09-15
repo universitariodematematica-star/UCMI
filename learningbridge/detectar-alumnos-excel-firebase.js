@@ -58,10 +58,19 @@ try {
     const alumnosExcel = [];
 
     libro.worksheets.forEach(
-        hoja => {
+       hoja => {
 
-            hoja.eachRow(
-                (fila, numeroFila) => {
+                if (
+                    String(
+                        hoja.name || ""
+                    ).trim() ===
+                    "Configuracion-Grupos"
+                ) {
+                    return;
+                }
+                
+                hoja.eachRow(
+                    (fila, numeroFila) => {
 
                     if (
                         numeroFila < 5
