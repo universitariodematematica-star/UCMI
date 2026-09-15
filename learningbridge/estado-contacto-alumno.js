@@ -360,35 +360,40 @@ filas.forEach((fila, indice) => {
      */
 
     const celdaNombre =
-        fila.querySelector("td:first-child");
+        fila.querySelector(
+            "td:first-child"
+        );
 
     const filaEstaGris =
         celdaNombre &&
-        (
-            getComputedStyle(
-                celdaNombre
-            ).backgroundColor ===
-            "rgb(210, 210, 210)"
-        );
+        getComputedStyle(
+            celdaNombre
+        ).backgroundColor ===
+        "rgb(210, 210, 210)";
 
     const faseRetiro =
         alumno.faseRetiro === true ||
         filaEstaGris;
 
     if (faseRetiro) {
-
         return;
     }
 
     /*
      * ==================================================
-     * ESTADO NORMAL DE CONTACTO
+     * ESTADO CONTACTO GUARDADO
      * ==================================================
      */
 
     const estado =
         estadosContactoAlumno[studentId] ||
         {};
+
+    /*
+     * ==================================================
+     * BUSCAR BOTONES
+     * ==================================================
+     */
 
     const botones =
         fila.querySelectorAll(
@@ -413,10 +418,16 @@ filas.forEach((fila, indice) => {
             texto === "mensaje enviado"
         ) {
 
-            aplicarEstadoBotonMensaje(
-                boton,
+            if (
                 estado.mensajeEnviado === true
-            );
+            ) {
+
+                aplicarEstadoBotonMensaje(
+                    boton,
+                    true
+                );
+
+            }
 
             return;
         }
@@ -432,10 +443,16 @@ filas.forEach((fila, indice) => {
             texto === "llamada hecha"
         ) {
 
-            aplicarEstadoBotonLlamada(
-                boton,
+            if (
                 estado.llamadaHecha === true
-            );
+            ) {
+
+                aplicarEstadoBotonLlamada(
+                    boton,
+                    true
+                );
+
+            }
 
         }
 
