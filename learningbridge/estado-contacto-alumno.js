@@ -455,41 +455,70 @@ boton
 ) {
 
 const fila =
-    boton.closest("tr");
+boton.closest("tr");
 
 const alumno =
-    obtenerAlumnoContactoDesdeFila(
-        fila
-    );
+obtenerAlumnoContactoDesdeFila(
+fila
+);
 
 if (!alumno) {
-    return;
+return;
+}
+
+/*
+
+==================================================
+FASE DE RETIRO TIENE PRIORIDAD
+==================================================
+*/
+
+const celdaNombre =
+fila.querySelector(
+"td:first-child"
+);
+
+const filaEstaGris =
+celdaNombre &&
+(
+getComputedStyle(
+celdaNombre
+).backgroundColor ===
+"rgb(210, 210, 210)"
+);
+
+if (
+alumno.faseRetiro === true ||
+filaEstaGris
+) {
+return;
 }
 
 const studentId =
-    String(
-        alumno.studentId || ""
-    ).trim();
+String(
+alumno.studentId || ""
+).trim();
 
 if (!studentId) {
-    return;
+return;
 }
 
 if (
-    !estadosContactoAlumno[studentId]
+!estadosContactoAlumno[studentId]
 ) {
 
-    estadosContactoAlumno[studentId] = {};
+estadosContactoAlumno[studentId] = {};
+
 }
 
 estadosContactoAlumno[studentId]
-    .mensajeEnviado = true;
+.mensajeEnviado = true;
 
 guardarEstadosContacto();
 
 aplicarEstadoBotonMensaje(
-    boton,
-    true
+boton,
+true
 );
 
 }
