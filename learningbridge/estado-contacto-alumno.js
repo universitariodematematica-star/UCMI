@@ -595,37 +595,70 @@ DETECTAR CLICS
 ==================================================
 */
 
-document.addEventListener("click", function(event) {
+document.addEventListener(
+"click",
+function(event) {
 
-const boton =
-    event.target.closest("button");
+    const boton =
+        event.target.closest("button");
 
-if (!boton) {
-    return;
-}
+    if (!boton) {
+        return;
+    }
 
-const texto =
-    boton.textContent
-        .trim()
-        .toLowerCase();
+    const texto =
+        boton.textContent
+            .trim()
+            .toLowerCase();
 
-if (texto === "enviar mensaje") {
+    /*
+     * ----------------------------------------------
+     * MENSAJE
+     * ----------------------------------------------
+     */
 
-    console.log("ESTADO CONTACTO: CLIC EN ENVIAR MENSAJE");
+    if (
+        texto === "enviar mensaje"
+    ) {
 
-    registrarMensajeEnviado(boton);
+        console.log(
+            "ESTADO CONTACTO: CLIC EN ENVIAR MENSAJE"
+        );
 
-    return;
-}
+        registrarMensajeEnviado(
+            boton
+        );
 
-if (texto === "llamar") {
+        return;
+    }
 
-    registrarLlamadaHecha(boton);
+    /*
+     * ----------------------------------------------
+     * LLAMADA
+     * ----------------------------------------------
+     */
 
-    return;
-}
+    if (
+        texto === "llamar" ||
+        texto === "llamar por whatsapp" ||
+        texto.includes("llamar por whatsapp")
+    ) {
 
-});
+        console.log(
+            "ESTADO CONTACTO: CLIC EN LLAMAR"
+        );
+
+        registrarLlamadaHecha(
+            boton
+        );
+
+        return;
+    }
+
+},
+true
+
+);
 
 /*
 
