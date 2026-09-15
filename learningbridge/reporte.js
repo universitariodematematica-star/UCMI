@@ -2088,319 +2088,58 @@ botonMensaje.style.cursor = "pointer";
 
 botonMensaje.addEventListener("click", function(event) {
 
-event.stopPropagation();
+    event.stopPropagation();
 
-const telefono =
-    alumno.telefono ||
-    alumno.celular ||
-    alumno.whatsapp;
+    if (alumno.mensajeEnviado) {
+        return;
+    }
 
-if (!telefono) {
+    const telefono =
+        alumno.telefono ||
+        alumno.celular ||
+        alumno.whatsapp;
 
-    alert(
-        "El estudiante no tiene un número de teléfono registrado."
+    if (!telefono) {
+        alert(
+            "Este alumno no tiene un número de WhatsApp registrado."
+        );
+        return;
+    }
+
+    let numero =
+        String(telefono).replace(/\D/g, "");
+
+    if (numero.startsWith("0")) {
+        numero =
+            "593" +
+            numero.substring(1);
+    }
+
+    const mensaje =
+        generarMensajeInasistencia(alumno);
+
+    if (!mensaje) {
+        alert(
+            "No se pudo generar el mensaje de inasistencia para este alumno."
+        );
+        return;
+    }
+
+    console.log(
+        "MENSAJE QUE SE ENVIARÁ A WHATSAPP:",
+        mensaje
     );
 
-    return;
-}
+    const urlWhatsApp =
+        "whatsapp://send?phone=" +
+        numero +
+        "&text=" +
+        encodeURIComponent(mensaje);
 
-let numero =
-    String(telefono).replace(
-        /\D/g,
-        ""
-    );
+    window.location.href =
+        urlWhatsApp;
 
-if (numero.startsWith("0")) {
-
-    numero =
-        "593" +
-        numero.substring(1);
-}
-
-/*
- * ------------------------------------------------
- * OBTENER PORCENTAJES
- * ------------------------------------------------
- * ESTA ES LA ÚNICA FUENTE DE LOS PORCENTAJES.
- * NO SE RECALCULAN AQUÍ.
- */
-
-const porcentajes =
-    calcularPorcentajesAsistencia(
-        alumno
-    );
-
-/*
- * ------------------------------------------------
- * PRIMER NOMBRE
- * ------------------------------------------------
- */
-
-const primerNombre =
-    String(
-        alumno.nombres || ""
-    )
-    .trim()
-    .split(/\s+/)[0];
-
-/*
- * ------------------------------------------------
- * OBTENER LUNES DE LA SEMANA ACTUAL
- * ------------------------------------------------
- */
-
-const hoy =
-    new Date();
-
-hoy.setHours(
-    0,
-    0,
-    0,
-    0
-);
-
-const lunesSemana =
-    new Date(hoy);
-
-const diaSemana =
-    lunesSemana.getDay();
-
-const diferenciaLunes =
-    diaSemana === 0
-        ? 6
-        : diaSemana - 1;
-
-lunesSemana.setDate(
-    lunesSemana.getDate() -
-    diferenciaLunes
-);
-
-/*
- * ------------------------------------------------
- * DÍAS DE INASISTENCIA DE LA SEMANA ACTUAL
- * ------------------------------------------------
- */
-
-const diasSemana =
-    [
-        "domingo",
-        "lunes",
-        "martes",
-        "miércoles",
-        "jueves",
-        "viernes",
-        "sábado"
-    ];
-
-const mesesTexto =
-    [
-        "enero",
-        "febrero",
-        "marzo",
-        "abril",
-        "mayo",
-        "junio",
-        "julio",
-        "agosto",
-        "septiembre",
-        "octubre",
-        "noviembre",
-        "diciembre"
-    ];
-
-const diasInasistencias = [];
-
-if (
-    Array.isArray(
-        alumno.sesiones
-    )
-) {
-
-    alumno.sesiones.forEach(
-        sesion => {
-
-            if (!sesion.fecha) {
-                return;
-            }
-
-            const fecha =
-                new Date(
-                    sesion.fecha
-                );
-
-            if (
-                isNaN(
-                    fecha.getTime()
-                )
-            ) {
-                return;
-            }
-
-            fecha.setHours(
-                0,
-                0,
-                0,
-                0
-            );
-
-            const asistencia =
-                String(
-                    sesion.asistencia || ""
-                )
-                .trim()
-                .toUpperCase();
-
-            if (
-                !asistencia.startsWith("A")
-            ) {
-                return;
-            }
-
-            if (
-                fecha < lunesSemana ||
-                fecha > hoy
-            ) {
-                return;
-            }
-
-            const textoFecha =
-                diasSemana[
-                    fecha.getDay()
-                ] +
-                " " +
-                fecha.getDate() +
-                " de " +
-                mesesTexto[
-                    fecha.getMonth()
-                ];
-
-            diasInasistencias.push(
-                textoFecha
-            );
-        }
-    );
-}
-
-const textoDiasInasistencias =
-    diasInasistencias.length > 0
-        ? diasInasistencias.join(", ")
-        : "no registra inasistencias";
-
-/*
- * ------------------------------------------------
- * DATOS PARA EL MODELO
- * ------------------------------------------------
- */
-
-const datosMensaje = {
-
-    primerNombre,
-
-    textoDiasInasistencias,
-
-    porcentajeActual:
-        porcentajes.porcentajeEfectivo,
-
-    porcentajeProyectado:
-        porcentajes.porcentajeProyectado
-
-};
-
-/*
- * ------------------------------------------------
- * GENERAR MENSAJE
- * ------------------------------------------------
- */
-
-const mensaje =
-    generarMensajeInasistencia(
-        datosMensaje
-    );
-
-/*
- * ------------------------------------------------
- * ABRIR WHATSAPP
- * ------------------------------------------------
- */
-
-/*
- * ------------------------------------------------
- * MARCAR COMO ENVIADO (inmediatamente al hacer clic)
- * ------------------------------------------------
- */
-
-botonMensaje.style.backgroundColor =
-    "#dc2626";
-
-botonMensaje.textContent =
-    "Mensaje enviado";
-
-botonMensaje.disabled =
-    true;
-
-/*
- * ------------------------------------------------
- * ABRIR EL CHAT (enlace corto, sin el mensaje
- * embebido en la URL: los mensajes largos superan
- * el límite de longitud que usa Windows para
- * activar la app de WhatsApp Desktop, y el texto
- * se pierde en el camino).
- * ------------------------------------------------
- */
-
-function abrirChatWhatsApp() {
-
-    window.open(
-        "https://wa.me/" + numero,
-        "_blank"
-    );
-
-}
-
-/*
- * ------------------------------------------------
- * COPIAR EL MENSAJE AL PORTAPAPELES
- * (si hay uno que copiar) ANTES de navegar,
- * para que la copia no se interrumpa por el
- * cambio de página.
- * ------------------------------------------------
- */
-
-if (
-    mensaje &&
-    navigator.clipboard &&
-    navigator.clipboard.writeText
-) {
-
-    navigator.clipboard.writeText(mensaje)
-        .then(function() {
-
-            mostrarEstado(
-                "Mensaje copiado. Pégalo en el chat de WhatsApp y presiona enviar.",
-                "exito"
-            );
-
-        })
-        .catch(function(error) {
-
-            console.error(
-                "No se pudo copiar el mensaje al portapapeles:",
-                error
-            );
-
-        })
-        .finally(function() {
-
-            abrirChatWhatsApp();
-
-        });
-
-} else {
-
-    abrirChatWhatsApp();
-
-}
-
+    marcarMensajeComoEnviado();
 });
 
 celdaMensaje.appendChild(
