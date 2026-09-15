@@ -2280,6 +2280,11 @@ porcentajeProyectado:
 
 };
 
+   console.log(
+"DATOS QUE SE ESTÁN PASANDO AL GENERADOR:",
+datosMensaje
+);
+
 const mensaje =
 generarMensajeInasistencia(
 datosMensaje
