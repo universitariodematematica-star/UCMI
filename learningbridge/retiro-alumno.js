@@ -606,6 +606,24 @@ botones.forEach(
 
             /*
              * ==========================================
+             * SI NUNCA ENTRÓ EN FASE DE RETIRO,
+             * NO HAY NADA QUE RESTAURAR.
+             *
+             * Esto evita borrar el color original
+             * (verde) que reporte.js le puso al botón
+             * la primera vez que se dibuja la fila.
+             * ==========================================
+             */
+
+            if (
+                !boton.dataset.estilosRetiroGuardados
+            ) {
+                return;
+            }
+
+
+            /*
+             * ==========================================
              * RESTAURAR BOTÓN ORIGINAL
              * ==========================================
              */
@@ -624,37 +642,32 @@ botones.forEach(
 
 
             /*
-             * Quitar solamente los estilos
-             * que colocó esta función.
+             * Reponer explícitamente los valores
+             * originales guardados (en vez de solo
+             * "quitar" la propiedad), para no depender
+             * de qué estilo haya quedado por defecto.
              */
 
-            boton.style.removeProperty(
-                "background-color"
-            );
+            boton.style.backgroundColor =
+                boton.dataset.backgroundOriginal || "";
 
-            boton.style.removeProperty(
-                "color"
-            );
+            boton.style.color =
+                boton.dataset.colorOriginal || "";
 
-            boton.style.removeProperty(
-                "border-color"
-            );
+            boton.style.borderColor =
+                boton.dataset.borderOriginal || "";
 
-            boton.style.removeProperty(
-                "cursor"
-            );
+            boton.style.cursor =
+                boton.dataset.cursorOriginal || "";
 
-            boton.style.removeProperty(
-                "opacity"
-            );
+            boton.style.opacity =
+                boton.dataset.opacityOriginal || "";
 
-            boton.style.removeProperty(
-                "pointer-events"
-            );
+            boton.style.pointerEvents =
+                boton.dataset.pointerOriginal || "";
 
-            boton.style.removeProperty(
-                "box-shadow"
-            );
+            boton.style.boxShadow =
+                boton.dataset.shadowOriginal || "";
 
 
             delete boton.dataset.estilosRetiroGuardados;
