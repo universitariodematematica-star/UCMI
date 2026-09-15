@@ -53,328 +53,6 @@ const DIAS_SEMANA_CALCULO = [
 ];
 
 /* ============================================================
-   MESES EN ESPAÑOL (PARA FORMATEAR FECHAS EN LOS MENSAJES)
-============================================================ */
-
-const MESES_ESPANOL = [
-"enero",
-"febrero",
-"marzo",
-"abril",
-"mayo",
-"junio",
-"julio",
-"agosto",
-"septiembre",
-"octubre",
-"noviembre",
-"diciembre"
-];
-
-/* ============================================================
-   PLANTILLAS DE MENSAJES DE INASISTENCIA
-============================================================ */
-
-const mensajesInasistencia = [
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Esta semana tuvimos registro de inasistencias tuyas los días ${datos.textoDiasInasistencias}. Queremos avisarte con tiempo para que puedas revisar la situación y, si corresponde, **justificar estas inasistencias**. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Las ausencias que sean justificadas dejarán de contabilizarse. En caso de no justificarlas, tu porcentaje podría llegar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Es importante que tengas presente que al alcanzar el **10 % de inasistencias se pierde el curso**. Puedes realizar la justificación hasta el domingo a las 11 AM. Luego de ese momento se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que puedas acompañarnos con mayor regularidad en las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos compartir contigo una observación sobre tu asistencia. Durante esta semana registraste inasistencias los días ${datos.textoDiasInasistencias}. Actualmente cuentas con un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de estas ausencias fue por una razón justificable, todavía puedes **presentar la justificación hasta el domingo a las 11 AM**. Las inasistencias justificadas dejan de formar parte del porcentaje de inasistencia. Si no son justificadas, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el límite es del **10 % de inasistencias; al alcanzarlo se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas faltas permanecerán contabilizadas. Queremos verte avanzar, así que esperamos contar contigo en las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Notamos que esta semana no pudiste asistir a las clases de los días ${datos.textoDiasInasistencias}. Queremos aprovechar este mensaje para recordarte que aún puedes revisar y justificar las ausencias que correspondan. En este momento tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Las faltas que sean justificadas dejarán de contabilizarse. Si no se justifican, tu porcentaje aumentaría al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten mucho presente que el **10 % de inasistencias representa la pérdida del curso**. El plazo para justificar es hasta el domingo a las 11 AM. Después de esa hora se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que esta semana puedas retomar tus clases con normalidad.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos saber que estás bien y, al mismo tiempo, llamarte la atención sobre tu asistencia. Esta semana registramos inasistencias los días ${datos.textoDiasInasistencias}. Tu porcentaje actual de inasistencias es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} %**. Si las ausencias tienen una razón que pueda ser justificada, te recomendamos realizar la **justificación antes del domingo a las 11 AM**. Las inasistencias justificadas ya no se contabilizarán. Si no justificas estas faltas, tu porcentaje podría alcanzar el **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al llegar al **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte correspondiente. Esperamos que puedas continuar asistiendo regularmente y seguir avanzando con nosotros.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Revisamos los registros de asistencia y esta semana aparecen inasistencias correspondientes a ${datos.textoDiasInasistencias}. Queremos avisarte antes de cerrar el reporte para que tengas la oportunidad de revisar estas faltas. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de ellas debe ser justificada, puedes hacerlo hasta el domingo a las 11 AM. Una vez justificadas, dejarán de contabilizarse. Si no realizas la justificación, tu porcentaje acumulado subiría al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que alcanzar el **10 % de inasistencias significa perder el curso**. Después del plazo indicado se enviará el reporte de inasistencia. Esperamos que puedas acompañarnos en las próximas clases y mantener una asistencia constante.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Te escribimos porque durante esta semana registramos inasistencias tuyas los días ${datos.textoDiasInasistencias}. Sabemos que pueden existir circunstancias que impidan asistir, por eso queremos darte la oportunidad de **justificar las faltas que correspondan**. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Las inasistencias justificadas dejan de contabilizarse. Si no justificas las de esta semana, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el máximo permitido es el **10 % de inasistencias; al alcanzar este porcentaje se pierde el curso**. Puedes justificar hasta el domingo a las 11 AM. Después de esa hora se enviará el reporte y las nuevas inasistencias quedarán contabilizadas. ¡Esperamos verte nuevamente en clase!`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Esta semana tu registro muestra inasistencias los días ${datos.textoDiasInasistencias}. Queremos informarte para que puedas tomar las medidas necesarias y evitar que estas faltas afecten tu porcentaje de asistencia. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si corresponde, recuerda **justificar las inasistencias antes del domingo a las 11 AM**. Las faltas justificadas dejarán de contabilizarse. De no justificarlas, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten presente que al llegar al **10 % de inasistencias se pierde el curso**. Una vez cumplido el plazo, se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que puedas continuar asistiendo con regularidad y avanzar satisfactoriamente en tu curso.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos recordarte que esta semana aparecen inasistencias en tu registro correspondientes a los días ${datos.textoDiasInasistencias}. Actualmente tu porcentaje de inasistencias acumuladas es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} %**. Si alguna de estas faltas tiene una justificación, te pedimos que la presentes antes del domingo a las 11 AM. Una vez justificadas, las inasistencias dejan de contabilizarse. Si no se justifican, el porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias es el límite para conservar el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Estamos seguros de que puedes retomar el ritmo. ¡Te esperamos en las próximas clases!`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Durante esta semana registramos que no asististe los días ${datos.textoDiasInasistencias}. Queremos hacerte llegar esta información antes de que se cierre el reporte para que puedas revisar tu situación. En este momento acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si las faltas corresponden a situaciones justificables, puedes **presentar la justificación hasta el domingo a las 11 AM**. Las inasistencias justificadas dejarán de contabilizarse. Si no se justifican, el porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al alcanzar el **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte definitivo de inasistencia. Esperamos contar contigo nuevamente en las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Hemos revisado tu asistencia y queremos avisarte que esta semana se registraron inasistencias los días ${datos.textoDiasInasistencias}. Tu porcentaje actual es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de estas faltas debe ser justificada, recuerda hacerlo antes del domingo a las 11 AM. Las faltas justificadas dejarán de contabilizarse como inasistencias. Si no realizas la justificación, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Es importante recordar que al llegar al **10 % de inasistencias se pierde el curso**. Una vez terminado el plazo se enviará el reporte y las nuevas inasistencias permanecerán registradas. Queremos que sigas avanzando con nosotros, así que esperamos verte en las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos ponerte al tanto de tu asistencia esta semana. Se registraron inasistencias los días ${datos.textoDiasInasistencias}. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si existe alguna razón que permita justificar estas faltas, todavía estás a tiempo de hacerlo. El plazo termina el domingo a las 11 AM. Las inasistencias justificadas dejarán de contabilizarse; si no son justificadas, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que alcanzar el **10 % de inasistencias implica la pérdida del curso**. Después de las 11 AM del domingo se enviará el reporte correspondiente y las nuevas faltas quedarán registradas. Esperamos que puedas asistir regularmente a las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Esta semana tuvimos algunas inasistencias registradas a tu nombre, específicamente los días ${datos.textoDiasInasistencias}. Queremos informarte para que puedas revisar si alguna de ellas necesita ser justificada. Tu porcentaje actual de inasistencias es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} %**. Puedes presentar las justificaciones correspondientes hasta el domingo a las 11 AM; después de ese momento se enviará el reporte. Las inasistencias justificadas dejarán de contabilizarse. Si no justificas estas faltas, tu porcentaje podría quedar en **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que con un **10 % de inasistencias se pierde el curso**. Esperamos que esta información te ayude a tomar las medidas necesarias y que podamos contar contigo en las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos hacerte llegar un aviso relacionado con tu asistencia. Durante esta semana aparecen inasistencias los días ${datos.textoDiasInasistencias}. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si alguna de estas ausencias tiene una justificación, recuerda que puedes presentarla hasta el domingo a las 11 AM. Una vez justificadas, esas faltas dejarán de contabilizarse. Si permanecen sin justificar, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten presente que al alcanzar el **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Ojalá puedas acompañarnos regularmente en las próximas clases y continuar avanzando en tu proceso.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Notamos algunas ausencias en tu registro de esta semana: ${datos.textoDiasInasistencias}. Antes de cerrar el reporte queremos recordarte que puedes **justificar las inasistencias que correspondan hasta el domingo a las 11 AM**. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Las faltas justificadas dejarán de contabilizarse. Si no son justificadas, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias es el límite establecido y al alcanzarlo se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Esperamos que puedas regularizar tu asistencia y continuar participando en las próximas clases.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Esta semana registramos inasistencias correspondientes a los días ${datos.textoDiasInasistencias} y queremos avisarte antes de que se cierre el periodo de justificación. Actualmente tu porcentaje acumulado es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si alguna de estas faltas puede justificarse, tienes hasta el domingo a las 11 AM para hacerlo. Una vez justificadas, dejarán de contabilizarse como inasistencias. Si no realizas la justificación, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al alcanzar el **10 % de inasistencias se pierde el curso**. Después de las 11 AM del domingo se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que puedas estar presente en las próximas clases y seguir adelante con tu curso.`;
-
-    },
-
-    function(datos) {
-
-        return `Hola, ${datos.primerNombre}. Queremos llamar tu atención sobre un aspecto importante de esta semana: registramos inasistencias los días ${datos.textoDiasInasistencias}. En este momento tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si estas ausencias tienen una causa que pueda justificarse, te recomendamos presentar la justificación antes del domingo a las 11 AM. Las inasistencias justificadas dejarán de contabilizarse. Si no son justificadas, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias representa la pérdida del curso**. Una vez terminado el plazo, se enviará el reporte y las nuevas inasistencias quedarán registradas. Esperamos que puedas recuperar la regularidad en tu asistencia y que sigamos contando contigo.`;
-
-    }
-
-];
-
-/* ============================================================
-   OBTENER EL LUNES DE LA SEMANA ACTUAL (00:00)
-============================================================ */
-
-function obtenerLunesActualParaMensajes() {
-
-    const hoy = new Date();
-
-    hoy.setHours(0, 0, 0, 0);
-
-    const diaSemana = hoy.getDay();
-
-    const diferenciaLunes =
-        diaSemana === 0
-            ? 6
-            : diaSemana - 1;
-
-    const lunes = new Date(hoy);
-
-    lunes.setDate(hoy.getDate() - diferenciaLunes);
-
-    lunes.setHours(0, 0, 0, 0);
-
-    return lunes;
-
-}
-
-/* ============================================================
-   OBTENER LOS DÍAS DE INASISTENCIA DE LA SEMANA ACTUAL
-   (del lunes más reciente hasta hoy)
-============================================================ */
-
-function obtenerDiasInasistenciaSemanaActual(alumno) {
-
-    if (!alumno || !Array.isArray(alumno.sesiones)) {
-        return [];
-    }
-
-    const lunesActual = obtenerLunesActualParaMensajes();
-
-    const hoy = new Date();
-
-    hoy.setHours(23, 59, 59, 999);
-
-    const fechas = [];
-
-    alumno.sesiones.forEach(sesion => {
-
-        if (!sesion.fecha) {
-            return;
-        }
-
-        const fecha = new Date(sesion.fecha);
-
-        if (isNaN(fecha.getTime())) {
-            return;
-        }
-
-        fecha.setHours(0, 0, 0, 0);
-
-        if (fecha < lunesActual || fecha > hoy) {
-            return;
-        }
-
-        const asistencia =
-            String(sesion.asistencia || "")
-                .trim()
-                .toUpperCase();
-
-        if (!asistencia.startsWith("A")) {
-            return;
-        }
-
-        fechas.push(fecha);
-
-    });
-
-    fechas.sort((a, b) => a - b);
-
-    return fechas;
-
-}
-
-/* ============================================================
-   FORMATEAR UNA FECHA COMO "lunes 8 de septiembre"
-============================================================ */
-
-function formatearFechaEnEspanol(fecha) {
-
-    const nombreDia =
-        DIAS_SEMANA_CALCULO[fecha.getDay()].toLowerCase();
-
-    const dia = fecha.getDate();
-
-    const mes = MESES_ESPANOL[fecha.getMonth()];
-
-    return `${nombreDia} ${dia} de ${mes}`;
-
-}
-
-/* ============================================================
-   FORMATEAR LA LISTA COMPLETA DE DÍAS DE INASISTENCIA
-============================================================ */
-
-function formatearListaDiasInasistencia(fechas) {
-
-    const textos = fechas.map(formatearFechaEnEspanol);
-
-    if (textos.length === 0) {
-        return "";
-    }
-
-    if (textos.length === 1) {
-        return textos[0];
-    }
-
-    const ultimo = textos[textos.length - 1];
-
-    const anteriores = textos.slice(0, -1);
-
-    return anteriores.join(", ") + " y " + ultimo;
-
-}
-
-/* ============================================================
-   OBTENER EL PRIMER NOMBRE, CON FORMATO "Carlos"
-============================================================ */
-
-function obtenerPrimerNombreFormateado(nombreCompleto) {
-
-    const primeraPalabra =
-        String(nombreCompleto || "")
-            .trim()
-            .split(/\s+/)[0] || "";
-
-    if (!primeraPalabra) {
-        return "";
-    }
-
-    return (
-        primeraPalabra.charAt(0).toUpperCase() +
-        primeraPalabra.slice(1).toLowerCase()
-    );
-
-}
-
-/* ============================================================
-   CONVERTIR **negrita** (markdown) A *negrita* (formato WhatsApp)
-============================================================ */
-
-function convertirNegritasWhatsApp(texto) {
-
-    return String(texto || "").replace(/\*\*(.+?)\*\*/g, "*$1*");
-
-}
-
-/* ============================================================
-   GENERAR EL MENSAJE DE INASISTENCIA PARA UN ALUMNO
-   Devuelve "" si el alumno no tiene inasistencias esta semana.
-============================================================ */
-
-function generarMensajeInasistencia(alumno) {
-
-    const diasInasistencia =
-        obtenerDiasInasistenciaSemanaActual(alumno);
-
-    if (diasInasistencia.length === 0) {
-        return "";
-    }
-
-    const porcentajes =
-        calcularPorcentajesAsistencia(alumno);
-
-    const datos = {
-
-        primerNombre:
-            obtenerPrimerNombreFormateado(alumno.nombres),
-
-        textoDiasInasistencias:
-            formatearListaDiasInasistencia(diasInasistencia),
-
-        porcentajeActual:
-            porcentajes.porcentajeEfectivo,
-
-        porcentajeProyectado:
-            porcentajes.porcentajeProyectado
-
-    };
-
-    const indiceAleatorio =
-        Math.floor(Math.random() * mensajesInasistencia.length);
-
-    const plantillaElegida =
-        mensajesInasistencia[indiceAleatorio];
-
-    return convertirNegritasWhatsApp(plantillaElegida(datos));
-
-}
-
-/* ============================================================
 CALCULAR TOTAL DE CLASES DEL GRUPO DURANTE 7 MESES
 ============================================================ */
 
@@ -569,6 +247,147 @@ const DIAS_SEMANA = [
 "Sábado",
 "Domingo"
 ];
+
+
+/* ============================================================
+   PLANTILLAS DE MENSAJES DE INASISTENCIA
+============================================================ */
+
+const mensajesInasistencia = [
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Esta semana tuvimos registro de inasistencias tuyas los días ${datos.textoDiasInasistencias}. Queremos avisarte con tiempo para que puedas revisar la situación y, si corresponde, **justificar estas inasistencias**. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Las ausencias que sean justificadas dejarán de contabilizarse. En caso de no justificarlas, tu porcentaje podría llegar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Es importante que tengas presente que al alcanzar el **10 % de inasistencias se pierde el curso**. Puedes realizar la justificación hasta el domingo a las 11 AM. Luego de ese momento se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que puedas acompañarnos con mayor regularidad en las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos compartir contigo una observación sobre tu asistencia. Durante esta semana registraste inasistencias los días ${datos.textoDiasInasistencias}. Actualmente cuentas con un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de estas ausencias fue por una razón justificable, todavía puedes **presentar la justificación hasta el domingo a las 11 AM**. Las inasistencias justificadas dejan de formar parte del porcentaje de inasistencia. Si no son justificadas, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el límite es del **10 % de inasistencias; al alcanzarlo se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas faltas permanecerán contabilizadas. Queremos verte avanzar, así que esperamos contar contigo en las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Notamos que esta semana no pudiste asistir a las clases de los días ${datos.textoDiasInasistencias}. Queremos aprovechar este mensaje para recordarte que aún puedes revisar y justificar las ausencias que correspondan. En este momento tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Las faltas que sean justificadas dejarán de contabilizarse. Si no se justifican, tu porcentaje aumentaría al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten mucho presente que el **10 % de inasistencias representa la pérdida del curso**. El plazo para justificar es hasta el domingo a las 11 AM. Después de esa hora se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que esta semana puedas retomar tus clases con normalidad.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos saber que estás bien y, al mismo tiempo, llamarte la atención sobre tu asistencia. Esta semana registramos inasistencias los días ${datos.textoDiasInasistencias}. Tu porcentaje actual de inasistencias es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} %**. Si las ausencias tienen una razón que pueda ser justificada, te recomendamos realizar la **justificación antes del domingo a las 11 AM**. Las inasistencias justificadas ya no se contabilizarán. Si no justificas estas faltas, tu porcentaje podría alcanzar el **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al llegar al **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte correspondiente. Esperamos que puedas continuar asistiendo regularmente y seguir avanzando con nosotros.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Revisamos los registros de asistencia y esta semana aparecen inasistencias correspondientes a ${datos.textoDiasInasistencias}. Queremos avisarte antes de cerrar el reporte para que tengas la oportunidad de revisar estas faltas. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de ellas debe ser justificada, puedes hacerlo hasta el domingo a las 11 AM. Una vez justificadas, dejarán de contabilizarse. Si no realizas la justificación, tu porcentaje acumulado subiría al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que alcanzar el **10 % de inasistencias significa perder el curso**. Después del plazo indicado se enviará el reporte de inasistencia. Esperamos que puedas acompañarnos en las próximas clases y mantener una asistencia constante.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Te escribimos porque durante esta semana registramos inasistencias tuyas los días ${datos.textoDiasInasistencias}. Sabemos que pueden existir circunstancias que impidan asistir, por eso queremos darte la oportunidad de **justificar las faltas que correspondan**. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Las inasistencias justificadas dejan de contabilizarse. Si no justificas las de esta semana, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el máximo permitido es el **10 % de inasistencias; al alcanzar este porcentaje se pierde el curso**. Puedes justificar hasta el domingo a las 11 AM. Después de esa hora se enviará el reporte y las nuevas inasistencias quedarán contabilizadas. ¡Esperamos verte nuevamente en clase!`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Esta semana tu registro muestra inasistencias los días ${datos.textoDiasInasistencias}. Queremos informarte para que puedas tomar las medidas necesarias y evitar que estas faltas afecten tu porcentaje de asistencia. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si corresponde, recuerda **justificar las inasistencias antes del domingo a las 11 AM**. Las faltas justificadas dejarán de contabilizarse. De no justificarlas, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten presente que al llegar al **10 % de inasistencias se pierde el curso**. Una vez cumplido el plazo, se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que puedas continuar asistiendo con regularidad y avanzar satisfactoriamente en tu curso.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos recordarte que esta semana aparecen inasistencias en tu registro correspondientes a los días ${datos.textoDiasInasistencias}. Actualmente tu porcentaje de inasistencias acumuladas es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} %**. Si alguna de estas faltas tiene una justificación, te pedimos que la presentes antes del domingo a las 11 AM. Una vez justificadas, las inasistencias dejan de contabilizarse. Si no se justifican, el porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias es el límite para conservar el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Estamos seguros de que puedes retomar el ritmo. ¡Te esperamos en las próximas clases!`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Durante esta semana registramos que no asististe los días ${datos.textoDiasInasistencias}. Queremos hacerte llegar esta información antes de que se cierre el reporte para que puedas revisar tu situación. En este momento acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si las faltas corresponden a situaciones justificables, puedes **presentar la justificación hasta el domingo a las 11 AM**. Las inasistencias justificadas dejarán de contabilizarse. Si no se justifican, el porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al alcanzar el **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte definitivo de inasistencia. Esperamos contar contigo nuevamente en las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Hemos revisado tu asistencia y queremos avisarte que esta semana se registraron inasistencias los días ${datos.textoDiasInasistencias}. Tu porcentaje actual es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si alguna de estas faltas debe ser justificada, recuerda hacerlo antes del domingo a las 11 AM. Las faltas justificadas dejarán de contabilizarse como inasistencias. Si no realizas la justificación, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Es importante recordar que al llegar al **10 % de inasistencias se pierde el curso**. Una vez terminado el plazo se enviará el reporte y las nuevas inasistencias permanecerán registradas. Queremos que sigas avanzando con nosotros, así que esperamos verte en las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos ponerte al tanto de tu asistencia esta semana. Se registraron inasistencias los días ${datos.textoDiasInasistencias}. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si existe alguna razón que permita justificar estas faltas, todavía estás a tiempo de hacerlo. El plazo termina el domingo a las 11 AM. Las inasistencias justificadas dejarán de contabilizarse; si no son justificadas, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que alcanzar el **10 % de inasistencias implica la pérdida del curso**. Después de las 11 AM del domingo se enviará el reporte correspondiente y las nuevas faltas quedarán registradas. Esperamos que puedas asistir regularmente a las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Esta semana tuvimos algunas inasistencias registradas a tu nombre, específicamente los días ${datos.textoDiasInasistencias}. Queremos informarte para que puedas revisar si alguna de ellas necesita ser justificada. Tu porcentaje actual de inasistencias es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} %**. Puedes presentar las justificaciones correspondientes hasta el domingo a las 11 AM; después de ese momento se enviará el reporte. Las inasistencias justificadas dejarán de contabilizarse. Si no justificas estas faltas, tu porcentaje podría quedar en **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que con un **10 % de inasistencias se pierde el curso**. Esperamos que esta información te ayude a tomar las medidas necesarias y que podamos contar contigo en las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos hacerte llegar un aviso relacionado con tu asistencia. Durante esta semana aparecen inasistencias los días ${datos.textoDiasInasistencias}. Actualmente acumulas un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si alguna de estas ausencias tiene una justificación, recuerda que puedes presentarla hasta el domingo a las 11 AM. Una vez justificadas, esas faltas dejarán de contabilizarse. Si permanecen sin justificar, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Ten presente que al alcanzar el **10 % de inasistencias se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Ojalá puedas acompañarnos regularmente en las próximas clases y continuar avanzando en tu proceso.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Notamos algunas ausencias en tu registro de esta semana: ${datos.textoDiasInasistencias}. Antes de cerrar el reporte queremos recordarte que puedes **justificar las inasistencias que correspondan hasta el domingo a las 11 AM**. Actualmente tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Las faltas justificadas dejarán de contabilizarse. Si no son justificadas, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias es el límite establecido y al alcanzarlo se pierde el curso**. Después del domingo a las 11 AM se enviará el reporte y las nuevas inasistencias quedarán registradas. Esperamos que puedas regularizar tu asistencia y continuar participando en las próximas clases.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Esta semana registramos inasistencias correspondientes a los días ${datos.textoDiasInasistencias} y queremos avisarte antes de que se cierre el periodo de justificación. Actualmente tu porcentaje acumulado es de **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias**. Si alguna de estas faltas puede justificarse, tienes hasta el domingo a las 11 AM para hacerlo. Una vez justificadas, dejarán de contabilizarse como inasistencias. Si no realizas la justificación, tu porcentaje podría subir al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que al alcanzar el **10 % de inasistencias se pierde el curso**. Después de las 11 AM del domingo se enviará el reporte de inasistencia y las nuevas faltas quedarán registradas. Esperamos que puedas estar presente en las próximas clases y seguir adelante con tu curso.`;
+
+    },
+
+    function(datos) {
+
+        return `Hola, ${datos.primerNombre}. Queremos llamar tu atención sobre un aspecto importante de esta semana: registramos inasistencias los días ${datos.textoDiasInasistencias}. En este momento tienes un **${datos.porcentajeActual.toFixed(2).replace(".", ",")} % de inasistencias acumuladas**. Si estas ausencias tienen una causa que pueda justificarse, te recomendamos presentar la justificación antes del domingo a las 11 AM. Las inasistencias justificadas dejarán de contabilizarse. Si no son justificadas, tu porcentaje podría aumentar al **${datos.porcentajeProyectado.toFixed(2).replace(".", ",")} %**. Recuerda que el **10 % de inasistencias representa la pérdida del curso**. Una vez terminado el plazo, se enviará el reporte y las nuevas inasistencias quedarán registradas. Esperamos que puedas recuperar la regularidad en tu asistencia y que sigamos contando contigo.`;
+
+    }
+
+];
+
+/* ============================================================
+   CONVERTIR **negrita** (markdown) A *negrita* (formato WhatsApp)
+============================================================ */
+
+function convertirNegritasWhatsApp(texto) {
+
+    return String(texto || "").replace(/\*\*(.+?)\*\*/g, "*$1*");
+
+}
+
+/* ============================================================
+   GENERAR EL MENSAJE DE INASISTENCIA
+   Recibe el objeto "datos" ya armado (primerNombre,
+   textoDiasInasistencias, porcentajeActual, porcentajeProyectado).
+   Devuelve "" si el alumno no tiene inasistencias esta semana.
+============================================================ */
+
+function generarMensajeInasistencia(datos) {
+
+    if (
+        !datos ||
+        datos.textoDiasInasistencias === "no registra inasistencias"
+    ) {
+        return "";
+    }
+
+    const indiceAleatorio =
+        Math.floor(Math.random() * mensajesInasistencia.length);
+
+    const plantillaElegida =
+        mensajesInasistencia[indiceAleatorio];
+
+    return convertirNegritasWhatsApp(plantillaElegida(datos));
+
+}
 
 
 /* ============================================================
@@ -1508,227 +1327,282 @@ CALCULAR PORCENTAJES DE ASISTENCIA
 function calcularPorcentajesAsistencia(alumno) {
 
 if (!alumno || !alumno.grupo) {
-    return {
-        porcentajeEfectivo: 0,
-        porcentajeProyectado: 0
-    };
+return {
+porcentajeEfectivo: 0,
+porcentajeProyectado: 0
+};
 }
 
 /*
- * ------------------------------------------------
- * FECHA DE INICIO DEL CURSO DEL GRUPO
- * ------------------------------------------------
- */
 
-const fechaInicioGrupo =
-    obtenerPrimeraFechaGrupo(
-        alumno.grupo
-    );
+RECUPERAR EL REGISTRO ORIGINAL
+IMPORTANTE:
+"alumno" puede venir de un filtro de fechas.
+Por eso NO debemos utilizar sus sesiones para
+calcular los porcentajes.
+Aquí recuperamos el alumno original desde
+registrosAsistencia, donde están TODAS sus
+sesiones.
 
-if (!fechaInicioGrupo) {
-    return {
-        porcentajeEfectivo: 0,
-        porcentajeProyectado: 0
-    };
+*/
+
+const alumnoOriginal =
+registrosAsistencia.find(
+registro =>
+registro.grupo === alumno.grupo &&
+String(registro.studentId || "").trim() ===
+String(alumno.studentId || "").trim()
+);
+
+if (!alumnoOriginal) {
+return {
+porcentajeEfectivo: 0,
+porcentajeProyectado: 0
+};
 }
 
 /*
- * ------------------------------------------------
- * TOTAL DE CLASES DEL GRUPO EN LOS 7 MESES
- * ------------------------------------------------
- */
 
-const totalClases =
+FECHA INICIAL DEL GRUPO
+
+*/
+
+const primeraFechaGrupo =
+obtenerPrimeraFechaGrupo(
+alumno.grupo
+);
+
+if (!primeraFechaGrupo) {
+return {
+porcentajeEfectivo: 0,
+porcentajeProyectado: 0
+};
+}
+
+/*
+
+TOTAL DE CLASES DEL GRUPO EN 7 MESES
+ESTE ES EL DENOMINADOR.
+NO DEPENDE DEL RANGO SELECCIONADO
+EN EL INFORME.
+
+*/
+
+const totalClasesCurso =
 calcularTotalClasesGrupo(
 alumno.grupo,
-fechaInicioGrupo
+primeraFechaGrupo
 );
 
-   
-if (totalClases <= 0) {
-    return {
-        porcentajeEfectivo: 0,
-        porcentajeProyectado: 0
-    };
+if (totalClasesCurso <= 0) {
+return {
+porcentajeEfectivo: 0,
+porcentajeProyectado: 0
+};
 }
 
 /*
- * ------------------------------------------------
- * INICIO Y FIN DEL PERÍODO DEL CURSO
- * ------------------------------------------------
- */
 
-const inicioCurso =
-    new Date(fechaInicioGrupo);
+HOY
 
-inicioCurso.setHours(
-    0,
-    0,
-    0,
-    0
+*/
+
+const hoy =
+new Date();
+
+hoy.setHours(
+0,
+0,
+0,
+0
 );
 
-const finCurso =
-    new Date(inicioCurso);
+/*
 
-finCurso.setMonth(
-    finCurso.getMonth() + 7
+LUNES DE LA SEMANA ACTUAL
+
+*/
+
+const lunesSemana =
+new Date(hoy);
+
+const diaSemana =
+lunesSemana.getDay();
+
+const diferenciaLunes =
+diaSemana === 0
+? 6
+: diaSemana - 1;
+
+lunesSemana.setDate(
+lunesSemana.getDate() -
+diferenciaLunes
+);
+
+lunesSemana.setHours(
+0,
+0,
+0,
+0
+);
+
+/*
+
+FIN DEL CURSO
+
+*/
+
+const finCurso =
+new Date(
+primeraFechaGrupo
 );
 
 finCurso.setHours(
-    0,
-    0,
-    0,
-    0
+0,
+0,
+0,
+0
+);
+
+finCurso.setMonth(
+finCurso.getMonth() + 7
+);
+
+finCurso.setHours(
+0,
+0,
+0,
+0
 );
 
 /*
- * ------------------------------------------------
- * FECHA DE HOY
- * ------------------------------------------------
- */
 
-const hoy =
-    new Date();
+CONTADORES
 
-hoy.setHours(
-    0,
-    0,
-    0,
-    0
-);
+*/
 
-/*
- * ------------------------------------------------
- * LUNES DE LA SEMANA ACTUAL
- * ------------------------------------------------
- */
-
-const lunesActual =
-    new Date(hoy);
-
-const diaSemana =
-    lunesActual.getDay();
-
-const diferenciaLunes =
-    diaSemana === 0
-        ? 6
-        : diaSemana - 1;
-
-lunesActual.setDate(
-    lunesActual.getDate() -
-    diferenciaLunes
-);
-
-lunesActual.setHours(
-    0,
-    0,
-    0,
-    0
-);
-
-/*
- * ------------------------------------------------
- * CONTADORES DE INASISTENCIAS
- * ------------------------------------------------
- */
-
-let inasistenciasEfectivas = 0;
+let inasistenciasAntesSemana = 0;
 
 let inasistenciasSemanaActual = 0;
 
 /*
- * ------------------------------------------------
- * RECORRER LAS SESIONES DEL ESTUDIANTE
- * ------------------------------------------------
- */
 
-if (Array.isArray(alumno.sesiones)) {
+RECORRER TODAS LAS SESIONES DEL ALUMNO ORIGINAL
+IMPORTANTE:
+SE USA alumnoOriginal.sesiones
+Y NO alumno.sesiones.
+De esta manera los porcentajes NO cambian
+cuando se modifica el rango de fechas del informe.
 
-    alumno.sesiones.forEach(
-        sesion => {
+*/
 
-            if (!sesion.fecha) {
-                return;
-            }
+if (
+Array.isArray(
+alumnoOriginal.sesiones
+)
+) {
 
-            const fecha =
-                new Date(
-                    sesion.fecha
-                );
+alumnoOriginal.sesiones.forEach(
+    sesion => {
 
-            if (
-                isNaN(
-                    fecha.getTime()
-                )
-            ) {
-                return;
-            }
+        if (!sesion.fecha) {
+            return;
+        }
 
-            fecha.setHours(
-                0,
-                0,
-                0,
-                0
+        const fecha =
+            new Date(
+                sesion.fecha
             );
 
-            /*
-             * Solo cuentan las A
-             */
-
-            const asistencia =
-            String(
-            sesion.asistencia || ""
+        if (
+            isNaN(
+                fecha.getTime()
             )
-            .trim()
-            .toUpperCase();
-            
-            if (!asistencia.startsWith("A")) {
+        ) {
             return;
-            }
+        }
 
-            /*
-             * No contar fechas fuera
-             * del período del curso.
-             */
+        fecha.setHours(
+            0,
+            0,
+            0,
+            0
+        );
 
-            if (
-                fecha < inicioCurso ||
-                fecha >= finCurso
-            ) {
-                return;
-            }
-
-     /*
-         * ------------------------------------------------
-         * INASISTENCIA EFECTIVA
-         *
-         * Todo lo ocurrido antes del lunes
-         * de la semana actual.
-         * ------------------------------------------------
+        /*
+         * Fuera del período del curso
+         * no cuenta.
          */
 
         if (
-            fecha < lunesActual
+            fecha <
+            primeraFechaGrupo ||
+            fecha >=
+            finCurso
+        ) {
+            return;
+        }
+
+        /*
+         * No contar fechas futuras.
+         */
+
+        if (
+            fecha >
+            hoy
+        ) {
+            return;
+        }
+
+        /*
+         * Solo cuentan las A.
+         */
+
+        const asistencia =
+            String(
+                sesion.asistencia || ""
+            )
+            .trim()
+            .toUpperCase();
+
+        if (
+            !asistencia.startsWith("A")
+        ) {
+            return;
+        }
+
+        /*
+         * ------------------------------------
+         * EFECTIVO
+         *
+         * Todas las A anteriores al lunes
+         * de la semana actual.
+         * ------------------------------------
+         */
+
+        if (
+            fecha <
+            lunesSemana
         ) {
 
-            inasistenciasEfectivas++;
+            inasistenciasAntesSemana++;
 
             return;
         }
 
         /*
-         * ------------------------------------------------
-         * INASISTENCIA PROYECTADA
+         * ------------------------------------
+         * PROYECTADO
          *
-         * Desde el lunes actual
-         * hasta HOY.
-         * ------------------------------------------------
+         * A de lunes hasta hoy.
+         * ------------------------------------
          */
 
         if (
-            fecha >= lunesActual &&
-            fecha <= hoy
+            fecha >=
+            lunesSemana &&
+            fecha <=
+            hoy
         ) {
 
             inasistenciasSemanaActual++;
@@ -1742,39 +1616,39 @@ if (Array.isArray(alumno.sesiones)) {
 
 /*
 
-TOTAL PROYECTADO DE INASISTENCIAS
-
-*/
-
-const inasistenciasProyectadas =
-inasistenciasEfectivas +
-inasistenciasSemanaActual;
-
-/*
-
-PORCENTAJES
+PORCENTAJE EFECTIVO
 
 */
 
 const porcentajeEfectivo =
 (
-inasistenciasEfectivas /
-totalClases
-) * 100;
+inasistenciasAntesSemana /
+totalClasesCurso
+) *
+100;
+
+/*
+
+PORCENTAJE PROYECTADO
+
+*/
+
+const totalInasistenciasProyectadas =
+inasistenciasAntesSemana +
+inasistenciasSemanaActual;
 
 const porcentajeProyectado =
 (
-inasistenciasProyectadas /
-totalClases
-) * 100;
+totalInasistenciasProyectadas /
+totalClasesCurso
+) *
+100;
 
 return {
 
-porcentajeEfectivo:
-    porcentajeEfectivo,
+porcentajeEfectivo,
 
-porcentajeProyectado:
-    porcentajeProyectado
+porcentajeProyectado
 
 };
 
@@ -2216,51 +2090,282 @@ botonMensaje.addEventListener("click", function(event) {
 
 event.stopPropagation();
 
-const telefono = alumno.telefono || alumno.celular || alumno.whatsapp;
+const telefono =
+    alumno.telefono ||
+    alumno.celular ||
+    alumno.whatsapp;
 
 if (!telefono) {
-    alert("El estudiante no tiene un número de teléfono registrado.");
+
+    alert(
+        "El estudiante no tiene un número de teléfono registrado."
+    );
+
     return;
 }
 
-let numero = String(telefono).replace(/\D/g, "");
+let numero =
+    String(telefono).replace(
+        /\D/g,
+        ""
+    );
 
 if (numero.startsWith("0")) {
-    numero = "593" + numero.substring(1);
+
+    numero =
+        "593" +
+        numero.substring(1);
 }
 
-const mensaje =
-generarMensajeInasistencia(alumno);
+/*
+ * ------------------------------------------------
+ * OBTENER PORCENTAJES
+ * ------------------------------------------------
+ * ESTA ES LA ÚNICA FUENTE DE LOS PORCENTAJES.
+ * NO SE RECALCULAN AQUÍ.
+ */
 
-console.log("MENSAJE GENERADO:", mensaje);
+const porcentajes =
+    calcularPorcentajesAsistencia(
+        alumno
+    );
 
-const urlWhatsApp =
-"https://api.whatsapp.com/send?phone=" +
-numero +
-"&text=" +
-encodeURIComponent(mensaje);
+/*
+ * ------------------------------------------------
+ * PRIMER NOMBRE
+ * ------------------------------------------------
+ */
 
-function marcarMensajeComoEnviado() {
+const primerNombre =
+    String(
+        alumno.nombres || ""
+    )
+    .trim()
+    .split(/\s+/)[0];
 
-    botonMensaje.style.backgroundColor = "#dc2626";
+/*
+ * ------------------------------------------------
+ * OBTENER LUNES DE LA SEMANA ACTUAL
+ * ------------------------------------------------
+ */
 
-    botonMensaje.textContent = "Mensaje enviado";
+const hoy =
+    new Date();
 
-    botonMensaje.disabled = true;
+hoy.setHours(
+    0,
+    0,
+    0,
+    0
+);
 
-}
+const lunesSemana =
+    new Date(hoy);
 
-if (!mensaje) {
+const diaSemana =
+    lunesSemana.getDay();
 
-    window.location.href = urlWhatsApp;
+const diferenciaLunes =
+    diaSemana === 0
+        ? 6
+        : diaSemana - 1;
 
-    marcarMensajeComoEnviado();
+lunesSemana.setDate(
+    lunesSemana.getDate() -
+    diferenciaLunes
+);
 
-    return;
+/*
+ * ------------------------------------------------
+ * DÍAS DE INASISTENCIA DE LA SEMANA ACTUAL
+ * ------------------------------------------------
+ */
 
-}
+const diasSemana =
+    [
+        "domingo",
+        "lunes",
+        "martes",
+        "miércoles",
+        "jueves",
+        "viernes",
+        "sábado"
+    ];
+
+const mesesTexto =
+    [
+        "enero",
+        "febrero",
+        "marzo",
+        "abril",
+        "mayo",
+        "junio",
+        "julio",
+        "agosto",
+        "septiembre",
+        "octubre",
+        "noviembre",
+        "diciembre"
+    ];
+
+const diasInasistencias = [];
 
 if (
+    Array.isArray(
+        alumno.sesiones
+    )
+) {
+
+    alumno.sesiones.forEach(
+        sesion => {
+
+            if (!sesion.fecha) {
+                return;
+            }
+
+            const fecha =
+                new Date(
+                    sesion.fecha
+                );
+
+            if (
+                isNaN(
+                    fecha.getTime()
+                )
+            ) {
+                return;
+            }
+
+            fecha.setHours(
+                0,
+                0,
+                0,
+                0
+            );
+
+            const asistencia =
+                String(
+                    sesion.asistencia || ""
+                )
+                .trim()
+                .toUpperCase();
+
+            if (
+                !asistencia.startsWith("A")
+            ) {
+                return;
+            }
+
+            if (
+                fecha < lunesSemana ||
+                fecha > hoy
+            ) {
+                return;
+            }
+
+            const textoFecha =
+                diasSemana[
+                    fecha.getDay()
+                ] +
+                " " +
+                fecha.getDate() +
+                " de " +
+                mesesTexto[
+                    fecha.getMonth()
+                ];
+
+            diasInasistencias.push(
+                textoFecha
+            );
+        }
+    );
+}
+
+const textoDiasInasistencias =
+    diasInasistencias.length > 0
+        ? diasInasistencias.join(", ")
+        : "no registra inasistencias";
+
+/*
+ * ------------------------------------------------
+ * DATOS PARA EL MODELO
+ * ------------------------------------------------
+ */
+
+const datosMensaje = {
+
+    primerNombre,
+
+    textoDiasInasistencias,
+
+    porcentajeActual:
+        porcentajes.porcentajeEfectivo,
+
+    porcentajeProyectado:
+        porcentajes.porcentajeProyectado
+
+};
+
+/*
+ * ------------------------------------------------
+ * GENERAR MENSAJE
+ * ------------------------------------------------
+ */
+
+const mensaje =
+    generarMensajeInasistencia(
+        datosMensaje
+    );
+
+/*
+ * ------------------------------------------------
+ * ABRIR WHATSAPP
+ * ------------------------------------------------
+ */
+
+/*
+ * ------------------------------------------------
+ * MARCAR COMO ENVIADO (inmediatamente al hacer clic)
+ * ------------------------------------------------
+ */
+
+botonMensaje.style.backgroundColor =
+    "#dc2626";
+
+botonMensaje.textContent =
+    "Mensaje enviado";
+
+botonMensaje.disabled =
+    true;
+
+/*
+ * ------------------------------------------------
+ * ABRIR EL CHAT (enlace corto, sin el mensaje
+ * embebido en la URL: los mensajes largos superan
+ * el límite de longitud que usa Windows para
+ * activar la app de WhatsApp Desktop, y el texto
+ * se pierde en el camino).
+ * ------------------------------------------------
+ */
+
+function abrirChatWhatsApp() {
+
+    window.location.href =
+        "https://wa.me/" + numero;
+
+}
+
+/*
+ * ------------------------------------------------
+ * COPIAR EL MENSAJE AL PORTAPAPELES
+ * (si hay uno que copiar) ANTES de navegar,
+ * para que la copia no se interrumpa por el
+ * cambio de página.
+ * ------------------------------------------------
+ */
+
+if (
+    mensaje &&
     navigator.clipboard &&
     navigator.clipboard.writeText
 ) {
@@ -2281,20 +2386,28 @@ if (
                 error
             );
 
+        })
+        .finally(function() {
+
+            abrirChatWhatsApp();
+
         });
+
+} else {
+
+    abrirChatWhatsApp();
 
 }
 
-window.location.href = urlWhatsApp;
-
-marcarMensajeComoEnviado();
-
 });
 
-celdaMensaje.appendChild(botonMensaje);
+celdaMensaje.appendChild(
+botonMensaje
+);
 
-fila.appendChild(celdaMensaje);
-
+fila.appendChild(
+celdaMensaje
+);
 const celdaLlamar = document.createElement("td");
 
 const botonLlamar = document.createElement("button");
