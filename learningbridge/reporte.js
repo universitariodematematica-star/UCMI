@@ -2350,8 +2350,10 @@ botonMensaje.disabled =
 
 function abrirChatWhatsApp() {
 
-    window.location.href =
-        "https://wa.me/" + numero;
+    window.open(
+        "https://wa.me/" + numero,
+        "_blank"
+    );
 
 }
 
