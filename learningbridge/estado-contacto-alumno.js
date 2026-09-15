@@ -315,8 +315,6 @@ RESTAURAR ESTADOS EN LA TABLA
 ==================================================
 */
 
-function restaurarEstadosContactoTabla() {
-
 const tabla =
     document.querySelector(
         "#resultadoAsistencia table"
@@ -353,6 +351,34 @@ filas.forEach((fila, indice) => {
         return;
     }
 
+    /*
+     * ==================================================
+     * FASE DE RETIRO TIENE PRIORIDAD
+     * ==================================================
+     *
+     * Si retiro-alumno.js ya marcó esta fila
+     * como retirada, NO tocamos sus botones.
+     *
+     * De esta manera retiro-alumno.js mantiene:
+     * - gris
+     * - deshabilitado
+     * - sin interacción
+     */
+
+    const faseRetiro =
+        alumno.faseRetiro === true;
+
+    if (faseRetiro) {
+        return;
+    }
+
+
+    /*
+     * ==================================================
+     * ESTADO NORMAL DE CONTACTO
+     * ==================================================
+     */
+
     const estado =
         estadosContactoAlumno[studentId] ||
         {};
@@ -369,21 +395,36 @@ filas.forEach((fila, indice) => {
                 .trim()
                 .toLowerCase();
 
+
+        /*
+         * ----------------------------------------------
+         * MENSAJE
+         * ----------------------------------------------
+         */
+
         if (
-            texto.includes("mensaje") ||
-            texto.includes("enviar mensaje")
+            texto === "enviar mensaje" ||
+            texto === "mensaje enviado"
         ) {
 
             aplicarEstadoBotonMensaje(
                 boton,
                 estado.mensajeEnviado === true
             );
+
+            return;
         }
 
+
+        /*
+         * ----------------------------------------------
+         * LLAMADA
+         * ----------------------------------------------
+         */
+
         if (
-            texto.includes("llamar") ||
-            texto.includes("llamada") ||
-            texto.includes("whatsapp")
+            texto === "llamar" ||
+            texto === "llamada hecha"
         ) {
 
             aplicarEstadoBotonLlamada(
@@ -391,10 +432,10 @@ filas.forEach((fila, indice) => {
                 estado.llamadaHecha === true
             );
         }
-    });
-});
 
-}
+    });
+
+});
 
 /*
 
