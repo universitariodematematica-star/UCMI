@@ -477,13 +477,20 @@ botones.forEach(
             .toLowerCase();
 
 
+        const tipoBoton =
+            boton.dataset.tipoBoton ||
+            "";
+
+
         const esMensaje =
+            tipoBoton === "mensaje" ||
             texto.includes(
                 "mensaje"
             );
 
 
         const esLlamada =
+            tipoBoton === "llamada" ||
             texto.includes(
                 "llamar"
             ) ||
