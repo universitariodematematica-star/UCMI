@@ -578,14 +578,10 @@ DETECTAR CLICS
 ==================================================
 */
 
-document.addEventListener(
-"click",
-function(event) {
+document.addEventListener("click", function(event) {
 
 const boton =
-    event.target.closest(
-        "button"
-    );
+    event.target.closest("button");
 
 if (!boton) {
     return;
@@ -596,115 +592,21 @@ const texto =
         .trim()
         .toLowerCase();
 
-if (
-    texto === "enviar mensaje"
-) {
+if (texto === "enviar mensaje") {
 
-    const fila =
-        boton.closest("tr");
-
-    const alumno =
-        obtenerAlumnoContactoDesdeFila(
-            fila
-        );
-
-    if (!alumno) {
-        return;
-    }
-
-    const studentId =
-        String(
-            alumno.studentId || ""
-        ).trim();
-
-    if (!studentId) {
-        return;
-    }
-
-    if (
-        !estadosContactoAlumno[studentId]
-    ) {
-
-        estadosContactoAlumno[studentId] = {};
-
-    }
-
-    estadosContactoAlumno[studentId]
-        .mensajeEnviado = true;
-
-    guardarEstadosContacto();
-
-    setTimeout(
-        function() {
-
-            aplicarEstadoBotonMensaje(
-                boton,
-                true
-            );
-
-        },
-        0
-    );
+    registrarMensajeEnviado(boton);
 
     return;
 }
 
-if (
-    texto === "llamar"
-) {
+if (texto === "llamar") {
 
-    const fila =
-        boton.closest("tr");
-
-    const alumno =
-        obtenerAlumnoContactoDesdeFila(
-            fila
-        );
-
-    if (!alumno) {
-        return;
-    }
-
-    const studentId =
-        String(
-            alumno.studentId || ""
-        ).trim();
-
-    if (!studentId) {
-        return;
-    }
-
-    if (
-        !estadosContactoAlumno[studentId]
-    ) {
-
-        estadosContactoAlumno[studentId] = {};
-
-    }
-
-    estadosContactoAlumno[studentId]
-        .llamadaHecha = true;
-
-    guardarEstadosContacto();
-
-    setTimeout(
-        function() {
-
-            aplicarEstadoBotonLlamada(
-                boton,
-                true
-            );
-
-        },
-        0
-    );
+    registrarLlamadaHecha(boton);
 
     return;
 }
 
-},
-true
-);
+});
 
 /*
 
