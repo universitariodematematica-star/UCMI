@@ -184,13 +184,13 @@ if (!db) {
 
 try {
 
-    const snapshot =
-        await getDocs(
-            collection(
-                db,
-                "alumnos"
-            )
-        );
+const snapshot =
+await window.ucmiFirebaseGetDocs(
+window.ucmiFirebaseCollection(
+db,
+"alumnos"
+)
+);
 
     const alumnosFirebase = [];
 
