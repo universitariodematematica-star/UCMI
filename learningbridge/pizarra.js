@@ -125,27 +125,21 @@ if (!document.getElementById("ucmiToolbar")) {
 
     function prepararCanvas() {
 
-        const ancho = Math.max(
-            document.body.scrollWidth,
-            document.documentElement.scrollWidth
-        );
+    const ancho = window.innerWidth;
 
-        const alto = Math.max(
-            document.body.scrollHeight,
-            document.documentElement.scrollHeight
-        );
+    const alto = window.innerHeight;
 
 
-        canvas.width = ancho;
+    canvas.width = ancho;
 
-        canvas.height = alto;
+    canvas.height = alto;
 
 
-        ctx.lineCap = "round";
+    ctx.lineCap = "round";
 
-        ctx.lineJoin = "round";
+    ctx.lineJoin = "round";
 
-    }
+}
 
 
     // =====================================================
