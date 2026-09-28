@@ -101,6 +101,11 @@ if (!document.getElementById("ucmiToolbar")) {
 
     `;
 
+    toolbar.style.position = "fixed";
+    toolbar.style.top = "10px";
+    toolbar.style.right = "10px";
+    toolbar.style.zIndex = "9999";
+    
     document.body.appendChild(toolbar);
 
 }
