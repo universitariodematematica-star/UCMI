@@ -454,55 +454,49 @@ if (!document.getElementById("ucmiToolbar")) {
 
     function actualizarTamañoCanvas() {
 
-        if (!canvas || !ctx) return;
+    if (!canvas || !ctx) return;
 
 
-        const imagen = canvas.toDataURL();
+    const imagen = canvas.toDataURL();
 
 
-        const nuevoAncho = Math.max(
-            document.body.scrollWidth,
-            document.documentElement.scrollWidth
-        );
+    const nuevoAncho = window.innerWidth;
 
-        const nuevoAlto = Math.max(
-            document.body.scrollHeight,
-            document.documentElement.scrollHeight
-        );
+    const nuevoAlto = window.innerHeight;
 
 
-        if (
-            canvas.width === nuevoAncho &&
-            canvas.height === nuevoAlto
-        ) {
+    if (
+        canvas.width === nuevoAncho &&
+        canvas.height === nuevoAlto
+    ) {
 
-            return;
-
-        }
-
-
-        canvas.width = nuevoAncho;
-
-        canvas.height = nuevoAlto;
-
-
-        const img = new Image();
-
-
-        img.onload = function () {
-
-            ctx.drawImage(
-                img,
-                0,
-                0
-            );
-
-        };
-
-
-        img.src = imagen;
+        return;
 
     }
+
+
+    canvas.width = nuevoAncho;
+
+    canvas.height = nuevoAlto;
+
+
+    const img = new Image();
+
+
+    img.onload = function () {
+
+        ctx.drawImage(
+            img,
+            0,
+            0
+        );
+
+    };
+
+
+    img.src = imagen;
+
+}
 
 
     // =====================================================
