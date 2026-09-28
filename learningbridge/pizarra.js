@@ -172,28 +172,28 @@ if (!document.getElementById("ucmiToolbar")) {
 
     function obtenerPosicion(evento) {
 
-        if (evento.touches && evento.touches.length > 0) {
-
-            return {
-
-                x: evento.touches[0].pageX,
-
-                y: evento.touches[0].pageY
-
-            };
-
-        }
-
+    if (evento.touches && evento.touches.length > 0) {
 
         return {
 
-            x: evento.pageX,
+            x: evento.touches[0].clientX,
 
-            y: evento.pageY
+            y: evento.touches[0].clientY
 
         };
 
     }
+
+
+    return {
+
+        x: evento.clientX,
+
+        y: evento.clientY
+
+    };
+
+}
 
 
     // =====================================================
