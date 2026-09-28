@@ -1,4 +1,4 @@
-<!DOCTYPE html>\n<html lang="es"><head>
+<!DOCTYPE html><html lang="es"><head>
 
     <meta charset="UTF-8">
 
@@ -789,27 +789,142 @@
 
 
 <phedra-x-ui data-wxt-shadow-root="" style="position: fixed; top: 0px; left: 0px; width: 0px; height: 0px; z-index: 2147483647;"></phedra-x-ui><script>
+                /*
+                * ========================================================
+                * PERSISTENCIA DE RESPUESTAS DEL ESTUDIANTE
+                * ========================================================
+                */
+
+                const CLAVE_RESPUESTAS =
+                    'learningBridgeRespuestas_' +
+                    location.pathname;
+
+                function guardarRespuestas() {
+
+                    const respuestas = {};
+
+                    document
+                        .querySelectorAll(
+                            'input, textarea, [contenteditable="true"]'
+                        )
+                        .forEach((elemento, indice) => {
+
+                            if (
+                                elemento.type === 'button' ||
+                                elemento.type === 'submit'
+                            ) {
+                                return;
+                            }
+
+                            respuestas[indice] =
+                                elemento.value !== undefined
+                                    ? elemento.value
+                                    : elemento.innerHTML;
+
+                        });
+
+                    localStorage.setItem(
+                        CLAVE_RESPUESTAS,
+                        JSON.stringify(respuestas)
+                    );
+                }
+
+
+                function cargarRespuestas() {
+
+                    const datos =
+                        localStorage.getItem(
+                            CLAVE_RESPUESTAS
+                        );
+
+                    if (!datos) {
+                        return;
+                    }
+
+                    let respuestas;
+
+                    try {
+
+                        respuestas =
+                            JSON.parse(datos);
+
+                    } catch (error) {
+
+                        console.error(
+                            'No fue posible recuperar las respuestas:',
+                            error
+                        );
+
+                        return;
+                    }
+
+                    document
+                        .querySelectorAll(
+                            'input, textarea, [contenteditable="true"]'
+                        )
+                        .forEach((elemento, indice) => {
+
+                            if (
+                                !Object.prototype.hasOwnProperty.call(
+                                    respuestas,
+                                    indice
+                                )
+                            ) {
+                                return;
+                            }
+
+                            if (
+                                elemento.value !== undefined
+                            ) {
+
+                                elemento.value =
+                                    respuestas[indice];
+
+                            } else {
+
+                                elemento.innerHTML =
+                                    respuestas[indice];
+
+                            }
+
+                        });
+                }
+
+
+                document.addEventListener(
+                    'input',
+                    guardarRespuestas
+                );
+
+
+                document.addEventListener(
+                    'change',
+                    guardarRespuestas
+                );
+
+
+                /*
+                * ========================================================
+                * PIZARRA
+                * ========================================================
+                */
 
                 function openWhiteboard() {
-
                     const modal =
                         document.getElementById('whiteboardModal');
 
                     if (modal) {
                         modal.style.display = 'flex';
                     }
-
                 }
 
                 function closeWhiteboard() {
-
                     const modal =
                         document.getElementById('whiteboardModal');
 
                     if (modal) {
                         modal.style.display = 'none';
                     }
-
                 }
 
                 window.onclick = function(event) {
@@ -823,4 +938,11 @@
 
                 };
 
+
+                /*
+                * Cargar las respuestas guardadas
+                * después de cargar la página.
+                */
+
+                cargarRespuestas();
             </script></body></html>
