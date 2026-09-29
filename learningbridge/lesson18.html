@@ -1,85 +1,137 @@
 <!DOCTYPE html><html lang="es"><head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>School Subjects - Learning Bridge English</title>
-
     <style>
-
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
         }
-
         body {
             background-color: #f4f5f7;
             color: #333;
         }
-
         /* =====================================================
-            ESTILOS DE LA PIZARRA GRÁFICA UCMI
-            ===================================================== */
-
-            #ucmiToolbar {
-                display:flex;
-                align-items:center;
-                gap:4px;
-                background:white;
-                padding:4px;
-                border-radius:8px;
-                box-shadow:0 2px 8px rgba(0,0,0,.2);
-            }
-
-            #drawingCanvas {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                z-index: 9998;
-                pointer-events: none;
-            }
-
-            #ucmiToolbar .tool-title {
-                font-size:13px;
-                font-weight:bold;
-                margin-right:4px;
-            }
-
-            #ucmiToolbar .color-picker {
-                width:24px;
-                height:24px;
-                min-width:24px;
-                min-height:24px;
-                padding:0;
-                margin:0;
-                border-radius:50%;
-                border:2px solid #333;
-                cursor:pointer;
-                display:block;
-            }
-
-            #ucmiToolbar .clear-tool {
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                background:white;
-                font-size:16px;
-            }
-
+           ESTILOS DE LA PIZARRA GRÁFICA UCMI
+           ===================================================== */
+        #ucmiToolbar {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: white;
+            padding: 4px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.2);
+        }
+        #drawingCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9998;
+            pointer-events: none;
+        }
+        #ucmiToolbar .tool-title {
+            font-size: 13px;
+            font-weight: bold;
+            margin-right: 4px;
+        }
+        #ucmiToolbar .color-picker {
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            min-height: 24px;
+            padding: 0;
+            margin: 0;
+            border-radius: 50%;
+            border: 2px solid #333;
+            cursor: pointer;
+            display: block;
+        }
+        #ucmiToolbar .clear-tool {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            font-size: 16px;
+        }
+        /* =========================================================
+           CONTROLES DEL CONSTRUCTOR
+           ========================================================= */
+        .constructor-toolbar {
+            background: #071426;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .constructor-toolbar-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 7px;
+            letter-spacing: 0.3px;
+        }
+        .constructor-toolbar-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .constructor-toolbar button {
+            border: none;
+            border-radius: 5px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-generate {
+            background: #178a75;
+            color: white;
+        }
+        .btn-copy {
+            background: #5c1d53;
+            color: white;
+        }
+        .btn-reset {
+            background: #777;
+            color: white;
+        }
+        .constructor-help {
+            margin-top: 6px;
+            font-size: 10px;
+            color: #d8dde5;
+        }
+        /*
+         * Las zonas editables conservan exactamente el aspecto
+         * de la página. Solo aparece una pequeña indicación
+         * cuando se está trabajando en el constructor.
+         */
+        [contenteditable="true"] {
+            outline: none;
+            cursor: text;
+        }
+        [contenteditable="true"]:hover {
+            outline: 1px dashed rgba(92, 29, 83, 0.35);
+            outline-offset: 2px;
+        }
+        [contenteditable="true"]:focus {
+            outline: 1px solid rgba(92, 29, 83, 0.45);
+            outline-offset: 2px;
+        }
         /* =========================================================
            ESTILOS DE LA PÁGINA ORIGINAL
            ========================================================= */
-
         .print-btn-container {
             text-align: center;
             margin: 8px 0;
         }
-
         .btn-pdf {
             background-color: #5c1d53;
             color: white;
@@ -91,11 +143,9 @@
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
         .btn-pdf:hover {
             background-color: #43133c;
         }
-
         .btn-next {
             background-color: #178a75;
             color: white;
@@ -110,11 +160,9 @@
             display: inline-block;
             margin-left: 6px;
         }
-
         .btn-next:hover {
             background-color: #106856;
         }
-
         .top-header {
             background-color: #5c1d53;
             color: white;
@@ -124,115 +172,92 @@
             padding: 6px 12px;
             border-bottom: 2px solid #178a75;
         }
-
         .top-header span {
             font-size: 11px;
             font-weight: bold;
             letter-spacing: 0.5px;
         }
-
         .main-container {
             max-width: 960px;
             margin: 4px auto;
             padding: 0 10px;
         }
-
         .lesson-title-area {
             margin-bottom: 8px;
         }
-
         .lesson-title-area h1 {
             color: #5c1d53;
             font-size: 22px;
             margin-bottom: 2px;
         }
-
         .lesson-title-area p {
             color: #666;
             font-size: 10px;
         }
-
         .content-grid {
             display: grid;
             grid-template-columns: 270px 1fr;
             gap: 8px;
             align-items: start;
         }
-
         .card {
             border-radius: 6px;
             padding: 6px 9px;
             margin-bottom: 6px;
             position: relative;
         }
-
         .card:hover {
             box-shadow: 0 2px 5px rgba(0,0,0,0.08);
         }
-
         .card-learning-goal {
             background-color: #f0f6fc;
             border: 1px solid #cce0f5;
         }
-
         .card-learning-goal .badge {
             background-color: #d94b4b;
         }
-
         .card-grammar-formula {
             background-color: #fcf8eb;
             border: 1px solid #f2e3be;
         }
-
         .card-grammar-formula .badge {
             background-color: #d99b26;
         }
-
         .card-key-vocab {
             background-color: #f0f7f5;
             border: 1px solid #d0e8e2;
         }
-
         .card-key-vocab .badge {
             background-color: #178a75;
         }
-
         .card-grammar-context {
             background-color: #f0f6fc;
             border: 1px solid #cce0f5;
         }
-
         .card-grammar-context .badge {
             background-color: #5c1d53;
         }
-
         .card-before-reading {
             background-color: #f5f0f7;
             border: 1px solid #e2cce8;
         }
-
         .card-before-reading .badge {
             background-color: #6a2c42;
         }
-
         .card-culture-reading {
             background-color: #ffffff;
             border: 1px solid #dcdfe4;
         }
-
         .card-culture-reading .badge {
             background-color: #d94b4b;
         }
-
         .card-reading-check {
             background-color: #f0f5fc;
             border: 1px solid #cfe0f5;
         }
-
         .card-reading-check .badge {
             background-color: #5c1d53;
         }
-
         .badge {
             display: inline-block;
             color: white;
@@ -244,7 +269,6 @@
             margin-bottom: 3px;
             letter-spacing: 0.3px;
         }
-
         .board-trigger-btn {
             background-color: #d99b26;
             color: white;
@@ -259,25 +283,21 @@
             width: 100%;
             text-align: center;
         }
-
         .board-trigger-btn:hover {
             background-color: #b8811e;
         }
-
         p,
         li {
             font-size: 9.5px;
             line-height: 1.25;
             color: #333;
         }
-
         .vocab-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 3px;
             margin-top: 3px;
         }
-
         .vocab-tag {
             background: white;
             border: 1px solid #bce0d6;
@@ -286,47 +306,20 @@
             font-size: 8.5px;
             color: #2c3e50;
         }
-
         .reading-box h2 {
             color: #5c1d53;
             font-size: 12.5px;
             margin-bottom: 3px;
         }
-
         .reading-box p {
-            margin: 0;
-            padding: 0;
+            margin-bottom: 5px;
             text-align: justify;
             color: #333;
         }
-
-       /* ========================================================
-        CULTURE READING — ESTILO PROPIO
-        ======================================================== */
-
-        #cultureReadingContent {
-            margin: 0;
-            padding: 0;
-        }
-
-       #cultureReadingContent .culture-reading-paragraph {
-            margin: 0 0 8px 0 !important;
-            padding: 0 !important;
-            font-size: 9.5px !important;
-            line-height: 1.5 !important;
-            text-align: justify !important;
-            color: #333 !important;
-        }
-
-        #cultureReadingContent .culture-reading-paragraph:last-child {
-            margin-bottom: 0 !important;
-        }
-
         .reading-check-box ol {
             padding-left: 14px;
             margin-top: 3px;
         }
-
         .reading-check-box li {
             margin-bottom: 4px;
             display: flex;
@@ -334,7 +327,6 @@
             gap: 4px;
             flex-wrap: wrap;
         }
-
         .blank-input {
             border: none;
             border-bottom: 1px solid #178a75;
@@ -346,7 +338,6 @@
             min-width: 150px;
             color: #2c3e50;
         }
-
         .answer-input {
             border: none;
             border-bottom: 1px solid #178a75;
@@ -358,7 +349,6 @@
             margin-top: 2px;
             color: #2c3e50;
         }
-
         .image-section {
             margin-top: 6px;
             background: white;
@@ -367,7 +357,6 @@
             border: 1px solid #e1e4e8;
             text-align: center;
         }
-
         .image-section img {
             width: 100% !important;
             height: auto !important;
@@ -376,7 +365,6 @@
             margin: 0 auto;
             border-radius: 4px;
         }
-
         .lesson-footer {
             display: flex;
             justify-content: space-between;
@@ -387,13 +375,11 @@
             border-top: 1px solid #ddd;
             padding-top: 3px;
         }
-
         .bottom-bar {
             background-color: #178a75;
             height: 6px;
             margin-top: 4px;
         }
-
         .modal-overlay {
             display: none;
             position: fixed;
@@ -406,7 +392,6 @@
             justify-content: center;
             align-items: center;
         }
-
         .modal-container {
             background: #fff9e6;
             border: 3px solid #d99b26;
@@ -415,7 +400,6 @@
             max-width: 500px;
             padding: 15px;
         }
-
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -424,12 +408,10 @@
             border-bottom: 2px solid #e6d29c;
             padding-bottom: 5px;
         }
-
         .modal-header h3 {
             color: #8c6312;
             font-size: 15px;
         }
-
         .close-modal-btn {
             background: #d99b26;
             color: white;
@@ -440,7 +422,6 @@
             font-size: 14px;
             cursor: pointer;
         }
-
         .board-textarea {
             width: 100%;
             height: 150px;
@@ -451,13 +432,11 @@
             outline: none;
             background: white;
         }
-
         .modal-footer {
             display: flex;
             justify-content: flex-end;
             margin-top: 8px;
         }
-
         .btn-board-action {
             background-color: #5c1d53;
             color: white;
@@ -468,599 +447,520 @@
             font-weight: bold;
             cursor: pointer;
         }
-
         @media print {
-
             @page {
                 size: A4;
                 margin: 2mm;
             }
-
             body {
                 background-color: white;
                 -webkit-print-color-adjust: exact;
             }
-
+            .constructor-toolbar,
+            .print-btn-container,
+            .modal-overlay,
+            .board-trigger-btn {
+                display: none !important;
+            }
             .card,
             .image-section {
                 box-shadow: none;
                 border: 1px solid #bbb;
             }
-
             input {
                 border-bottom: 1px solid #000 !important;
                 color: #000 !important;
             }
-
         }
-
     </style>
-
 <link id="phedra-x-fonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap"><script src="pizarra.js"></script></head>
-
 <body>
-
     <!-- =========================================================
          BARRA DEL CONSTRUCTOR
          ========================================================= -->
-
     
-
 
     <!-- =========================================================
          PÁGINA — ESTA ES LA PLANTILLA REAL
          ========================================================= -->
-
     <div class="print-btn-container">
-
         <button class="btn-pdf" onclick="window.print()">
             🖨️ Imprimir / Guardar Presentación
         </button>
-
         <a class="btn-next" id="botonLessonSiguiente" href="https://universitariodematematica-star.github.io/UCMI/learningbridge/lesson18-2.html">
             Lesson
             <span>18</span>-2
         </a>
-
     </div>
 
-
     <header class="top-header">
-
-    <span>
-        UNIT
-        <span id="numeroUnidadHeader">4</span>
-        /
-        LESSON
-        <span id="numeroLessonHeader">18</span>
-    </span>
-
-    <span>
-        LEARNING BRIDGE ENGLISH · A1 CEFR
-    </span>
-
-</header>
-
+        <span>
+            UNIT
+            <span id="numeroUnidadHeader">4</span>
+            /
+            LESSON
+            <span id="numeroLessonHeader">18</span>
+        </span>
+        <span>
+            LEARNING BRIDGE ENGLISH · A1 CEFR
+        </span>
+    </header>
 
     <div class="main-container">
-
         <div class="lesson-title-area">
-
             <!-- VARIABLE -->
             <h1>
                 School Subjects</h1>
-
             <!-- FIJO -->
             <p>
                 Latin American Edition · Culture-based language learning
             </p>
-
         </div>
 
-
         <div class="content-grid">
-
-
             <!-- =================================================
                  COLUMNA IZQUIERDA
                  ================================================= -->
-
             <div class="left-column">
-
-
                 <!-- LEARNING GOAL -->
-
                 <div class="card card-learning-goal">
-
                     <span class="badge">
                         Learning Goal
                     </span>
-
                     <!-- VARIABLE -->
                     <p>I can name school subjects and talk about my favorite subject.</p>
-
                 </div>
 
-
                 <!-- GRAMMAR FORMULA -->
-
                 <div class="card card-grammar-formula">
-
                     <span class="badge">
                         Grammar Formula
                     </span>
-
                     <!-- VARIABLE -->
                     <p>I + like + subject<br>I like English.<br>I like math.<br>My favorite subject + is + subject<br>My favorite subject is science.<br>I + study + subject<br>I study history.</p>
-
                     <button class="board-trigger-btn" type="button" onclick="openWhiteboard()">
                         💡 Abrir Pizarra Interactiva
                     </button>
-
                 </div>
 
-
                 <!-- KEY VOCABULARY -->
-
                 <div class="card card-key-vocab">
-
                     <span class="badge">
                         Key Vocabulary
                     </span>
-
                     <div class="vocab-tags" id="keyVocabularyContainer"><span class="vocab-tag" data-vocab-item="">subject</span><span class="vocab-tag" data-vocab-item="">English</span><span class="vocab-tag" data-vocab-item="">math</span><span class="vocab-tag" data-vocab-item="">science</span><span class="vocab-tag" data-vocab-item="">history</span><span class="vocab-tag" data-vocab-item="">art</span><span class="vocab-tag" data-vocab-item="">music</span><span class="vocab-tag" data-vocab-item="">physical education</span><span class="vocab-tag" data-vocab-item="">favorite</span><span class="vocab-tag" data-vocab-item="">learn</span></div>
-
                     
-
                 </div>
 
-
                 <!-- GRAMMAR IN CONTEXT -->
-
                 <div class="card card-grammar-context">
-
                     <span class="badge">
                         Grammar in Context
                     </span>
-
                     <!-- VARIABLE -->
                     <p>Use I like... to talk about subjects you<br>enjoy.<br>Use My favorite subject is... to name one<br>subject.<br>Use I study... to talk about school learning.</p>
-
                 </div>
 
-
                 <!-- BEFORE READING -->
-
                 <div class="card card-before-reading">
-
                     <span class="badge">
                         Before Reading
                     </span>
-
                     <!-- VARIABLE -->
                     <p>What subjects do students study<br>in your school? What subject do<br>you like?</p>
-
                     <!-- VARIABLE -->
                     <p style="margin-top: 5px;"><br></p>
-
                 </div>
-
-
             </div>
-
 
             <!-- =================================================
                  COLUMNA DERECHA
                  ================================================= -->
-
             <div class="right-column">
-
-
                 <!-- CULTURE READING -->
-
                 <div class="card card-culture-reading reading-box">
-
                     <button type="button" class="badge culture-audio-button" id="cultureReadingAudioButton" data-audio="https://universitariodematematica-star.github.io/UCMI/learningbridge/audios/lb17.mp3">
                         ▶ Culture Reading
                     </button>
-
-
                     <!-- VARIABLE -->
                     <h2>
                         Morning Routines and Family Life
                     </h2>
-
-
                     <!-- VARIABLE -->
-                   <div id="cultureReadingContent"><p class="culture-reading-paragraph">Daily routines are part of family life in Latin America. A routine is a group of</p><p class="culture-reading-paragraph">activities that people do every day. Many students wake up early, get up, wash, eat</p><p class="culture-reading-paragraph">breakfast, prepare their school materials, and go to school. These actions are</p><p class="culture-reading-paragraph">simple, but they help students organize their day.</p><p class="culture-reading-paragraph">In many homes, morning routines include family cooperation. A parent can prepare</p><p class="culture-reading-paragraph">breakfast. A student can make the bed, organize a backpack, or help a younger</p><p class="culture-reading-paragraph">brother or sister. Grandparents can also be part of the morning routine. Family</p><p class="culture-reading-paragraph">members often help each other before school or work.</p><p class="culture-reading-paragraph">Routines can be different in cities and rural communities. Some students</p><p class="culture-reading-paragraph">walk to school. Others take a bus. Some students help with animals, plants,</p><p class="culture-reading-paragraph">or small family tasks before classes. These routines show responsibility and</p><p class="culture-reading-paragraph">connection with home and community.</p><p class="culture-reading-paragraph">In English, students can describe routines with simple sentences: “I wake up</p><p class="culture-reading-paragraph">early.” “I eat breakfast.” “I go to school.” “I study English.” These sentences</p><p class="culture-reading-paragraph">help students talk about everyday life.</p></div>
-
+                    <p>
+                        A school is an important place in many Latin American communities. It is not only a building with classrooms. A school can be a place for learning, friendship, family meetings, cultural events, sports, and community projects. Students, teachers, parents, and neighbors can all be connected to school life.
+                    </p>
+                    <!-- VARIABLE -->
+                    <p>
+                        A school usually has classrooms, an office, a playground, bathrooms, and sometimes a library, a computer room, or a garden. In some rural areas, a school can be small, but it can still be very important. In cities, schools can be larger and have many students from different neighborhoods.
+                    </p>
+                    <!-- VARIABLE -->
+                    <p>
+                        Schools also preserve culture. Students can celebrate local festivals, learn about national symbols, prepare presentations, sing songs, or participate in civic events. A school can help students understand their country, their community, and the world.
+                    </p>
+                    <!-- VARIABLE -->
+                    <p>
+                        In English, students can describe school places with simple sentences: “This is my school.” “There is a library.” “There are classrooms.” These sentences help students talk about a familiar place in a clear and useful way.
+                    </p>
                 </div>
-
 
                 <!-- =================================================
                      READING CHECK
                      POR AHORA ES FIJO
                      ================================================= -->
-
                 <div class="card card-reading-check reading-check-box">
-                    <span class="badge">Reading Check</span>
-
-                    <div id="readingCheckContent" style="line-height:1.6;">
-                        <p>A. Read and answer.</p><p>1. What is a routine?</p><p>2. Name three morning activities from the reading.</p><p>3. How can family members cooperate in the morning?</p><p>4. How can routines be different in cities and rural communities?</p><p>5. What sentence says a student studies English?</p><p>B. Complete: In the morning, I <input type="text" class="blank-input" placeholder="Write here..." autocomplete="off">. I go to <input type="text" class="blank-input" placeholder="Write here..." autocomplete="off">.</p><p>C. Think: What is one helpful routine in your home?</p>
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- =====================================================
-             IMAGEN — POR AHORA FIJA
-             ===================================================== -->
-
-        <div class="image-section">
-
-            <!-- =====================================================
-                AUDIO CULTURE READING
-                ===================================================== -->
-
-            
-
-
-            
-
-            <div class="separator" style="clear: both;">
-
-                <img alt="" border="0" width="1417" data-original-width="1417" id="imagenPrincipal" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh5qXy2QkyWNq8gwJWuu0Yve6hbevQdGXRSvVV0WSAp14FlLSM1oGu1Jq7gN0KlWISDLfx75Tx1UdAbkeO1I-EreVnwT5lb6bpA0fSqVhZq21WbFOSA8VTba-XvXXaRmOatjRPdxFaKuezLTbIt6J3Ih0ZJtoSbuy6SMjk2TZtvgukP-h61MWKm90omRcdt/s1417/LB17.png">
-
-            </div>
-
-            <!-- POR AHORA FIJO -->
-
-            <div class="lesson-footer">
-                <span>
-                    UNIT
-                    <span id="numeroUnidadFooter">4</span>
-                    |
-                    <span id="numeroPaginaFooter">48</span>
-                </span>
-                <span>
-                    LEARNING BRIDGE ENGLISH · A1 CEFR · LATIN AMERICAN EDITION
-                </span>
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="bottom-bar"></div>
-
-
-    <!-- =========================================================
-         PIZARRA
-         ========================================================= -->
-
-    <div class="modal-overlay" id="whiteboardModal">
-
-        <div class="modal-container" onclick="event.stopPropagation()">
-
-            <div class="modal-header">
-
-                <h3 id="whiteboardTitle">
-                    💡 Pizarra Interactiva:
-                    <span id="whiteboardLessonTitle">
-                        My School
+                    <span class="badge">
+                        Reading Check
                     </span>
-                </h3>
-
-                <button class="close-modal-btn" type="button" onclick="closeWhiteboard()">
-                    ×
-                </button>
-
+                    <p style="font-size: 9px; margin-bottom: 4px;">
+                        <strong>A. Read and answer.</strong>
+                    </p>
+                    <ol>
+                        <li>
+                            <span>
+                                1. Why is a school important in a community?
+                            </span>
+                            <input type="text" class="blank-input" placeholder="...">
+                        </li>
+                        <li>
+                            <span>
+                                2. What places can a school have?
+                            </span>
+                            <input type="text" class="blank-input" placeholder="...">
+                        </li>
+                        <li>
+                            <span>
+                                3. How can schools preserve culture?
+                            </span>
+                            <input type="text" class="blank-input" placeholder="...">
+                        </li>
+                        <li>
+                            <span>
+                                4. What sentence presents a school?
+                            </span>
+                            <input type="text" class="blank-input" placeholder="...">
+                        </li>
+                        <li>
+                            <span>
+                                5. What sentence says there is one library?
+                            </span>
+                            <input type="text" class="blank-input" placeholder="...">
+                        </li>
+                    </ol>
+                    <p style="margin-top: 5px; font-size: 9px;">
+                        <strong>B. Complete:</strong>
+                        <span>
+                            This is my
+                        </span>
+                        <input type="text" class="blank-input" style="width: 100px;" placeholder="...">.
+                        <span>
+                            There is a
+                        </span>
+                        <input type="text" class="blank-input" style="width: 100px;" placeholder="...">.
+                    </p>
+                    <p style="margin-top: 5px; font-size: 9px;">
+                        <strong>C. Think:</strong>
+                        <span>
+                            What place in your school is important to you?
+                        </span>
+                    </p>
+                    <input type="text" class="answer-input" placeholder="Escribe aquí tu respuesta...">
+                </div>
             </div>
-
-            <textarea class="board-textarea" id="whiteboardText" placeholder="Escribe aquí notas adicionales, ejemplos de descripciones o explicaciones gramaticales para la clase..."></textarea>
-
-            <div class="modal-footer">
-
-                <button class="btn-board-action" type="button" onclick="closeWhiteboard()">
-                    Guardar y Cerrar
-                </button>
-
-            </div>
-
         </div>
-
     </div>
 
+    <!-- =====================================================
+         IMAGEN — POR AHORA FIJA
+         ===================================================== -->
+    <div class="image-section">
+        <!-- =====================================================
+             AUDIO CULTURE READING
+             ===================================================== -->
+        
 
-    <!-- =========================================================
-         JAVASCRIPT DEL CONSTRUCTOR
-         ========================================================= -->
+      
+    <div class="separator" style="clear: both;">
+        <img alt="" border="0" width="1417" data-original-width="1417" id="imagenPrincipal" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh5qXy2QkyWNq8gwJWuu0Yve6hbevQdGXRSvVV0WSAp14FlLSM1oGu1Jq7gN0KlWISDLfx75Tx1UdAbkeO1I-EreVnwT5lb6bpA0fSqVhZq21WbFOSA8VTba-XvXXaRmOatjRPdxFaKuezLTbIt6J3Ih0ZJtoSbuy6SMjk2TZtvgukP-h61MWKm90omRcdt/s1417/LB17.png">
+    </div>
+    <!-- POR AHORA FIJO -->
+    <div class="lesson-footer">
+        <span>
+            UNIT
+            <span id="numeroUnidadFooter">4</span>
+            |
+            <span id="numeroPaginaFooter">48</span>
+        </span>
+        <span>
+            LEARNING BRIDGE ENGLISH · A1 CEFR · LATIN AMERICAN EDITION
+        </span>
+    </div>
+</div>
 
-    
+
+<div class="bottom-bar"></div>
+
+<!-- =========================================================
+     PIZARRA
+     ========================================================= -->
+<div class="modal-overlay" id="whiteboardModal">
+    <div class="modal-container" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 id="whiteboardTitle">
+                💡 Pizarra Interactiva:
+                <span id="whiteboardLessonTitle">
+                    My School
+                </span>
+            </h3>
+            <button class="close-modal-btn" type="button" onclick="closeWhiteboard()">
+                ×
+            </button>
+        </div>
+        <textarea class="board-textarea" id="whiteboardText" placeholder="Escribe aquí notas adicionales, ejemplos de descripciones o explicaciones gramaticales para la clase..."></textarea>
+        <div class="modal-footer">
+            <button class="btn-board-action" type="button" onclick="closeWhiteboard()">
+                Guardar y Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================
+     JAVASCRIPT DEL CONSTRUCTOR
+     ========================================================= -->
+
 
 
 
 <phedra-x-ui data-wxt-shadow-root="" style="position: fixed; top: 0px; left: 0px; width: 0px; height: 0px; z-index: 2147483647;"></phedra-x-ui><script>
-                /*
-                * ========================================================
-                * PERSISTENCIA DE RESPUESTAS DEL ESTUDIANTE
-                * ========================================================
-                */
 
-                const CLAVE_RESPUESTAS =
-                    'learningBridgeRespuestas_' +
-                    location.pathname;
+    /*
+     * ========================================================
+     * PERSISTENCIA DE RESPUESTAS DEL ESTUDIANTE
+     * ========================================================
+     */
 
-                function guardarRespuestas() {
+    const CLAVE_RESPUESTAS =
+        'learningBridgeRespuestas_' +
+        location.pathname;
 
-                    const respuestas = {};
+    function guardarRespuestas() {
+        const respuestas = {};
+        document
+            .querySelectorAll(
+                'input, textarea, [contenteditable="true"]'
+            )
+            .forEach((elemento, indice) => {
+                if (
+                    elemento.type === 'button' ||
+                    elemento.type === 'submit'
+                ) {
+                    return;
+                }
+                respuestas[indice] =
+                    elemento.value !== undefined
+                        ? elemento.value
+                        : elemento.innerHTML;
+            });
+        localStorage.setItem(
+            CLAVE_RESPUESTAS,
+            JSON.stringify(respuestas)
+        );
+    }
 
-                    document
-                        .querySelectorAll(
-                            'input, textarea, [contenteditable="true"]'
-                        )
-                        .forEach((elemento, indice) => {
+    function cargarRespuestas() {
+        const datos =
+            localStorage.getItem(
+                CLAVE_RESPUESTAS
+            );
+        if (!datos) {
+            return;
+        }
 
-                            if (
-                                elemento.type === 'button' ||
-                                elemento.type === 'submit'
-                            ) {
-                                return;
-                            }
+        let respuestas;
+        try {
+            respuestas =
+                JSON.parse(datos);
+        } catch (error) {
+            console.error(
+                'No fue posible recuperar las respuestas:',
+                error
+            );
+            return;
+        }
 
-                            respuestas[indice] =
-                                elemento.value !== undefined
-                                    ? elemento.value
-                                    : elemento.innerHTML;
-
-                        });
-
-                    localStorage.setItem(
-                        CLAVE_RESPUESTAS,
-                        JSON.stringify(respuestas)
-                    );
+        document
+            .querySelectorAll(
+                'input, textarea, [contenteditable="true"]'
+            )
+            .forEach((elemento, indice) => {
+                if (
+                    !Object.prototype.hasOwnProperty.call(
+                        respuestas,
+                        indice
+                    )
+                ) {
+                    return;
                 }
 
+                if (
+                    elemento.value !== undefined
+                ) {
+                    elemento.value =
+                        respuestas[indice];
+                } else {
+                    elemento.innerHTML =
+                        respuestas[indice];
+                }
+            });
+    }
 
-                function cargarRespuestas() {
+    document.addEventListener(
+        'input',
+        guardarRespuestas
+    );
 
-                    const datos =
-                        localStorage.getItem(
-                            CLAVE_RESPUESTAS
-                        );
+    document.addEventListener(
+        'change',
+        guardarRespuestas
+    );
 
-                    if (!datos) {
-                        return;
-                    }
+    /*
+     * ========================================================
+     * PIZARRA
+     * ========================================================
+     */
 
-                    let respuestas;
+    function openWhiteboard() {
+        const modal =
+            document.getElementById(
+                'whiteboardModal'
+            );
 
-                    try {
+        const lessonTitle =
+            document.querySelector(
+                'h1'
+            );
 
-                        respuestas =
-                            JSON.parse(datos);
+        const whiteboardLessonTitle =
+            document.getElementById(
+                'whiteboardLessonTitle'
+            );
 
-                    } catch (error) {
+        if (
+            lessonTitle &&
+            whiteboardLessonTitle
+        ) {
+            whiteboardLessonTitle.textContent =
+                lessonTitle.textContent.trim() ||
+                'Sin título';
+        }
 
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+
+    function closeWhiteboard() {
+        const modal =
+            document.getElementById(
+                'whiteboardModal'
+            );
+
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    window.onclick = function(event) {
+        const modal =
+            document.getElementById(
+                'whiteboardModal'
+            );
+
+        if (event.target === modal) {
+            closeWhiteboard();
+        }
+    };
+
+    /*
+     * ========================================================
+     * AUDIO CULTURE READING
+     * ========================================================
+     */
+
+    const cultureReadingAudioButton =
+        document.getElementById(
+            'cultureReadingAudioButton'
+        );
+
+    let cultureReadingAudio = null;
+
+    if (cultureReadingAudioButton) {
+        cultureReadingAudioButton.addEventListener(
+            'click',
+            function() {
+                const rutaAudio =
+                    cultureReadingAudioButton.getAttribute(
+                        'data-audio'
+                    );
+
+                if (!rutaAudio) {
+                    alert(
+                        'No se encontró el audio de Culture Reading.'
+                    );
+                    return;
+                }
+
+                /*
+                 * Si el audio está reproduciéndose,
+                 * detenerlo y volver al inicio.
+                 */
+                if (
+                    cultureReadingAudio &&
+                    !cultureReadingAudio.paused
+                ) {
+                    cultureReadingAudio.pause();
+                    cultureReadingAudio.currentTime = 0;
+                    return;
+                }
+
+                /*
+                 * Crear el reproductor.
+                 */
+                cultureReadingAudio =
+                    new Audio(rutaAudio);
+
+                /*
+                 * Reproducir.
+                 */
+                cultureReadingAudio
+                    .play()
+                    .catch(error => {
                         console.error(
-                            'No fue posible recuperar las respuestas:',
+                            'No fue posible reproducir el audio:',
                             error
                         );
-
-                        return;
-                    }
-
-                    document
-                        .querySelectorAll(
-                            'input, textarea, [contenteditable="true"]'
-                        )
-                        .forEach((elemento, indice) => {
-
-                            if (
-                                !Object.prototype.hasOwnProperty.call(
-                                    respuestas,
-                                    indice
-                                )
-                            ) {
-                                return;
-                            }
-
-                            if (
-                                elemento.value !== undefined
-                            ) {
-
-                                elemento.value =
-                                    respuestas[indice];
-
-                            } else {
-
-                                elemento.innerHTML =
-                                    respuestas[indice];
-
-                            }
-
-                        });
-                }
-
-
-                document.addEventListener(
-                    'input',
-                    guardarRespuestas
-                );
-
-
-                document.addEventListener(
-                    'change',
-                    guardarRespuestas
-                );
-
-
-                /*
-                * ========================================================
-                * PIZARRA
-                * ========================================================
-                */
-
-                function openWhiteboard() {
-
-                    const modal =
-                        document.getElementById(
-                            'whiteboardModal'
+                        alert(
+                            'No fue posible reproducir el audio de Culture Reading.'
                         );
+                    });
+            }
+        );
+    }
 
-                    const lessonTitle =
-                        document.querySelector(
-                            'h1'
-                        );
+    /*
+     * Cargar las respuestas guardadas
+     * después de cargar la página.
+     */
+    document.addEventListener(
+        'DOMContentLoaded',
+        function() {
+            if (window.UCMIPizarra) {
+                UCMIPizarra.iniciar();
+            }
+        }
+    );
 
-                    const whiteboardLessonTitle =
-                        document.getElementById(
-                            'whiteboardLessonTitle'
-                        );
-
-                    if (
-                        lessonTitle &&
-                        whiteboardLessonTitle
-                    ) {
-                        whiteboardLessonTitle.textContent =
-                            lessonTitle.textContent.trim() ||
-                            'Sin título';
-                    }
-
-                    if (modal) {
-                        modal.style.display = 'flex';
-                    }
-
-                }
-
-                function closeWhiteboard() {
-                    const modal =
-                        document.getElementById('whiteboardModal');
-
-                    if (modal) {
-                        modal.style.display = 'none';
-                    }
-                }
-
-                window.onclick = function(event) {
-
-                    const modal =
-                        document.getElementById('whiteboardModal');
-
-                    if (event.target === modal) {
-                        closeWhiteboard();
-                    }
-
-                };
-
-                                /*
-                                * ========================================================
-                                * AUDIO CULTURE READING
-                                * ========================================================
-                                */
-
-                                const cultureReadingAudioButton =
-                                    document.getElementById(
-                                        'cultureReadingAudioButton'
-                                    );
-
-                                let cultureReadingAudio = null;
-
-
-                                if (cultureReadingAudioButton) {
-
-                                    cultureReadingAudioButton.addEventListener(
-                                        'click',
-                                        function() {
-
-                                            const rutaAudio =
-                                                cultureReadingAudioButton.getAttribute(
-                                                    'data-audio'
-                                                );
-
-
-                                            if (!rutaAudio) {
-
-                                                alert(
-                                                    'No se encontró el audio de Culture Reading.'
-                                                );
-
-                                                return;
-                                            }
-
-
-                                            /*
-                                            * Si el audio está reproduciéndose,
-                                            * detenerlo y volver al inicio.
-                                            */
-
-                                            if (
-                                                cultureReadingAudio &&
-                                                !cultureReadingAudio.paused
-                                            ) {
-
-                                                cultureReadingAudio.pause();
-
-                                                cultureReadingAudio.currentTime = 0;
-
-                                                return;
-                                            }
-
-
-                                            /*
-                                            * Crear el reproductor.
-                                            */
-
-                                            cultureReadingAudio =
-                                                new Audio(rutaAudio);
-
-
-                                            /*
-                                            * Reproducir.
-                                            */
-
-                                            cultureReadingAudio
-                                                .play()
-                                                .catch(error => {
-
-                                                    console.error(
-                                                        'No fue posible reproducir el audio:',
-                                                        error
-                                                    );
-
-                                                    alert(
-                                                        'No fue posible reproducir el audio de Culture Reading.'
-                                                    );
-
-                                                });
-
-                                        }
-                                    );
-
-                                }
-
-
-                /*
-                * Cargar las respuestas guardadas
-                * después de cargar la página.
-                */
-
-                document.addEventListener(
-                    'DOMContentLoaded',
-                    function() {
-
-                        if (window.UCMIPizarra) {
-
-                            UCMIPizarra.iniciar();
-
-                        }
-
-                    }
-                );
-
-                cargarRespuestas();
-            </script></body></html>
+    cargarRespuestas();
+</script></body></html>
